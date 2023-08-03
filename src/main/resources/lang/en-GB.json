@@ -1,0 +1,1081 @@
+{
+	"embed": {
+		"footer": "Requested by {user}"
+	},
+	"errors": {
+		"title": "Error",
+		"additional": "Additional info:",
+		"unknown": "Something went wrong! {EMOTE_WARNING}\nReport this error to bot's Owner/Developer!",
+		"request_error": "There was an error while handling the request. Make sure that my message wasn't deleted and that I have sufficient permissions!",
+		"missing_perms": {
+			"self": "I lack the permission `{permission}` for this.",
+			"self_channel": "I lack the permission `{permission}` in the channel {channel} to do this.",
+			"other": "You lack the permission `{permission}` for this command.",
+			"other_channel": "You lack the permission `{permission}` in the channel {channel} to do this command."
+		},
+		"no_send_perm": "I have no permission to send messages in your channel. Pls fix!",
+		"guild_not_setup": "Server is not configured! Check `/help` for setup command.",
+		"access_level_low": "You don't have necessary access level to perform this command.",
+		"command": {
+			"not_owner": "Only an owner may run this command.",
+			"nsfw": "This command may only be used in NSFW text channels!",
+			"guild_only": "This command cannot be used in private messages! Use this command in server, where I am."
+		},
+		"cooldown": {
+			"cooldown_left": "That command is on cooldown for {time} more seconds",
+			"channel": "in this channel",
+			"guild": "in this server",
+			"shard": "on this shard",
+			"global": "globally"
+		},
+		"formatter": {
+			"no_time_provided": "No time provided using pattern",
+			"except_seconds": "Provided time can't be specified in seconds",
+			"no_multip": "Could not get time multiplication from given character",
+			"parse_long": "Could not parse provided time due to owerflow or other error",
+			"long_overflow": "Provided time too big, long overflow"
+		},
+		"interaction": {
+			"no_values": "None of the values has been selected.",
+			"not_mod": "You cannot perform this action because you do not have the required access level."
+		}
+	},
+	"misc": {
+		"and": "and",
+		"language": "English (en)",
+		"unknown": "Unknown",
+		"command": {
+			"help": "no help available",
+			"usage": "no usage description"
+		}
+	},
+	"modules": {
+		"webhook": "Webhook commands",
+		"language": "Language commands",
+		"moderation": "Moderation category",
+		"verification": "Verification",
+		"ticketing": "Tickets",
+		"module_disabled": "This command(module) is disabled."
+	},
+	"role_type": {
+		"assign": "Assignable",
+		"toggle": "Toggleable",
+		"custom": "Custom"
+	},
+	"ticket": {
+		"close": "Close",
+		"rename": "Rename",
+		"role": "role",
+		"role_approve": "Approve all",
+		"role_title": "Requested roles",
+		"role_header": "**provide the following information:**",
+		"role_proof": "Proofs as requested by moderator.",
+		"role_footer": "*After the issuance of roles - the request will be deleted.*\n*Do not close the ticket, wait for the moderator!*"
+	},
+	"logger": {
+		"user": "User",
+		"mod": "Moderator",
+		"master": "Master server",
+		"enforcer": "Done by",
+		"duration": "Duration",
+		"success": "Success rate",
+		"ban": {
+			"short_title": "Ban info",
+			"short_info": "*Username:* `{username}`\n*Ban reason:* `{reason}`",
+			"title": "Case {case_id} | Ban | {user_tag}",
+			"reason": "Ban Reason",
+			"title_synced": "Synced Ban | {user_tag}"
+		},
+		"unban": {
+			"title": "Unban | {user_tag}",
+			"ban_reason": "Banned for",
+			"reason": "Unban Reason",
+			"title_synced": "Synced Unban | {user_tag}"
+		},
+		"kick": {
+			"title": "Kick | {user_tag}",
+			"reason": "Kick reason",
+			"title_synced": "Synced Kick | {user_tag}"
+		},
+		"change": {
+			"reason": "Case {case_id} | Reason changed | {user_tag}",
+			"duration": "Case {case_id} | Duration changed | {user_tag}"
+		},
+		"expired": {
+			"unban": {
+				"title": "Ban expired | {user_tag}",
+				"ban_reason": "Banned for"
+			}
+		},
+		"permanently": "permanently",
+		"temporary": "until {time}",
+		"group": {
+			"admin": "Action by",
+			"title": "Group '{group_name}' (#{group_id})",
+			"master": "Main server's ID: ",
+			"guild": "Implicated server",
+			"created": "Created new server Group",
+			"deleted": "Deleted server Group",
+			"join": "This server joined Group",
+			"added": "This server was added to Group",
+			"leave": "This server left Group",
+			"joined": "Server joined your Group",
+			"left": "Server left your Group",
+			"removed": "Server was removed from your Group",
+			"renamed": "Server Group was renamed",
+			"oldname": "Previous Group name"
+		},
+		"verify": {
+			"added": "User verified | {user_tag}",
+			"removed": "User unverified | {user_tag}",
+			"steam": "Steam account",
+			"discord": "Discord account",
+			"reason": "Reason"
+		},
+		"ticket": {
+			"closed": "Ticket closed | {ticket}",
+			"roles_title": "Roles issued | {ticket}",
+			"roles": "Assigned roles"
+		}
+	},
+	"bot": {
+		"owner": {
+			"eval": {
+				"help": "Evaluates code using Groovy",
+				"usage": "eval <code>",
+				"code": {
+					"name": "code",
+					"help": "Enter your code to evaluate"
+				},
+				"time": "Evaluated in {time}ms",
+				"input": "Input:",
+				"output": "Output:"
+			},
+			"shutdown": {
+				"help": "Safely shuts down the bot",
+				"usage": "shutdown"
+			},
+			"invite": {
+				"help": "Get bot's invite url",
+				"usage": "invite",
+				"value": "Here is my invite link: {bot_invite}"
+			},
+			"generate": {
+				"help": "Generates json file with information about all bot's public commands",
+				"usage": "generate",
+				"error": "Unknown error, see below."
+			}
+		},
+		"guild": {
+			"setup": {
+				"help": "Setup menu for this server",
+				"main": {
+					"help": "Setup main function (without touching other modules)",
+					"usage": "main",
+					"done": "**Setup done!**\nBot is ready for use on this server.\n\n*Recomended: setup log channel using `/log setup`*",
+					"exists": "Bot is already configured on this server.\nIf you belive there is an error, contact developer in `/help`"
+				},
+				"color": {
+					"help": "Set embed color accent",
+					"usage": "color <______ | __,__,__ | random>",
+					"color": {
+						"name": "color",
+						"help": "Enter color, either hex (1234AC) or RGB (12,34,250)"
+					},
+					"no_color": "Incorrect color string provided, check `/help`",
+					"done": "Embed color updated to `{color}`"
+				}
+			},
+			"module": {
+				"help": "Manage modules",
+				"show": {
+					"help": "Show current modules status",
+					"usage": "show",
+					"embed": {
+						"title": "Module status",
+						"value": "*To enable/disable a module use `/module enable` or `/module disable`*",
+						"field": "Enabled | Module"
+					}
+				},
+				"disable": {
+					"help": "Disable module",
+					"usage": "disable",
+					"embed_title": "Disable module",
+					"embed_value": "Select module from list bellow to be disabled.",
+					"select": "Select module",
+					"none": "__All modules are already disabled!__",
+					"timed_out": "Timed out",
+					"already": "Module already disabled!",
+					"done": "Module {module} successfully disabled."
+				},
+				"enable": {
+					"help": "Enable module",
+					"usage": "enable",
+					"embed_title": "Enable module",
+					"embed_value": "Select module from list bellow to be enabled.",
+					"select": "Select module",
+					"none": "__All modules are already enabled!__",
+					"timed_out": "Timed out",
+					"already": "Module already enabled!",
+					"done": "Module {module} successfully enabled."
+				}
+			},
+			"access": {
+				"help": "Manage roles (set Mod/Op) that has access to command use",
+				"add": {
+					"help": "Allow access",
+					"mod": {
+						"help": "Add role as a Mod",
+						"usage": "add mod <@Role | ID>",
+						"role": {
+							"name": "role",
+							"help": "Mention role"
+						},
+						"already": "Role already has Mod access!",
+						"done": "Successfully asigned {role} Mod access!"
+					},
+					"operator": {
+						"help": "Add Operator access to user",
+						"usage": "add operator <@User | ID>",
+						"user": {
+							"name": "user",
+							"help": "Mention server member"
+						},
+						"already": "User already has Operator access!",
+						"done": "Successfully asigned {user} Operator access!"
+					},
+					"no_role": "Role not found.",
+					"no_member": "Member not found.",
+					"incorrect_role": "Selected role can't be set as Moderator.",
+					"incorrect_user": "Selected member can't be set as Operator."
+				},
+				"remove": {
+					"help": "Deny access",
+					"mod": {
+						"help": "Remove Moderator access from role",
+						"usage": "remove mod <@Role | ID>",
+						"role": {
+							"name": "role",
+							"help": "Mention role"
+						},
+						"not_mod": "Selected role has no Moderator access",
+						"done": "Successfully removed from {role} Moderator access!"
+					},
+					"operator": {
+						"help": "Remove Operator access from user",
+						"usage": "remove operator <@User | ID>",
+						"user": {
+							"name": "user",
+							"help": "Mention user"
+						},
+						"not_operator": "Selected user has no Operator access",
+						"done": "Successfully removed from {user} Operator access!"
+					},
+					"no_role": "Role not found.",
+					"no_user": "User not found."
+				},
+				"view": {
+					"help": "View who has access",
+					"usage": "view",
+					"embed": {
+						"title": "Roles with access",
+						"none_found": "*None of the roles has Mod access*",
+						"none": "None",
+						"mod": "**Moderator access:**",
+						"operator": "**Operators:**"
+					}
+				}
+			},
+			"log": {
+				"help": "Log guild events",
+				"setup": {
+					"help": "Setup log channel",
+					"usage": "setup <#Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel where to log actions"
+					},
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"as_log": "This channel is selected as a log channel for all actions.",
+					"done": "Successfully set {channel} as log channel!"
+				},
+				"manage": {
+					"help": "Manage current logging setting",
+					"usage": "manage",
+					"title": "Currently logging",
+					"none": "*None*\n\n*Use `/log setup` to setup logging*",
+					"button_change": "Change channel",
+					"button_remove": "Remove logging",
+					"menu_type": "Select which log type you wish to change",
+					"menu_channel": "Select new channel",
+					"select_channel": "Select new channel, which will be used for logging {type}",
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"as_log": "This channel is selected as a log channel for performed {type}.",
+					"timed_out": "Timed out",
+					"done": "Successfully set {channel} as log channel!",
+					"removed": "Log channels for all actions were removed."
+				},
+				"types": {
+					"all": "All actions",
+					"moderation": "Moderation actions",
+					"group": "Group actions",
+					"verify": "Verifications",
+					"ticketing": "Ticket actions"
+				}
+			}
+		},
+		"webhook": {
+			"help": "Module for managing webhooks",
+			"list": {
+				"help": "Shows added webhooks to bot's list",
+				"usage": "list [show all webhooks?]",
+				"all": {
+					"name": "all",
+					"help": "Show all webhooks in this server? (default-false)"
+				},
+				"embed": {
+					"title": "Webhooks",
+					"none_found": "*There are no webhooks on this server found.*",
+					"none_registered": "*There are no webhooks registered in bot's DB!*",
+					"value": "Name | ID | Channel"
+				}
+			},
+			"move": {
+				"help": "Move registered webhook to another channel",
+				"usage": "move <webhook ID> <#Channel>",
+				"id": {
+					"name": "id",
+					"help": "Enter ID of registered webhook"
+				},
+				"channel": {
+					"name": "channel",
+					"help": "Choose the channel to move webhook to"
+				},
+				"error_not_registered": "Selected webhook is not registered.",
+				"error_not_found": "Couldn't find webhook by entered ID.",
+				"error_channel": "Couldn't move webhook to that channel.",
+				"done": "Successfully moved webhook `{webhook_name}` to channel `{channel}`!"
+			},
+			"add": {
+				"help": "Add webhook to the bot's DB",
+				"create": {
+					"help": "Create new webhook to be registered",
+					"usage": "add create <name> [#Channel]",
+					"name": {
+						"name": "name",
+						"help": "Choose name for new webhook"
+					},
+					"channel": {
+						"name": "channel",
+						"help": "Choose channel in which create webhook (default-this channel)"
+					},
+					"invalid_range": "Webhook's name must be in range from 2 to 100 symbols",
+					"done": "Successfully created webhook `{webhook_name}` and registered!"
+				},
+				"select": {
+					"help": "Select existing webhook to be registered",
+					"usage": "add select <webhook ID>",
+					"id": {
+						"name": "id",
+						"help": "Enter ID of existing webhook"
+					},
+					"error_registered": "Selected webhook is already registered in bot's DB!",
+					"error_not_found": "Couldn't find webhook by entered ID.",
+					"done": "Successfully registered webhook `{webhook_name}`!"
+				}
+			},
+			"remove": {
+				"help": "Removes registered webhook",
+				"usage": "remove <webhook ID> [delete it?]",
+				"id": {
+					"name": "id",
+					"help": "Enter ID of registered webhook"
+				},
+				"delete": {
+					"name": "delete",
+					"help": "Also delete webhook? (default-false)"
+				},
+				"error_not_registered": "Selected webhook is not registered.",
+				"error_not_found": "Couldn't find webhook by entered ID.",
+				"error_not_guild": "Selected webhook is not from this server.",
+				"done": "Successfully removed webhook `{webhook_name}`!"
+			}
+		},
+		"moderation": {
+			"ban": {
+				"help": "Ban member of this server",
+				"usage": "ban <@User | Tag | ID> [duration] [reason] [purge messages?] [dm user?]",
+				"user": {
+					"name": "user",
+					"help": "Mention user to be banned from this server"
+				},
+				"time": {
+					"name": "time",
+					"help": "Temporaty ban user (Example: 2h, 2w5d (week, day, hour, minute) | 0)"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Ban reason (*none*)"
+				},
+				"delete": {
+					"name": "delete",
+					"help": "Delete messages past 10 hours? (true)"
+				},
+				"dm": {
+					"name": "dm",
+					"help": "Send user DM informing about the ban? (true)"
+				},
+				"no_reason": "*Not provided*",
+				"not_found": "User not found or input error",
+				"not_self": "You can't ban yourself or me... (for good)",
+				"already_banned": "Mentioned user is already banned on this server.",
+				"already_temp": "Mentioned user is already temporary banned on this server.\n** See `/case {id}`**\n\n*You can change that ban duration using `/duration`*",
+				"higher_access": "Mentioned member has higher access than you do.",
+				"ban_abort": "Could not ban mentioned member.",
+				"ban_success": "**{user_tag} was banned {duration}!** | {reason}",
+				"sync": {
+					"title": "**Sync this ban?**\nSelect groups bellow.",
+					"value": "Select group/-s",
+					"done": "Ban sync in progress! Result will be posted in log channel."
+				}
+			},
+			"unban": {
+				"help": "Unban banned user on this server",
+				"usage": "unban <Tag | ID> [reason]",
+				"user": {
+					"name": "user",
+					"help": "Enter ID/mention of user to be unbanned in this server"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Unban reason (Default: *none*)"
+				},
+				"no_reason": "*Not provided*",
+				"not_found": "User not found or input error",
+				"not_self": "You can't interact with yourself or me",
+				"no_ban": "Specified user is not banned in this server",
+				"unban_success": "**{user_tag} was unbanned!** | {reason}",
+				"sync": {
+					"title": "**Sync this unban?**\nSelect groups bellow.",
+					"value": "Select group/-s",
+					"done": "Unban sync in progress! Result will be posted in log channel."
+				}
+			},
+			"kick": {
+				"help": "Kick user from this server",
+				"usage": "kick <@User | Tag | ID> [reason] [dm user?]",
+				"member": {
+					"name": "member",
+					"help": "Mention member to be kicked from this server"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Kick reason (*none*)"
+				},
+				"dm": {
+					"name": "dm",
+					"help": "Send user DM informing about the kick? (false)"
+				},
+				"no_reason": "*Not provided*",
+				"not_found": "Member not found or input error",
+				"not_self": "You can't kick yourself or me... (for good)",
+				"kick_abort": "Could not kick mentioned member.",
+				"higher_access": "Mentioned member has higher access than you do.",
+				"kick_success": "**{user_tag} was kicked!** | {reason}",
+				"sync": {
+					"title": "**Sync this kick?**\nSelect groups bellow.",
+					"value": "Select group/-s",
+					"done": "Kick sync in progress! Result will be posted in log channel."
+				}
+			},
+			"sync": {
+				"help": "Sync moderation action with Group servers",
+				"ban": {
+					"help": "Sync permament ban with Group servers",
+					"usage": "ban <case ID> <Group>",
+					"id": {
+						"name": "id",
+						"help": "Enter case ID"
+					},
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"not_found": "Could not find case(ban) by specified ID.",
+					"expirable_ban": "Specified ban is not permament or has expired.",
+					"no_group": "Couldn't find group by entered ID.",
+					"embed_title": "Are you sure you want to ban this user from all Group servers?",
+					"button_confirm": "YES",
+					"done": "Ban sync in progress! Result will be posted in log channel."
+				},
+				"unban": {
+					"help": "Sync unban with Group servers",
+					"usage": "unban <@User | ID> <Group>",
+					"user": {
+						"name": "user",
+						"help": "Enter user ID or ping them"
+					},
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"not_found": "Could not find member by specified ID.\nUser **must** be unbaned here and joined this server.",
+					"not_self": "You can't interact with yourself or me.",
+					"no_group": "Couldn't find Group by entered ID.",
+					"embed_title": "Are you sure you want to unban this user on all Group servers?",
+					"button_confirm": "YES",
+					"done": "Unban sync in progress! Result will be posted in log channel."
+				},
+				"kick": {
+					"help": "Sync kick with Group servers",
+					"usage": "kick <@User | ID> <Group>",
+					"user": {
+						"name": "user",
+						"help": "Enter user ID or ping"
+					},
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"not_found": "Could not find user by specified ID.",
+					"not_self": "You can't interact with yourself or me.",
+					"is_member": "Could not sync kick, as specified user is inside this server.\nUse `/kick` to kick them firstly.",
+					"no_group": "Couldn't find Group by entered ID.",
+					"embed_title": "Are you sure you want to kick this user from all Group servers?",
+					"button_confirm": "YES",
+					"done": "Kick sync in progress! Result will be posted in log channel."
+				}
+			},
+			"case": {
+				"help": "View information about logged ban",
+				"usage": "case <case ID>",
+				"id": {
+					"name": "id",
+					"help": "Enter case ID"
+				},
+				"not_found": "Could not find case(ban) by specified ID"
+			},
+			"reason": {
+				"help": "Change ban reason",
+				"usage": "reason <case ID> <reason>",
+				"id": {
+					"name": "id",
+					"help": "Enter case ID"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Enter new reason"
+				},
+				"not_found": "Could not find case(ban) by specified ID",
+				"done": "Successfully changed ban (Case {id}) reason to:\n```{reason}```"
+			},
+			"duration": {
+				"help": "Change ban duration",
+				"usage": "duration <case ID> <duration>",
+				"id": {
+					"name": "id",
+					"help": "Enter case ID"
+				},
+				"time": {
+					"name": "time",
+					"help": "Enter new duration (Example: 2h, 2w5d (week, day, hour, minute) | 0)"
+				},
+				"not_found": "Could not find case(ban) by specified ID",
+				"is_expired": "Specified case has expired.",
+				"done": "Successfully changed ban (Case {id}) duration to: {duration}"
+			},
+			"group": {
+				"help": "Server Groups managment",
+				"create": {
+					"help": "Create new server Group",
+					"usage": "create <name> [shared?]",
+					"name": {
+						"name": "name",
+						"help": "Enter name for new Group"
+					},
+					"shared": {
+						"name": "shared",
+						"help": "Can other servers join this Group by ID? (false)"
+					},
+					"max_amount": "This server has reached maximum amount of groups which it can be master of (max - 3).",
+					"done": "Group `{group_name}` successfully created!\n\n*Group ID: `{group_id}`*\n*Others can join: {is_shared}*"
+				},
+				"delete": {
+					"help": "Delete existing Group that this server owns",
+					"usage": "delete <Group>",
+					"group_owned": {
+						"name": "group_owned",
+						"help": "Select Group"
+					},
+					"no_group": "Couldn't find requested server Group.",
+					"not_owned": "This server is not Group's owner (creator).",
+					"done": "Group `{group_name}` successfully deleted!\n\n*Group ID: `{group_id}`*"
+				},
+				"add": {
+					"help": "Add server to Group",
+					"usage": "add <Group> <server ID> [can manage?]",
+					"group_owned": {
+						"name": "group_owned",
+						"help": "Select Group"
+					},
+					"server": {
+						"name": "server",
+						"help": "Enter server's ID to be added to this Group"
+					},
+					"manage": {
+						"name": "manage",
+						"help": "Can selected server perform action in this Group? (false)"
+					},
+					"no_group": "Couldn't find requested server Group.",
+					"not_owned": "This server is not Group's owner (creator).",
+					"is_member": "Selected server is already member of this Group.",
+					"no_guild": "Selected server not found.",
+					"done": "Added server __{server_name}__ (`{server_id}`) to Group `{group_name}`!"
+				},
+				"join": {
+					"help": "Join existing Group",
+					"usage": "join <Group ID>",
+					"id": {
+						"name": "id",
+						"help": "Enter Group ID"
+					},
+					"max_amount": "This server has reached maximum amount of Groups it can join (max - 5).",
+					"no_group": "Couldn't find Group by entered ID.",
+					"failed_join": "Failed to join Group.",
+					"is_member": "This server is already member of this Group.",
+					"embed_title": "Confirm joining",
+					"embed_value": "**Are you sure you want to join this sync group?**\nAny bans that are made by this group master will be synced with this server.\n\nGroup name: {group_name}\nGroup ID: `{group_id}`",
+					"button_confirm": "YES",
+					"button_abort": "NO (auto in 20 sec)",
+					"done": "Successfully joined Group `{group_name}`.",
+					"abort": "Aborted, this server will not join this Group."
+				},
+				"leave": {
+					"help": "Leave Group",
+					"usage": "leave <Group>",
+					"group_joined": {
+						"name": "group_joined",
+						"help": "Select Group"
+					},
+					"no_group": "Couldn't find requested server Group.",
+					"done": "Successfully left Group `{group_name}`!\n\n*Group ID: {group_id}*"
+				},
+				"remove": {
+					"help": "Remove server from Group",
+					"usage": "remove <Group>",
+					"group_owned": {
+						"name": "group_owned",
+						"help": "Select Group"
+					},
+					"no_group": "Couldn't find requested server Group.",
+					"not_owned": "This server is not Group's owner (creator).",
+					"no_guilds": "There are no other servers in the selected Group.",
+					"embed_title": "Server to be removed",
+					"embed_value": "Select server from the list below to be removed from Group `{group_name}`.",
+					"timed_out": "Timed out",
+					"done": "Successfully removed server __{guild_name}__ from Group `{group_name}`."
+				},
+				"rename": {
+					"help": "Rename Group",
+					"usage": "rename <Group> <name>",
+					"group_owned": {
+						"name": "group_owned",
+						"help": "Select Group"
+					},
+					"name": {
+						"name": "name",
+						"help": "Enter new name for this Group"
+					},
+					"no_group": "Couldn't find requested server Group.",
+					"not_owned": "This server is not Group's owner (creator).",
+					"done": "Group `{old_name}` successfully renamed to `{new_name}`!\n\n*Group ID: {group_id}*"
+				},
+				"manage": {
+					"help": "Set whether the server can perform actions in the Group",
+					"usage": "manage <Group> <can manage?>",
+					"group_owned": {
+						"name": "group_owned",
+						"help": "Select Group that this server owns"
+					},
+					"manage": {
+						"name": "manage",
+						"help": "Can selected server perform action in this Group? (false)"
+					},
+					"no_group": "Couldn't find requested server Group.",
+					"not_owned": "This server is not Group's owner (creator).",
+					"no_guilds": "There are no other servers in the selected Group.",
+					"is_shared": "Selected Group is set as `Shared`. Unable to add manage permission to any server in this Group.",
+					"embed_title": "Server",
+					"embed_value": "Select server from the list below.",
+					"timed_out": "Timed out",
+					"done": "Successfully set permission to `{manage}` for server __{guild_name}__ in Group `{group_name}`."
+				},
+				"view": {
+					"help": "View information about servers Group",
+					"usage": "view [Group owned] [Group joined]",
+					"group_owned": {
+						"name": "group_owned",
+						"help": "Select Group that this server owns"
+					},
+					"group_joined": {
+						"name": "group_joined",
+						"help": "Select Group in which this server is a member"
+					},
+					"no_group": "Couldn't find requested server Group.",
+					"not_owned": "This server is not Group's owner (creator).",
+					"embed_title": "Group '{group_name}' (#{group_id})",
+					"embed_value": "Owner: {guild_name} (`{guild_id}`)\nGroup size: {size} server/-s\nOthers can join: {is_shared}",
+					"embed_guilds": "Server name | size | ID",
+					"embed_groups": "Group name | #ID",
+					"embed_owned": "Owned Groups",
+					"embed_member": "Joined Groups",
+					"none": "*None*"
+				}
+			}
+		},
+		"other": {
+			"ping": {
+				"help": "Check the bot's latency",
+				"usage": "ping",
+				"loading": "{EMOTE_TYPING} Ping: ...",
+				"info": "{EMOTE_PING} Ping: {ping} ms",
+				"info_full": "{EMOTE_CLOUD} Websocket: {websocket} ms\n{EMOTE_DOWNLOAD} RestAction: {rest} ms"
+			},
+			"about": {
+				"help": "Get basic information about the bot",
+				"usage": "about [show?]",
+				"show": {
+					"name": "show",
+					"help": "Information will be visible for others (default-true)"
+				},
+				"embed": {
+					"about_title": "About {name}!",
+					"about_value": "Discord bot for server management with necessary moderation tools. Written in Java using JDA library.\nDeveloper - **{developer_name}** ({developer_id}).",
+					"bot_info": {
+						"title": "Bot info",
+						"bot_version": "Bot version: `VOTL-{bot_version}`",
+						"library": "Library: [`JDA {jda_version}`]({jda_github}) and [`JDA-Chewtils {chewtils_version}`]({chewtils_github})"
+					},
+					"commands_title": "Commands:",
+					"commands_value": "Use `/help` in any chat to get list of commands.",
+					"links": {
+						"title": "Links",
+						"discord": "[`Discord (Support)`]({guild_invite})",
+						"github": "[`Github`]({github_url})",
+						"privacy": "[`Privacy Policy`]({privacy_url})",
+						"terms": "[`Terms of Service`]({terms_url})",
+						"unionteams_title": "UnionTeam's",
+						"unionteams_website": "[`Website`]({unionteams})"
+					}
+				}
+			},
+			"status": {
+				"help": "Gets bot's status, shard info",
+				"usage": "status [show]",
+				"show": {
+					"name": "show",
+					"help": "Information will be visible for others (default-true)"
+				},
+				"embed": {
+					"stats_title": "Stats",
+					"stats" : {
+						"guilds": "{value} Servers",
+						"shard": "Shard {this}/{all}"
+					},
+					"shard_title": "This shard",
+					"shard": {
+						"users": "Cached users {value}",
+						"guilds": "Cached server {value}",
+						"text_channels": "{value} Text Channels",
+						"voice_channels": "{value} Voice Channels"
+					},
+					"last_restart": "Last restart"
+				}
+			}
+		},
+		"help": {
+			"help": "List all available commands the bot has or description of specific command.",
+			"usage": "help [command | category] [show?]",
+			"show": {
+				"name": "show",
+				"help": "Information will be visible for others (default-true)"
+			},
+			"category": {
+				"name": "category",
+				"help": "Shows commands in selected category"
+			},
+			"command": {
+				"name": "command",
+				"help": "Shows information about selected command"
+			},
+			"command_info": {
+				"docs": "Docs",
+				"no_command": "The provided command doesn't exist!\nMake sure you typed it correctly.",
+				"title": "Command help: {command}",
+				"value": "Category: **{category}**\nOwner command: {owner}\nCan be used in DMs: {guild}\nModule: **{module}**",
+				"help_title": "Description",
+				"usage_title": "Usage options",
+				"usage_value": "```/{usage}```",
+				"usage_child": "```/{base} {usage}```└ {help}",
+				"usage_subvalue": "`[]` ─ Optional\n`<>` ─ Required\n`A | B` ─ Selection"
+			},
+			"command_menu": {
+				"title": "Available commands:",
+				"categories": {
+					"owner": "Owner",
+					"guild": "Server",
+					"webhook": "Webhook",
+					"moderation": "Moderation",
+					"verification": "Verification",
+					"ticketing": "Tickets",
+					"other": "Other",
+					"title": "Categories"
+				},
+				"description": {
+					"command_value": "To get more info about a specific command run `/help command:[command]`.\nYou can also run `/help category:[category]` to show the commands of a specific category.",
+					"support_title": "*Additional help*",
+					"support_value": "If you need help with the bot, contact the owner `{owner_name}`."
+				}
+			}
+		},
+		"verification": {
+			"failed_role": "Verification error, failed to issue a role! Report this issue to the server Administration.",
+			"you_verified": "You are already verified (has role)",
+			"user_verified": "User is already verified (has role)",
+			"user_not_verified": "User is not verified",
+			"role_removed": "You are unverified in __{server}__ server, as you don't have linked Steam account.\nComplete verification by following instructions in verification channel.",
+			"embed": {
+				"title": "Link your account to complete verification",
+				"howto": "How to link your account?",
+				"guide": "1. Go to the project website https://unionteams.ru/\n2. Login to your Personal account via Steam\n3. Link your Discord account in the Personal account"
+			},
+			"listener": {
+				"refresh": "Refresh",
+				"connect": "Connect account",
+				"wait_title": "Please, wait!",
+				"wait_value": "If you haven't linked your account yet, follow the instructions above."
+			},
+			"vfpanel": {
+				"help": "Manage panel for verification module",
+				"usage": "vfpanel",
+				"create": {
+					"help": "Send panel to selected channel",
+					"usage": "create <#Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel in which to create the panel"
+					},
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"no_role": "Verification role is not set!\nUse `/verifyrole`",
+					"continue": "Continue",
+					"done": "Panel created in {channel}!"
+				},
+				"preview": {
+					"help": "Preview current panel messages",
+					"usage": "preview"
+				},
+				"text": {
+					"help": "Set the text for both embed panels",
+					"usage": "text",
+					"main": "Main panel text",
+					"description": "Second panel text",
+					"panel": "Setup vfpanel embeds text",
+					"done": "Text updated!"
+				}
+			},
+			"verifyrole": {
+				"help": "Assign server role for verification",
+				"usage": "verifyrole <@Role>",
+				"role": {
+					"name": "role",
+					"help": "Select role which will be used for verification"
+				},
+				"disable_check": "Disable account connection check, before changing verification role!",
+				"no_role": "Provided role was incorrect.",
+				"done": "Role {role} assigned for verification!"
+			},
+			"verify": {
+				"help": "Manualy add verify role to member and protect from purge",
+				"usage": "verify <@User | ID>",
+				"user": {
+					"name": "user",
+					"help": "Mention member or enter ID"
+				},
+				"no_user": "Couldn't find mentioned member (left server) or I can't interact with them!",
+				"not_setup": "Verification role is not set!\nUse `/verifyrole`",
+				"done": "Member has been given verified role!"
+			},
+			"unverify": {
+				"help": "Manualy remove verify role from member",
+				"usage": "unverify <@User | ID>",
+				"user": {
+					"name": "user",
+					"help": "Mention member or enter ID"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Reason for unverification"
+				},
+				"no_user": "Couldn't find mentioned member, either they left server or not existent!",
+				"not_setup": "Verification role is not set!\nUse `/verifyrole`",
+				"no_reason": "*Not provided*",
+				"done": "Verified role removed from member!"
+			},
+			"account": {
+				"help": "Get account information",
+				"usage": "account <@User | Discord ID | Steam64 | SteamID>",
+				"steamid": {
+					"name": "steamid",
+					"help": "Enter SteamID or Steam64 ID"
+				},
+				"user": {
+					"name": "user",
+					"help": "Mention member or enter ID"
+				},
+				"not_found_steam": "Connected Steam profile not found",
+				"not_found_discord": "Connected Discord profile not found",
+				"not_found_user": "Discord user not found",
+				"no_options": "No options provided, see `/help`",
+				"field_steam": "SteamID",
+				"field_discord": "Discord account"
+			},
+			"vfcheck": {
+				"help": "Manage user verification autochecking",
+				"usage": "vfcheck",
+				"enable": {
+					"help": "Enable autochecking for account connectivity",
+					"usage": "enable",
+					"no_role": "Set verification role, before enabling this",
+					"done": "Autochecking enabled!\nWhen message is send by user in any channel, bot will check if user is verified, else removes role."
+				},
+				"disable": {
+					"help": "Disable autochecking for account connectivity",
+					"usage": "disable",
+					"done": "Autochecking disabled!"
+				},
+				"forced": {
+					"help": "Show verified users, that have forced property via `/verify`",
+					"usage": "forced",
+					"empty": "No forced users"
+				}
+			}
+		},
+		"ticketing": {
+			"embeds": {
+				"role_title": "Getting/Removing roles",
+				"role_value": "🟢 Obtaining a role:\n> Select an available role from the list below and follow the instructions.\n> ❗ In the created request, attach proofs.❗\n\n🔴 Removing a role:\n> Click the button below and select the roles you want to remove.\n\n📣 Alerts:\n> Click on the buttons below if you want to be notified of events on the server or other.",
+				"select": "Select role/-s",
+				"button_remove": "Remove roles",
+				"other": "Other role"
+			},
+			"listener": {
+				"none_selected": "",
+				"no_assigned": "Can't remove any role that you have.",
+				"remove_title": "Select roles you wish to remove.\n*You may not assign some of removed roles back.*",
+				"remove_failed": "Couldn't complete your role removal request. See message bellow.",
+				"remove_done": "Roles {roles} removed!",
+				"toggle_failed": "Couldn't add/remove requested role. See message bellow and report it to the server Administration.",
+				"toggle_added": "Successfully assigned {role} to you.",
+				"toggle_removed": "Successfully removed {role} from you.",
+				"ticket_exists": "You already have an opened ticket, please refer to {channel}.",
+				"cant_create": "Failed to crate new ticket. Contact the server Administration.",
+				"created": "Ticket created {channel}.",
+				"close_failed": "Couldn't close this ticket. Report this to bot developer.",
+				"no_member": "User that is requesting roles not found. Maybe, they left this server.",
+				"role_failed": "I was unable to assign roles to the user.",
+				"role_added": "Request approved, roles assigned to user.",
+				"role_dm": "{server}\n> Roles [{roles}] requested in ticket `role-{id}` assigned!\n-{mod}",
+				"role_none": "There aren't any roles that can be assigned. Manually assign user requested roles.",
+				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button."
+			},
+			"tpanel": {
+				"help": "Manage the panels of the ticketing module",
+				"usage": "tpanel",
+				"create": {
+					"help": "Send panel to selected channel",
+					"usage": "create <#Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel in which to create the panel"
+					},
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"empty_roles": "No roles assigned as usable for requesting via tickets.",
+					"done": "Panel created in {channel}!"
+				},
+				"update": {
+					"help": "Update existing panel",
+					"usage": "update <#Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel in which panel is located"
+					},
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"not_found": "Existing panel not found in selected channel",
+					"empty_roles": "No roles assigned as usable for requesting via tickets.",
+					"done": "Panel updated in {channel}!"
+				}
+			},
+			"tcount": {
+				"help": "Count how many tickets where accepted by moderator",
+				"usage": "tcount <@User> [days (1-31)]",
+				"user": {
+					"name": "user",
+					"help": "Enter ID/mention the user"
+				},
+				"days": {
+					"name": "days",
+					"help": "Enter how much days prior to check for, default is 7 days"
+				},
+				"done": "Moderator: {user} ({id})\nAccepted tickets: `{count}`"
+			},
+			"roles": {
+				"help": "Manage assignable roles via ticket system",
+				"usage": "roles",
+				"add": {
+					"help": "Add role",
+					"usage": "add <@Role> <type> [description]",
+					"role": {
+						"name": "role",
+						"help": "Select role which will be used added to the list"
+					},
+					"type": {
+						"name": "type",
+						"help": "Select role type"
+					},
+					"description": {
+						"name": "description",
+						"help": "Enter role description, which will be shown with the role (ignored for Custom type roles)"
+					},
+					"row": {
+						"name": "row",
+						"help": "![ Disabled ]!"
+					},
+					"no_role": "Role not found or is incorrect.",
+					"cant_interact": "I can't interact with selected role.",
+					"exists": "Role is already managed. Check `/roles view`",
+					"no_type": "Role type not found.",
+					"assign_max": "Maximum assignable roles managed (25). Clear the list, to add new roles.",
+					"toggle_max": "Maximum toggleable roles managed (5). Clear the list, to add new roles.",
+					"custom_max": "Maximum custom roles managed (25). Clear the list, to add new roles.",
+					"done": "Role {role} added to the list as `{type}` type role!"
+				},
+				"remove": {
+					"help": "Remove role from managed roles list",
+					"usage": "remove <Role ID>",
+					"id": {
+						"name": "id",
+						"help": "Enter ID of the role"
+					},
+					"no_role": "Role with provided ID is incorrect or the role is not managed (in database).",
+					"done": "Role with ID `{id}` removed."
+				},
+				"view": {
+					"help": "View managed roles",
+					"usage": "view",
+					"title": "Managed roles",
+					"none": "*None*"
+				}
+			}
+		}
+	}
+}

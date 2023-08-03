@@ -1,0 +1,78 @@
+plugins {
+	id 'java'
+	// Apply the application plugin to add support for building a CLI application in Java.
+	id 'application'
+	// ShadowJar
+	id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+// Getting version
+apply from: 'version.gradle'
+
+def version = loadVersion().getVersion()
+def group = 'union.App'
+
+repositories {
+	// Use Maven Central for resolving dependencies.
+	mavenCentral()
+	// JDA-Chewtils SNAPSHOTs
+	maven {
+		url 'https://m2.chew.pro/snapshots/'
+	}
+}
+
+dependencies {
+	// This dependency is used by the application.
+	implementation 'com.google.guava:guava:32.1.2-jre'
+
+	// JDA library
+	implementation 'net.dv8tion:JDA:5.0.0-beta.12'					// JDA library
+	implementation 'ch.qos.logback:logback-classic:1.4.8'			// Logging (required by JDA)
+
+	// Chewtils extentions
+	implementation 'pw.chew:jda-chewtils-commons:2.0-SNAPSHOT'		// Commons Package
+
+	// Tools
+	implementation 'com.jayway.jsonpath:json-path:2.8.0'			// json path-er
+	implementation 'org.xerial:sqlite-jdbc:3.42.0.0'				// sqlite database
+	implementation 'com.mysql:mysql-connector-j:8.1.0'				// mysql database (Union)
+
+	// Eval
+	implementation 'org.apache.groovy:groovy:4.0.13'				// Groovy - code evaluation
+
+	// Chewtils commands
+	implementation 'org.json:json:20230618'
+}
+
+// Changes builded libraries directory from 'libs' to 'lib'
+sourceSets {
+	libsDirName = 'lib'
+}
+
+javadoc {
+	options.tags = ['implNote:a:Implementation Note:']
+}
+
+// jar's Manifest
+jar {
+	manifest {
+		attributes 'Implementation-Title': 'VOTL bot',
+				   'Implementation-Version': version,
+				   'Implementation-Vendor': 'FiLe group',
+				   'Main-Class': group
+	}
+}
+
+// ShadowJar
+shadowJar {
+	archiveBaseName.set('VOTL')
+	archiveVersion.set(version)
+	archiveClassifier.set('')
+}
+
+application {
+	// Define the main class for the application.
+	mainClass = group
+}
+
+compileJava.options.encoding = 'UTF-8'

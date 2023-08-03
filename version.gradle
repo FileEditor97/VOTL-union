@@ -1,0 +1,85 @@
+class ApplicationVersion {
+    Integer major
+    Integer patch
+    Boolean release
+
+    ApplicationVersion(Integer major, Integer patch, Boolean release) {
+        this.major = major
+        this.patch = patch
+        this.release = release
+    }
+
+    private String getRelease() {
+        return this.release ? '' : '-SNAPSHOT'
+    }
+
+    String getVersion() {
+
+        return "$major.$patch" + this.getRelease()
+    }
+}
+
+
+ext.loadVersion = { ->
+
+    def versionPropertiesFile = file('version.properties')
+
+    if(!versionPropertiesFile.exists()) {
+        throw new Exception('No version.properties file found')
+    }
+
+    Properties versionProperties = new Properties()
+
+    versionPropertiesFile.withInputStream { stream ->
+        versionProperties.load(stream)
+    }
+    return new ApplicationVersion(
+        versionProperties.major.toInteger(),
+        versionProperties.patch.toInteger(),
+        versionProperties.release.toBoolean()
+    )
+
+}
+
+task majorVersionUpdate(group: 'versioning', description: 'Bump to next major version') {
+    doFirst {
+        def versionFile = file('version.properties')
+        ant.propertyfile(file: versionFile) {
+            entry(key: 'major', type: 'int', operation: '+', value: 1)
+            entry(key: 'patch', type: 'int', operation: '=', value: 0)
+        }
+    }
+}
+
+task patchVersionUpdate(group: 'versioning', description: 'Bump to next patch version') {
+    doFirst {
+        def versionFile = file('version.properties')
+        ant.propertyfile(file: versionFile) {
+            entry(key: 'patch', type: 'int', operation: '+', value: 1)
+        }
+    }
+}
+
+task releaseVersion(group: 'versioning', description: 'Make the version a release') {
+    doFirst {
+        def versionFile = file('version.properties')
+        ant.propertyfile(file: versionFile) {
+            entry(key: 'release', type: 'string', operation: '=', value: 'true')
+        }
+    }
+}
+
+task preReleaseVersion(group: 'versioning', description: 'Make the version a pre release') {
+    doFirst {
+        def versionFile = file('version.properties')
+        ant.propertyfile(file: versionFile) {
+            entry(key: 'release', type: 'string', operation: '=', value: 'false')
+        }
+    }
+}
+
+task getReleaseVersion(group: 'versioning', description: 'Return release version') {
+    doFirst {
+        println 'v' + loadVersion().getVersion()
+    }
+}

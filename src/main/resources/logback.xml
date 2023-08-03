@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<property name="DEV_HOME" value="./logs"/>
+
+	<timestamp key="TIME" datePattern="yyyy-MM-dd" />
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} %-24.-24thread %10.10X{jda.shard} %-15.-15logger{0} [ %-6level] %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+		<file>${DEV_HOME}/App-${TIME}.log</file>
+		<append>true</append>
+		<immediateFlush>true</immediateFlush>
+		<encoder>
+			<pattern>%d{dd.MM.yyyy HH:mm:ss} [%thread] [ %-6level] [%logger{0}] %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="info">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE" />
+	</root>
+</configuration>

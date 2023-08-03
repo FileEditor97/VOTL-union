@@ -269,7 +269,7 @@ public class GroupCmd extends CommandBase {
 					EmbedBuilder embedEdit = bot.getEmbedUtil().getEmbed(event);
 						if (action.getComponentId().equals("button:confirm")) {
 							bot.getDBUtil().group.add(groupId, guildId, false);
-							bot.getLogListener().onGroupJoin(event, groupId, groupName);
+							bot.getLogListener().onGroupJoined(event, groupId, groupName);
 
 							embedEdit.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done").replace("{group_name}", groupName));
 							event.getHook().editOriginalEmbeds(embedEdit.build()).setComponents().queue();

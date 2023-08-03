@@ -359,7 +359,7 @@ public class LogListener {
 		}
 
 		// Send log to added server's log channel
-		String channelId = db.guild.getGroupLogChannel(ownerId);
+		String channelId = db.guild.getGroupLogChannel(targetId);
 		if (channelId != null) {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
@@ -371,7 +371,7 @@ public class LogListener {
 		}
 	}
 
-	public void onGroupJoin(SlashCommandEvent event, Integer groupId, String name) {
+	public void onGroupJoined(SlashCommandEvent event, Integer groupId, String name) {
 		String guildId = event.getGuild().getId();
 		String guildName = event.getGuild().getName();
 		String masterId = db.group.getMaster(groupId);

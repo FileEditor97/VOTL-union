@@ -11,6 +11,7 @@ import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 
@@ -29,7 +30,7 @@ public class Helper {
 		this.db = dbUtil;
 		this.logListener = logListener;
 		
-		JDABuilder helperBuilder = JDABuilder.createLight(token);
+		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=rpAQib0T5v0"));
 		this.JDA = helperBuilder.build();
 	}
 

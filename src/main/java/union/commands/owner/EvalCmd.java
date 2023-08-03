@@ -92,13 +92,13 @@ public class EvalCmd extends CommandBase {
 				"```java\n"+
 					"%s\n"+
 					"```",
-				input
+				input.substring(0, 1000).concat("...")
 				), false)
 			.addField(lu.getLocalized(locale, "bot.owner.eval.output"), String.format(
 				"```groovy\n"+
 					"%s\n"+
 					"```",
-				output
+				output.substring(0, 1000).concat("...")
 				), false)
 			.setFooter(footer, null);
 

@@ -13,6 +13,7 @@ import union.objects.command.SlashCommandEvent;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
 
+import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Guild.Ban;
 import net.dv8tion.jda.api.entities.Member;
@@ -40,13 +41,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(event.getGuild()).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		Map<String, Object> ban = db.ban.getInfo(banId);
 		if (ban.isEmpty() || ban == null) {
@@ -64,13 +61,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(guild).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getSyncBanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, reason);
@@ -84,13 +77,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(event.getGuild()).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getUnbanEmbed(event.getGuildLocale(), banData, moderator, reason);
@@ -104,13 +93,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(guild).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getSyncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason);
@@ -122,13 +107,9 @@ public class LogListener {
 
 	public void onAutoUnban(Map<String, Object> banMap, Integer banId, Guild guild) {
 		String channelId = db.guild.getModLogChannel(guild.getId());
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = bot.JDA.getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getAutoUnbanEmbed(guild.getLocale(), banMap);
@@ -142,13 +123,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(event.getGuild()).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		Map<String, Object> ban = db.ban.getInfo(banId);
 		if (ban.isEmpty() || ban == null) {
@@ -168,13 +145,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(event.getGuild()).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		Map<String, Object> ban = db.ban.getInfo(banId);
 		if (ban.isEmpty() || ban == null) {
@@ -194,13 +167,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(event.getGuild()).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getKickEmbed(event.getGuildLocale(), target.getName(), target.getId(), moderator.getName(), moderator.getId(), reason, target.getAvatarUrl(), true);
@@ -214,13 +183,9 @@ public class LogListener {
 		String guildId = Objects.requireNonNull(guild).getId();
 
 		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getSyncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason);
@@ -232,13 +197,9 @@ public class LogListener {
 
 	public void helperOnSyncBan(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
 		String channelId = db.guild.getModLogChannel(master.getId());
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getHelperBanEmbed(master.getLocale(), groupId, target, reason, success, max);
@@ -250,13 +211,9 @@ public class LogListener {
 
 	public void helperOnSyncUnban(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
 		String channelId = db.guild.getModLogChannel(master.getId());
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getHelperUnbanEmbed(master.getLocale(), groupId, target, reason, success, max);
@@ -268,16 +225,31 @@ public class LogListener {
 
 	public void helperOnSyncKick(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
 		String channelId = db.guild.getModLogChannel(master.getId());
-		if (channelId == null) {
-			return;
-		}
+		if (channelId == null) return;
 		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
+		if (channel == null) return;
 
 		try {
 			MessageEmbed embed = logUtil.getHelperKickEmbed(master.getLocale(), groupId, target, reason, success, max);
+			channel.sendMessageEmbeds(embed).queue();
+		} catch (InsufficientPermissionException ex) {
+			return;
+		}
+	}
+
+	public void onHelperInform(Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
+		String masterId = db.group.getMaster(groupId);
+		if (masterId == null) return;
+		Guild master = bot.JDA.getGuildById(masterId);
+		if (master == null) return;
+
+		String channelId = db.guild.getModLogChannel(masterId);
+		if (channelId == null) return;
+		TextChannel channel = master.getTextChannelById(channelId);
+		if (channel == null) return;
+
+		try {
+			MessageEmbed embed = logUtil.getAuditLogEmbed(master.getLocale(), groupId, target, auditLogEntry);
 			channel.sendMessageEmbeds(embed).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
@@ -359,7 +331,7 @@ public class LogListener {
 		}
 
 		// Send log to added server's log channel
-		String channelId = db.guild.getGroupLogChannel(ownerId);
+		String channelId = db.guild.getGroupLogChannel(targetId);
 		if (channelId != null) {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
@@ -371,7 +343,7 @@ public class LogListener {
 		}
 	}
 
-	public void onGroupJoin(SlashCommandEvent event, Integer groupId, String name) {
+	public void onGroupJoined(SlashCommandEvent event, Integer groupId, String name) {
 		String guildId = event.getGuild().getId();
 		String guildName = event.getGuild().getName();
 		String masterId = db.group.getMaster(groupId);

@@ -78,8 +78,8 @@ public class KickCmd extends CommandBase {
 
 		if (dm) {
 			tm.getUser().openPrivateChannel().queue(pm -> {
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed().setColor(Constants.COLOR_FAILURE)
-					.setDescription("You were kicked from " + guild.getName() + ". | " + reason)
+				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+					.setDescription(lu.getLocalized(guild.getLocale(), "logger.pm.kicked").formatted(guild.getName(), reason))
 					.build();
 				pm.sendMessageEmbeds(embed).queue();
 			});
@@ -94,7 +94,7 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
-		tm.kick().reason(reason).queue(done -> {
+		tm.kick().reason(reason).queueAfter(1, TimeUnit.SECONDS, done -> {
 			// create embed
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)

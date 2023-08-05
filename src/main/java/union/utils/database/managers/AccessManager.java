@@ -2,7 +2,6 @@ package union.utils.database.managers;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import union.utils.database.LiteDBBase;
 import union.objects.CmdAccessLevel;
@@ -22,7 +21,7 @@ public class AccessManager extends LiteDBBase {
 	}
 
 	public void addUser(String guildId, String userId, CmdAccessLevel level) {
-		insert(USER_TABLE, List.of("guildId", "roleId", "level"), List.of(guildId, userId, level.getLevel()));
+		insert(USER_TABLE, List.of("guildId", "userId", "level"), List.of(guildId, userId, level.getLevel()));
 	}
 
 	public void removeRole(String roleId) {
@@ -53,19 +52,19 @@ public class AccessManager extends LiteDBBase {
 	public List<String> getAllRoles(String guildId) {
 		List<Object> data = select(ROLE_TABLE, "roleId", "guildId", guildId);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).collect(Collectors.toList());
+		return data.stream().map(obj -> String.valueOf(obj)).toList();
 	}
 
 	public List<String> getRoles(String guildId, CmdAccessLevel level) {
 		List<Object> data = select(ROLE_TABLE, "roleId", List.of("guildId", "level"), List.of(guildId, level.getLevel()));
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).collect(Collectors.toList());
+		return data.stream().map(obj -> String.valueOf(obj)).toList();
 	}
 
 	public List<String> getAllUsers(String guildId) {
 		List<Object> data = select(USER_TABLE, "userId", "guildId", guildId);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).collect(Collectors.toList());
+		return data.stream().map(obj -> String.valueOf(obj)).toList();
 	}
 
 	public boolean isMod(String roleId) {

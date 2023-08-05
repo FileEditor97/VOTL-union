@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.WebhookType;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -32,7 +33,7 @@ public class WebhookCmd extends CommandBase {
 		this.name = "webhook";
 		this.path = "bot.webhook";
 		this.children = new SlashCommand[]{new ShowList(bot), new Create(bot), new Select(bot),
-			new Remove(bot), new Move(bot)};
+			new Remove(bot), new Move(bot), new Here(bot)};
 		this.botPermissions = new Permission[]{Permission.MANAGE_WEBHOOKS};
 		this.category = CmdCategory.WEBHOOK;
 		this.module = CmdModule.WEBHOOK;
@@ -40,9 +41,7 @@ public class WebhookCmd extends CommandBase {
 	}
 
 	@Override
-	protected void execute(SlashCommandEvent event)	{
-
-	}
+	protected void execute(SlashCommandEvent event)	{}
 
 	private class ShowList extends SlashCommand {
 
@@ -124,22 +123,22 @@ public class WebhookCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			Guild guild = Objects.requireNonNull(event.getGuild());
+			event.deferReply(true).queue();
 
 			String setName = event.optString("name", "Default name").trim();
 			GuildChannel channel = event.optGuildChannel("channel", event.getGuildChannel());
 
 			if (setName.isEmpty() || setName.length() > 100) {
-				createError(event, path+".invalid_range");
+				editError(event, path+".invalid_range");
 				return;
 			}
 
 			try {
 				// DYK, guildChannel doesn't have WebhookContainer! no shit
-				guild.getTextChannelById(channel.getId()).createWebhook(setName).reason("By "+event.getUser().getName()).queue(
+				event.getGuild().getTextChannelById(channel.getId()).createWebhook(setName).reason("By "+event.getUser().getName()).queue(
 					webhook -> {
 						bot.getDBUtil().webhook.add(webhook.getId(), webhook.getGuild().getId(), webhook.getToken());
-						createReplyEmbed(event,
+						editHookEmbed(event,
 							bot.getEmbedUtil().getEmbed(event).setDescription(
 								lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName())
 							).build()
@@ -147,7 +146,7 @@ public class WebhookCmd extends CommandBase {
 					}
 				);
 			} catch (PermissionException ex) {
-				createPermError(event, ex.getPermission(), true);
+				editPermError(event, ex.getPermission(), true);
 				ex.printStackTrace();
 			}
 		}
@@ -269,6 +268,66 @@ public class WebhookCmd extends CommandBase {
 			GuildChannel channel = event.optGuildChannel("channel");
 
 			if (!channel.getType().equals(ChannelType.TEXT)) {
+				createError(event, path+".error_channel", "Selected channel is not Text Channel.");
+				return;
+			}
+
+			TextChannel textChannel = guild.getTextChannelById(channel.getId());
+			if (textChannel == null) {
+				createError(event, path+".error_channel", "Selected channel not found in this server.\nChannel ID: `%s`".formatted(channel.getId()));
+				return;
+			}
+
+			event.getJDA().retrieveWebhookById(webhookId).queue(
+				webhook -> {
+					if (bot.getDBUtil().webhook.exists(webhookId)) {
+						bot.getDBUtil().guild.setLastWebhookId(guild.getId(), webhookId);
+						webhook.getManager().setChannel(textChannel).reason("By "+event.getUser().getName()).queue(
+							wm -> {
+								createReplyEmbed(event,
+									bot.getEmbedUtil().getEmbed(event).setDescription(
+										lu.getText(event, path+".done")
+											.replace("{webhook_name}", webhook.getName())
+											.replace("{channel}", channel.getName())
+									).build()
+								);
+							},
+							failure -> {
+								createError(event, "errors.unknown", failure.getMessage());
+							}
+						);
+					} else {
+						createError(event, path+".error_not_registered");
+					}
+				}, failure -> {
+					createError(event, path+".error_not_found", failure.getMessage());
+				}
+			);
+		}
+
+	}
+
+	private class Here extends SlashCommand {
+
+		public Here(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "here";
+			this.path = "bot.webhook.here";
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			Guild guild = event.getGuild();
+
+			String webhookId = bot.getDBUtil().guild.getLastWebhookId(guild.getId());
+			if (webhookId == null) {
+				createError(event, path+".id_null");
+				return;
+			}
+			
+			GuildChannel channel = event.getGuildChannel();
+			if (!channel.getType().equals(ChannelType.TEXT)) {
 				createError(event, path+".error_channel", "Selected channel is not Text Channel");
 				return;
 			}
@@ -300,4 +359,5 @@ public class WebhookCmd extends CommandBase {
 		}
 
 	}
+
 }

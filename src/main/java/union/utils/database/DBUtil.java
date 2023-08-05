@@ -161,7 +161,8 @@ public class DBUtil {
 			"CREATE TABLE 'userAccess' ('guildId' TEXT NOT NULL, 'userId' TEXT NOT NULL, 'level' INTEGER NOT NULL, FOREIGN KEY('guildId') REFERENCES 'guild'('guildId'))",
 			"DROP TABLE 'groupMaster'", "DROP TABLE 'groupSync'", "CREATE TABLE 'groupMaster' ('groupId' INTEGER, 'masterId' TEXT NOT NULL, 'name' TEXT, 'isShared' INTEGER NOT NULL DEFAULT 0, PRIMARY KEY('groupId' AUTOINCREMENT))",
 			"CREATE TABLE 'groupMembers' ('groupId' INTEGER NOT NULL, 'guildId' TEXT NOT NULL, 'canManage' INTEGER NOT NULL DEFAULT 0, FOREIGN KEY('groupId') REFERENCES 'groupMaster'('groupId'))"), // 5 -> 6
-		List.of("ALTER TABLE 'groupMembers' ADD 'whitelisted' INTEGER NOT NULL DEFAULT 0", "CREATE TABLE sqlite_sequence(name,seq)") // 6 -> 7
+		List.of("ALTER TABLE 'groupMembers' ADD 'whitelisted' INTEGER NOT NULL DEFAULT 0"), // 6 -> 7
+		List.of("ALTER TABLE 'guild' ADD 'lastWebhook' TEXT", "ALTER TABLE 'guild' ADD 'appealLink' TEXT") // 7 -> 8
 	);
 
 	private void updateDB() {

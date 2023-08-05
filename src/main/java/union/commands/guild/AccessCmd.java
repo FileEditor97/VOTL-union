@@ -199,8 +199,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			String userId = member.getId();
-			Guild guild = Objects.requireNonNull(event.getGuild());
-			String guildId = guild.getId();
+			String guildId = event.getGuild().getId();
 
 			if (member.isOwner() || member.getUser().isBot()) {
 				editError(event, "bot.guild.access.add.incorrect_user");
@@ -243,8 +242,8 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			String guildId = event.getId();
-			String userId = event.getId();
+			String userId = user.getId();
+			String guildId = event.getGuild().getId();
 
 			if (!bot.getDBUtil().access.isOperator(guildId, userId)) {
 				editError(event, "bot.guild.access.remove.operator.not_operator");

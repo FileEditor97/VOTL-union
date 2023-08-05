@@ -11,6 +11,7 @@ import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 
@@ -21,20 +22,39 @@ import ch.qos.logback.classic.Logger;
 public class Helper {
 
 	private final JDA JDA;
+	private final JDA botJDA;
 	private final DBUtil db;
 	private final LogListener logListener;
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Helper.class);
+
+	private final GuildListener guildListener;
 	
-	public Helper(DBUtil dbUtil, LogListener logListener, final String token) throws Exception {
+	public Helper(JDA botJDA, DBUtil dbUtil, LogListener logListener, final String token) throws Exception {
+		this.botJDA = botJDA;
 		this.db = dbUtil;
 		this.logListener = logListener;
+
+		guildListener = new GuildListener(this);
 		
-		JDABuilder helperBuilder = JDABuilder.createLight(token);
+		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=rpAQib0T5v0"))
+			.addEventListeners(guildListener);
 		this.JDA = helperBuilder.build();
 	}
 
 	public JDA getJDA() {
 		return JDA;
+	}
+
+	public JDA getBotJDA() {
+		return botJDA;
+	}
+
+	public DBUtil getDBUtil() {
+		return db;
+	}
+
+	public LogListener getLogListener() {
+		return logListener;
 	}
 
 	public Logger getLogger() {

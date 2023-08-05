@@ -208,7 +208,7 @@ public class InteractionListener extends ListenerAdapter {
 		} else if (buttonId.equals("ticket:approve")) {
 			if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
 				// User has no Mod access (OR admin, server owner, dev) to approve role request
-				replyError(event, "errors.interaction.not_mod");
+				replyError(event, "errors.interaction.no_access");
 				return;
 			}
 			String channelId = event.getChannel().getId();

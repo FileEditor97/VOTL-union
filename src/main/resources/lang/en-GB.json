@@ -356,6 +356,15 @@
 				"error_channel": "Couldn't move webhook to that channel.",
 				"done": "Successfully moved webhook `{webhook_name}` to channel `{channel}`!"
 			},
+			"here": {
+				"help": "Move last used webhook to this channel",
+				"usage": "here",
+				"id_null": "There is no last used webhook. Use `/webhook move` to set it.",
+				"error_not_registered": "Selected webhook is not registered.",
+				"error_not_found": "Couldn't find webhook by entered ID.",
+				"error_channel": "Couldn't move webhook to that channel.",
+				"done": "Successfully moved webhook `{webhook_name}` to channel `{channel}`!"
+			},
 			"add": {
 				"help": "Add webhook to the bot's DB",
 				"create": {

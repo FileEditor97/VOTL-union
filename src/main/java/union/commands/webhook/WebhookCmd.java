@@ -32,7 +32,7 @@ public class WebhookCmd extends CommandBase {
 		this.name = "webhook";
 		this.path = "bot.webhook";
 		this.children = new SlashCommand[]{new ShowList(bot), new Create(bot), new Select(bot),
-			new Remove(bot), new Move(bot)};
+			new Remove(bot), new Move(bot), new Here(bot)};
 		this.botPermissions = new Permission[]{Permission.MANAGE_WEBHOOKS};
 		this.category = CmdCategory.WEBHOOK;
 		this.module = CmdModule.WEBHOOK;
@@ -276,6 +276,7 @@ public class WebhookCmd extends CommandBase {
 			event.getJDA().retrieveWebhookById(webhookId).queue(
 				webhook -> {
 					if (bot.getDBUtil().webhook.exists(webhookId)) {
+						bot.getDBUtil().guild.setLastWebhookId(guild.getId(), webhookId);
 						webhook.getManager().setChannel(guild.getTextChannelById(channel.getId())).reason("By "+event.getUser().getName()).queue(
 							wm -> {
 								createReplyEmbed(event,
@@ -300,4 +301,58 @@ public class WebhookCmd extends CommandBase {
 		}
 
 	}
+
+	private class Here extends SlashCommand {
+
+		public Here(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "here";
+			this.path = "bot.webhook.here";
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			Guild guild = event.getGuild();
+
+			String webhookId = bot.getDBUtil().guild.getLastWebhookId(guild.getId());
+			if (webhookId == null) {
+				createError(event, path+".id_null");
+				return;
+			}
+			
+			GuildChannel channel = event.getGuildChannel();
+			if (!channel.getType().equals(ChannelType.TEXT)) {
+				createError(event, path+".error_channel", "Selected channel is not Text Channel");
+				return;
+			}
+
+			event.getJDA().retrieveWebhookById(webhookId).queue(
+				webhook -> {
+					if (bot.getDBUtil().webhook.exists(webhookId)) {
+						webhook.getManager().setChannel(guild.getTextChannelById(channel.getId())).reason("By "+event.getUser().getName()).queue(
+							wm -> {
+								createReplyEmbed(event,
+									bot.getEmbedUtil().getEmbed(event).setDescription(
+										lu.getText(event, path+".done")
+											.replace("{webhook_name}", webhook.getName())
+											.replace("{channel}", channel.getName())
+									).build()
+								);
+							},
+							failure -> {
+								createError(event, "errors.unknown", failure.getMessage());
+							}
+						);
+					} else {
+						createError(event, path+".error_not_registered");
+					}
+				}, failure -> {
+					createError(event, path+".error_not_found", failure.getMessage());
+				}
+			);
+		}
+
+	}
+
 }

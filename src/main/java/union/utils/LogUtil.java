@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
@@ -12,10 +13,12 @@ import union.objects.constants.Constants;
 import union.utils.message.EmbedUtil;
 import union.utils.message.LocaleUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.Guild.Ban;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
@@ -320,6 +323,23 @@ public class LogUtil {
 			.setTitle(lu.getLocalized(locale, path+"group.renamed"))
 			.addField(lu.getLocalized(locale, path+"group.oldname"), oldName, true)
 			.addField(lu.getLocalized(locale, path+"group.admin"), adminMention, false)
+			.build();
+	}
+
+	@Nonnull
+	public MessageEmbed getAuditLogEmbed(DiscordLocale locale, Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
+		String title = switch (auditLogEntry.getType()) {
+			case BAN -> lu.getLocalized(locale, path+"audit.banned").formatted(target.getName());
+			case UNBAN -> lu.getLocalized(locale, path+"audit.unbanned").formatted(target.getName());
+			default -> lu.getLocalized(locale, path+"audit.default").formatted(target.getName());
+		};
+		return embedUtil.getEmbed().setColor(Constants.COLOR_WARNING)
+			.setAuthor(title, null, target.getIconUrl())
+			.addField(lu.getLocalized(locale, path+"audit.admin"), auditLogEntry.getUser().getAsMention(), true)
+			.addField(lu.getLocalized(locale, path+"user"), UserSnowflake.fromId(auditLogEntry.getTargetId()).getAsMention(), true)
+			.addField(lu.getLocalized(locale, path+"audit.reason"), Optional.ofNullable(auditLogEntry.getReason()).orElse("none") , false)
+			.setFooter(lu.getLocalized(locale, path+"audit.group_id").formatted(groupId.toString()))
+			.setTimestamp(Instant.now())
 			.build();
 	}
 

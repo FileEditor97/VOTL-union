@@ -89,4 +89,14 @@ public class GuildSettingsManager extends LiteDBBase {
 		return String.valueOf(data);
 	}
 
+	public void setAppealLink(String guildId, String link) {
+		update(TABLE, "appealLink", link, "guildId", guildId);
+	}
+
+	public String getAppealLink(String guildId) {
+		Object data = selectOne(TABLE, "appealLink", "guildId", guildId);
+		if (data == null) return null;
+		return String.valueOf(data);
+	}
+
 }

@@ -37,7 +37,7 @@
 		},
 		"interaction": {
 			"no_values": "None of the values has been selected.",
-			"not_mod": "You cannot perform this action because you do not have the required access level."
+			"no_access": "You cannot perform this action because you do not have the required access level."
 		}
 	},
 	"misc": {
@@ -47,6 +47,13 @@
 		"command": {
 			"help": "no help available",
 			"usage": "no usage description"
+		},
+		"time": {
+			"seconds": "seconds",
+			"minutes": "minutes",
+			"hours": "hours",
+			"days": "days",
+			"weeks": "weeks"
 		}
 	},
 	"modules": {
@@ -125,6 +132,14 @@
 			"renamed": "Server Group was renamed",
 			"oldname": "Previous Group name"
 		},
+		"audit": {
+			"group_id": "Group ID: #%s",
+			"admin": "Action by",
+			"banned": "User was banned in %s",
+			"unbanned": "User was unbanned in %s",
+			"default": "Action performed in %s",
+			"reason": "Reason"
+		},
 		"verify": {
 			"added": "User verified | {user_tag}",
 			"removed": "User unverified | {user_tag}",
@@ -136,6 +151,12 @@
 			"closed": "Ticket closed | {ticket}",
 			"roles_title": "Roles issued | {ticket}",
 			"roles": "Assigned roles"
+		},
+		"pm": {
+			"banned_temp": "You were banned from %s server for %s. | %s",
+			"banned": "You were permamently banned from %s server. | %s",
+			"kicked": "You were kicked from %s server. | %s",
+			"appeal": "\nAppeal this action by following this link:\n> %s"
 		}
 	},
 	"bot": {
@@ -184,6 +205,16 @@
 					},
 					"no_color": "Incorrect color string provided, check `/help`",
 					"done": "Embed color updated to `{color}`"
+				},
+				"appeal": {
+					"help": "Set appeal link, that will be send to users before getting banned/kicked",
+					"usage": "appeal <URL link>",
+					"link": {
+						"name": "link",
+						"help": "Enter appeal URL link"
+					},
+					"not_valid": "Provided URL link is not valid.",
+					"done": "Appeal link set to `{link}`"
 				}
 			},
 			"module": {

@@ -9,16 +9,22 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import union.App;
 import union.utils.exception.FormatterException;
 
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
 public class TimeUtil {
 
 	private final Pattern timePatternFull = Pattern.compile("^(([0-9]+)([smhdw]{1}))+$", Pattern.CASE_INSENSITIVE);
 	private final Pattern timePattern = Pattern.compile("([0-9]+)([smhdw]{1})", Pattern.CASE_INSENSITIVE);
+
+	private final LocaleUtil lu;
 	
-	public TimeUtil() {}
+	public TimeUtil(App bot) {
+		this.lu = bot.getLocaleUtil();
+	}
 
 	private enum TimeFormats{
 		SECONDS('s', 1),
@@ -115,6 +121,30 @@ public class TimeUtil {
 		if (value > 0) buffer.append(value+" minutes ");
 		value = duration.toSecondsPart();
 		if (value > 0) buffer.append(value+" seconds");
+
+		return buffer.toString();
+	}
+
+	public String durationToLocalizedString(DiscordLocale locale, Duration duration) {
+		if (duration.isZero()) {
+			return "0 %s".formatted(lu.getLocalized(locale, "misc.time.seconds"));
+		}
+
+		StringBuffer buffer = new StringBuffer();
+		Long days = duration.toDaysPart();
+		if (days >= 7) {
+			Integer weeks = Math.floorMod(days, 7);
+			buffer.append("%s %s ".formatted(weeks, lu.getLocalized(locale, "misc.time.weeks")));
+			days -= weeks*7;
+		}
+		if (days > 0) buffer.append("%s %s ".formatted(days, lu.getLocalized(locale, "misc.time.days")));
+		
+		Integer value = duration.toHoursPart();
+		if (value > 0) buffer.append("%s %s ".formatted(value, lu.getLocalized(locale, "misc.time.hours")));
+		value = duration.toMinutesPart();
+		if (value > 0) buffer.append("%s %s ".formatted(value, lu.getLocalized(locale, "misc.time.minutes")));
+		value = duration.toSecondsPart();
+		if (value > 0) buffer.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.seconds")));
 
 		return buffer.toString();
 	}

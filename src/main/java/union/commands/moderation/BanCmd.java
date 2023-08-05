@@ -30,6 +30,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
@@ -97,14 +98,21 @@ public class BanCmd extends CommandBase {
 
 		if (dm) {
 			tu.openPrivateChannel().queue(pm -> {
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed().setColor(Constants.COLOR_FAILURE)
-					.setDescription("You were banned from " + guild.getName() + (duration.isZero() ? "" : " for " + bot.getTimeUtil().durationToString(duration)) + ". | " + reason)
+				DiscordLocale locale = guild.getLocale();
+				String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
+				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+					.setDescription(duration.isZero() ? 
+						lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
+						:
+						lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, duration), reason)
+					)
+					.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
 					.build();
 				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 			});
 		}
 
-		guild.retrieveBan(tu).queue(ban -> {
+		guild.retrieveBan(tu).queueAfter(2, TimeUnit.SECONDS, ban -> {
 			Map<String, Object> banData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
 			if (!banData.isEmpty()) {
 				Integer caseId = Integer.valueOf(banData.get("banId").toString());

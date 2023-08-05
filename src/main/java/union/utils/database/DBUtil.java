@@ -162,7 +162,7 @@ public class DBUtil {
 			"DROP TABLE 'groupMaster'", "DROP TABLE 'groupSync'", "CREATE TABLE 'groupMaster' ('groupId' INTEGER, 'masterId' TEXT NOT NULL, 'name' TEXT, 'isShared' INTEGER NOT NULL DEFAULT 0, PRIMARY KEY('groupId' AUTOINCREMENT))",
 			"CREATE TABLE 'groupMembers' ('groupId' INTEGER NOT NULL, 'guildId' TEXT NOT NULL, 'canManage' INTEGER NOT NULL DEFAULT 0, FOREIGN KEY('groupId') REFERENCES 'groupMaster'('groupId'))"), // 5 -> 6
 		List.of("ALTER TABLE 'groupMembers' ADD 'whitelisted' INTEGER NOT NULL DEFAULT 0"), // 6 -> 7
-		List.of("ALTER TABLE 'guild' ADD 'lastWebhook' TEXT") // 7 -> 8
+		List.of("ALTER TABLE 'guild' ADD 'lastWebhook' TEXT", "ALTER TABLE 'guild' ADD 'appealLink' TEXT") // 7 -> 8
 	);
 
 	private void updateDB() {

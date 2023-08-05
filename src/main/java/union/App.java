@@ -107,7 +107,7 @@ public class App {
 		messageUtil	= new MessageUtil(this);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this);
-		timeUtil	= new TimeUtil();
+		timeUtil	= new TimeUtil(this);
 		logUtil		= new LogUtil(this);
 		steamUtil	= new SteamUtil();
 
@@ -118,7 +118,7 @@ public class App {
 		messagesListener	= new MessageListener(this);
 		commandListener		= new CommandListener();
 
-		executorService = Executors.newScheduledThreadPool(3, r -> (new Thread(r, "union Scheduler")));
+		executorService = Executors.newScheduledThreadPool(4, r -> (new Thread(r, "UTB Scheduler")));
 		scheduledCheck	= new ScheduledCheck(this);
 		
 		executorService.scheduleAtFixedRate(() -> scheduledCheck.checkUnbans(), 5, 15, TimeUnit.MINUTES);
@@ -291,7 +291,7 @@ public class App {
 		instance.logger.info("Success start");
 
 		try {
-			helper = new Helper(instance.getDBUtil(), instance.getLogListener(), instance.getFileManager().getNullableString("config", "helper-token"));
+			helper = new Helper(instance.JDA, instance.getDBUtil(), instance.getLogListener(), instance.getFileManager().getNullableString("config", "helper-token"));
 			helper.getLogger().info("Helper started");
 		} catch (Exception ex) {
 			instance.logger.info("Was unable to start helper");

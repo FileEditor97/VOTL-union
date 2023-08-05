@@ -333,9 +333,10 @@ public class LogUtil {
 			case UNBAN -> lu.getLocalized(locale, path+"audit.unbanned").formatted(target.getName());
 			default -> lu.getLocalized(locale, path+"audit.default").formatted(target.getName());
 		};
+		String admin = Optional.ofNullable(auditLogEntry.getUser()).map(user -> user.getAsMention()).orElse("none");
 		return embedUtil.getEmbed().setColor(Constants.COLOR_WARNING)
 			.setAuthor(title, null, target.getIconUrl())
-			.addField(lu.getLocalized(locale, path+"audit.admin"), auditLogEntry.getUser().getAsMention(), true)
+			.addField(lu.getLocalized(locale, path+"audit.admin"), admin, true)
 			.addField(lu.getLocalized(locale, path+"user"), UserSnowflake.fromId(auditLogEntry.getTargetId()).getAsMention(), true)
 			.addField(lu.getLocalized(locale, path+"audit.reason"), Optional.ofNullable(auditLogEntry.getReason()).orElse("none") , false)
 			.setFooter(lu.getLocalized(locale, path+"audit.group_id").formatted(groupId.toString()))

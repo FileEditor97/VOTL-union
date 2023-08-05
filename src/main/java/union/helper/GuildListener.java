@@ -20,7 +20,7 @@ public class GuildListener extends ListenerAdapter {
 		if (event.getEntry().getType() == ActionType.BAN || event.getEntry().getType() == ActionType.UNBAN) {
 			User admin = event.getEntry().getUser();
 			// Ignore actions made by both bots
-			if (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getBotJDA().getSelfUser())) return;
+			if (admin != null && (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getBotJDA().getSelfUser()))) return;
 
 			// Get master guilds IDs and send logs to them
 			List<Integer> groupIds = helper.getDBUtil().group.getGuildGroups(event.getGuild().getId());

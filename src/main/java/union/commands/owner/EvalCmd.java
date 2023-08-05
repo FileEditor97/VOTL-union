@@ -60,9 +60,9 @@ public class EvalCmd extends CommandBase {
 			"bot", bot,
 			"event", event,
 			"jda", event.getJDA(),
-			"guild", (event.isFromGuild() ? event.getGuild() : null),
+			"guild", (event.isFromGuild() ? event.getGuild() : "null"),
 			"client", event.getClient(),
-			"helper", bot.getHelper()
+			"helper", (bot.getHelper() != null ? bot.getHelper() : "null")
 		);
 
 		Binding binding = new Binding(variables);
@@ -92,13 +92,13 @@ public class EvalCmd extends CommandBase {
 				"```java\n"+
 					"%s\n"+
 					"```",
-				input.substring(0, 1000).concat("...")
+				input.substring(0, Math.min(input.length(), 1000))
 				), false)
 			.addField(lu.getLocalized(locale, "bot.owner.eval.output"), String.format(
 				"```groovy\n"+
 					"%s\n"+
 					"```",
-				output.substring(0, 1000).concat("...")
+				output.substring(0, Math.min(output.length(), 1000))
 				), false)
 			.setFooter(footer, null);
 

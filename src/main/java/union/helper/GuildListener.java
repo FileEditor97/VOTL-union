@@ -20,7 +20,7 @@ public class GuildListener extends ListenerAdapter {
 		if (event.getEntry().getType() == ActionType.BAN || event.getEntry().getType() == ActionType.UNBAN) {
 			UserSnowflake admin = UserSnowflake.fromId(event.getEntry().getUserId());
 			// Ignore actions made by both bots
-			if (admin != null && ( admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getBotJDA().getSelfUser()) )) return;
+			if (admin != null && (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getBotJDA().getSelfUser()))) return;
 
 			// Get master guilds IDs and send logs to them
 			helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> 

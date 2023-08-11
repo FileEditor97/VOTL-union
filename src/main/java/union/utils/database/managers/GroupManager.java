@@ -110,6 +110,12 @@ public class GroupManager extends LiteDBBase {
 		return data.stream().map(obj -> (Integer) obj).collect(Collectors.toList());
 	}
 
+	public List<String> getGroupManagers(Integer groupId) {
+		List<Object> data = select(TABLE_MEMBERS, "guildId", List.of("groupId", "canManage"), List.of(groupId, 1));
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(obj -> String.valueOf(obj)).collect(Collectors.toList());
+	} 
+
 	public Boolean canManage(Integer groupId, String guildId) {
 		Object data = selectOne(TABLE_MEMBERS, "canManage", List.of("groupId", "guildId"), List.of(groupId, guildId));
 		if (data == null) return false;

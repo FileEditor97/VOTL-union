@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import union.App;
 import union.objects.constants.Constants;
@@ -333,12 +334,22 @@ public class LogUtil {
 			case UNBAN -> lu.getLocalized(locale, path+"audit.unbanned").formatted(target.getName());
 			default -> lu.getLocalized(locale, path+"audit.default").formatted(target.getName());
 		};
-		String admin = Optional.ofNullable(auditLogEntry.getUser()).map(user -> user.getAsMention()).orElse("none");
+		String admin = UserSnowflake.fromId(auditLogEntry.getUserId()).getAsMention();
 		return embedUtil.getEmbed().setColor(Constants.COLOR_WARNING)
 			.setAuthor(title, null, target.getIconUrl())
 			.addField(lu.getLocalized(locale, path+"audit.admin"), admin, true)
 			.addField(lu.getLocalized(locale, path+"user"), UserSnowflake.fromId(auditLogEntry.getTargetId()).getAsMention(), true)
 			.addField(lu.getLocalized(locale, path+"audit.reason"), Optional.ofNullable(auditLogEntry.getReason()).orElse("none") , false)
+			.setFooter(lu.getLocalized(locale, path+"audit.group_id").formatted(groupId.toString()))
+			.setTimestamp(Instant.now())
+			.build();
+	}
+
+	@Nonnull
+	public MessageEmbed getBotLeaveEmbed(DiscordLocale locale, Integer groupId, @Nullable Guild guild, String guildId) {
+		return embedUtil.getEmbed().setColor(Constants.COLOR_WARNING)
+			.setAuthor(lu.getLocalized(locale, path+"audit.leave_guild").formatted((guild != null ? guild.getName() : "unknown")))
+			.addField(lu.getLocalized(locale, path+"audit.guild_id"), guildId, true)
 			.setFooter(lu.getLocalized(locale, path+"audit.group_id").formatted(groupId.toString()))
 			.setTimestamp(Instant.now())
 			.build();

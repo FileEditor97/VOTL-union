@@ -26,8 +26,8 @@ dependencies {
 	implementation 'com.google.guava:guava:32.1.2-jre'
 
 	// JDA library
-	implementation 'net.dv8tion:JDA:5.0.0-beta.12'					// JDA library
-	implementation 'ch.qos.logback:logback-classic:1.4.8'			// Logging (required by JDA)
+	implementation 'net.dv8tion:JDA:5.0.0-beta.13'					// JDA library
+	implementation 'ch.qos.logback:logback-classic:1.4.11'			// Logging (required by JDA)
 
 	// Chewtils extentions
 	implementation 'pw.chew:jda-chewtils-commons:2.0-SNAPSHOT'		// Commons Package

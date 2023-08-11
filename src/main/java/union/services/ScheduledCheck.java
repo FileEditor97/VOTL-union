@@ -70,7 +70,7 @@ public class ScheduledCheck {
 					};
 
 					db.verifyCache.removeByDiscord(cacheDiscordId);
-					removeRoles.add(account);
+					removeRoles.add(Map.of("discord_id", cacheDiscordId, "steam_id", steam64));
 				} else {
 					String discordId = account.get("discord_id");
 					// if exists in cache
@@ -78,7 +78,7 @@ public class ScheduledCheck {
 						// if same - skip
 						if (cacheDiscordId.equals(discordId)) return;
 						// duplicate, remove roles from previous discord account
-						removeRoles.add(Map.of("discord_id", cacheDiscordId, "steam_id", steam64));
+						removeRoles.add(account);
 						db.verifyCache.removeByDiscord(cacheDiscordId);
 					} else if (db.verifyCache.isVerified(discordId)) {
 						// exist discordId, but no steam64 (probably forced user)

@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import union.App;
 import union.objects.command.SlashCommandEvent;
 import union.utils.LogUtil;
@@ -17,7 +19,6 @@ import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Guild.Ban;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -52,8 +53,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getBanEmbed(event.getGuildLocale(), ban, target.getAvatarUrl());
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getBanEmbed(event.getGuildLocale(), ban, target.getAvatarUrl())
+			).queue();
 		} catch (InsufficientPermissionException ex) {}
 	}
 	
@@ -66,8 +68,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getSyncBanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, reason);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getSyncBanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, reason)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -82,8 +85,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getUnbanEmbed(event.getGuildLocale(), banData, moderator, reason);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getUnbanEmbed(event.getGuildLocale(), banData, moderator, reason)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -98,8 +102,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getSyncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getSyncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -112,8 +117,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getAutoUnbanEmbed(guild.getLocale(), banMap);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getAutoUnbanEmbed(guild.getLocale(), banMap)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -134,8 +140,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getReasonChangeEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), oldReason, oldReason);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getReasonChangeEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), oldReason, oldReason)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -156,8 +163,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getDurationChangeEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), timeStart, oldDuration, newTime);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getDurationChangeEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), timeStart, oldDuration, newTime)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -172,8 +180,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getKickEmbed(event.getGuildLocale(), target.getName(), target.getId(), moderator.getName(), moderator.getId(), reason, target.getAvatarUrl(), true);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getKickEmbed(event.getGuildLocale(), target.getName(), target.getId(), moderator.getName(), moderator.getId(), reason, target.getAvatarUrl(), true)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -188,8 +197,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getSyncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getSyncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -202,8 +212,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getHelperBanEmbed(master.getLocale(), groupId, target, reason, success, max);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getHelperBanEmbed(master.getLocale(), groupId, target, reason, success, max)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -216,8 +227,9 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getHelperUnbanEmbed(master.getLocale(), groupId, target, reason, success, max);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getHelperUnbanEmbed(master.getLocale(), groupId, target, reason, success, max)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -230,14 +242,15 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getHelperKickEmbed(master.getLocale(), groupId, target, reason, success, max);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getHelperKickEmbed(master.getLocale(), groupId, target, reason, success, max)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
 	}
 
-	public void onHelperInform(Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
+	public void helperInformAction(Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
 		String masterId = db.group.getMaster(groupId);
 		if (masterId == null) return;
 		Guild master = bot.JDA.getGuildById(masterId);
@@ -249,8 +262,29 @@ public class LogListener {
 		if (channel == null) return;
 
 		try {
-			MessageEmbed embed = logUtil.getAuditLogEmbed(master.getLocale(), groupId, target, auditLogEntry);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getAuditLogEmbed(master.getLocale(), groupId, target, auditLogEntry)
+			).queue();
+		} catch (InsufficientPermissionException ex) {
+			return;
+		}
+	}
+
+	public void helperInformLeave(Integer groupId, @Nullable Guild guild, String guildId) {
+		String masterId = db.group.getMaster(groupId);
+		if (masterId == null) return;
+		Guild master = bot.JDA.getGuildById(masterId);
+		if (master == null) return;
+
+		String channelId = db.guild.getModLogChannel(masterId);
+		if (channelId == null) return;
+		TextChannel channel = master.getTextChannelById(channelId);
+		if (channel == null) return;
+
+		try {
+			channel.sendMessageEmbeds(
+				logUtil.getBotLeaveEmbed(master.getLocale(), groupId, guild, guildId)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -270,8 +304,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getGroupCreationEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, event.getGuild().getIconUrl(), groupId, name);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getGroupCreationEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, event.getGuild().getIconUrl(), groupId, name)
+			).queue();
 		} catch (InsufficientPermissionException ex) {
 			return;
 		}
@@ -295,8 +330,9 @@ public class LogListener {
 			}
 
 			try {
-				MessageEmbed embed = logUtil.getGroupMemberDeletedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, name);
-				channel.sendMessageEmbeds(embed).queue();
+				channel.sendMessageEmbeds(
+					logUtil.getGroupMemberDeletedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, name)
+				).queue();
 			} catch (InsufficientPermissionException ex) {
 				continue;
 			}
@@ -308,8 +344,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupOwnerDeletedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupOwnerDeletedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -324,8 +361,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(ownerChannelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupOwnerAddedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, targetName, targetId, groupId, name);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupOwnerAddedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, targetName, targetId, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -336,8 +374,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupMemberAddedEmbed(event.getGuildLocale(), ownerId, ownerIcon, groupId, name);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupMemberAddedEmbed(event.getGuildLocale(), ownerId, ownerIcon, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -355,8 +394,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupMemberJoinEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupMemberJoinEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -367,8 +407,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
 			if (channel != null) {
 				try {
-					MessageEmbed masterEmbed = logUtil.getGroupOwnerJoinEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, name);
-					channel.sendMessageEmbeds(masterEmbed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupOwnerJoinEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -385,8 +426,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupMemberLeaveEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupMemberLeaveEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -397,8 +439,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
 			if (channel != null) {
 				try {
-					MessageEmbed masterEmbed = logUtil.getGroupOwnerLeaveEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, name);
-					channel.sendMessageEmbeds(masterEmbed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupOwnerLeaveEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -415,8 +458,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupMemberLeaveEmbed(channel.getGuild().getLocale(), "Forced, by group Master", masterId, masterIcon, groupId, name);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupMemberLeaveEmbed(channel.getGuild().getLocale(), "Forced, by group Master", masterId, masterIcon, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -427,8 +471,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupOwnerRemoveEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, targetName, targetId, groupId, name);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupOwnerRemoveEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, targetName, targetId, groupId, name)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -451,8 +496,9 @@ public class LogListener {
 			}
 
 			try {
-				MessageEmbed embed = logUtil.getGroupMemberRenamedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, oldName, newName);
-				channel.sendMessageEmbeds(embed).queue();
+				channel.sendMessageEmbeds(
+					logUtil.getGroupMemberRenamedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, oldName, newName)
+				).queue();
 			} catch (InsufficientPermissionException ex) {
 				continue;
 			}
@@ -464,8 +510,9 @@ public class LogListener {
 			TextChannel channel = event.getJDA().getTextChannelById(channelId);
 			if (channel != null) {
 				try {
-					MessageEmbed embed = logUtil.getGroupOwnerRenamedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, oldName, newName);
-					channel.sendMessageEmbeds(embed).queue();
+					channel.sendMessageEmbeds(
+						logUtil.getGroupOwnerRenamedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, oldName, newName)
+					).queue();
 				} catch (InsufficientPermissionException ex) {}
 			}
 		}
@@ -485,8 +532,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getVerifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.verifyRequest.getSteamName(steam64)), steam64);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getVerifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.verifyRequest.getSteamName(steam64)), steam64)
+			).queue();
 		} catch (InsufficientPermissionException ex) {}
 	}
 
@@ -503,8 +551,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getUnverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.verifyRequest.getSteamName(steam64)), steam64, reason);
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getUnverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.verifyRequest.getSteamName(steam64)), steam64, reason)
+			).queue();
 		} catch (InsufficientPermissionException ex) {}
 	}
 
@@ -522,8 +571,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getRolesApprovedEmbed(guild.getLocale(), ticketId, member.getAsMention(), member.getId(), roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getAsMention());
-			channel.sendMessageEmbeds(embed).setAllowedMentions(Collections.emptyList()).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getRolesApprovedEmbed(guild.getLocale(), ticketId, member.getAsMention(), member.getId(), roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getAsMention())
+			).setAllowedMentions(Collections.emptyList()).queue();
 		} catch (InsufficientPermissionException ex) {}
 	}
 
@@ -540,8 +590,9 @@ public class LogListener {
 		}
 
 		try {
-			MessageEmbed embed = logUtil.getTicketClosedEmbed(guild.getLocale(), ticketId, threadChannel.getId(), admin.getAsMention());
-			channel.sendMessageEmbeds(embed).queue();
+			channel.sendMessageEmbeds(
+				logUtil.getTicketClosedEmbed(guild.getLocale(), ticketId, threadChannel.getId(), admin.getAsMention())
+			).queue();
 		} catch (InsufficientPermissionException ex) {}
 	}
 }

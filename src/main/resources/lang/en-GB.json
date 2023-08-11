@@ -138,7 +138,9 @@
 			"banned": "User was banned in %s",
 			"unbanned": "User was unbanned in %s",
 			"default": "Action performed in %s",
-			"reason": "Reason"
+			"reason": "Reason",
+			"leave_guild": "Helper bot left server %s",
+			"guild_id": "Server ID"
 		},
 		"verify": {
 			"added": "User verified | {user_tag}",

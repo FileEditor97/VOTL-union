@@ -36,7 +36,7 @@ public class Helper {
 
 		guildListener = new GuildListener(this);
 		
-		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=rpAQib0T5v0"))
+		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=3CFBSBV4XJI"))
 			.addEventListeners(guildListener);
 		this.JDA = helperBuilder.build();
 	}
@@ -62,7 +62,13 @@ public class Helper {
 	}
 
 	private void banUser(Integer groupId, Guild master, User user, String reason) {
-		List<String> guildIds = db.group.getGroupGuildIds(groupId, false);
+		List<String> guildIds = new ArrayList<String>();
+		for (String guildId : db.group.getGroupManagers(groupId)) {
+			db.group.getOwnedGroups(guildId).forEach(subGroupId -> 
+				guildIds.addAll(db.group.getGroupGuildIds(subGroupId, false))
+			);
+		}
+		guildIds.addAll(db.group.getGroupGuildIds(groupId, false));
 		if (guildIds.isEmpty()) return;
 
 		Integer maxCount = guildIds.size();
@@ -93,7 +99,13 @@ public class Helper {
 	}
 
 	private void unbanUser(Integer groupId, Guild master, User user, String reason) {
-		List<String> guildIds = db.group.getGroupGuildIds(groupId, false);
+		List<String> guildIds = new ArrayList<String>();
+		for (String guildId : db.group.getGroupManagers(groupId)) {
+			db.group.getOwnedGroups(guildId).forEach(subGroupId -> 
+				guildIds.addAll(db.group.getGroupGuildIds(subGroupId, false))
+			);
+		}
+		guildIds.addAll(db.group.getGroupGuildIds(groupId, false));
 		if (guildIds.isEmpty()) return;
 
 		Integer maxCount = guildIds.size();
@@ -119,7 +131,13 @@ public class Helper {
 	}
 
 	private void kickUser(Integer groupId, Guild master, User user, String reason) {
-		List<String> guildIds = db.group.getGroupGuildIds(groupId, false);
+		List<String> guildIds = new ArrayList<String>();
+		for (String guildId : db.group.getGroupManagers(groupId)) {
+			db.group.getOwnedGroups(guildId).forEach(subGroupId -> 
+				guildIds.addAll(db.group.getGroupGuildIds(subGroupId, false))
+			);
+		}
+		guildIds.addAll(db.group.getGroupGuildIds(groupId, false));
 		if (guildIds.isEmpty()) return;
 
 		Integer maxCount = guildIds.size();

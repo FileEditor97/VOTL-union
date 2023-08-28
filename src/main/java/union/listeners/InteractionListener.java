@@ -100,7 +100,7 @@ public class InteractionListener extends ListenerAdapter {
 						bot.getLogger().warn("Was unable to add verify role to user in "+guild.getName()+"("+guild.getId()+")", failure);
 					});
 			} else {
-				event.deferReply(true).queue();
+				event.deferReply(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 				String guildId = guild.getId();
 				Button refresh = Button.of(ButtonStyle.DANGER, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
 				// Check if user pressed refresh button

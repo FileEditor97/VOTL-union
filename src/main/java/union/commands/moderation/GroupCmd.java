@@ -614,7 +614,9 @@ public class GroupCmd extends CommandBase {
 
 				EmbedBuilder builder = new EmbedBuilder(bot.getEmbedUtil().getEmbed(event))
 					.setAuthor(lu.getText(event, "logger.group.title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
-					.setDescription(lu.getText(event, path+".embed_value").replace("{guild_name}", masterName).replace("{guild_id}", masterId).replace("{size}", groupSize.toString()));
+					.setDescription(lu.getText(event, path+".embed_value").replace("{guild_name}", masterName)
+					.replace("{guild_id}", masterId).replace("{size}", groupSize.toString())
+					.replace("{is_shared}", (bot.getDBUtil().group.isShared(groupId) ? Emotes.CHECK_C.getEmote() : Emotes.CROSS_C.getEmote())));
 				createReplyEmbed(event, builder.build());
 			} else {
 				// No options provided - reply with all groups that this guild is connected

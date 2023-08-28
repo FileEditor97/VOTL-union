@@ -34,11 +34,11 @@ dependencies {
 
 	// Tools
 	implementation 'com.jayway.jsonpath:json-path:2.8.0'			// json path-er
-	implementation 'org.xerial:sqlite-jdbc:3.42.0.0'				// sqlite database
+	implementation 'org.xerial:sqlite-jdbc:3.42.0.1'				// sqlite database
 	implementation 'com.mysql:mysql-connector-j:8.1.0'				// mysql database (Union)
 
 	// Eval
-	implementation 'org.apache.groovy:groovy:4.0.13'				// Groovy - code evaluation
+	implementation 'org.apache.groovy:groovy:4.0.14'				// Groovy - code evaluation
 
 	// Chewtils commands
 	implementation 'org.json:json:20230618'

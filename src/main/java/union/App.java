@@ -13,7 +13,7 @@ import union.commands.other.*;
 import union.commands.owner.*;
 import union.commands.ticketing.RolesCmd;
 import union.commands.ticketing.TicketCountCmd;
-import union.commands.ticketing.TicketPanelCmd;
+import union.commands.ticketing.RolePanelCmd;
 import union.commands.verification.*;
 import union.commands.webhook.WebhookCmd;
 import union.listeners.*;
@@ -167,7 +167,7 @@ public class App {
 				new AccountCmd(this),
 				new VerifyCheckCmd(this),
 				// ticketing
-				new TicketPanelCmd(this),
+				new RolePanelCmd(this),
 				new TicketCountCmd(this),
 				new RolesCmd(this)
 			)

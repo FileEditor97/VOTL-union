@@ -3,12 +3,12 @@ package union.commands.ticketing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import union.App;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
+import union.objects.RoleType;
 import union.objects.command.SlashCommand;
 import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
@@ -26,16 +26,14 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
-public class TicketPanelCmd extends CommandBase {
+public class RolePanelCmd extends CommandBase {
 	
-	public TicketPanelCmd(App bot) {
+	public RolePanelCmd(App bot) {
 		super(bot);
-		this.name = "tpanel";
-		this.path = "bot.ticketing.tpanel";
-		this.children = new SlashCommand[]{new Create(bot), new Update(bot)};
+		this.name = "rpanel";
+		this.path = "bot.ticketing.rpanel";
+		this.children = new SlashCommand[]{new Create(bot), new Update(bot), new RowText(bot)};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
@@ -51,7 +49,7 @@ public class TicketPanelCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "create";
-			this.path = "bot.ticketing.tpanel.create";
+			this.path = "bot.ticketing.rpanel.create";
 			this.options = List.of(
 				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
 					.setChannelTypes(ChannelType.TEXT)
@@ -69,31 +67,16 @@ public class TicketPanelCmd extends CommandBase {
 			}
 			TextChannel tc = (TextChannel) channel;
 
-			List<Map<String, Object>> assignRoles = bot.getDBUtil().role.getAssignable(guildId);
+			Integer assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN);
 			List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
-			if (assignRoles.isEmpty() && toggleRoles.isEmpty()) {
+			if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
 				createError(event, path+".empty_roles");
 				return;
 			}
 			List<ActionRow> actionRows = new ArrayList<ActionRow>();
 
-			if (!assignRoles.isEmpty()) {
-				List<SelectOption> options = new ArrayList<SelectOption>();
-				assignRoles.forEach(data -> {
-					if (options.size() >= 24) return;
-					String roleId = data.get("roleId").toString();
-					Role role = guild.getRoleById(roleId);
-					if (role == null) return;
-					String description = Objects.requireNonNullElse(data.get("description"), "").toString();
-					options.add(SelectOption.of(role.getName(), roleId).withDescription(description));
-				});
-				options.add(SelectOption.of(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other"), "other"));
-				StringSelectMenu menu = StringSelectMenu.create("menu:role_add")
-					.setPlaceholder(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.select"))
-					.setMaxValues(options.size())
-					.addOptions(options)
-					.build();
-				actionRows.add(ActionRow.of(menu));
+			if (assignRolesSize > 0) {
+				actionRows.add(ActionRow.of(Button.success("role_start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
 			}
 			actionRows.add(ActionRow.of(Button.danger("role_remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
 			if (!toggleRoles.isEmpty()) {
@@ -104,7 +87,7 @@ public class TicketPanelCmd extends CommandBase {
 					Role role = guild.getRoleById(roleId);
 					if (role == null) return;
 					String description = data.get("description").toString();
-					buttons.add(Button.primary("toggle:"+roleId, (description.length() > 100 ? description.substring(0, 100) : description)));
+					buttons.add(Button.primary("toggle:"+roleId, description.substring(0, Math.min(description.length(), 80))));
 				});
 				actionRows.add(ActionRow.of(buttons));
 			}
@@ -132,7 +115,7 @@ public class TicketPanelCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "update";
-			this.path = "bot.ticketing.tpanel.update";
+			this.path = "bot.ticketing.rpanel.update";
 			this.options = List.of(
 				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
 					.setChannelTypes(ChannelType.TEXT)
@@ -157,31 +140,16 @@ public class TicketPanelCmd extends CommandBase {
 					return;
 				}
 
-				List<Map<String, Object>> assignRoles = bot.getDBUtil().role.getAssignable(guildId);
+				Integer assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN);
 				List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
-				if (assignRoles.isEmpty() && toggleRoles.isEmpty()) {
+				if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
 					createError(event, path+".empty_roles");
 					return;
 				}
 				List<ActionRow> actionRows = new ArrayList<ActionRow>();
 
-				if (!assignRoles.isEmpty()) {
-					List<SelectOption> options = new ArrayList<SelectOption>();
-					assignRoles.forEach(data -> {
-						if (options.size() >= 24) return;
-						String roleId = data.get("roleId").toString();
-						Role role = guild.getRoleById(roleId);
-						if (role == null) return;
-						String description = Objects.requireNonNullElse(data.get("description"), "").toString();
-						options.add(SelectOption.of(role.getName(), roleId).withDescription(description));
-					});
-					options.add(SelectOption.of(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other"), "other"));
-					StringSelectMenu menu = StringSelectMenu.create("menu:role_add")
-						.setPlaceholder(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.select"))
-						.setMaxValues(options.size())
-						.addOptions(options)
-						.build();
-					actionRows.add(ActionRow.of(menu));
+				if (assignRolesSize > 0) {
+					actionRows.add(ActionRow.of(Button.success("role_start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
 				}
 				actionRows.add(ActionRow.of(Button.danger("role_remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
 				if (!toggleRoles.isEmpty()) {
@@ -206,6 +174,40 @@ public class TicketPanelCmd extends CommandBase {
 			}, failure -> {
 				createError(event, path+".not_found", failure.getMessage());
 			});
+		}
+
+	}
+
+	private class RowText extends SlashCommand {
+
+		public RowText(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "row";
+			this.path = "bot.ticketing.rpanel.row";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"), true)
+					.setRequiredRange(1, 3),
+				new OptionData(OptionType.STRING, "text", lu.getText(path+".text.help"), true)
+					.setMaxLength(150)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			String guildId = event.getGuild().getId();
+			Integer row = event.optInteger("row");
+			String text = event.optString("text");
+
+			if (!bot.getDBUtil().ticketPanel.exists(guildId)) {
+				bot.getDBUtil().ticketPanel.add(guildId);
+			}
+
+			bot.getDBUtil().ticketPanel.setRowText(guildId, row, text);
+
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))
+				.build());
 		}
 
 	}

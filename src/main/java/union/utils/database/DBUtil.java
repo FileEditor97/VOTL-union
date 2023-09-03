@@ -14,6 +14,7 @@ import union.utils.database.managers.BanManager;
 import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.ModuleManager;
+import union.utils.database.managers.RequestsManager;
 import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
@@ -42,6 +43,7 @@ public class DBUtil {
 	public final TicketPanelManager ticketPanel;
 	public final RoleManager role;
 	public final TicketManager ticket;
+	public final RequestsManager requests;
 	public final VerifyRequestManager verifyRequest;
 
 	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
@@ -71,6 +73,7 @@ public class DBUtil {
 		ticketPanel = new TicketPanelManager(this);
 		role = new RoleManager(this);
 		ticket = new TicketManager(this);
+		requests = new RequestsManager(this);
 		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();

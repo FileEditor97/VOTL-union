@@ -229,22 +229,30 @@ public class LiteDBBase {
 		return result;
 	}
 
-	//  semi specific, will return with integers
-	protected Map<Integer, Integer> countByGroup(final String table, final String condKey, final Object condValue, final String group) {
-		String sql = "SELECT row, COUNT(*) FROM "+table+" WHERE "+condKey+"="+quote(condValue)+" GROUP BY "+group+" ORDER BY "+group+" ASC";
+	protected Integer countSelect(final String table, final List<String> condKeys, final List<Object> condValuesObj) {
+		List<String> condValues = new ArrayList<String>(condValuesObj.size());
+		for (Object obj : condValuesObj) {
+			condValues.add(quote(obj));
+		}
+
+		String sql = "SELECT COUNT(*) FROM "+table+" WHERE ";
+		for (int i = 0; i < condKeys.size(); i++) {
+			if (i > 0) {
+				sql += " AND ";
+			}
+			sql += condKeys.get(i)+"="+condValues.get(i);
+		}
 
 		util.logger.debug(sql);
-		Map<Integer, Integer> data = new HashMap<>();
+		Integer result = null;
 		try (Connection conn = util.connectSQLite();
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
-			while (rs.next()) {
-				data.put(rs.getInt(group), rs.getInt("COUNT(*)"));
-			}
+			result = rs.getInt("COUNT(*)");
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at COUNT\nrequest: {}", sql, ex);
 		}
-		return data;
+		return result;
 	}
 
 	//  specific SELECT request for ticket manager
@@ -351,6 +359,23 @@ public class LiteDBBase {
 			util.logger.warn("DB SQLite: Error at DELETE\nrequest: {}", sql, ex);
 		}
 	}
+
+	//  specific delete request
+	protected void deleteExpired(final String table, final Long timeNow) {
+		String sql = "DELETE FROM %s WHERE (expiresAt<=%d)".formatted(table, timeNow);
+
+		util.logger.debug(sql);
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			st.executeUpdate();
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at DELETE\nrequest: {}", sql, ex);
+		}
+	}
+
+
+
+	// UTILS
 
 	private String quote(Object value) {
 		// Convert to string and replace '(single quote) with ''(2 single quotes) for sql

@@ -82,10 +82,6 @@ public class SetupCmd extends CommandBase {
 			String guildId = event.getGuild().getId();
 			String text = event.optString("color");
 
-			if (!bot.getDBUtil().ticketPanel.exists(guildId)) {
-				bot.getDBUtil().ticketPanel.add(guildId);
-			}
-
 			Color color = bot.getMessageUtil().getColor(text);
 			if (color == null) {
 				createError(event, path+".no_color");
@@ -118,9 +114,6 @@ public class SetupCmd extends CommandBase {
 			String guildId = event.getGuild().getId();
 			String text = event.optString("link");
 
-			if (!bot.getDBUtil().ticketPanel.exists(guildId)) {
-				bot.getDBUtil().ticketPanel.add(guildId);
-			}
 			if (!isValidURL(text)) {
 				createError(event, path+".not_valid", "Received unvalid URL: `%s`".formatted(text));
 				return;

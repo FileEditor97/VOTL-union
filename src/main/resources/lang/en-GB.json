@@ -38,7 +38,8 @@
 		"interaction": {
 			"no_values": "None of the values has been selected.",
 			"no_access": "You cannot perform this action because you do not have the required access level."
-		}
+		},
+		"timed_out": "Timed out"
 	},
 	"misc": {
 		"and": "and",
@@ -1005,15 +1006,22 @@
 		"ticketing": {
 			"embeds": {
 				"role_title": "Getting/Removing roles",
-				"role_value": "🟢 Obtaining a role:\n> Select an available role from the list below and follow the instructions.\n> ❗ In the created request, attach proofs.❗\n\n🔴 Removing a role:\n> Click the button below and select the roles you want to remove.\n\n📣 Alerts:\n> Click on the buttons below if you want to be notified of events on the server or other.",
-				"select": "Select role/-s",
+				"role_value": "🟢 Obtaining a role:\n> Click on the button below and select the desired roles. New ticket will be created for your request.\n\n🔴 Removing a role:\n> Click on the button below and select the roles you want to remove.\n\n📣 Alerts:\n> Click on the buttons below if you want to be notified of events on the server or other.",
+				"button_request": "Request roles",
 				"button_remove": "Remove roles",
-				"other": "Other role"
+				"other": "__Other role__"
 			},
 			"listener": {
-				"none_selected": "",
 				"no_assigned": "Can't remove any role that you have.",
-				"remove_title": "Select roles you wish to remove.\n*You may not assign some of removed roles back.*",
+				"request_title": "Select roles you want to request.\n*Clear selection, if you you selected wrong roles.*\nPress 'Other role/-s' if desired role is not present.\n\nWhen done - press 'Continue'.",
+				"request_other": "Other role/-s",
+				"request_clear": "Clear selection",
+				"request_continue": "Continue",
+				"request_selected": "Selected roles:",
+				"request_template": "Select role/-s",
+				"request_none": "You didn't selected any role to be requested.",
+				"request_empty": "Can't request any selected role. Contact server moderation.",
+				"remove_title": "Select roles you want to remove.\n*You will not be able to assign some of the removed roles back.*",
 				"remove_failed": "Couldn't complete your role removal request. See message bellow.",
 				"remove_done": "Roles {roles} removed!",
 				"toggle_failed": "Couldn't add/remove requested role. See message bellow and report it to the server Administration.",
@@ -1030,9 +1038,9 @@
 				"role_none": "There aren't any roles that can be assigned. Manually assign user requested roles.",
 				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button."
 			},
-			"tpanel": {
+			"rpanel": {
 				"help": "Manage the panels of the ticketing module",
-				"usage": "tpanel",
+				"usage": "rpanel",
 				"create": {
 					"help": "Send panel to selected channel",
 					"usage": "create <#Channel>",
@@ -1055,6 +1063,19 @@
 					"not_found": "Existing panel not found in selected channel",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
 					"done": "Panel updated in {channel}!"
+				},
+				"row": {
+					"help": "Update assignable role rows text placeholder",
+					"usage": "row <row number> <text>",
+					"row": {
+						"name": "row",
+						"help": "Enter row number (1-3)"
+					},
+					"text": {
+						"name": "text",
+						"help": "Enter text which will be shown in role selection placeholder"
+					},
+					"done": "Placeholder text for row `{row}` set to `{text}`."
 				}
 			},
 			"tcount": {
@@ -1075,7 +1096,7 @@
 				"usage": "roles",
 				"add": {
 					"help": "Add role",
-					"usage": "add <@Role> <type> [description]",
+					"usage": "add <@Role> <type> [description] [row]",
 					"role": {
 						"name": "role",
 						"help": "Select role which will be used added to the list"
@@ -1090,16 +1111,40 @@
 					},
 					"row": {
 						"name": "row",
-						"help": "![ Disabled ]!"
+						"help": "Select in which select menu (row) assignable role will be placed"
 					},
 					"no_role": "Role not found or is incorrect.",
 					"cant_interact": "I can't interact with selected role.",
 					"exists": "Role is already managed. Check `/roles view`",
 					"no_type": "Role type not found.",
-					"assign_max": "Maximum assignable roles managed (25). Clear the list, to add new roles.",
+					"rows_max": "All assignable roles rows are full (3x25). Clear any row, to add new roles.",
+					"row_max": "Row is full (25 roles). Clear this row, to add new roles.",
 					"toggle_max": "Maximum toggleable roles managed (5). Clear the list, to add new roles.",
 					"custom_max": "Maximum custom roles managed (25). Clear the list, to add new roles.",
 					"done": "Role {role} added to the list as `{type}` type role!"
+				},
+				"update": {
+					"help": "Update assignable role data",
+					"usage": "update <@Role> [description] [row]",
+					"role": {
+						"name": "role",
+						"help": "Select role which to update"
+					},
+					"description": {
+						"name": "description",
+						"help": "Change role description, enter 'NULL' to clear it"
+					},
+					"row": {
+						"name": "row",
+						"help": "Change in which select menu (row) assignable role will be placed"
+					},
+					"no_role": "Role not found or is incorrect.",
+					"not_exists": "Role is not set as assignable role, use `/roles add` to add it.",
+					"no_options": "No data to be updated for role.",
+					"embed_title": "Updated role's {role} data.",
+					"default_description": "\n> Role description cleared to default.",
+					"changed_description": "\n> Role description set to `{text}`.",
+					"changed_row": "\n> Changed assignable role's row to `{row}`."
 				},
 				"remove": {
 					"help": "Remove role from managed roles list",

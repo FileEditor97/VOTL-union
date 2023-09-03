@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import union.App;
 import union.utils.database.DBUtil;
@@ -28,8 +29,14 @@ public class ScheduledCheck {
 		this.db = bot.getDBUtil();
 		this.lastAccountCheck = Instant.now();
 	}
+
+	public void moderationChecks() {
+		CompletableFuture.runAsync(() -> {
+			checkUnbans();
+		});
+	}
 	
-	public void checkUnbans() {
+	private void checkUnbans() {
 		List<Map<String, Object>> bans = db.ban.getExpirable();
 		if (bans.isEmpty()) return;
 		bans.stream().filter(ban ->
@@ -46,7 +53,15 @@ public class ScheduledCheck {
 		});
 	}
 
-	public void checkAccountUpdates() {
+	public void regularChecks() {
+		CompletableFuture.runAsync(() -> {
+			checkAccountUpdates();
+		}).thenRunAsync(() -> {
+			checkRequestsExpire();
+		});
+	}
+
+	private void checkAccountUpdates() {
 		try {
 			lastAccountCheck = Instant.now();
 			List<Map<String, String>> data = db.verifyRequest.updatedAccounts();
@@ -114,4 +129,7 @@ public class ScheduledCheck {
 		}
 	}
 
+	private void checkRequestsExpire() {
+		db.requests.purgeExpiredRequests();
+	}
 }

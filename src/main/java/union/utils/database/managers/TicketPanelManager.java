@@ -24,4 +24,14 @@ public class TicketPanelManager extends LiteDBBase {
 		return true;
 	}
 
+	public String getRowText(String guildId, Integer row) {
+		Object data = selectOne(TABLE, "rowName"+row, "guildId", guildId);
+		if (data == null) return "";
+		return data.toString();
+	}
+
+	public void setRowText(String guildId, Integer row, String text) {
+		update(TABLE, "rowName"+row, text, "guildId", guildId);
+	}
+
 }

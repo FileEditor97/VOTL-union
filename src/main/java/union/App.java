@@ -121,8 +121,8 @@ public class App {
 		executorService = Executors.newScheduledThreadPool(4, r -> (new Thread(r, "UTB Scheduler")));
 		scheduledCheck	= new ScheduledCheck(this);
 		
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.checkUnbans(), 5, 15, TimeUnit.MINUTES);
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.checkAccountUpdates(), 1, 3, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 15, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()

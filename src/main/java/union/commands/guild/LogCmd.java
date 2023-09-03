@@ -50,9 +50,7 @@ public class LogCmd extends CommandBase {
 	}
 
 	@Override
-	protected void execute(SlashCommandEvent event) {
-
-	}
+	protected void execute(SlashCommandEvent event) {}
 
 	private class Setup extends SlashCommand {
 
@@ -180,7 +178,7 @@ public class LogCmd extends CommandBase {
 					30,
 					TimeUnit.SECONDS,
 					() -> event.getHook().editOriginalComponents(ActionRow.of(
-						menu.createCopy().setPlaceholder(lu.getText(event, path+".timed_out")).setDisabled(true).build())
+						menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 					).queue()
 				);
 			}
@@ -208,7 +206,7 @@ public class LogCmd extends CommandBase {
 				30,
 				TimeUnit.SECONDS,
 				() -> event.getHook().editOriginalComponents(ActionRow.of(
-					menu.createCopy().setPlaceholder(lu.getText(event, path+".timed_out")).setDisabled(true).build())
+					menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 				).queue()
 			);
 		}

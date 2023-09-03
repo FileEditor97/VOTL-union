@@ -92,11 +92,11 @@ public class FileManager {
 					}
 				}
 				if (file.createNewFile()) {
-					if (export(App.class.getResourceAsStream(internal), Paths.get(external))) {
+					if (!export(App.class.getResourceAsStream(internal), Paths.get(external))) {
+						logger.error("Failed to write {}!", name);
+					} else {
 						logger.info("Successfully created {}!", name);
 						files.put(name, file);
-					} else {
-						logger.error("Failed to write {}!", name);
 					}
 				}
 				return;

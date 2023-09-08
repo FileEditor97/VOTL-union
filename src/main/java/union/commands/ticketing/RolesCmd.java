@@ -281,7 +281,7 @@ public class RolesCmd extends CommandBase {
 				if (type.equals(RoleType.ASSIGN)) {
 					for (Integer row = 1; row <= 3; row++) {
 						List<Map<String, Object>> roles = bot.getDBUtil().role.getAssignableByRow(guildId, row);
-						String title = "%s-%s | %s".formatted(lu.getText(event, type.getPath()), row, bot.getDBUtil().ticketPanel.getRowText(guildId, row));
+						String title = "%s-%s | %s".formatted(lu.getText(event, type.getPath()), row, bot.getDBUtil().ticketSettings.getRowText(guildId, row));
 						if (roles.isEmpty()) {
 							builder.addField(title, lu.getText(event, path+".none"), false);
 						} else {

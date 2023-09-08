@@ -132,7 +132,7 @@ public class InteractionListener extends ListenerAdapter {
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
 
-			String channelId = db.ticket.getOpenedTicket(event.getMember().getId(), guildId);
+			String channelId = db.ticket.getOpenedChannel(event.getMember().getId(), guildId, 0);
 			if (channelId != null) {
 				ThreadChannel channel = guild.getThreadChannelById(channelId);
 				if (channel != null) {
@@ -235,7 +235,7 @@ public class InteractionListener extends ListenerAdapter {
 			Integer ticketId = 1 + db.ticket.lastId(guildId);
 			event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).queue(
 				channel -> {
-					db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), "role", String.join(";", roleIds));
+					db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
 					db.requests.deleteRoleRequest(guildId, userId);
 					
 					StringBuffer mentions = new StringBuffer(event.getMember().getAsMention());
@@ -382,7 +382,7 @@ public class InteractionListener extends ListenerAdapter {
 				} else {
 					guild.modifyMemberRoles(member, roles, null).reason("Request role-"+ticketId+" approved by "+event.getMember().getEffectiveName()).queue(done -> {
 						bot.getLogListener().onRolesApproved(member, event.getMember(), guild, roles, ticketId);
-						db.ticket.setAccepted(event.getMember().getId(), channelId);
+						db.ticket.setClaimed(event.getMember().getId(), channelId);
 						event.replyEmbeds(bot.getEmbedUtil().getEmbed(event)
 							.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))
 							.setColor(Constants.COLOR_SUCCESS)
@@ -419,7 +419,7 @@ public class InteractionListener extends ListenerAdapter {
 			options.add(SelectOption.of(role.getName(), roleId).withDescription(description));
 		});
 		StringSelectMenu menu = StringSelectMenu.create("menu:role_row:"+row)
-			.setPlaceholder(db.ticketPanel.getRowText(guild.getId(), row))
+			.setPlaceholder(db.ticketSettings.getRowText(guild.getId(), row))
 			.setMaxValues(25)
 			.addOptions(options)
 			.build();
@@ -452,15 +452,6 @@ public class InteractionListener extends ListenerAdapter {
 				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))
 				.build()
 			).setEphemeral(true).queue();
-		} else if (modalId.startsWith("ticket")) {
-			// IS NOT USED
-			String ticketType = modalId.split(":")[1];
-			if (ticketType.equals("role_add")) {
-				// TODO: change how role request are created, implement modal, to get some info from user, but also save requested roles
-				event.deferEdit().queue();
-			} else {
-				event.deferEdit().queue();
-			}
 		}
 	}
 

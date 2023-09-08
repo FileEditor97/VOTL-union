@@ -255,18 +255,22 @@ public class LiteDBBase {
 		return result;
 	}
 
+	protected Integer getIncrement(final String table) {
+		Object data = selectOne("sqlite_sequence", "seq", "name", table);
+		if (data == null) return null;
+		return (Integer) data;
+	}
+
 	//  specific SELECT request for ticket manager
-	protected List<Integer> selectAfterTime(String table, String guildId, String modId, Long afterTime, Long beforeTime) {
-		String sql = "SELECT ticketId FROM %s WHERE (guildId='%s' AND modId='%s' AND timeClosed>=%d AND timeClosed<=%d)".formatted(table, guildId, modId, afterTime, beforeTime);
+	protected Integer countTicketsClaimed(String table, String guildId, String modId, Long afterTime, Long beforeTime) {
+		String sql = "SELECT COUNT(*) FROM %s WHERE (guildId='%s' AND modId='%s' AND timeClosed>=%d AND timeClosed<=%d)".formatted(table, guildId, modId, afterTime, beforeTime);
 		
-		List<Integer> result = new ArrayList<Integer>();
+		Integer result = 0;
 		util.logger.debug(sql);
 		try (Connection conn = util.connectSQLite();
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
-			while (rs.next()) {
-				result.add(rs.getInt("ticketId"));
-			}
+			result = rs.getInt("COUNT(*)");
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
 		}

@@ -16,10 +16,15 @@ public class TicketManager extends LiteDBBase {
 		super(util);
 	}
 
+	/* tags:
+	 *  0 - role request ticket
+	 *  1+ - custom tags
+	 */
+
 	// add new ticket
-	public void addRoleTicket(Integer ticketId, String userId, String guildId, String channelId, String alias, String roleIds) {
-		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "alias", "roleIds"),
-			List.of(ticketId, userId, guildId, channelId, alias, roleIds));
+	public void addRoleTicket(Integer ticketId, String userId, String guildId, String channelId, String roleIds) {
+		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "tag", "roleIds"),
+			List.of(ticketId, userId, guildId, channelId, 1, roleIds));
 	}
 
 	// get last ticket's ID
@@ -30,7 +35,7 @@ public class TicketManager extends LiteDBBase {
 	}
 
 	// update mod
-	public void updateMod(String channelId, String modId) {
+	public void setClaimed(String channelId, String modId) {
 		update(TABLE, "modId", modId, "channelId", channelId);
 	}
 
@@ -39,15 +44,28 @@ public class TicketManager extends LiteDBBase {
 		update(TABLE, List.of("closed", "timeClosed"), List.of(1, timeClosed.getEpochSecond()), "channelId", channelId);
 	}
 
-	public String getOpenedTicket(String userId, String guildId) {
-		Object data = selectOne(TABLE, "channelId", List.of("userId", "guildId", "closed"), List.of(userId, guildId, 0));
+	// get status
+	public boolean isOpened(String channelId) {
+		if (selectOne(TABLE, "ticketId", List.of("channelId", "closed"), List.of(channelId, 0)) == null) return false;
+		return true;
+	}
+
+	public String getOpenedChannel(String userId, String guildId, Integer tagId) {
+		Object data = selectOne(TABLE, "channelId", List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
 		if (data == null) return null;
 		return String.valueOf(data);
 	}
 
-	public boolean isOpened(String channelId) {
-		if (selectOne(TABLE, "ticketId", List.of("channelId", "closed"), List.of(channelId, 0)) == null) return false;
-		return true;
+	public Integer getAllOpenedByUser(String userId, String guildId, Integer tagId) {
+		Object data = countSelect(TABLE, List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
+		if (data == null) return null;
+		return Integer.valueOf(data.toString());
+	}
+
+	public Integer getAllOpenedByUser(String userId, String guildId) {
+		Object data = countSelect(TABLE, List.of("userId", "guildId", "closed"), List.of(userId, guildId, 0));
+		if (data == null) return null;
+		return Integer.valueOf(data.toString());
 	}
 
 	public List<String> getRoleIds(String channelId) {
@@ -68,13 +86,8 @@ public class TicketManager extends LiteDBBase {
 		return String.valueOf(data);
 	}
 
-	public void setAccepted(String modId, String channelId) {
-		update(TABLE, "modId", modId, "channelId", channelId);
-	}
-
 	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime) {
-		List<Integer> data = selectAfterTime(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond());
-		return data.size();
+		return countTicketsClaimed(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond());
 	}
 
 

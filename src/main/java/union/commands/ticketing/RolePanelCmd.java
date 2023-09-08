@@ -199,11 +199,11 @@ public class RolePanelCmd extends CommandBase {
 			Integer row = event.optInteger("row");
 			String text = event.optString("text");
 
-			if (!bot.getDBUtil().ticketPanel.exists(guildId)) {
-				bot.getDBUtil().ticketPanel.add(guildId);
+			if (!bot.getDBUtil().ticketSettings.exists(guildId)) {
+				bot.getDBUtil().ticketSettings.add(guildId);
 			}
 
-			bot.getDBUtil().ticketPanel.setRowText(guildId, row, text);
+			bot.getDBUtil().ticketSettings.setRowText(guildId, row, text);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))

@@ -1,6 +1,7 @@
 package union.commands.ticketing;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -23,8 +24,10 @@ public class TicketCountCmd extends CommandBase {
 		super(bot);
 		this.name = "tcount";
 		this.path = "bot.ticketing.tcount";
-		this.options = List.of(new OptionData(OptionType.USER, "user", path+".user.help", true), 
-			new OptionData(OptionType.INTEGER, "days", path+".days.help", false).setRequiredRange(1, 31));
+		this.options = List.of(new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
+			new OptionData(OptionType.STRING, "start_date", lu.getText(path+".start_date.help")),
+			new OptionData(OptionType.STRING, "end_date", lu.getText(path+".end_date.help"))
+		);
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
 		this.accessLevel = CmdAccessLevel.MOD;
@@ -32,19 +35,34 @@ public class TicketCountCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		String afterDate = event.optString("start_date");
+		String beforeDate = event.optString("end_date");
+		Instant afterTime = null;
+		Instant beforeTime = null;
+
+		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		try {
+			if (afterDate != null) afterTime = LocalDateTime.parse(afterDate, inputFormatter).atZone(ZoneId.systemDefault()).toInstant();
+			if (beforeDate != null) beforeTime = LocalDateTime.parse(beforeDate, inputFormatter).atZone(ZoneId.systemDefault()).toInstant();
+		} catch (Exception ex) {
+			createError(event, path+".failed_parse", ex.getMessage());
+			return;
+		}
+
+		if (beforeTime == null) beforeTime = Instant.now();
+		if (afterTime == null) afterTime = Instant.now().minus(7, ChronoUnit.DAYS);
+		if (beforeTime.isBefore(afterTime)) {
+			createError(event, path+".wrong_date");
+			return;
+		}
+
 		User user = event.optUser("user");
-		Integer days = event.optInteger("days", 7);
-
-		String guildId = event.getGuild().getId();
-
-		Instant afterTime = Instant.now().minus(days, ChronoUnit.DAYS);
-
-		Integer count = bot.getDBUtil().ticket.countTicketsByMod(guildId, user.getId(), afterTime);
+		Integer count = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault());
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
-			.setTitle("`"+formatter.format(afterTime)+"` - `"+formatter.format(Instant.now())+"`")
-			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId()).replace("{count}", count.toString()))
+			.setTitle("`"+formatter.format(afterTime)+"` - `"+formatter.format(beforeTime)+"`")
+			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId()).replace("{roles}", count.toString()))
 			.build());
 	}
 

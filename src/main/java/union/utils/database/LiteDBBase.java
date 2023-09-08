@@ -256,8 +256,8 @@ public class LiteDBBase {
 	}
 
 	//  specific SELECT request for ticket manager
-	protected List<Integer> selectAfterTime(String table, String guildId, String modId, Long afterTime) {
-		String sql = "SELECT ticketId FROM %s WHERE (guildId='%s' AND modId='%s' AND timeClosed>=%d)".formatted(table, guildId, modId, afterTime);
+	protected List<Integer> selectAfterTime(String table, String guildId, String modId, Long afterTime, Long beforeTime) {
+		String sql = "SELECT ticketId FROM %s WHERE (guildId='%s' AND modId='%s' AND timeClosed>=%d AND timeClosed<=%d)".formatted(table, guildId, modId, afterTime, beforeTime);
 		
 		List<Integer> result = new ArrayList<Integer>();
 		util.logger.debug(sql);

@@ -1080,11 +1080,17 @@
 					"name": "user",
 					"help": "Enter ID/mention the user"
 				},
-				"days": {
-					"name": "days",
-					"help": "Enter how much days prior to check for, default is 7 days"
+				"start_date": {
+					"name": "start_date",
+					"help": "Enter start date (day-month-year)"
 				},
-				"done": "Moderator: {user} ({id})\nAccepted tickets: `{count}`"
+				"end_date": {
+					"name": "end_date",
+					"help": "Enter end date (day-month-year)"
+				},
+				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
+				"wrong_date": "Wrong dates provided (before and after inputs).",
+				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`"
 			},
 			"roles": {
 				"help": "Manage assignable roles via ticket system",

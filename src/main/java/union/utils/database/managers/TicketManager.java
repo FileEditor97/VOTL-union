@@ -72,8 +72,8 @@ public class TicketManager extends LiteDBBase {
 		update(TABLE, "modId", modId, "channelId", channelId);
 	}
 
-	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime) {
-		List<Integer> data = selectAfterTime(TABLE, guildId, modId, afterTime.getEpochSecond());
+	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime) {
+		List<Integer> data = selectAfterTime(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond());
 		return data.size();
 	}
 

@@ -40,8 +40,8 @@ public class TicketManager extends LiteDBBase {
 	}
 
 	// update status
-	public void closeTicket(Instant timeClosed, String channelId) {
-		update(TABLE, List.of("closed", "timeClosed"), List.of(1, timeClosed.getEpochSecond()), "channelId", channelId);
+	public void closeTicket(Instant timeClosed, String channelId, String reason) {
+		update(TABLE, List.of("closed", "timeClosed", "reasonClosed"), List.of(1, timeClosed.getEpochSecond(), reason), "channelId", channelId);
 	}
 
 	// get status

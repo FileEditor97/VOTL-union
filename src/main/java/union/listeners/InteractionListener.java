@@ -143,7 +143,7 @@ public class InteractionListener extends ListenerAdapter {
 					).queue();
 					return;
 				}
-				db.ticket.closeTicket(Instant.now(), channelId);
+				db.ticket.closeTicket(Instant.now(), channelId, "FAIL, ticket's channel not found");
 			}
 
 			List<ActionRow> actionRows = new ArrayList<ActionRow>();
@@ -325,7 +325,7 @@ public class InteractionListener extends ListenerAdapter {
 			}
 			event.deferReply(true).queue();
 			event.getChannel().asThreadChannel().delete().queue(done -> {
-				db.ticket.closeTicket(Instant.now(), channelId);
+				db.ticket.closeTicket(Instant.now(), channelId, "Role completed");
 				bot.getLogListener().onTicketClose(event.getMember(), event.getGuild(), event.getChannel(), db.ticket.getTicketId(channelId));
 			}, failure -> {
 				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed")).queue();

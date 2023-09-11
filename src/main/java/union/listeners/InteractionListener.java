@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -162,44 +163,23 @@ public class InteractionListener extends ListenerAdapter {
 				.setDescription(lu.getText(event, "bot.ticketing.listener.request_title"))
 				.build();
 
-			event.getHook().editOriginalEmbeds(embed).setComponents(actionRows).queue(msg -> {
-
-			});
-
-			db.requests.deleteRoleRequest(guildId, event.getUser().getId());
-			db.requests.createRoleRequest(guildId, event.getUser().getId(), "", 100);
-
+			event.getHook().editOriginalEmbeds(embed).setComponents(actionRows).queue();
 		} else if (buttonId.equals("role_other")) {
-			String guildId = event.getGuild().getId();
-			String userId = event.getUser().getId();
-			if (!db.requests.existsRoleRequest(guildId, userId)) {
-				timedOut(event);
-				return;
-			}
 			event.deferEdit().queue();
 
-			List<String> roleIds = new ArrayList<String>(db.requests.getRoles(guildId, userId));
-			Boolean toggleOff = roleIds.contains("0");
-			if (toggleOff)
+			List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
+			List<String> roleIds = bot.getMessageUtil().getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
+			if (roleIds.contains("0"))
 				roleIds.remove("0");
 			else
 				roleIds.add("0");
-			db.requests.updateRoleRequest(guildId, userId, String.join(";", roleIds), 100);
-
+			
 			MessageEmbed embed = new EmbedBuilder(event.getMessage().getEmbeds().get(0))
 				.clearFields()
 				.addField(lu.getText(event, "bot.ticketing.listener.request_selected"), selectedRolesString(roleIds, event.getUserLocale()), false)
 				.build();
 			event.getHook().editOriginalEmbeds(embed).queue();
 		} else if (buttonId.equals("role_clear")) {
-			String guildId = event.getGuild().getId();
-			String userId = event.getUser().getId();
-			if (!db.requests.existsRoleRequest(guildId, userId)) {
-				timedOut(event);
-				return;
-			}
-			db.requests.updateRoleRequest(guildId, userId, "", 100);
-
 			MessageEmbed embed = new EmbedBuilder(event.getMessage().getEmbeds().get(0))
 				.clearFields()
 				.addField(lu.getText(event, "bot.ticketing.listener.request_selected"), selectedRolesString(Collections.emptyList(), event.getUserLocale()), false)
@@ -208,14 +188,9 @@ public class InteractionListener extends ListenerAdapter {
 		} else if (buttonId.equals("ticket:role:create")) {
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
-			String userId = event.getUser().getId();
-			// Check if request still exists, else Timed Out
-			if (!db.requests.existsRoleRequest(guildId, userId)) {
-				timedOut(event);
-				return;
-			}
 			// Check if user has selected any role
-			List<String> roleIds = db.requests.getRoles(guildId, userId);
+			List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
+			List<String> roleIds = bot.getMessageUtil().getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 			if (roleIds.isEmpty()) {
 				replyError(event, "bot.ticketing.listener.request_none");
 				return;
@@ -236,7 +211,6 @@ public class InteractionListener extends ListenerAdapter {
 			event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).queue(
 				channel -> {
 					db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
-					db.requests.deleteRoleRequest(guildId, userId);
 					
 					StringBuffer mentions = new StringBuffer(event.getMember().getAsMention());
 					db.access.getAllRoles(guildId).forEach(roleId -> mentions.append(" <@&"+roleId+">"));
@@ -428,7 +402,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private String selectedRolesString(List<String> roleIds, DiscordLocale locale) {
 		if (roleIds.isEmpty()) return "None";
-		return roleIds.stream().map(id -> (id.equals("0") ? lu.getLocalized(locale, "bot.ticketing.embeds.other") : "<@&"+id+">")).collect(Collectors.joining(", "));
+		return roleIds.stream().map(id -> (id.equals("0") ? "+"+lu.getLocalized(locale, "bot.ticketing.embeds.other") : "<@&"+id+">")).collect(Collectors.joining(", "));
 	}
 
 
@@ -458,23 +432,16 @@ public class InteractionListener extends ListenerAdapter {
 	@Override
 	public void onStringSelectInteraction(@Nonnull StringSelectInteractionEvent event) {
 		String menuId = event.getComponentId();
-		Guild guild = event.getGuild();
-		String guildId = guild.getId();
-		String userId = event.getUser().getId();
 
 		if (menuId.startsWith("menu:role_row")) {
-			if (!db.requests.existsRoleRequest(guildId, userId)) {
-				timedOut(event);
-				return;
-			}
 			event.deferEdit().queue();
 
-			List<String> roleIds = new ArrayList<String>(db.requests.getRoles(guildId, userId));
+			List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
+			List<String> roleIds = bot.getMessageUtil().getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 			event.getSelectedOptions().forEach(option -> {
 				String value = option.getValue();
 				if (!roleIds.contains(value)) roleIds.add(value);
 			});
-			db.requests.updateRoleRequest(guildId, userId, String.join(";", roleIds), 100);
 
 			MessageEmbed embed = new EmbedBuilder(event.getMessage().getEmbeds().get(0))
 				.clearFields()

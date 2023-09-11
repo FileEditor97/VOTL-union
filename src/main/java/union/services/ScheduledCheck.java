@@ -56,8 +56,6 @@ public class ScheduledCheck {
 	public void regularChecks() {
 		CompletableFuture.runAsync(() -> {
 			checkAccountUpdates();
-		}).thenRunAsync(() -> {
-			checkRequestsExpire();
 		});
 	}
 
@@ -129,7 +127,7 @@ public class ScheduledCheck {
 		}
 	}
 
-	private void checkRequestsExpire() {
+	/* private void checkRequestsExpire() {
 		db.requests.purgeExpiredRequests();
-	}
+	} */
 }

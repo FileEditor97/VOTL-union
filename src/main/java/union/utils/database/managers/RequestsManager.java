@@ -1,8 +1,6 @@
 package union.utils.database.managers;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import union.utils.database.DBUtil;
@@ -16,7 +14,7 @@ public class RequestsManager extends LiteDBBase {
 		super(util);
 	}
 
-	public void createRoleRequest(String guildId, String userId, String roleIds, long secondsAlive) {
+	/* public void createRoleRequest(String guildId, String userId, String roleIds, long secondsAlive) {
 		insert(TABLE, List.of("guildId", "userId", "roleIds", "expiresAt"), List.of(guildId, userId, roleIds, Instant.now().plusSeconds(secondsAlive).getEpochSecond()));
 	}
 
@@ -27,9 +25,9 @@ public class RequestsManager extends LiteDBBase {
 	public boolean existsRoleRequest(String guildId, String userId) {
 		if (selectOne(TABLE, "userId", List.of("guildId", "userId"), List.of(guildId, userId)) == null) return false;
 		return true;
-	}
+	} */
 
-	public void deleteRoleRequest(String guildId, String userId) {
+	public void deleteRequest(String guildId, String userId) {
 		delete(TABLE, List.of("guildId", "userId"), List.of(guildId, userId));
 	}
 
@@ -37,10 +35,10 @@ public class RequestsManager extends LiteDBBase {
 		deleteExpired(TABLE, Instant.now().getEpochSecond());
 	}
 
-	public List<String> getRoles(String guildId, String userId) {
+	/* public List<String> getRoles(String guildId, String userId) {
 		Object data = selectOne(TABLE, "roleIds", List.of("guildId", "userId"), List.of(guildId, userId));
 		if (data == null || data.equals("")) return Collections.emptyList();
 		return Arrays.asList(String.valueOf(data).split(";"));
-	}
+	} */
 	
 }

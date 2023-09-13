@@ -23,7 +23,7 @@ public class TicketManager extends LiteDBBase {
 
 	// add new ticket
 	public void addRoleTicket(Integer ticketId, String userId, String guildId, String channelId, String roleIds) {
-		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "tag", "roleIds"),
+		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "tagId", "roleIds"),
 			List.of(ticketId, userId, guildId, channelId, 1, roleIds));
 	}
 
@@ -37,6 +37,12 @@ public class TicketManager extends LiteDBBase {
 	// update mod
 	public void setClaimed(String channelId, String modId) {
 		update(TABLE, "modId", modId, "channelId", channelId);
+	}
+
+	public String getClaimer(String channelId) {
+		Object data = selectOne(TABLE, "modId", "channelId", channelId);
+		if (data == null) return null;
+		return (String) data;
 	}
 
 	// update status
@@ -62,10 +68,20 @@ public class TicketManager extends LiteDBBase {
 		return Integer.valueOf(data.toString());
 	}
 
-	public Integer getAllOpenedByUser(String userId, String guildId) {
+	public Integer countAllOpenedByUser(String userId, String guildId) {
 		Object data = countSelect(TABLE, List.of("userId", "guildId", "closed"), List.of(userId, guildId, 0));
 		if (data == null) return null;
 		return Integer.valueOf(data.toString());
+	}
+
+	public List<String> getOpenedChannels() {
+		List<Object> data = select(TABLE, "channelId", List.of("closed", "closeRequested"), List.of(0, 0));
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(e -> (String) e).toList();
+	}
+
+	public List<String> getExpiredTickets() {
+		return getExpiredTickets(TABLE, Instant.now().getEpochSecond());
 	}
 
 	public List<String> getRoleIds(String channelId) {
@@ -90,5 +106,16 @@ public class TicketManager extends LiteDBBase {
 		return countTicketsClaimed(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond());
 	}
 
+	/**
+	 * Close requested:<p>
+	 *  0 - not requested;
+	 *  >1 - requested, await, close when time expires;  
+	 *  <-1 - closure canceled, do not request.
+	 * @param channelId
+	 * @param closeRequested
+	 */
+	public void setRequestStatus(String channelId, Long closeRequested) {
+		update(TABLE, "closeRequested", closeRequested, "channelId", channelId);
+	}
 
 }

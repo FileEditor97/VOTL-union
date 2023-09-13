@@ -72,13 +72,15 @@
 	},
 	"ticket": {
 		"close": "Close",
+		"cancel": "Cancel",
 		"rename": "Rename",
 		"role": "role",
 		"role_approve": "Approve all",
 		"role_title": "Requested roles",
 		"role_header": "**provide the following information:**",
 		"role_proof": "Proofs as requested by moderator.",
-		"role_footer": "*After the issuance of roles - the request will be deleted.*\n*Do not close the ticket, wait for the moderator!*"
+		"role_footer": "*After the issuance of roles - the request will be deleted.*\n*Do not close the ticket, wait for the moderator!*",
+		"autoclose_cancel": "The automated close on this ticket has been cancelled."
 	},
 	"logger": {
 		"user": "User",
@@ -1031,7 +1033,10 @@
 				"role_added": "Request approved, roles assigned to user.",
 				"role_dm": "{server}\n> Roles [{roles}] requested in ticket `role-{id}` assigned!\n-{mod}",
 				"role_none": "There aren't any roles that can be assigned. Manually assign user requested roles.",
-				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button."
+				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button.",
+				"close_request": "Hey! {user}, support have indicated that the ticket is now resolved. Would you like to close the ticket or do you have further questions? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
+				"close_auto": "Hi! {user}, this ticket has not received a response for some time. Do you want to close the ticket or is your request still unresolved? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
+				"user_left": "Sadly, the user that created this ticket has left the guild. If they rejoin, it will not automatically re-add them."
 			},
 			"rpanel": {
 				"help": "Manage the panels of the ticketing module",

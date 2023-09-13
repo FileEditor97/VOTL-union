@@ -2,6 +2,8 @@ package union.services;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,18 +13,28 @@ import java.util.concurrent.CompletableFuture;
 import union.App;
 import union.utils.database.DBUtil;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import net.dv8tion.jda.api.utils.TimeFormat;
+import net.dv8tion.jda.api.utils.TimeUtil;
+
 
 public class ScheduledCheck {
 
 	private final App bot;
 	private final DBUtil db;
 	public Instant lastAccountCheck;
+
+	private final Integer CLOSE_AFTER_DELAY = 12; // hours
 
 	public ScheduledCheck(App bot) {
 		this.bot = bot;
@@ -33,6 +45,8 @@ public class ScheduledCheck {
 	public void moderationChecks() {
 		CompletableFuture.runAsync(() -> {
 			checkUnbans();
+		}).thenRunAsync(() -> {
+			checkTicketStatus();
 		});
 	}
 	
@@ -50,6 +64,45 @@ public class ScheduledCheck {
 				f -> bot.getLogger().warn("Exception at unban attempt", f.getMessage())
 			);
 			db.ban.setInactive(banId);
+		});
+	}
+
+	private void checkTicketStatus() {
+		List<String> opened = db.ticket.getOpenedChannels();
+		opened.forEach(channelId -> {
+			GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
+			Integer autocloseTime = db.ticketSettings.getAutocloseTime(channel.getGuild().getId());
+			if (autocloseTime == 0) return;
+
+			if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isAfter(OffsetDateTime.now().minusHours(autocloseTime))) {
+				Guild guild = channel.getGuild();
+
+				Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.DAYS);
+				MessageEmbed embed = new EmbedBuilder()
+					.setColor(db.guild.getColor(guild.getId()))
+					.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_auto")
+						.replace("{user}", User.fromId(db.ticket.getUserId(channelId)).getAsMention())
+						.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))
+					.build();
+				Button close = Button.primary("ticket:close", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.close"));
+				Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
+				
+				db.ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
+				channel.sendMessageEmbeds(embed).addActionRow(close, cancel).queue();
+			}
+		});
+
+		opened = db.ticket.getExpiredTickets();
+		opened.forEach(channelId -> {
+			GuildChannel channel = bot.JDA.getGuildChannelById(channelId);
+			if (channel == null) {
+				db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
+				return;
+			}
+			bot.getTicketUtil().closeTicket(channelId, null, null, failure -> {
+				bot.getLogger().error("Failed to delete ticket channel, either already deleted or unknown error", failure);
+				db.ticket.setRequestStatus(channelId, -1L);
+			});
 		});
 	}
 

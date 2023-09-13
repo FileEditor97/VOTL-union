@@ -24,14 +24,34 @@ public class TicketGlobalManager extends LiteDBBase {
 		return true;
 	}
 
+	public void setRowText(String guildId, Integer row, String text) {
+		update(TABLE, "rowName"+row, text, "guildId", guildId);
+	}
+
 	public String getRowText(String guildId, Integer row) {
 		Object data = selectOne(TABLE, "rowName"+row, "guildId", guildId);
 		if (data == null) return "";
 		return data.toString();
 	}
 
-	public void setRowText(String guildId, Integer row, String text) {
-		update(TABLE, "rowName"+row, text, "guildId", guildId);
+	public void setAutocloseTime(String guildId, Integer hours) {
+		update(TABLE, "autocloseTime", hours, "guildId", guildId);
+	}
+
+	public Integer getAutocloseTime(String guildId) {
+		Object data = selectOne(TABLE, "autocloseTime", "guildId", guildId);
+		if (data == null) return 12;
+		return (Integer) data;
+	}
+
+	public void setAutocloseLeft(String guildId, Boolean close) {
+		update(TABLE, "autocloseLeft", close, "guildId", guildId);
+	}
+
+	public Boolean getAutocloseLeft(String guildId) {
+		Object data = selectOne(TABLE, "autocloseLeft", "guildId", guildId);
+		if (data == null) return false;
+		return data.equals(1);
 	}
 
 }

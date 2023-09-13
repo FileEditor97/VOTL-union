@@ -87,6 +87,7 @@ public class App {
 	private final TimeUtil timeUtil;
 	private final LogUtil logUtil;
 	private final SteamUtil steamUtil;
+	private final TicketUtil ticketUtil;
 
 	public App() {
 
@@ -110,6 +111,7 @@ public class App {
 		timeUtil	= new TimeUtil(this);
 		logUtil		= new LogUtil(this);
 		steamUtil	= new SteamUtil();
+		ticketUtil	= new TicketUtil(this);
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
@@ -269,6 +271,10 @@ public class App {
 
 	public SteamUtil getSteamUtil() {
 		return steamUtil;
+	}
+
+	public TicketUtil getTicketUtil() {
+		return ticketUtil;
 	}
 
 	public LogListener getLogListener() {

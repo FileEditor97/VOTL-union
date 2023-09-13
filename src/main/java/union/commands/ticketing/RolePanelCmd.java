@@ -76,9 +76,9 @@ public class RolePanelCmd extends CommandBase {
 			List<ActionRow> actionRows = new ArrayList<ActionRow>();
 
 			if (assignRolesSize > 0) {
-				actionRows.add(ActionRow.of(Button.success("role_start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
+				actionRows.add(ActionRow.of(Button.success("role:start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
 			}
-			actionRows.add(ActionRow.of(Button.danger("role_remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
+			actionRows.add(ActionRow.of(Button.danger("role:remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
 			if (!toggleRoles.isEmpty()) {
 				List<Button> buttons = new ArrayList<Button>();
 				toggleRoles.forEach(data -> {
@@ -87,7 +87,7 @@ public class RolePanelCmd extends CommandBase {
 					Role role = guild.getRoleById(roleId);
 					if (role == null) return;
 					String description = data.get("description").toString();
-					buttons.add(Button.primary("toggle:"+roleId, description.substring(0, Math.min(description.length(), 80))));
+					buttons.add(Button.primary("role:toggle:"+roleId, description.substring(0, Math.min(description.length(), 80))));
 				});
 				actionRows.add(ActionRow.of(buttons));
 			}
@@ -149,9 +149,9 @@ public class RolePanelCmd extends CommandBase {
 				List<ActionRow> actionRows = new ArrayList<ActionRow>();
 
 				if (assignRolesSize > 0) {
-					actionRows.add(ActionRow.of(Button.success("role_start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
+					actionRows.add(ActionRow.of(Button.success("role:start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
 				}
-				actionRows.add(ActionRow.of(Button.danger("role_remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
+				actionRows.add(ActionRow.of(Button.danger("role:remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
 				if (!toggleRoles.isEmpty()) {
 					List<Button> buttons = new ArrayList<Button>();
 					toggleRoles.forEach(data -> {
@@ -160,7 +160,7 @@ public class RolePanelCmd extends CommandBase {
 						Role role = guild.getRoleById(roleId);
 						if (role == null) return;
 						String description = data.get("description").toString();
-						buttons.add(Button.primary("toggle:"+roleId, (description.length() > 100 ? description.substring(0, 100) : description)));
+						buttons.add(Button.primary("role_toggle:"+roleId, (description.length() > 100 ? description.substring(0, 100) : description)));
 					});
 					actionRows.add(ActionRow.of(buttons));
 				}

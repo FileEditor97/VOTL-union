@@ -37,7 +37,7 @@ public class AccountContext extends UserContextMenu {
 			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
 			.setTitle(bot.getDBUtil().verifyRequest.getSteamName(steam64), profileUrl)
 			.setThumbnail(avatarUrl)
-			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), bot.getSteamUtil().convertSteam64toSteamID(steam64), false)
+			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), bot.getSteamUtil().convertSteam64toSteamID(steam64)+"\n"+steam64, false)
 			.addField(lu.getUserText(event, "bot.verification.account.field_discord"), user.getAsMention(), false);
 		
 		event.replyEmbeds(builder.build()).setEphemeral(true).queue();

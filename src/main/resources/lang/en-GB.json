@@ -153,7 +153,11 @@
 			"reason": "Reason"
 		},
 		"ticket": {
-			"closed": "Ticket closed | {ticket}",
+			"closed_title": "Ticket Closed",
+			"closed_value": "Ticket Name: {name}\nClosed By: {closed}\nCreated By: {created}\nClaimed By: {claimed}\n\nPlease see the attachment for the transcript.",
+			"closed_pm": "Please see attached transcript for your recent ticket at **{guild}**.\n\n**Closed By**: {closed}\n**Close date**: {time}\n**Close Reason**: {reason}",
+			"autoclosed": "No response, autoclosed",
+			"unclaimed": "UnClaimed",
 			"roles_title": "Roles issued | {ticket}",
 			"roles": "Assigned roles"
 		},

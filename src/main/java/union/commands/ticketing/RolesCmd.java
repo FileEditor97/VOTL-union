@@ -139,9 +139,9 @@ public class RolesCmd extends CommandBase {
 						new Choice(lu.getText(RoleType.TOGGLE.getPath()), RoleType.TOGGLE.toString()),
 						new Choice(lu.getText(RoleType.CUSTOM.getPath()), RoleType.CUSTOM.toString())
 					)), */
-				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"), false)
+				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"))
 					.setMaxLength(100),
-				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"), false)
+				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"))
 					.setRequiredRange(1, 3)
 			);
 		}
@@ -160,8 +160,8 @@ public class RolesCmd extends CommandBase {
 			
 			StringBuffer response = new StringBuffer();
 
-			String description = event.optString("description");
-			if (description != null) {
+			if (event.hasOption("description")) {
+				String description = event.optString("description");
 				if (description.toLowerCase().equals("null")) description = null;
 
 				Integer oldType = bot.getDBUtil().role.getType(role.getId());
@@ -212,8 +212,8 @@ public class RolesCmd extends CommandBase {
 				response.append(lu.getText(event, path+".changed_type").replace("{type}", type));
 			} */
 
-			Integer row = event.optInteger("row");
-			if (row > 0) {
+			if (event.hasOption("row")) {
+				Integer row = event.optInteger("row");
 				bot.getDBUtil().role.setRow(role.getId(), row);
 				response.append(lu.getText(event, path+".changed_row").replace("{row}", row.toString()));
 			}

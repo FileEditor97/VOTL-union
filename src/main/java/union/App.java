@@ -123,7 +123,7 @@ public class App {
 		executorService = Executors.newScheduledThreadPool(4, r -> (new Thread(r, "UTB Scheduler")));
 		scheduledCheck	= new ScheduledCheck(this);
 		
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 15, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 10, TimeUnit.MINUTES);
 		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
 
 		// Define a command client

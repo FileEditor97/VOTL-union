@@ -69,6 +69,48 @@ public class LiteDBBase {
 		return result;
 	}
 
+	protected Map<String, Object> selectOne(String table, List<String> selectKeys, String condKey, Object condValueObj) {
+		return selectOne(table, selectKeys, List.of(condKey), List.of(condValueObj));
+	}
+
+	protected Map<String, Object> selectOne(final String table, final List<String> selectKeys, final List<String> condKeys, final List<Object> condValuesObj) {
+		List<String> condValues = new ArrayList<String>(condValuesObj.size());
+		for (Object obj : condValuesObj) {
+			condValues.add(quote(obj));
+		}
+
+		String sql = "SELECT * FROM "+table+" WHERE ";
+		for (int i = 0; i < condKeys.size(); i++) {
+			if (i > 0) {
+				sql += " AND ";
+			}
+			sql += condKeys.get(i)+"="+condValues.get(i);
+		}
+
+		Map<String, Object> result = new HashMap<>();
+		util.logger.debug(sql);
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			
+			List<String> keys = new ArrayList<>();
+			if (selectKeys.size() == 0) {
+				for (int i = 1; i<=rs.getMetaData().getColumnCount(); i++) {
+					keys.add(rs.getMetaData().getColumnName(i));
+				}
+			} else {
+				keys = selectKeys;
+			}
+
+			for (String key : keys) {
+				result.put(key, rs.getObject(key));
+			}
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return result;
+	}
+
 	protected List<Object> select(String table, String selectKey, String condKey, Object condValueObj) {
 		return select(table, selectKey, List.of(condKey), List.of(condValueObj));
 	}

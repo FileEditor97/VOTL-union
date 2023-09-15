@@ -21,15 +21,18 @@ import union.utils.database.managers.AccessManager;
 import union.utils.database.managers.BanManager;
 import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildSettingsManager;
+import union.utils.database.managers.GuildVoiceManager;
 import union.utils.database.managers.ModuleManager;
 import union.utils.database.managers.RequestsManager;
 import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
+import union.utils.database.managers.UserSettingsManager;
 import union.utils.database.managers.TicketGlobalManager;
 import union.utils.database.managers.VerifyCacheManager;
 import union.utils.database.managers.VerifyManager;
 import union.utils.database.managers.VerifyRequestManager;
+import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
 import union.utils.file.FileManager;
 
@@ -53,6 +56,9 @@ public class DBUtil {
 	public final RoleManager role;
 	public final TicketManager ticket;
 	public final RequestsManager requests;
+	public final GuildVoiceManager guildVoice;
+	public final UserSettingsManager user;
+	public final VoiceChannelManager voice;
 	public final VerifyRequestManager verifyRequest;
 
 	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
@@ -83,6 +89,9 @@ public class DBUtil {
 		role = new RoleManager(this);
 		ticket = new TicketManager(this);
 		requests = new RequestsManager(this);
+		guildVoice = new GuildVoiceManager(this);
+		user = new UserSettingsManager(this);
+		voice = new VoiceChannelManager(this);
 		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();

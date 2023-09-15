@@ -15,9 +15,11 @@ import union.commands.ticketing.RolesCmd;
 import union.commands.ticketing.TicketCountCmd;
 import union.commands.ticketing.RolePanelCmd;
 import union.commands.verification.*;
+import union.commands.voice.VoiceCmd;
 import union.commands.webhook.WebhookCmd;
 import union.listeners.*;
 import union.menus.AccountContext;
+import union.menus.ReportContext;
 import union.objects.command.CommandClient;
 import union.objects.command.CommandClientBuilder;
 import union.objects.constants.Constants;
@@ -70,6 +72,7 @@ public class App {
 	private final GuildListener guildListener;
 	private final AutoCompleteListener acListener;
 	private final InteractionListener interactionListener;
+	private final VoiceListener voiceListener;
 	private final MessageListener messagesListener;
 	private final CommandListener commandListener;
 
@@ -117,6 +120,7 @@ public class App {
 		guildListener		= new GuildListener(this);
 		logListener			= new LogListener(this);
 		interactionListener	= new InteractionListener(this, WAITER);
+		voiceListener		= new VoiceListener(this);
 		messagesListener	= new MessageListener(this);
 		commandListener		= new CommandListener();
 
@@ -171,10 +175,13 @@ public class App {
 				// ticketing
 				new RolePanelCmd(this),
 				new TicketCountCmd(this),
-				new RolesCmd(this)
+				new RolesCmd(this),
+				// voice
+				new VoiceCmd(this)
 			)
 			.addContextMenus(
-				new AccountContext(this)
+				new AccountContext(this),
+				new ReportContext(this)
 			)
 			.setListener(commandListener)
 			.setDevGuildIds(fileManager.getStringList("config", "dev-servers").toArray(new String[0]))
@@ -196,7 +203,7 @@ public class App {
 				CacheFlag.MEMBER_OVERRIDES,		// channel permission overrides
 				CacheFlag.ROLE_TAGS				// role search
 			)
-			.addEventListeners(commandClient, WAITER, guildListener, acListener, interactionListener, messagesListener);
+			.addEventListeners(commandClient, WAITER, guildListener, acListener, interactionListener, voiceListener, messagesListener);
 
 		JDA jda = null;
 

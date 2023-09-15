@@ -15,7 +15,7 @@ public class AccountContext extends UserContextMenu {
 	public AccountContext(App bot) {
 		this.bot = bot;
 		this.lu = bot.getLocaleUtil();
-		this.name = "UnionTeams Account";
+		this.path = "menus.account";
 		this.module = CmdModule.VERIFICATION;
 		this.accessLevel = CmdAccessLevel.MOD;
 	}

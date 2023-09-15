@@ -14,6 +14,7 @@
 			"other_channel": "You lack the permission `{permission}` in the channel {channel} to do this command."
 		},
 		"no_send_perm": "I have no permission to send messages in your channel. Pls fix!",
+		"no_channel": "You don't own/has any voice channel.",
 		"guild_not_setup": "Server is not configured! Check `/help` for setup command.",
 		"access_level_low": "You don't have necessary access level to perform this command.",
 		"command": {
@@ -63,6 +64,8 @@
 		"moderation": "Moderation category",
 		"verification": "Verification",
 		"ticketing": "Tickets",
+		"voice": "Custom voicechannels",
+		"report": "Report function",
 		"module_disabled": "This command(module) is disabled."
 	},
 	"role_type": {
@@ -224,6 +227,66 @@
 					},
 					"not_valid": "Provided URL link is not valid.",
 					"done": "Appeal link set to `{link}`"
+				},
+				"report": {
+					"help": "Assign channel for receiving user reports/complains",
+					"usage": "report <#Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel to which to send complaints"
+					},
+					"cant_send": "I cant send messages in selected channel! Check my permissions or select other channel.",
+					"done": "Selected {channel} to receive user reports."
+				},
+				"voice": {
+					"help": "Manage custom VoiceChannel settings",
+					"create": {
+						"help": "Create custom VoiceChannels category",
+						"usage": "voice create",
+						"category_name": "Voice Channels",
+						"channel_name": "★ Join to create",
+						"done": "Successfully created channel {channel}! Setup is done."
+					},
+					"panel": {
+						"help": "Create panel for controlling custom VoiceChannels",
+						"usage": "voice panel <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select channel in which to create the panel"
+						},
+						"lock": "Lock",
+						"unlock": "Unlock",
+						"ghost": "Ghost",
+						"unghost": "Unghost",
+						"name": "Rename",
+						"limit": "Set limit",
+						"permit": "Permit",
+						"reject": "Reject",
+						"perms": "Permissions",
+						"delete": "Delete channel",
+						"embed_title": "Personal voice channels",
+						"embed_value": "To create your personal voice channel, join <#{id}>.\n\nYou can control your voice channel either by pressing buttons bellow or using my slash commands.",
+						"done": "Panel created in {channel}!"
+					},
+					"name": {
+						"help": "Sets default name for custom VoiceChannels",
+						"usage": "voice name <Default channel name>",
+						"name": {
+							"name": "name",
+							"help": "Enter string 1 <> 100 symbols, supports '{name}'"
+						},
+						"invalid_range": "Channel name must be in range from 1 to 100 symbols and not blank.",
+						"done": "Successfully changed default VoiceChannels name to `{value}`!"
+					},
+					"limit": {
+						"help": "Sets default user limit for custom VoiceChannels",
+						"usage": "voice limit <Default channel limit>",
+						"limit": {
+							"name": "limit",
+							"help": "Enter integer 0 <> 99"
+						},
+						"done": "Successfully changed default VoiceChannels limit to `{value}`!"
+					}
 				}
 			},
 			"module": {
@@ -358,6 +421,142 @@
 					"group": "Group actions",
 					"verify": "Verifications",
 					"ticketing": "Ticket actions"
+				}
+			}
+		},
+		"voice": {
+			"listener": {
+				"default_name": "{user}'s channel",
+				"cooldown": "Creating voice channels to quickly, wait a bit! Or you already own maximum VoiceChannels.",
+				"not_in_voice": "You are not connected to any voice channel.",
+				"panel": {
+					"lock": "Channel locked!",
+					"unlock": "Channel unlocked!",
+					"ghost": "Channel ghosted!",
+					"unghost": "Channel unghosted!",
+					"modal": "Provide information",
+					"name_label": "Channel name",
+					"name_done": "Channel renamed to {name}!",
+					"limit_label": "Channel limit",
+					"limit_done": "Channel user limit set to {limit}!",
+					"permit_label": "Select members and/or roles to which grand access to your channel.",
+					"permit_done": "Successfully permited {targets} to connect to your channel!",
+					"reject_label": "Select members and/or roles to whom deny access to your channel.",
+					"reject_done": "Successfully rejected {targets} from connecting to your channel!",
+					"not_self": "You can't add/remove yourself or me.",
+					"perms": {
+						"title": "Channel permissions for `{channel}`",
+						"field": "**Can View | Can Join | Holder**",
+						"everyone": "Everyone",
+						"roles": "**Roles:**",
+						"members": "**Members:**",
+						"none": "*None*"
+					}
+				}
+			},
+			"voice": {
+				"help": "Private VoiceChannels managment",
+				"lock": {
+					"help": "Locks your channel for @everyone (except: allowed users)",
+					"usage": "lock",
+					"done": "Successfully locked your channel!"
+				},
+				"unlock": {
+					"help": "Unlocks your channel for @everyone (except: disallowed users)",
+					"usage": "unlock",
+					"done": "Successfully unlocked your channel!"
+				},
+				"ghost": {
+					"help": "Hides your channel for @everyone (except: allowed users)",
+					"usage": "ghost",
+					"done": "Successfully ghosted your channel!"
+				},
+				"unghost": {
+					"help": "Unhides your channel for @everyone",
+					"usage": "unghost",
+					"done": "Successfully unghosted your channel!"
+				},
+				"name": {
+					"help": "Control your VC's name",
+					"set": {
+						"help": "Set your VC's name",
+						"usage": "name set <name>",
+						"name": {
+							"name": "name",
+							"help": "Enter string 1 <> 100 symbols, supports '{name}'"
+						}
+					},
+					"reset": {
+						"help": "Reset your VC's name to server's default",
+						"usage": "name reset"
+					},
+					"done": "Successfully changed your's channel name to `{value}`!"
+				},
+				"limit": {
+					"help": "Control your VC's user limit",
+					"set": {
+						"help": "Set your VC's user limit",
+						"usage": "limit set <limit>",
+						"limit": {
+							"name": "limit",
+							"help": "Enter integer 0 <> 99"
+						}
+					},
+					"reset": {
+						"help": "Reset your VC's user limit to server's default",
+						"usage": "limit reset"
+					},
+					"done": "Successfully changed your's channel limit to `{value}`!"
+				},
+				"claim": {
+					"help": "Claim ownership of channel once owner has left",
+					"usage": "claim",
+					"has_channel": "You already own other VoiceChannel.",
+					"not_custom": "You can't own this VoiceChannel.",
+					"has_owner": "The owner of this channel is in this VoiceChannel.",
+					"done": "You are now owner of this VoiceChannel {channel}!"
+				},
+				"permit": {
+					"help": "Gives the user permission to join your VC",
+					"usage": "permit <@Role | @Member | ...>",
+					"mentions": {
+						"name": "mentions",
+						"help": "Enter Role or Member mention/-s"
+					},
+					"invalid_args": "You didn't mention role/-s or any member/-s.",
+					"not_self": "You can't add yourself or me.",
+					"done": "Successfully permited {targets} to connect to your channel!"
+				},
+				"reject": {
+					"help": "Withdraw the user permission to join your VC",
+					"usage": "reject <@Role | @Member | ...>",
+					"mentions": {
+						"name": "mentions",
+						"help": "Enter Role or Member mention/-s"
+					},
+					"invalid_args": "You didn't mention role/-s or any member/-s.",
+					"not_self": "You can't remove yourself or me.",
+					"done": "Successfully rejected {targets} from connecting to your channel!"
+				},
+				"perms": {
+					"help": "Manage your VoiceChannel's permissions",
+					"view": {
+						"help": "View VC's permissions",
+						"usage": "perms view",
+						"embed": {
+							"title": "Channel permissions for `{channel}`",
+							"field": "**Can View | Can Join | Holder**",
+							"everyone": "Everyone",
+							"roles": "**Roles:**",
+							"members": "**Members:**",
+							"none": "*None*"
+						}
+					},
+					"reset": {
+						"help": "Reset VC's permissions to default (sync with category)",
+						"usage": "perms reset",
+						"done": "Successfully synced channel permissions with category!"
+					}
 				}
 			}
 		},
@@ -872,6 +1071,7 @@
 					"moderation": "Moderation",
 					"verification": "Verification",
 					"ticketing": "Tickets",
+					"voice": "Voice",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -1172,7 +1372,23 @@
 					"title": "Managed roles",
 					"none": "*None*"
 				}
-			}
+		}
+	},
+	"menus": {
+		"account": {
+			"name": "Unionteams Account"
+		},
+		"report": {
+			"name": "Report message",
+			"done": "Message has been reported to the server moderation!",
+			"title": "Message reported",
+			"user": "User",
+			"channel": "Channel",
+			"complain": "Complained",
+			"content": "Content",
+			"link": "Open message",
+			"delete": "Delete message",
+			"deleted": "Message deleted by {name}!"
 		}
 	}
 }

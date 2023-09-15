@@ -451,7 +451,8 @@
 						"roles": "**Roles:**",
 						"members": "**Members:**",
 						"none": "*None*"
-					}
+					},
+					"delete": "Channel deleted!"
 				}
 			},
 			"voice": {

@@ -35,6 +35,7 @@ public class HelpCmd extends CommandBase {
 				.addChoice("Moderation", "moderation")
 				.addChoice("Verification", "verification")
 				.addChoice("Ticketing", "ticketing")
+				.addChoice("Voice", "voice")
 				.addChoice("Other", "other"),
 			new OptionData(OptionType.STRING, "command", lu.getText(path+".command.help"), false, true).setRequiredLength(3, 20)
 		);

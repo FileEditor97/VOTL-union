@@ -188,20 +188,22 @@ public class App {
 			.build();
 
 		// Build
-		MemberCachePolicy policy = MemberCachePolicy.any(MemberCachePolicy.OWNER);	// only if server owner
+		MemberCachePolicy policy = MemberCachePolicy.any(MemberCachePolicy.VOICE, MemberCachePolicy.OWNER);	// if in voice or server owner
 		
 		acListener = new AutoCompleteListener(commandClient, dbUtil);
 
 		JDABuilder mainBuilder = JDABuilder.createLight(fileManager.getString("config", "bot-token"))
 			.setEnabledIntents(
 				GatewayIntent.GUILD_MEMBERS,			// required for updating member profiles and ChunkingFilter
-				GatewayIntent.GUILD_MESSAGES			// checks for verified
+				GatewayIntent.GUILD_MESSAGES,			// checks for verified
+				GatewayIntent.GUILD_VOICE_STATES		// required for CF VOICE_STATE and CP VOICE
 			)
 			.setMemberCachePolicy(policy)
 			.setChunkingFilter(ChunkingFilter.ALL)		// chunk all guilds
 			.enableCache(
 				CacheFlag.MEMBER_OVERRIDES,		// channel permission overrides
-				CacheFlag.ROLE_TAGS				// role search
+				CacheFlag.ROLE_TAGS,			// role search
+				CacheFlag.VOICE_STATE			// get members voice status
 			)
 			.addEventListeners(commandClient, WAITER, guildListener, acListener, interactionListener, voiceListener, messagesListener);
 

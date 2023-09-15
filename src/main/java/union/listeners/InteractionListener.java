@@ -642,7 +642,7 @@ public class InteractionListener extends ListenerAdapter {
 		String view = contains(publicOverride, Permission.VIEW_CHANNEL);
 		String join = contains(publicOverride, Permission.VOICE_CONNECT);
 		
-		embedBuilder = embedBuilder.appendDescription("> %s | %s | `%s`\n\n%s\n".formatted(lu.getText(event, "bot.voice.listener.panel.perms.everyone"), view, join,
+		embedBuilder = embedBuilder.appendDescription("> %s | %s | `%s`\n\n%s\n".formatted(view, join, lu.getText(event, "bot.voice.listener.panel.perms.everyone"),
 			lu.getText(event, "bot.voice.listener.panel.perms.roles")));
 
 		//Roles
@@ -661,7 +661,7 @@ public class InteractionListener extends ListenerAdapter {
 				view = contains(ov, Permission.VIEW_CHANNEL);
 				join = contains(ov, Permission.VOICE_CONNECT);
 
-				embedBuilder.appendDescription("> %s | %s | `%s`\n".formatted(ov.getRole().getName(), view, join));
+				embedBuilder.appendDescription("> %s | %s | `%s`\n".formatted(view, join, ov.getRole().getName()));
 			}
 		}
 		embedBuilder.appendDescription("\n%s\n".formatted(lu.getText(event, "bot.voice.listener.panel.perms.members")));
@@ -688,7 +688,7 @@ public class InteractionListener extends ListenerAdapter {
 						String join2 = contains(ov, Permission.VOICE_CONNECT);
 
 						Member find = members.stream().filter(m -> m.getId().equals(ov.getId())).findFirst().get(); 
-						embedBuilder2.appendDescription("> %s | %s | `%s`\n".formatted(find.getEffectiveName(), view2, join2));
+						embedBuilder2.appendDescription("> %s | %s | `%s`\n".formatted(view2, join2, find.getEffectiveName()));
 					}
 				}
 
@@ -802,7 +802,7 @@ public class InteractionListener extends ListenerAdapter {
 	public void onEntitySelectInteraction(@Nonnull EntitySelectInteractionEvent event) {
 		String menuId = event.getComponentId();
 		if (menuId.startsWith("voice")) {
-			event.deferReply(true).queue();
+			//event.deferReply(true).queue();
 
 			Member author = event.getMember();
 			if (!author.getVoiceState().inAudioChannel()) {

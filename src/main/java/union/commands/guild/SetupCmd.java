@@ -189,8 +189,8 @@ public class SetupCmd extends CommandBase {
 		public Voice(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "voice";
-			this.path = "bot.guild.setup.voice";
+			this.name = "create";
+			this.path = "bot.guild.setup.voice.create";
 			this.botPermissions = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS, Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT, Permission.VOICE_MOVE_OTHERS};
 			this.subcommandGroup = new SubcommandGroupData("voice", lu.getText("bot.guild.setup.voice.help"));
 			this.module = CmdModule.VOICE;
@@ -204,12 +204,12 @@ public class SetupCmd extends CommandBase {
 			String guildId = guild.getId();
 
 			try {
-				guild.createCategory(lu.getText(event, path+".category"))
+				guild.createCategory(lu.getLocalized(event.getGuildLocale(), path+".category_name"))
 					.addPermissionOverride(guild.getBotRole(), Arrays.asList(getBotPermissions()), null)
 					.queue(
 						category -> {
 							try {
-								category.createVoiceChannel(lu.getText(event, path+".channel"))
+								category.createVoiceChannel(lu.getLocalized(event.getGuildLocale(), path+".channel_name"))
 									.addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VOICE_SPEAK))
 									.queue(
 										channel -> {

@@ -31,6 +31,10 @@ public class RequestsManager extends LiteDBBase {
 		delete(TABLE, List.of("guildId", "userId"), List.of(guildId, userId));
 	}
 
+	public void deleteAll(String guildId) {
+		delete(TABLE, "guildId", guildId);
+	}
+
 	public void purgeExpiredRequests() {
 		deleteExpired(TABLE, Instant.now().getEpochSecond());
 	}

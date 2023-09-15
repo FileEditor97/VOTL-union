@@ -45,7 +45,7 @@ dependencies {
 	implementation 'org.apache.groovy:groovy:4.0.14'				// Groovy - code evaluation
 
 	// Chewtils commands
-	implementation 'org.json:json:20230618'		
+	implementation 'org.json:json:20230618'
 }
 
 // Changes builded libraries directory from 'libs' to 'lib'

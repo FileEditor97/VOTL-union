@@ -33,6 +33,8 @@ import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
+import union.objects.CmdAccessLevel;
+
 /**
  * Middleware for child context menu types. Anything that extends this class will inherit the following options.
  *
@@ -160,16 +162,10 @@ public abstract class ContextMenu extends Interaction
 	public CommandData buildCommandData() {
 		// Set attributes
 		this.lu = bot.getLocaleUtil();
+		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
 
 		// Make the command data
 		CommandData data = Commands.context(getType(), name);
-
-		if (this.isOwnerCommand() || this.getAccessLevel().getLevel() >= 2)
-			data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
-		else
-			data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(this.getUserPermissions()));
-
-		data.setGuildOnly(this.guildOnly);
 
 		//Check name localizations
 		if (!getNameLocalization().isEmpty())
@@ -177,6 +173,13 @@ public abstract class ContextMenu extends Interaction
 			//Add localizations
 			data.setNameLocalizations(getNameLocalization());
 		}
+
+		if (!isOwnerCommand() || getAccessLevel().isLowerThan(CmdAccessLevel.ADMIN))
+			data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(getUserPermissions()));
+		else
+			data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
+
+		data.setGuildOnly(this.guildOnly);
 
 		return data;
 	}

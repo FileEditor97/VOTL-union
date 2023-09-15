@@ -188,7 +188,7 @@ public class App {
 			.build();
 
 		// Build
-		MemberCachePolicy policy = MemberCachePolicy.any(MemberCachePolicy.OWNER);	// if pending or server owner
+		MemberCachePolicy policy = MemberCachePolicy.any(MemberCachePolicy.OWNER);	// only if server owner
 		
 		acListener = new AutoCompleteListener(commandClient, dbUtil);
 

@@ -2,7 +2,9 @@
  [![Publish Release](https://github.com/FileEditor97/VOTL-union/actions/workflows/gradle.yml/badge.svg)](https://github.com/FileEditor97/VOTL-union/actions/workflows/gradle.yml)  
  Voice of the Lord - discord bot written on Java using JDA library with Chewtils extention.
 
- Visit website https://votl.vercel.app/
+ Visit website https://votl.fileeditor.dev/
+
+ Fork of primary bot - [VOTL](https://github.com/FileEditor97/VOTL)
 
 ## Config file
  config.json:

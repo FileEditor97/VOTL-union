@@ -40,7 +40,7 @@ public class TicketGlobalManager extends LiteDBBase {
 
 	public Integer getAutocloseTime(String guildId) {
 		Object data = selectOne(TABLE, "autocloseTime", "guildId", guildId);
-		if (data == null) return 12;
+		if (data == null) return 0;
 		return (Integer) data;
 	}
 

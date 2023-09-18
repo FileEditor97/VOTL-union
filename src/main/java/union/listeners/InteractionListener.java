@@ -2,11 +2,13 @@ package union.listeners;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -28,9 +30,13 @@ import net.dv8tion.jda.api.entities.Mentions;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -54,6 +60,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 public class InteractionListener extends ListenerAdapter {
@@ -130,9 +137,17 @@ public class InteractionListener extends ListenerAdapter {
 				case "cancel":
 					buttonTicketCloseCancel(event);
 					break;
+				case "claim":
+					buttonTicketClaim(event);
+					break;
+				case "unclaim":
+					buttonTicketUnclaim(event);
+					break;
 				default:
 					break;
 			}
+		} else if (buttonId.startsWith("tag")) {
+			buttonTagCreateTicket(event);
 		} else if (buttonId.startsWith("delete")) {
 			buttonReportDelete(event);
 		} else if (buttonId.startsWith("voice")) {
@@ -424,7 +439,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		event.deferEdit().queue();
 
-		Integer ticketId = 1 + db.ticket.lastId(guildId);
+		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, 1);
 		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).queue(
 			channel -> {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
@@ -539,6 +554,135 @@ public class InteractionListener extends ListenerAdapter {
 			.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.autoclose_cancel"))
 			.build();
 		event.editMessageEmbeds(embed).setComponents().queue();
+	}
+	
+	// Ticket management
+	private void buttonTicketClaim(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
+			// User has no Mod access (OR admin, server owner, dev) to approve role request
+			replyError(event, "errors.interaction.no_access");
+			return;
+		}
+		String channelId = event.getChannel().getId();
+		if (!db.ticket.isOpened(channelId)) {
+			replyError(event, "bot.ticketing.listener.is_closed");
+			return;
+		}
+
+		db.ticket.setClaimed(channelId, event.getUser().getId());
+		event.replyEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+			.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.claimed").replace("{user}", event.getUser().getAsMention()))
+			.build()
+		).queue();
+
+		Button close = Button.danger("ticket:close", lu.getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒"));
+		Button claimed = Button.primary("ticket:claimed", lu.getLocalized(event.getGuildLocale(), "ticket.claimed").formatted(event.getUser().getName())).asDisabled();
+		Button unclaim = Button.primary("ticket:unclaim", lu.getLocalized(event.getGuildLocale(), "ticket.unclaim"));
+		event.getMessage().editMessageComponents(ActionRow.of(close, claimed, unclaim)).queue();
+	}
+
+	private void buttonTicketUnclaim(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
+			// User has no Mod access (OR admin, server owner, dev) to approve role request
+			replyError(event, "errors.interaction.no_access");
+			return;
+		}
+		String channelId = event.getChannel().getId();
+		if (!db.ticket.isOpened(channelId)) {
+			replyError(event, "bot.ticketing.listener.is_closed");
+			return;
+		}
+
+		db.ticket.setUnclaimed(channelId);
+		event.replyEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+			.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.unclaimed"))
+			.build()
+		).queue();
+
+		Button close = Button.danger("ticket:close", lu.getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒"));
+		Button claim = Button.primary("ticket:claim", lu.getLocalized(event.getGuildLocale(), "ticket.claim"));
+		event.getMessage().editMessageComponents(ActionRow.of(close, claim)).queue();
+	}
+
+	// Tag, create ticket
+	private void buttonTagCreateTicket(ButtonInteractionEvent event) {
+		String guildId = event.getGuild().getId();
+		Integer tagId = Integer.valueOf(event.getComponentId().split(":")[1]);
+
+		String channelId = db.ticket.getOpenedChannel(event.getMember().getId(), guildId, tagId);
+		if (channelId != null) {
+			GuildChannel channel = event.getGuild().getGuildChannelById(channelId);
+			if (channel != null) {
+				event.replyEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+					.setDescription(lu.getText(event, "bot.ticketing.listener.ticket_exists").replace("{channel}", channel.getAsMention()))
+					.build()
+				).setEphemeral(true).queue();
+				return;
+			}
+			db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
+		}
+
+		event.deferReply(true).queue();
+
+		Map<String, Object> tagInfo = db.tags.getTagInfo(tagId);
+		Integer type = (Integer) tagInfo.get("tagType");
+		if (type == null || type.equals(0)) {
+			replyTicketError(event, "Unknown tag with ID: "+tagId);
+			return;
+		}
+
+		User user = event.getUser();
+
+		StringBuffer mentions = new StringBuffer(user.getAsMention());
+		List<String> supportRoles = Optional.ofNullable((String) tagInfo.get("supportRoles")).map(text -> Arrays.asList(text.split(";"))).orElse(Collections.emptyList());
+		supportRoles.forEach(roleId -> mentions.append(" <@&%s>".formatted(roleId)));
+
+		String message = Optional.ofNullable((String) tagInfo.get("message"))
+			.map(text -> setNewline(text).replace("{username}", user.getName()).replace("{tag_username}", user.getAsMention()))
+			.orElse("Ticket's controls");
+		
+		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, tagId);
+		String ticketName = (((String) tagInfo.get("ticketName"))+ticketId).replace("{username}", user.getName());
+		if (type.equals(1)) {
+			// Thread ticket
+			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).queue(channel -> {
+				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);
+				
+				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
+			},
+			failure -> {
+				replyTicketError(event, "Unable to create new thread in this channel");
+			});
+		} else {
+			// Channel ticket
+			String categoryId = (String) tagInfo.get("location");
+			Category category = Optional.ofNullable(categoryId).map(id -> event.getGuild().getCategoryById(id)).orElse(event.getChannel().asTextChannel().getParentCategory());
+			if (category == null) {
+				replyTicketError(event, "Target category not found, with ID: "+categoryId);
+				return;
+			}
+
+			ChannelAction<TextChannel> action = category.createTextChannel(ticketName);
+			for (String roleId : supportRoles) action = action.addRolePermissionOverride(Long.valueOf(roleId), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null);
+			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND))
+				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
+				.queue(channel -> {
+				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);
+
+				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
+			}, 
+			failure -> {
+				replyTicketError(event, "Unable to create new channel in target category, with ID: "+categoryId);
+			});
+		}
+	}
+
+	private String setNewline(String text) {
+		return text.replaceAll("<br>", "\n");
+	}
+
+	private void replyTicketError(ButtonInteractionEvent event, String reason) {
+		event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.cant_create", reason)).queue();
 	}
 
 	// Report
@@ -715,9 +859,9 @@ public class InteractionListener extends ListenerAdapter {
 			String guildId = event.getGuild().getId();
 
 			String main = event.getValue("main").getAsString();
-			db.verify.setMainText(guildId, main.isEmpty() ? "NULL" : main);
+			db.verify.setMainText(guildId, main.isBlank() ? "NULL" : main);
 			String description = event.getValue("description").getAsString();
-			db.verify.setInstructionText(guildId, description.isEmpty() ? "NULL" : description);
+			db.verify.setInstructionText(guildId, description.isBlank() ? "NULL" : description);
 
 			event.replyEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))

@@ -129,7 +129,7 @@ public class App {
 		scheduledCheck	= new ScheduledCheck(this);
 		
 		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 10, TimeUnit.MINUTES);
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
+		//executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()

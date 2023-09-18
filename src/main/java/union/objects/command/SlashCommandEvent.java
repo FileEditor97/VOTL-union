@@ -106,13 +106,13 @@ public class SlashCommandEvent extends SlashCommandInteractionEvent {
 	}
 
 	/**
-	 * Gets the provided Option Key as a int value, or returns {@code 0} if the option cannot be found.
+	 * Gets the provided Option Key as a int value, or returns {@code null} if the option cannot be found.
 	 *
 	 * @param key   The option we want
-	 * @return The provided option, or 0 if the option is not present
+	 * @return The provided option, or null if the option is not present
 	 */
-	public int optInteger(@Nonnull String key) {
-		return optInteger(key, 0);
+	public Integer optInteger(@Nonnull String key) {
+		return optInteger(key, null);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class SlashCommandEvent extends SlashCommandInteractionEvent {
 	 * @param defaultValue The fallback option in case of the absence of the option value
 	 * @return The provided option, or the default value if the option is not present
 	 */
-	public int optInteger(@Nonnull String key, int defaultValue) {
+	public Integer optInteger(@Nonnull String key, Integer defaultValue) {
 		return getOption(key, defaultValue, OptionMapping::getAsInt);
 	}
 

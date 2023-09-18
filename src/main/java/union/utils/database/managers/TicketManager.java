@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import union.utils.database.DBUtil;
 import union.utils.database.LiteDBBase;
@@ -24,19 +25,28 @@ public class TicketManager extends LiteDBBase {
 	// add new ticket
 	public void addRoleTicket(Integer ticketId, String userId, String guildId, String channelId, String roleIds) {
 		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "tagId", "roleIds"),
-			List.of(ticketId, userId, guildId, channelId, 1, roleIds));
+			List.of(ticketId, userId, guildId, channelId, 0, roleIds));
+	}
+
+	public void addTicket(Integer ticketId, String userId, String guildId, String channelId, Integer tagId) {
+		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "tagId"),
+			List.of(ticketId, userId, guildId, channelId, tagId));
 	}
 
 	// get last ticket's ID
-	public Integer lastId(String guildId) {
-		Object data = selectLast(TABLE, "ticketId", "guildId", guildId);
+	public Integer lastIdByTag(String guildId, Integer tagId) {
+		Integer data = selectLastTicketId(TABLE, guildId, tagId);
 		if (data == null) return 0;
-		return Integer.parseInt(data.toString());
+		return data;
 	}
 
 	// update mod
 	public void setClaimed(String channelId, String modId) {
 		update(TABLE, "modId", modId, "channelId", channelId);
+	}
+
+	public void setUnclaimed(String channelId) {
+		update(TABLE, "modId", "NULL", "channelId", channelId);
 	}
 
 	public String getClaimer(String channelId) {
@@ -47,7 +57,7 @@ public class TicketManager extends LiteDBBase {
 
 	// update status
 	public void closeTicket(Instant timeClosed, String channelId, String reason) {
-		update(TABLE, List.of("closed", "timeClosed", "reasonClosed"), List.of(1, timeClosed.getEpochSecond(), reason), "channelId", channelId);
+		update(TABLE, List.of("closed", "timeClosed", "reasonClosed"), List.of(1, timeClosed.getEpochSecond(), Optional.ofNullable(reason).orElse("NULL")), "channelId", channelId);
 	}
 
 	// get status

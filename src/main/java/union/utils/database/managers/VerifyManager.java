@@ -35,33 +35,30 @@ public class VerifyManager extends LiteDBBase {
 	}
 
 	public void setMainText(String guildId, String text) {
-		update(TABLE, "mainText", replaceNewline(text), "guildId", guildId);
+		update(TABLE, "mainText", removeNewline(text), "guildId", guildId);
 	}
 
 	public String getMainText(String guildId) {
 		Object data = selectOne(TABLE, "mainText", "guildId", guildId);
 		if (data == null) return "No text";
-		return escapeCode(String.valueOf(data));
+		return setNewline(String.valueOf(data));
 	}
 
 	public void setInstructionText(String guildId, String text) {
-		update(TABLE, "instructionText", replaceNewline(text), "guildId", guildId);
+		update(TABLE, "instructionText", removeNewline(text), "guildId", guildId);
 	}
 
 	public String getInstructionText(String guildId) {
 		Object data = selectOne(TABLE, "instructionText", "guildId", guildId);
 		if (data == null) return "No text";
-		return escapeCode(String.valueOf(data));
+		return setNewline(String.valueOf(data));
 	}
 
-	private String replaceNewline(String text) {
+	private String removeNewline(String text) {
 		return text.replace("\\n", "<br>");
 	}
 
-	private String escapeCode(String text) {
-		if (text.startsWith("```")) text = text.substring(3, text.length()-3);
-		else if (text.startsWith("`")) text = text.substring(1, text.length()-1);
-		
+	private String setNewline(String text) {
 		return text.replaceAll("<br>", "\n");
 	}
 

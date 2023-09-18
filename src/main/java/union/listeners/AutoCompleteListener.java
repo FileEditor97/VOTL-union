@@ -91,34 +91,58 @@ public class AutoCompleteListener extends ListenerAdapter {
 			}
 		}
 		else if (focusedOption.equals("panel_id")) {
-			Integer id = null;
-			try {
-				id = Integer.valueOf(event.getFocusedOption().getValue());
-			} catch(NumberFormatException ex) {
-				event.replyChoices(Collections.emptyList()).queue();
+			String value = event.getFocusedOption().getValue();
+			String guildId = event.getGuild().getId();
+			if (value.isBlank()) {
+				// if input is blank, show max 25 choices
+				List<Choice> choices = db.panels.getPanelsText(guildId).entrySet().stream()
+					.map(panel -> {
+						return new Choice("%s | %s".formatted(panel.getKey(), panel.getValue()), panel.getKey());
+					})
+					.collect(Collectors.toList());
+				event.replyChoices(choices).queue();
 				return;
 			}
+
+			Integer id = null;
+			try {
+				id = Integer.valueOf(value);
+			} catch(NumberFormatException ex) {}
 			if (id != null) {
+				// if able to convert input to Integer
 				String title = db.panels.getPanelTitle(id);
 				if (title != null) {
-					event.replyChoice("%s - %s".formatted(id, title.substring(0, Math.min(90, title.length()))), id).queue();
+					// if found panel with matching Id
+					event.replyChoice("%s | %s".formatted(id, title.substring(0, Math.min(90, title.length()))), id).queue();
 					return;
 				}
 			}
 			event.replyChoices(Collections.emptyList()).queue();
 		}
 		else if (focusedOption.equals("tag_id")) {
-			Integer id = null;
-			try {
-				id = Integer.valueOf(event.getFocusedOption().getValue());
-			} catch(NumberFormatException ex) {
-				event.replyChoices(Collections.emptyList()).queue();
+			String value = event.getFocusedOption().getValue();
+			String guildId = event.getGuild().getId();
+			if (value.isBlank()) {
+				// if input is blank, show max 25 choices
+				List<Choice> choices = db.tags.getTagsText(guildId).entrySet().stream()
+					.map(panel -> {
+						return new Choice("%s | %s".formatted(panel.getKey(), panel.getValue()), panel.getKey());
+					})
+					.collect(Collectors.toList());
+				event.replyChoices(choices).queue();
 				return;
 			}
+
+			Integer id = null;
+			try {
+				id = Integer.valueOf(value);
+			} catch(NumberFormatException ex) {}
 			if (id != null) {
+				// if able to convert input to Integer
 				String title = db.tags.getTagText(id);
 				if (title != null) {
-					event.replyChoice("%s - %s".formatted(id, title.substring(0, Math.min(90, title.length()))), id).queue();
+					// if found panel with matching Id
+					event.replyChoice("%s - %s".formatted(id, title), id).queue();
 					return;
 				}
 			}

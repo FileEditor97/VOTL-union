@@ -399,12 +399,12 @@ public class LogUtil {
 	@Nonnull
 	public MessageEmbed getTicketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, User userCreated, String claimerId) {
 		return embedUtil.getEmbed().setColor(Color.WHITE)
-			.setTitle(lu.getLocalized(locale, "ticket.closed_title"))
-			.setDescription(lu.getLocalized(locale, "ticket.closed_value")
+			.setTitle(lu.getLocalized(locale, path+"ticket.closed_title"))
+			.setDescription(lu.getLocalized(locale, path+"ticket.closed_value")
 				.replace("{name}", channel.getName())
-				.replace("{closed}", (userClosed != null ? userClosed.getAsMention() : lu.getLocalized(locale, "ticket.autoclosed")))
+				.replace("{closed}", (userClosed != null ? userClosed.getAsMention() : lu.getLocalized(locale, path+"ticket.autoclosed")))
 				.replace("{created}", userCreated.getAsMention())
-				.replace("{claimed}", (claimerId != null ? User.fromId(claimerId).getAsMention() : lu.getLocalized(locale, "ticket.unclaimed")))
+				.replace("{claimed}", (claimerId != null ? User.fromId(claimerId).getAsMention() : lu.getLocalized(locale, path+"ticket.unclaimed")))
 			)
 			.setFooter("Channel ID: "+channel.getId())
 			.build();
@@ -413,9 +413,9 @@ public class LogUtil {
 	@Nonnull
 	public MessageEmbed getTicketClosedPmEmbed(DiscordLocale locale, GuildMessageChannel channel, Instant timeClosed, User userClosed, String reasonClosed) {
 		return embedUtil.getEmbed().setColor(Color.WHITE)
-			.setDescription(lu.getLocalized(locale, "ticket.closed_pm")
+			.setDescription(lu.getLocalized(locale, path+"ticket.closed_pm")
 				.replace("{guild}", channel.getGuild().getName())
-				.replace("{closed}", (userClosed != null ? userClosed.getAsMention() : lu.getLocalized(locale, "ticket.autoclosed")))
+				.replace("{closed}", (userClosed != null ? userClosed.getAsMention() : lu.getLocalized(locale, path+"ticket.autoclosed")))
 				.replace("{time}", bot.getTimeUtil().formatTime(timeClosed, false))
 				.replace("{reason}", reasonClosed)
 			)

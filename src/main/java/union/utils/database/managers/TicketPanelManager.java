@@ -26,7 +26,7 @@ public class TicketPanelManager extends LiteDBBase {
 		values.add(title);
 		if (description != null) {
 			keys.add("description");
-			values.add(description);
+			values.add(removeNewline(description));
 		}
 		if (image != null) {
 			keys.add("image");
@@ -34,7 +34,7 @@ public class TicketPanelManager extends LiteDBBase {
 		}
 		if (footer != null) {
 			keys.add("footer");
-			values.add(footer);
+			values.add(removeNewline(footer));
 		}
 		insert(TABLE, keys, values);
 	}
@@ -72,7 +72,7 @@ public class TicketPanelManager extends LiteDBBase {
 		}
 		if (description != null) {
 			keys.add("description");
-			values.add(description);
+			values.add(removeNewline(description));
 		}
 		if (image != null) {
 			keys.add("image");
@@ -80,7 +80,7 @@ public class TicketPanelManager extends LiteDBBase {
 		}
 		if (footer != null) {
 			keys.add("footer");
-			values.add(footer);
+			values.add(removeNewline(footer));
 		}
 		if (keys.size() > 0) update(TABLE, keys, values, "panelId", panelId);
 	}
@@ -99,8 +99,19 @@ public class TicketPanelManager extends LiteDBBase {
 		return (String) data;
 	}
 
+	public Map<Integer, String> getPanelsText(String guildId) {
+		List<Map<String, Object>> data = select(TABLE, List.of("panelId", "title"), "guildId", guildId);
+		if (data.isEmpty()) return Collections.emptyMap();
+		return data.stream().limit(25).collect(Collectors.toMap(s -> (Integer) s.get("panelId"), s -> (String) s.get("title")));
+	}
+
 	public Integer countPanels(String guildId) {
 		return countSelect(TABLE, List.of("guildId"), List.of(guildId));
+	}
+
+	// Tools
+	private String removeNewline(String text) {
+		return text.replace("\\n", "<br>");
 	}
 
 }

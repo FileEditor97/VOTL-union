@@ -74,7 +74,7 @@ public class ScheduledCheck {
 			Integer autocloseTime = db.ticketSettings.getAutocloseTime(channel.getGuild().getId());
 			if (autocloseTime == 0) return;
 
-			if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isAfter(OffsetDateTime.now().minusHours(autocloseTime))) {
+			if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {
 				Guild guild = channel.getGuild();
 
 				Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.DAYS);
@@ -99,7 +99,7 @@ public class ScheduledCheck {
 				db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
 				return;
 			}
-			bot.getTicketUtil().closeTicket(channelId, null, null, failure -> {
+			bot.getTicketUtil().closeTicket(channelId, null, "Autoclosure", failure -> {
 				bot.getLogger().error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 				db.ticket.setRequestStatus(channelId, -1L);
 			});

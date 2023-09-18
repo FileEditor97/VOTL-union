@@ -32,7 +32,7 @@ public class TicketTagManager extends LiteDBBase {
 		}
 		if (message != null) {
 			keys.add("message");
-			values.add(message);
+			values.add(removeNewline(message));
 		}
 		if (supportRoleIds != null) {
 			keys.add("supportRoles");
@@ -54,8 +54,8 @@ public class TicketTagManager extends LiteDBBase {
 	}
 
 	public void updateTag(Integer tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
-		List<String> keys = new ArrayList<>(4);
-		List<Object> values = new ArrayList<>(4);
+		List<String> keys = new ArrayList<>(8);
+		List<Object> values = new ArrayList<>(8);
 		if (tagType != null) {
 			keys.add("tagType");
 			values.add(tagType);
@@ -74,7 +74,7 @@ public class TicketTagManager extends LiteDBBase {
 		}
 		if (message != null) {
 			keys.add("message");
-			values.add(message);
+			values.add(removeNewline(message));
 		}
 		if (supportRoleIds != null) {
 			keys.add("supportRoles");
@@ -119,6 +119,12 @@ public class TicketTagManager extends LiteDBBase {
 		return (String) data;
 	}
 
+	public Map<Integer, String> getTagsText(String guildId) {
+		List<Map<String, Object>> data = select(TABLE, List.of("tagId", "buttonText"), "guildId", guildId);
+		if (data.isEmpty()) return Collections.emptyMap();
+		return data.stream().limit(25).collect(Collectors.toMap(s -> (Integer) s.get("tagId"), s -> (String) s.get("buttonText")));
+	}
+
 	public List<Map<String, Object>> getPanelTags(Integer panelId) {
 		List<Map<String, Object>> data = select(TABLE, List.of("tagId", "buttonText", "buttonStyle", "emoji"), "panelId", panelId);
 		if (data.isEmpty()) return Collections.emptyList();
@@ -129,6 +135,17 @@ public class TicketTagManager extends LiteDBBase {
 		Map<String, Object> data = selectOne(TABLE, List.of("buttonText", "buttonStyle", "emoji", "tagType", "location", "message", "supportRoles", "ticketName"), "tagId", tagId);
 		if (data.isEmpty()) return null;
 		return data;
+	}
+
+	public Map<String, Object> getTagInfo(Integer tagId) {
+		Map<String, Object> data = selectOne(TABLE, List.of("tagType", "location", "message", "supportRoles", "ticketName"), "tagId", tagId);
+		if (data.isEmpty()) return null;
+		return data;
+	}
+
+	// Tools
+	private String removeNewline(String text) {
+		return text.replace("\\n", "<br>");
 	}
 	
 }

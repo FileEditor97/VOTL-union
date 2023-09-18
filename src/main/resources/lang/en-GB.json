@@ -75,6 +75,9 @@
 	},
 	"ticket": {
 		"close": "Close",
+		"claim": "Claim",
+		"claimed": "Claimed by: %s",
+		"unclaim": "Unclaim",
 		"cancel": "Cancel",
 		"rename": "Rename",
 		"role": "role",
@@ -1242,7 +1245,9 @@
 				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button.",
 				"close_request": "Hey! {user}, support have indicated that the ticket is now resolved. Would you like to close the ticket or do you have further questions? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
 				"close_auto": "Hi! {user}, this ticket has not received a response for some time. Do you want to close the ticket or is your request still unresolved? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
-				"user_left": "Sadly, the user that created this ticket has left the guild. If they rejoin, it will not automatically re-add them."
+				"user_left": "Sadly, the user that created this ticket has left the guild. If they rejoin, it will not automatically re-add them.",
+				"claimed": "The ticket has been successfully claimed by {user}.",
+				"unclaimed": "The ticket has been successfully un-claimed."
 			},
 			"rpanel": {
 				"help": "Manage the panels of the ticketing module",
@@ -1562,7 +1567,7 @@
 						"changed_message": "Ticket's message changed",
 						"changed_roles": "Ticket's support roles changed",
 						"changed_name": "Ticket's name changed",
-						"changed_stype": "Button's style changed",
+						"changed_style": "Button's style changed",
 						"no_options": "No tag's values to be updated.",
 						"done": "Updated tag's values."
 					},

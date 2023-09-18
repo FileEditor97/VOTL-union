@@ -305,7 +305,7 @@ public class LiteDBBase {
 
 	//  specific SELECT, return tickets to be autoclosed
 	protected List<String> getExpiredTickets(String table, Long time) {
-		String sql = "SELECT channelId FROM %s WHERE (closeRequested<=%d)".formatted(table, time);
+		String sql = "SELECT channelId FROM %s WHERE (closeRequested>0 AND closeRequested<=%d)".formatted(table, time);
 
 		List<String> results = new ArrayList<String>();
 		util.logger.debug(sql);
@@ -331,6 +331,22 @@ public class LiteDBBase {
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			result = rs.getInt("COUNT(*)");
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return result;
+	}
+
+	//  specific SELECT, get last id of ticket
+	protected Integer selectLastTicketId(final String table, final String guildId, final Integer tagId) {
+		String sql = "SELECT ticketId FROM %s WHERE (guildId='%s' AND tagId='%s') ORDER BY ticketId DESC LIMIT 1".formatted(table, guildId, tagId);
+
+		Integer result = null;
+		util.logger.debug(sql);
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			result = rs.getInt("ticketId");
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
 		}

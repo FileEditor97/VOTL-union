@@ -13,6 +13,7 @@ import union.commands.other.*;
 import union.commands.owner.*;
 import union.commands.ticketing.RolesCmd;
 import union.commands.ticketing.TicketCountCmd;
+import union.commands.ticketing.TicketPanelCmd;
 import union.commands.ticketing.RolePanelCmd;
 import union.commands.verification.*;
 import union.commands.voice.VoiceCmd;
@@ -176,6 +177,7 @@ public class App {
 				new RolePanelCmd(this),
 				new TicketCountCmd(this),
 				new RolesCmd(this),
+				new TicketPanelCmd(this),
 				// voice
 				new VoiceCmd(this)
 			)

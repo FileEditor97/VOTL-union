@@ -299,7 +299,7 @@ public class LiteDBBase {
 
 	protected Integer getIncrement(final String table) {
 		Object data = selectOne("sqlite_sequence", "seq", "name", table);
-		if (data == null) return null;
+		if (data == null) return 0;
 		return (Integer) data;
 	}
 

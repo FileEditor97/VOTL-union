@@ -206,7 +206,7 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 			if (bot.getDBUtil().access.isOperator(guildId, userId)) {
-				editError(event, "bot.guild.access.add.operator.already");
+				editError(event, "bot.guild.access.add.user_already");
 				return;
 			}
 			bot.getDBUtil().access.addUser(guildId, userId, CmdAccessLevel.OPERATOR);

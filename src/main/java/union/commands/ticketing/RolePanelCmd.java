@@ -60,12 +60,11 @@ public class RolePanelCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
-			GuildChannel channel = event.optGuildChannel("channel");
+			TextChannel channel =  (TextChannel) event.optGuildChannel("channel");
 			if (channel == null) {
 				createError(event, path+".no_channel", "Received: No channel");
 				return;
 			}
-			TextChannel tc = (TextChannel) channel;
 
 			Integer assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN);
 			List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
@@ -99,10 +98,10 @@ public class RolePanelCmd extends CommandBase {
 				.setFooter(guild.getName(), guild.getIconUrl())
 				.build();
 
-			tc.sendMessageEmbeds(embed).addComponents(actionRows).queue();
+			channel.sendMessageEmbeds(embed).addComponents(actionRows).queue();
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
+				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
 				.setColor(Constants.COLOR_SUCCESS)
 				.build());
 		}

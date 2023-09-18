@@ -33,13 +33,13 @@ public class UserSettingsManager extends LiteDBBase {
 	}
 
 	public String getName(String userId) {
-		Object data = select(TABLE, "voiceName", "userId", userId);
+		Object data = selectOne(TABLE, "voiceName", "userId", userId);
 		if (data == null) return null;
 		return (String) data;
 	}
 
 	public Integer getLimit(String userId) {
-		Object data = select(TABLE, "voiceLimit", "userId", userId);
+		Object data = selectOne(TABLE, "voiceLimit", "userId", userId);
 		if (data == null) return null;
 		return (Integer) data;
 	}

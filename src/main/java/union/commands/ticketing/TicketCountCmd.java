@@ -1,7 +1,7 @@
 package union.commands.ticketing;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -42,10 +42,11 @@ public class TicketCountCmd extends CommandBase {
 
 		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		try {
-			if (afterDate != null) afterTime = LocalDateTime.parse(afterDate, inputFormatter).atZone(ZoneId.systemDefault()).toInstant();
-			if (beforeDate != null) beforeTime = LocalDateTime.parse(beforeDate, inputFormatter).atZone(ZoneId.systemDefault()).toInstant();
+			if (afterDate != null) afterTime = LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
+			if (beforeDate != null) beforeTime = LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
 		} catch (Exception ex) {
 			createError(event, path+".failed_parse", ex.getMessage());
+			System.out.println(ex);
 			return;
 		}
 
@@ -57,12 +58,14 @@ public class TicketCountCmd extends CommandBase {
 		}
 
 		User user = event.optUser("user");
-		Integer count = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime);
+		Integer countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, true);
+		Integer countOther = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, false);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault());
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
 			.setTitle("`"+formatter.format(afterTime)+"` - `"+formatter.format(beforeTime)+"`")
-			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId()).replace("{roles}", count.toString()))
+			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId())
+				.replace("{roles}", countRoles.toString()).replace("{other}", countOther.toString()))
 			.build());
 	}
 

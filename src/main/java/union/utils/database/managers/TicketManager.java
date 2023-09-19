@@ -112,8 +112,8 @@ public class TicketManager extends LiteDBBase {
 		return String.valueOf(data);
 	}
 
-	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime) {
-		return countTicketsClaimed(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond());
+	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
+		return countTicketsClaimed(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond(), roleTag);
 	}
 
 	/**

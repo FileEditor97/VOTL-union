@@ -322,8 +322,9 @@ public class LiteDBBase {
 	}
 
 	//  specific SELECT, count tickets by dates
-	protected Integer countTicketsClaimed(String table, String guildId, String modId, Long afterTime, Long beforeTime) {
-		String sql = "SELECT COUNT(*) FROM %s WHERE (guildId='%s' AND modId='%s' AND timeClosed>=%d AND timeClosed<=%d)".formatted(table, guildId, modId, afterTime, beforeTime);
+	protected Integer countTicketsClaimed(String table, String guildId, String modId, Long afterTime, Long beforeTime, boolean roleTag) {
+		String tagType = roleTag ? "tagId=0" : "tagId>=1";
+		String sql = "SELECT COUNT(*) FROM %s WHERE (guildId='%s' AND modId='%s' AND timeClosed>=%d AND timeClosed<=%d AND %s)".formatted(table, guildId, modId, afterTime, beforeTime, tagType);
 		
 		Integer result = 0;
 		util.logger.debug(sql);

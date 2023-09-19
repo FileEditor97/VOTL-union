@@ -1306,7 +1306,7 @@
 				},
 				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
 				"wrong_date": "Wrong dates provided (before and after inputs).",
-				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`"
+				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`\nClaimed tickets: `{other}`"
 			},
 			"roles": {
 				"help": "Manage assignable roles via ticket system",

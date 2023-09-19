@@ -1597,46 +1597,6 @@
 						"done": "Ticket tag with ID `%s` deleted!"
 					}
 				},
-				"close": {
-					"help": "Close ticket",
-					"usage": "close [reason]",
-					"reason": {
-						"name": "reason",
-						"help": "Close reason"
-					}
-				},
-				"rclose": {
-					"help": "Sends a close request to ticket author",
-					"usage": "rclose"
-				},
-				"claim": {
-					"help": "Claim ticket",
-					"usage": "claim [user]",
-					"user": {
-						"name": "user",
-						"help": "User to claim for"
-					}
-				},
-				"unclaim": {
-					"help": "Unclaims a ticket",
-					"usage": "unclaim"
-				},
-				"add": {
-					"help": "Add user to a ticket",
-					"usage": "add <@User>",
-					"user": {
-						"name": "user",
-						"help": "Add user to this ticket"
-					}
-				},
-				"remove": {
-					"help": "Remove user from a ticket",
-					"usage": "remove <@User>",
-					"user": {
-						"name": "user",
-						"help": "Remove user from this ticket"
-					}
-				},
 				"automation": {
 					"help": "Manage automation settings for tickets",
 					"usage": "automation [time] [author left]",
@@ -1653,6 +1613,49 @@
 					"changed_autoclose": "\n> Autoclose time set to {time} hour/-s.",
 					"changed_left": "\n> When ticket's author leaves, ticket will be closed: {left}."
 				}
+			},
+			"close": {
+				"help": "Close ticket",
+				"usage": "close",
+				"reason": {
+					"name": "reason",
+					"help": "Close reason"
+				},
+				"not_ticket": "This channel is not a ticket."
+			},
+			"rclose": {
+				"help": "Sends a close request to ticket author",
+				"usage": "rclose",
+				"reason": {
+					"name": "reason",
+					"help": "Close reason"
+				},
+				"not_ticket": "This channel is not a ticket.",
+				"already_requested": "This ticket already requested for closure."
+			},
+			"add": {
+				"help": "Add user to a ticket",
+				"usage": "add <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select user to be added to this ticket"
+				},
+				"not_ticket": "This channel is not a ticket.",
+				"not_self": "You can't add yourself, ticket creator or me.",
+				"failed": "Unable to add selected user.",
+				"done": "Added {user} to this ticket."
+			},
+			"remove": {
+				"help": "Remove user from a ticket",
+				"usage": "remove <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select user to be removed from this ticket"
+				},
+				"not_ticket": "This channel is not a ticket.",
+				"not_self": "You can't remove yourself, ticket creator or me.",
+				"failed": "Unable to add selected user.",
+				"done": "Removed {user} from this ticket."
 			}
 		}
 	},

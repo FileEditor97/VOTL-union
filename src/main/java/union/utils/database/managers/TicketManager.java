@@ -55,7 +55,7 @@ public class TicketManager extends LiteDBBase {
 		return (String) data;
 	}
 
-	// update status
+	// set status
 	public void closeTicket(Instant timeClosed, String channelId, String reason) {
 		update(TABLE, List.of("closed", "timeClosed", "reasonClosed"), List.of(1, timeClosed.getEpochSecond(), Optional.ofNullable(reason).orElse("NULL")), "channelId", channelId);
 	}
@@ -126,6 +126,12 @@ public class TicketManager extends LiteDBBase {
 	 */
 	public void setRequestStatus(String channelId, Long closeRequested) {
 		update(TABLE, "closeRequested", closeRequested, "channelId", channelId);
+	}
+
+	public Long getCloseTime(String channelId) {
+		Object data = selectOne(TABLE, "closeRequested", "channelId", channelId);
+		if (data == null) return 0L;
+		return ((Number) data).longValue();
 	}
 
 }

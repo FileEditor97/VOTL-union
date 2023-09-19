@@ -14,6 +14,10 @@ import union.commands.owner.*;
 import union.commands.ticketing.RolesCmd;
 import union.commands.ticketing.TicketCountCmd;
 import union.commands.ticketing.TicketPanelCmd;
+import union.commands.ticketing.AddUserCmd;
+import union.commands.ticketing.CloseCmd;
+import union.commands.ticketing.RcloseCmd;
+import union.commands.ticketing.RemoveUserCmd;
 import union.commands.ticketing.RolePanelCmd;
 import union.commands.verification.*;
 import union.commands.voice.VoiceCmd;
@@ -129,7 +133,7 @@ public class App {
 		scheduledCheck	= new ScheduledCheck(this);
 		
 		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 10, TimeUnit.MINUTES);
-		//executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()
@@ -178,6 +182,10 @@ public class App {
 				new TicketCountCmd(this),
 				new RolesCmd(this),
 				new TicketPanelCmd(this),
+				new CloseCmd(this),
+				new RcloseCmd(this),
+				new AddUserCmd(this),
+				new RemoveUserCmd(this),
 				// voice
 				new VoiceCmd(this)
 			)

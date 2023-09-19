@@ -34,7 +34,7 @@ public class ScheduledCheck {
 	private final DBUtil db;
 	public Instant lastAccountCheck;
 
-	private final Integer CLOSE_AFTER_DELAY = 12; // hours
+	private final Integer CLOSE_AFTER_DELAY = 16; // hours
 
 	public ScheduledCheck(App bot) {
 		this.bot = bot;
@@ -77,7 +77,7 @@ public class ScheduledCheck {
 			if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {
 				Guild guild = channel.getGuild();
 
-				Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.DAYS);
+				Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
 				MessageEmbed embed = new EmbedBuilder()
 					.setColor(db.guild.getColor(guild.getId()))
 					.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_auto")

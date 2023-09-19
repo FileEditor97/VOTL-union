@@ -434,10 +434,9 @@ public class VoiceCmd extends CommandBase {
 					}
 			}
 
-			editHookEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getUserText(event, path+".done", mentionStrings))
-					.build()
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				.setDescription(lu.getUserText(event, path+".done", mentionStrings))
+				.build()
 			);
 		}
 

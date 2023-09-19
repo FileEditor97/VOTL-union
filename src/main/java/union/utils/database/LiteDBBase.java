@@ -305,7 +305,7 @@ public class LiteDBBase {
 
 	//  specific SELECT, return tickets to be autoclosed
 	protected List<String> getExpiredTickets(String table, Long time) {
-		String sql = "SELECT channelId FROM %s WHERE (closeRequested>0 AND closeRequested<=%d)".formatted(table, time);
+		String sql = "SELECT channelId FROM %s WHERE (closed=0 AND closeRequested>0 AND closeRequested<=%d)".formatted(table, time);
 
 		List<String> results = new ArrayList<String>();
 		util.logger.debug(sql);

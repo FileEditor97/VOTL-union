@@ -664,7 +664,7 @@ public class InteractionListener extends ListenerAdapter {
 
 			ChannelAction<TextChannel> action = category.createTextChannel(ticketName);
 			for (String roleId : supportRoles) action = action.addRolePermissionOverride(Long.valueOf(roleId), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null);
-			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND))
+			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
 				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
 				.queue(channel -> {
 				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);

@@ -1,5 +1,6 @@
 package union.utils;
 
+import java.awt.Color;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,6 +21,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.Guild.Ban;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
@@ -395,12 +397,29 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed getTicketClosedEmbed(DiscordLocale locale, String ticketId, String channelId, String modMention) {
-		return embedUtil.getEmbed().setColor(Constants.COLOR_FAILURE)
-			.setAuthor(lu.getLocalized(locale, path+"ticket.closed").replace("{ticket}", "role-"+ticketId), null, null)
-			.addField(lu.getLocalized(locale, path+"enforcer"), modMention, false)
-			.setFooter("Channel ID: "+channelId)
-			.setTimestamp(Instant.now())
+	public MessageEmbed getTicketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, User userCreated, String claimerId) {
+		return embedUtil.getEmbed().setColor(Color.WHITE)
+			.setTitle(lu.getLocalized(locale, path+"ticket.closed_title"))
+			.setDescription(lu.getLocalized(locale, path+"ticket.closed_value")
+				.replace("{name}", channel.getName())
+				.replace("{closed}", (userClosed != null ? userClosed.getAsMention() : lu.getLocalized(locale, path+"ticket.autoclosed")))
+				.replace("{created}", userCreated.getAsMention())
+				.replace("{claimed}", (claimerId != null ? User.fromId(claimerId).getAsMention() : lu.getLocalized(locale, path+"ticket.unclaimed")))
+			)
+			.setFooter("Channel ID: "+channel.getId())
+			.build();
+	}
+
+	@Nonnull
+	public MessageEmbed getTicketClosedPmEmbed(DiscordLocale locale, GuildMessageChannel channel, Instant timeClosed, User userClosed, String reasonClosed) {
+		return embedUtil.getEmbed().setColor(Color.WHITE)
+			.setDescription(lu.getLocalized(locale, path+"ticket.closed_pm")
+				.replace("{guild}", channel.getGuild().getName())
+				.replace("{closed}", (userClosed != null ? userClosed.getAsMention() : lu.getLocalized(locale, path+"ticket.autoclosed")))
+				.replace("{time}", bot.getTimeUtil().formatTime(timeClosed, false))
+				.replace("{reason}", reasonClosed)
+			)
+			.setFooter("Channel ID: "+channel.getId())
 			.build();
 	}
 

@@ -87,16 +87,19 @@ public class GuildListener extends ListenerAdapter {
 		}
 		db.group.removeFromGroups(guildId);
 		db.group.deleteAll(guildId);
-		
+
 		db.access.removeAll(guildId);
 		db.module.removeAll(guildId);
 		db.webhook.removeAll(guildId);
 		db.verify.remove(guildId);
-		db.ticketPanel.remove(guildId);
+		db.ticketSettings.remove(guildId);
 		db.role.removeAll(guildId);
-		if (db.guild.exists(guildId)) {
-			db.guild.remove(guildId);
-		}
+		db.guildVoice.remove(guildId);
+		db.panels.deleteAll(guildId);
+		db.tags.deleteAll(guildId);
+		db.requests.deleteAll(guildId);
+		
+		db.guild.remove(guildId);
 
 		bot.getLogger().info("Automatically removed guild '"+event.getGuild().getName()+"'("+guildId+") from db.");
 		bot.getLogger().info("Left guild '"+event.getGuild().getName()+"'("+guildId+")");
@@ -138,5 +141,6 @@ public class GuildListener extends ListenerAdapter {
 		if (db.access.getUserLevel(guildId, userId).isHigherThan(CmdAccessLevel.ALL)) {
 			db.access.removeUser(guildId, userId);
 		}
+		db.user.remove(userId);
 	}
 }

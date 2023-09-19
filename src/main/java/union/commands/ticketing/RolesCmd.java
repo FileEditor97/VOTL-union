@@ -20,7 +20,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
-import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -30,7 +29,7 @@ public class RolesCmd extends CommandBase {
 		super(bot);
 		this.name = "roles";
 		this.path = "bot.ticketing.roles";
-		this.children = new SlashCommand[]{new Add(bot), new Remove(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Add(bot), new Update(bot), new Remove(bot), new View(bot)};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -79,31 +78,156 @@ public class RolesCmd extends CommandBase {
 			}
 			String type = event.optString("type");
 			if (type.equals(RoleType.ASSIGN.toString())) {
-				if (bot.getDBUtil().role.getAssignable(guildId).size() >= 24) {
-					createError(event, path+".assign_max");
-					return;
+				Integer row = event.optInteger("row");
+				if (row == 0) {
+					for (Integer i = 1; i <= 3; i++) {
+						if (bot.getDBUtil().role.getRowSize(guildId, i) < 25) {
+							row = i;
+							break;
+						}
+					}
+					if (row == 0) {
+						createError(event, path+".rows_max");
+						return;
+					}
+				} else {
+					if (bot.getDBUtil().role.getRowSize(guildId, row) >= 25) {
+						createError(event, path+".row_max", "Row: %s".formatted(row));
+						return;
+					}
 				}
-				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), RoleType.ASSIGN);
+				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, RoleType.ASSIGN);
 			} else if (type.equals(RoleType.TOGGLE.toString())) {
 				if (bot.getDBUtil().role.getToggleable(guildId).size() >= 5) {
 					createError(event, path+".toggle_max");
 					return;
 				}
-				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", role.getName()), RoleType.TOGGLE);
+				String description = event.optString("description", role.getName());
+				description = description.substring(0, Math.min(description.length(), 80));
+				bot.getDBUtil().role.add(guildId, role.getId(), description, null, RoleType.TOGGLE);
 			} else if (type.equals(RoleType.CUSTOM.toString())) {
 				if (bot.getDBUtil().role.getCustom(guildId).size() >= 25) {
 					createError(event, path+".custom_max");
 					return;
 				}
-				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), RoleType.CUSTOM);
+				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), null, RoleType.CUSTOM);
 			} else {
 				createError(event, path+".no_type");
+				return;
 			}
 			
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{type}", type))
 				.setColor(Constants.COLOR_SUCCESS)
 				.build());
+		}
+
+	}
+
+	private class Update extends SlashCommand {
+
+		public Update(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "update";
+			this.path = "bot.ticketing.roles.update";
+			this.options = List.of(
+				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
+				/* new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), false)
+					.addChoices(List.of(
+						new Choice(lu.getText(RoleType.ASSIGN.getPath()), RoleType.ASSIGN.toString()),
+						new Choice(lu.getText(RoleType.TOGGLE.getPath()), RoleType.TOGGLE.toString()),
+						new Choice(lu.getText(RoleType.CUSTOM.getPath()), RoleType.CUSTOM.toString())
+					)), */
+				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"))
+					.setMaxLength(100),
+				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"))
+					.setRequiredRange(1, 3)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			Role role = event.optRole("role");
+			if (role == null) {
+				createError(event, path+".no_role");
+				return;
+			}
+			if (!bot.getDBUtil().role.existsRole(role.getId())) {
+				createError(event, path+".not_exists");
+				return;
+			}
+			
+			StringBuffer response = new StringBuffer();
+
+			if (event.hasOption("description")) {
+				String description = event.optString("description");
+				if (description.toLowerCase().equals("null")) description = null;
+
+				Integer oldType = bot.getDBUtil().role.getType(role.getId());
+				if (oldType.equals(RoleType.TOGGLE.getType())) {
+					if (description == null) {
+						description = role.getName();
+						response.append(lu.getText(event, path+".default_description"));
+					} else {
+						response.append(lu.getText(event, path+".changed_description").replace("{text}", description));
+					}
+					description = description.substring(0, Math.min(description.length(), 80));
+				} else {
+					if (description == null) {
+						description = "NULL";
+						response.append(lu.getText(event, path+".default_description"));
+					} else {
+						response.append(lu.getText(event, path+".changed_description").replace("{text}", description));
+					}
+				}
+				bot.getDBUtil().role.setDescription(role.getId(), description);
+			}
+
+			// Disallow role type change, as it may break several things (which requires checks)
+			/* String type = event.optString("type");
+			if (type != null) {
+				if (type.equals(RoleType.ASSIGN.toString())) {
+					if (bot.getDBUtil().role.getAssignable(guildId).size() >= 24) {
+						createError(event, path+".assign_max");
+						return;
+					}
+					bot.getDBUtil().role.setType(role.getId(), RoleType.ASSIGN);
+				} else if (type.equals(RoleType.TOGGLE.toString())) {
+					if (bot.getDBUtil().role.getToggleable(guildId).size() >= 5) {
+						createError(event, path+".toggle_max");
+						return;
+					}
+					bot.getDBUtil().role.setType(role.getId(), RoleType.TOGGLE);
+				} else if (type.equals(RoleType.CUSTOM.toString())) {
+					if (bot.getDBUtil().role.getCustom(guildId).size() >= 25) {
+						createError(event, path+".custom_max");
+						return;
+					}
+					bot.getDBUtil().role.setType(role.getId(), RoleType.CUSTOM);
+				} else {
+					createError(event, path+".no_type");
+					return;
+				}
+				response.append(lu.getText(event, path+".changed_type").replace("{type}", type));
+			} */
+
+			if (event.hasOption("row")) {
+				Integer row = event.optInteger("row");
+				bot.getDBUtil().role.setRow(role.getId(), row);
+				response.append(lu.getText(event, path+".changed_row").replace("{row}", row.toString()));
+			}
+
+			if (response.isEmpty()) {
+				createError(event, path+".no_options");
+				return;
+			}
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				.setDescription(lu.getText(event, path+".embed_title").replace("{role}", role.getAsMention()))
+				.appendDescription(response.toString())
+				.setColor(Constants.COLOR_SUCCESS)
+				.build());
+
 		}
 
 	}
@@ -149,15 +273,29 @@ public class RolesCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 			Guild guild = event.getGuild();
+			String guildId = guild.getId();
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
 				.setTitle(lu.getText(event, path+".title"));
 			
 			for (RoleType type : RoleType.values()) {
-				List<Map<String, Object>> roles = bot.getDBUtil().role.getRolesByType(guild.getId(), type);
-				if (roles.isEmpty()) {
-					builder.addField(lu.getText(event, type.getPath()), lu.getText(event, path+".none"), false);
+				if (type.equals(RoleType.ASSIGN)) {
+					for (Integer row = 1; row <= 3; row++) {
+						List<Map<String, Object>> roles = bot.getDBUtil().role.getAssignableByRow(guildId, row);
+						String title = "%s-%s | %s".formatted(lu.getText(event, type.getPath()), row, bot.getDBUtil().ticketSettings.getRowText(guildId, row));
+						if (roles.isEmpty()) {
+							builder.addField(title, lu.getText(event, path+".none"), false);
+						} else {
+							generateField(guild, title, roles).forEach(field -> builder.addField(field));
+						}
+					}
 				} else {
-					generateField(guild, event.getUserLocale(), roles, type).forEach(field -> builder.addField(field));
+					List<Map<String, Object>> roles = bot.getDBUtil().role.getRolesByType(guildId, type);
+					String title = lu.getText(event, type.getPath());
+					if (roles.isEmpty()) {
+						builder.addField(title, lu.getText(event, path+".none"), false);
+					} else {
+						generateField(guild, title, roles).forEach(field -> builder.addField(field));
+					}
 				}
 			}
 
@@ -166,8 +304,7 @@ public class RolesCmd extends CommandBase {
 
 	}
 	
-	private List<Field> generateField(final Guild guild, final DiscordLocale locale, final List<Map<String, Object>> roles, final RoleType type) {
-		String title = lu.getLocalized(locale, type.getPath());
+	private List<Field> generateField(final Guild guild, final String title, final List<Map<String, Object>> roles) {
 		List<Field> fields = new ArrayList<Field>();
 		StringBuffer buffer = new StringBuffer();
 		roles.forEach(data -> {

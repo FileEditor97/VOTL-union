@@ -21,7 +21,6 @@ import net.dv8tion.jda.api.entities.Guild.Ban;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
@@ -577,22 +576,4 @@ public class LogListener {
 		} catch (InsufficientPermissionException ex) {}
 	}
 
-	public void onTicketClose(Member admin, Guild guild, Channel threadChannel, String ticketId) {
-		String guildId = Objects.requireNonNull(guild).getId();
-
-		String channelId = db.guild.getTicketLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
-		TextChannel channel = guild.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getTicketClosedEmbed(guild.getLocale(), ticketId, threadChannel.getId(), admin.getAsMention())
-			).queue();
-		} catch (InsufficientPermissionException ex) {}
-	}
 }

@@ -22,9 +22,7 @@ public class GroupManager extends LiteDBBase {
 	}
 
 	public Integer getIncrement() {
-		Object data = selectOne("sqlite_sequence", "seq", "name", TABLE_MASTER);
-		if (data == null) return null;
-		return (Integer) data;
+		return getIncrement(TABLE_MASTER);
 	}
 
 	public void delete(Integer groupId) {

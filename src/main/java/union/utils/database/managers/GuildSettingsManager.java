@@ -99,4 +99,14 @@ public class GuildSettingsManager extends LiteDBBase {
 		return String.valueOf(data);
 	}
 
+	public void setReportChannelId(String guildId, String channelId) {
+		update(TABLE, "reportChannelId", channelId, "guildId", guildId);
+	}
+
+	public String getReportChannelId(String guildId) {
+		Object data = selectOne(TABLE, "reportChannelId", "guildId", guildId);
+		if (data == null) return null;
+		return String.valueOf(data);
+	}
+
 }

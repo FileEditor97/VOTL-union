@@ -2,8 +2,12 @@ package union.utils.message;
 
 import java.awt.Color;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import union.App;
 
@@ -15,6 +19,8 @@ public class MessageUtil {
 	private final LocaleUtil lu;
 
 	private final DecimalFormat decimalFormat = new DecimalFormat("# ### ###");
+
+	private final Pattern rolePattern = Pattern.compile("<@&(\\d+)>", Pattern.CASE_INSENSITIVE);
 
 	public MessageUtil(App bot) {
 		this.random = bot.getRandom();
@@ -28,6 +34,18 @@ public class MessageUtil {
 
 		final String s0 = str.substring(0, 1).toUpperCase();
 		return s0 + str.substring(1);
+	}
+
+	public List<String> getIdsFromString(String text) {
+		List<String> ids = new ArrayList<>();
+		if (text.contains("+")) ids.add("0");
+
+		Matcher roleMatcher = rolePattern.matcher(text);
+		while (roleMatcher.find()) {
+			ids.add(roleMatcher.group(1));
+		}
+		
+		return ids;
 	}
 
 	public Color getColor(String input) {

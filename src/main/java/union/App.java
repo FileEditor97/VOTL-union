@@ -14,10 +14,17 @@ import union.commands.owner.*;
 import union.commands.ticketing.RolesCmd;
 import union.commands.ticketing.TicketCountCmd;
 import union.commands.ticketing.TicketPanelCmd;
+import union.commands.ticketing.AddUserCmd;
+import union.commands.ticketing.CloseCmd;
+import union.commands.ticketing.RcloseCmd;
+import union.commands.ticketing.RemoveUserCmd;
+import union.commands.ticketing.RolePanelCmd;
 import union.commands.verification.*;
+import union.commands.voice.VoiceCmd;
 import union.commands.webhook.WebhookCmd;
 import union.listeners.*;
 import union.menus.AccountContext;
+import union.menus.ReportContext;
 import union.objects.command.CommandClient;
 import union.objects.command.CommandClientBuilder;
 import union.objects.constants.Constants;
@@ -70,6 +77,7 @@ public class App {
 	private final GuildListener guildListener;
 	private final AutoCompleteListener acListener;
 	private final InteractionListener interactionListener;
+	private final VoiceListener voiceListener;
 	private final MessageListener messagesListener;
 	private final CommandListener commandListener;
 
@@ -87,6 +95,7 @@ public class App {
 	private final TimeUtil timeUtil;
 	private final LogUtil logUtil;
 	private final SteamUtil steamUtil;
+	private final TicketUtil ticketUtil;
 
 	public App() {
 
@@ -110,19 +119,21 @@ public class App {
 		timeUtil	= new TimeUtil(this);
 		logUtil		= new LogUtil(this);
 		steamUtil	= new SteamUtil();
+		ticketUtil	= new TicketUtil(this);
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
 		logListener			= new LogListener(this);
 		interactionListener	= new InteractionListener(this, WAITER);
+		voiceListener		= new VoiceListener(this);
 		messagesListener	= new MessageListener(this);
 		commandListener		= new CommandListener();
 
 		executorService = Executors.newScheduledThreadPool(4, r -> (new Thread(r, "UTB Scheduler")));
 		scheduledCheck	= new ScheduledCheck(this);
 		
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.checkUnbans(), 5, 15, TimeUnit.MINUTES);
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.checkAccountUpdates(), 1, 3, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 10, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()
@@ -167,34 +178,44 @@ public class App {
 				new AccountCmd(this),
 				new VerifyCheckCmd(this),
 				// ticketing
-				new TicketPanelCmd(this),
+				new RolePanelCmd(this),
 				new TicketCountCmd(this),
-				new RolesCmd(this)
+				new RolesCmd(this),
+				new TicketPanelCmd(this),
+				new CloseCmd(this),
+				new RcloseCmd(this),
+				new AddUserCmd(this),
+				new RemoveUserCmd(this),
+				// voice
+				new VoiceCmd(this)
 			)
 			.addContextMenus(
-				new AccountContext(this)
+				new AccountContext(this),
+				new ReportContext(this)
 			)
 			.setListener(commandListener)
 			.setDevGuildIds(fileManager.getStringList("config", "dev-servers").toArray(new String[0]))
 			.build();
 
 		// Build
-		MemberCachePolicy policy = MemberCachePolicy.any(MemberCachePolicy.OWNER);	// if pending or server owner
+		MemberCachePolicy policy = MemberCachePolicy.any(MemberCachePolicy.VOICE, MemberCachePolicy.OWNER);	// if in voice or server owner
 		
 		acListener = new AutoCompleteListener(commandClient, dbUtil);
 
 		JDABuilder mainBuilder = JDABuilder.createLight(fileManager.getString("config", "bot-token"))
 			.setEnabledIntents(
 				GatewayIntent.GUILD_MEMBERS,			// required for updating member profiles and ChunkingFilter
-				GatewayIntent.GUILD_MESSAGES			// checks for verified
+				GatewayIntent.GUILD_MESSAGES,			// checks for verified
+				GatewayIntent.GUILD_VOICE_STATES		// required for CF VOICE_STATE and CP VOICE
 			)
 			.setMemberCachePolicy(policy)
 			.setChunkingFilter(ChunkingFilter.ALL)		// chunk all guilds
 			.enableCache(
 				CacheFlag.MEMBER_OVERRIDES,		// channel permission overrides
-				CacheFlag.ROLE_TAGS				// role search
+				CacheFlag.ROLE_TAGS,			// role search
+				CacheFlag.VOICE_STATE			// get members voice status
 			)
-			.addEventListeners(commandClient, WAITER, guildListener, acListener, interactionListener, messagesListener);
+			.addEventListeners(commandClient, WAITER, guildListener, acListener, interactionListener, voiceListener, messagesListener);
 
 		JDA jda = null;
 
@@ -269,6 +290,10 @@ public class App {
 
 	public SteamUtil getSteamUtil() {
 		return steamUtil;
+	}
+
+	public TicketUtil getTicketUtil() {
+		return ticketUtil;
 	}
 
 	public LogListener getLogListener() {

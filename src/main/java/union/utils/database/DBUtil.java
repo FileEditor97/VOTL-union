@@ -2,24 +2,38 @@ package union.utils.database;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import union.App;
 import union.utils.database.managers.AccessManager;
 import union.utils.database.managers.BanManager;
 import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildSettingsManager;
+import union.utils.database.managers.GuildVoiceManager;
 import union.utils.database.managers.ModuleManager;
+import union.utils.database.managers.RequestsManager;
 import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
+import union.utils.database.managers.TicketTagManager;
+import union.utils.database.managers.UserSettingsManager;
+import union.utils.database.managers.TicketGlobalManager;
 import union.utils.database.managers.VerifyCacheManager;
 import union.utils.database.managers.VerifyManager;
 import union.utils.database.managers.VerifyRequestManager;
+import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
 import union.utils.file.FileManager;
 
@@ -39,9 +53,15 @@ public class DBUtil {
 	public final GroupManager group;
 	public final VerifyManager verify;
 	public final VerifyCacheManager verifyCache;
-	public final TicketPanelManager ticketPanel;
+	public final TicketGlobalManager ticketSettings;
+	public final TicketPanelManager panels;
+	public final TicketTagManager tags;
 	public final RoleManager role;
 	public final TicketManager ticket;
+	public final RequestsManager requests;
+	public final GuildVoiceManager guildVoice;
+	public final UserSettingsManager user;
+	public final VoiceChannelManager voice;
 	public final VerifyRequestManager verifyRequest;
 
 	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
@@ -68,9 +88,15 @@ public class DBUtil {
 		group = new GroupManager(this);
 		verify = new VerifyManager(this);
 		verifyCache = new VerifyCacheManager(this);
-		ticketPanel = new TicketPanelManager(this);
+		ticketSettings = new TicketGlobalManager(this);
+		panels = new TicketPanelManager(this);
+		tags = new TicketTagManager(this);
 		role = new RoleManager(this);
 		ticket = new TicketManager(this);
+		requests = new RequestsManager(this);
+		guildVoice = new GuildVoiceManager(this);
+		user = new UserSettingsManager(this);
+		voice = new VoiceChannelManager(this);
 		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
@@ -142,28 +168,24 @@ public class DBUtil {
 		return version;
 	}
 
-	// CREATE TABLE table_name (column1 datatype, column2 datatype);
-	// DROP TABLE table_name;
-	// ALTER TABLE table_name RENAME TO new_name;
-	// ALTER TABLE table_name ADD column_name datatype;
-	// ALTER TABLE table_name DROP column_name;
-	// ALTER TABLE table_name RENAME old_name to new_name;
-	private final List<List<String>> instruct = List.of(
-		List.of("ALTER TABLE 'guild' DROP 'language'", "DROP TABLE 'modAccess'", "CREATE TABLE 'modAccess' ('roleId' TEXT NOT NULL, 'guildId' TEXT NOT NULL, FOREIGN KEY('guildId') REFERENCES 'guild'('guildId'))"), // 1 -> 2
-		List.of("ALTER TABLE 'verify' DROP 'verificationLink'", "ALTER TABLE 'verify' DROP 'instructionField'", "ALTER TABLE 'verify' RENAME 'panelText' TO 'mainText'"), // 2 -> 3
-		List.of("ALTER TABLE 'guild' ADD 'ticketLogId' TEXT", "CREATE TABLE 'ticketPanel' ('guildId' TEXT NOT NULL, 'panelColor' TEXT DEFAULT '0x112E51', FOREIGN KEY('guildId') REFERENCES 'guild'('guildId'))",
-			"CREATE TABLE 'requestRole' ('guildId' TEXT NOT NULL, 'roleId' TEXT NOT NULL UNIQUE, 'description' TEXT, 'type' INTEGER NOT NULL DEFAULT 0, FOREIGN KEY('guildId') REFERENCES 'guild'('guildId'))",
-			"CREATE TABLE 'ticket' ('ticketId' INTEGER NOT NULL, 'guildId' TEXT, 'userId' TEXT NOT NULL, 'modId' TEXT, 'channelId' TEXT, 'alias' TEXT NOT NULL, 'closed' INTEGER NOT NULL DEFAULT 0, 'roleIds' TEXT)",
-			"CREATE TABLE 'ticketType' ('guildId' TEXT NOT NULL, 'alias' TEXT NOT NULL, 'short' TEXT NOT NULL, 'long' TEXT, FOREIGN KEY('guildId') REFERENCES 'guild'('guildId'))"), // 3 -> 4
-		List.of("ALTER TABLE 'ticket' ADD 'timeClosed' INTEGER"), // 4 -> 5
-		List.of("ALTER TABLE 'ticketPanel' DROP 'panelColor'", "ALTER TABLE 'verify' DROP 'panelColor'", "ALTER TABLE 'guild' ADD 'color' TEXT DEFAULT '0x112E51'",
-			"ALTER TABLE 'modAccess' RENAME TO 'roleAccess'", "ALTER TABLE 'roleAccess' ADD 'level' INTEGER NOT NULL",
-			"CREATE TABLE 'userAccess' ('guildId' TEXT NOT NULL, 'userId' TEXT NOT NULL, 'level' INTEGER NOT NULL, FOREIGN KEY('guildId') REFERENCES 'guild'('guildId'))",
-			"DROP TABLE 'groupMaster'", "DROP TABLE 'groupSync'", "CREATE TABLE 'groupMaster' ('groupId' INTEGER, 'masterId' TEXT NOT NULL, 'name' TEXT, 'isShared' INTEGER NOT NULL DEFAULT 0, PRIMARY KEY('groupId' AUTOINCREMENT))",
-			"CREATE TABLE 'groupMembers' ('groupId' INTEGER NOT NULL, 'guildId' TEXT NOT NULL, 'canManage' INTEGER NOT NULL DEFAULT 0, FOREIGN KEY('groupId') REFERENCES 'groupMaster'('groupId'))"), // 5 -> 6
-		List.of("ALTER TABLE 'groupMembers' ADD 'whitelisted' INTEGER NOT NULL DEFAULT 0"), // 6 -> 7
-		List.of("ALTER TABLE 'guild' ADD 'lastWebhook' TEXT", "ALTER TABLE 'guild' ADD 'appealLink' TEXT") // 7 -> 8
-	);
+	public List<List<String>> loadInstructions(Integer activeVersion) {
+		URL url = App.class.getResource("/database_updates");
+		List<String> lines = new ArrayList<>();
+		try {
+			Path path = Paths.get(url.toURI());
+			lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+		} catch (Exception ex) {
+			logger.error("SQLite: Failed to open update file", ex);
+		}
+		lines = lines.subList(activeVersion - 1, lines.size());
+		List<List<String>> result = new ArrayList<>();
+		lines.forEach(line -> {
+			String[] points = line.split(";");
+			List<String> list = points.length == 0 ? Arrays.asList(line) : Arrays.asList(points);
+			if (!list.isEmpty()) result.add(list);
+		});
+		return result;
+	}
 
 	private void updateDB() {
 		// 0 - skip
@@ -175,14 +197,13 @@ public class DBUtil {
 		if (newVersion > activeVersion) {
 			try (Connection conn = DriverManager.getConnection(urlSQLite);
 				Statement st = conn.createStatement()) {
-				while (activeVersion < newVersion) {
-					Integer next = activeVersion + 1;
-					List<String> instructions = instruct.get(next - 2);
-					for (String sql : instructions) {
-						logger.debug(sql);
-						st.execute(sql);
+				if (activeVersion < newVersion) {
+					for (List<String> version : loadInstructions(activeVersion)) {
+						for (String sql : version) {
+							logger.debug(sql);
+							st.execute(sql);
+						}
 					}
-					activeVersion = next;
 				}
 			} catch(SQLException ex) {
 				logger.warn("SQLite: Failed to execute update!\nPerform database update manually or delete it.\n{}", ex.getMessage());

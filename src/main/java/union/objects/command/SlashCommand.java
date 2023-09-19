@@ -208,9 +208,10 @@ public abstract class SlashCommand extends Command
 			Guild guild = event.getGuild();
 			Member author = event.getMember();
 			try {
-				bot.getCheckUtil()
 				// check setup
-					.guildExists(event, guild)
+				if (!event.getFullCommandName().equals("setup main")) bot.getCheckUtil().guildExists(event, guild);
+				
+				bot.getCheckUtil()
 				// check module enabled
 					.moduleEnabled(event, guild, getModule())
 				// check access
@@ -298,6 +299,8 @@ public abstract class SlashCommand extends Command
 
 		// Make the command data
 		SlashCommandData data = Commands.slash(getName(), getHelp());
+
+		// Add options and localizations
 		if (!getOptions().isEmpty()) {
 			getOptions().forEach(option -> {
 				option.setNameLocalizations(lu.getFullLocaleMap(String.format("%s.%s.name", getPath(), option.getName())));
@@ -381,10 +384,10 @@ public abstract class SlashCommand extends Command
 				data.addSubcommandGroups(groupData.values());
 		}
 
-		if (this.isOwnerCommand() || this.getAccessLevel().getLevel() >= 2)
-			data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
-		else
+		if (getAccessLevel().isLowerThan(CmdAccessLevel.ADMIN))
 			data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(this.getUserPermissions()));
+		else
+			data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
 
 		data.setGuildOnly(this.guildOnly);
 

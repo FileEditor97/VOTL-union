@@ -146,7 +146,7 @@ public class ModuleCmd extends CommandBase {
 					TimeUnit.SECONDS,
 					() -> {
 						hook.editOriginalComponents(
-							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, path+".timed_out")).setDisabled(true).build())
+							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 						).queue();
 					}
 				);
@@ -219,7 +219,7 @@ public class ModuleCmd extends CommandBase {
 					TimeUnit.SECONDS,
 					() -> {
 						hook.editOriginalComponents(
-							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, path+".timed_out")).setDisabled(true).build())
+							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 						).queue();
 					}
 				);

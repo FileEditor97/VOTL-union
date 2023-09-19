@@ -44,6 +44,10 @@ public enum CmdAccessLevel {
 		return(this.level > other.getLevel());
 	}
 
+	public boolean isLowerThan(CmdAccessLevel other) {
+		return(this.level < other.getLevel());
+	}
+
 	public static CmdAccessLevel byLevel(Integer level) {
 		return BY_LEVEL.get(level);
 	}

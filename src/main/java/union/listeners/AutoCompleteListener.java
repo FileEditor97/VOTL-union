@@ -18,9 +18,11 @@ import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 public class AutoCompleteListener extends ListenerAdapter {
 
 	private final List<SlashCommand> cmds;
-	private final List<String> groupOwnerCmds = List.of("group delete", "group add", "group remove", "group rename", "group view");
-	private final List<String> groupManageCmds = List.of("sync ban", "sync unban", "sync kick");
-	private final List<String> groupJoinedCmds = List.of("group leave", "group view");
+	//private final List<String> groupOwnerCmds = List.of("group delete", "group add", "group remove", "group rename", "group manage", "group view");
+	//private final List<String> groupManageCmds = List.of("sync ban", "sync unban", "sync kick");
+	//private final List<String> groupJoinedCmds = List.of("group leave", "group view");
+	//private final List<String> panelCmds = List.of("ticket panels modify", "ticket panels view", "ticket panels send", "ticket panels delete", "ticket tags create");
+	//private final List<String> tagCmds = List.of("ticket tags modify", "ticket tags view", "ticket tags delete");
 
 	private DBUtil db;
 
@@ -44,7 +46,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 			}
 			event.replyChoices(choices).queue();
 		}
-		else if (groupOwnerCmds.contains(cmdName) && focusedOption.equals("group_owned")) {
+		else if (focusedOption.equals("group_owned")) {
 			List<Integer> groupIds = db.group.getOwnedGroups(event.getGuild().getId());
 			if (groupIds.isEmpty()) {
 				event.replyChoices(Collections.emptyList()).queue();
@@ -58,7 +60,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 				event.replyChoices(choices).queue();
 			}
 		}
-		else if (groupJoinedCmds.contains(cmdName) && focusedOption.equals("group_joined")) {
+		else if (focusedOption.equals("group_joined")) {
 			List<Integer> groupIds = db.group.getGuildGroups(event.getGuild().getId());
 			if (groupIds.isEmpty()) {
 				event.replyChoices(Collections.emptyList()).queue();
@@ -72,7 +74,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 				event.replyChoices(choices).queue();
 			}
 		}
-		else if (groupManageCmds.contains(cmdName) && focusedOption.equals("group")) {
+		else if (focusedOption.equals("group")) {
 			List<Integer> groupIds = new ArrayList<Integer>();
 			groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getId()));
 			groupIds.addAll(db.group.getManagedGroups(event.getGuild().getId()));
@@ -87,6 +89,64 @@ public class AutoCompleteListener extends ListenerAdapter {
 					.collect(Collectors.toList());
 				event.replyChoices(choices).queue();
 			}
+		}
+		else if (focusedOption.equals("panel_id")) {
+			String value = event.getFocusedOption().getValue();
+			String guildId = event.getGuild().getId();
+			if (value.isBlank()) {
+				// if input is blank, show max 25 choices
+				List<Choice> choices = db.panels.getPanelsText(guildId).entrySet().stream()
+					.map(panel -> {
+						return new Choice("%s | %s".formatted(panel.getKey(), panel.getValue()), panel.getKey());
+					})
+					.collect(Collectors.toList());
+				event.replyChoices(choices).queue();
+				return;
+			}
+
+			Integer id = null;
+			try {
+				id = Integer.valueOf(value);
+			} catch(NumberFormatException ex) {}
+			if (id != null) {
+				// if able to convert input to Integer
+				String title = db.panels.getPanelTitle(id);
+				if (title != null) {
+					// if found panel with matching Id
+					event.replyChoice("%s | %s".formatted(id, title.substring(0, Math.min(90, title.length()))), id).queue();
+					return;
+				}
+			}
+			event.replyChoices(Collections.emptyList()).queue();
+		}
+		else if (focusedOption.equals("tag_id")) {
+			String value = event.getFocusedOption().getValue();
+			String guildId = event.getGuild().getId();
+			if (value.isBlank()) {
+				// if input is blank, show max 25 choices
+				List<Choice> choices = db.tags.getTagsText(guildId).entrySet().stream()
+					.map(panel -> {
+						return new Choice("%s | %s".formatted(panel.getKey(), panel.getValue()), panel.getKey());
+					})
+					.collect(Collectors.toList());
+				event.replyChoices(choices).queue();
+				return;
+			}
+
+			Integer id = null;
+			try {
+				id = Integer.valueOf(value);
+			} catch(NumberFormatException ex) {}
+			if (id != null) {
+				// if able to convert input to Integer
+				String title = db.tags.getTagText(id);
+				if (title != null) {
+					// if found panel with matching Id
+					event.replyChoice("%s - %s".formatted(id, title), id).queue();
+					return;
+				}
+			}
+			event.replyChoices(Collections.emptyList()).queue();
 		}
 	}
 

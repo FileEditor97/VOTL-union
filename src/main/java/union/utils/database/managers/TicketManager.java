@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import union.utils.database.DBUtil;
 import union.utils.database.LiteDBBase;
@@ -16,38 +17,81 @@ public class TicketManager extends LiteDBBase {
 		super(util);
 	}
 
+	/* tags:
+	 *  0 - role request ticket
+	 *  1+ - custom tags
+	 */
+
 	// add new ticket
-	public void addRoleTicket(Integer ticketId, String userId, String guildId, String channelId, String alias, String roleIds) {
-		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "alias", "roleIds"),
-			List.of(ticketId, userId, guildId, channelId, alias, roleIds));
+	public void addRoleTicket(Integer ticketId, String userId, String guildId, String channelId, String roleIds) {
+		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "tagId", "roleIds"),
+			List.of(ticketId, userId, guildId, channelId, 0, roleIds));
+	}
+
+	public void addTicket(Integer ticketId, String userId, String guildId, String channelId, Integer tagId) {
+		insert(TABLE, List.of("ticketId", "userId", "guildId", "channelId", "tagId"),
+			List.of(ticketId, userId, guildId, channelId, tagId));
 	}
 
 	// get last ticket's ID
-	public Integer lastId(String guildId) {
-		Object data = selectLast(TABLE, "ticketId", "guildId", guildId);
+	public Integer lastIdByTag(String guildId, Integer tagId) {
+		Integer data = selectLastTicketId(TABLE, guildId, tagId);
 		if (data == null) return 0;
-		return Integer.parseInt(data.toString());
+		return data;
 	}
 
 	// update mod
-	public void updateMod(String channelId, String modId) {
+	public void setClaimed(String channelId, String modId) {
 		update(TABLE, "modId", modId, "channelId", channelId);
 	}
 
-	// update status
-	public void closeTicket(Instant timeClosed, String channelId) {
-		update(TABLE, List.of("closed", "timeClosed"), List.of(1, timeClosed.getEpochSecond()), "channelId", channelId);
+	public void setUnclaimed(String channelId) {
+		update(TABLE, "modId", "NULL", "channelId", channelId);
 	}
 
-	public String getOpenedTicket(String userId, String guildId) {
-		Object data = selectOne(TABLE, "channelId", List.of("userId", "guildId", "closed"), List.of(userId, guildId, 0));
+	public String getClaimer(String channelId) {
+		Object data = selectOne(TABLE, "modId", "channelId", channelId);
+		if (data == null) return null;
+		return (String) data;
+	}
+
+	// set status
+	public void closeTicket(Instant timeClosed, String channelId, String reason) {
+		update(TABLE, List.of("closed", "timeClosed", "reasonClosed"), List.of(1, timeClosed.getEpochSecond(), Optional.ofNullable(reason).orElse("NULL")), "channelId", channelId);
+	}
+
+	// get status
+	public boolean isOpened(String channelId) {
+		if (selectOne(TABLE, "ticketId", List.of("channelId", "closed"), List.of(channelId, 0)) == null) return false;
+		return true;
+	}
+
+	public String getOpenedChannel(String userId, String guildId, Integer tagId) {
+		Object data = selectOne(TABLE, "channelId", List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
 		if (data == null) return null;
 		return String.valueOf(data);
 	}
 
-	public boolean isOpened(String channelId) {
-		if (selectOne(TABLE, "ticketId", List.of("channelId", "closed"), List.of(channelId, 0)) == null) return false;
-		return true;
+	public Integer getAllOpenedByUser(String userId, String guildId, Integer tagId) {
+		Object data = countSelect(TABLE, List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
+		if (data == null) return null;
+		return Integer.valueOf(data.toString());
+	}
+
+	public Integer countAllOpenedByUser(String userId, String guildId) {
+		Object data = countSelect(TABLE, List.of("userId", "guildId", "closed"), List.of(userId, guildId, 0));
+		if (data == null) return null;
+		return Integer.valueOf(data.toString());
+	}
+
+	public List<String> getOpenedChannels() {
+		List<Object> data = select(TABLE, "channelId", List.of("closed", "closeRequested"), List.of(0, 0));
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(e -> (String) e).toList();
+	}
+
+	public List<String> getExpiredTickets() {
+		return getExpiredTickets(TABLE, Instant.now().getEpochSecond());
 	}
 
 	public List<String> getRoleIds(String channelId) {
@@ -68,14 +112,26 @@ public class TicketManager extends LiteDBBase {
 		return String.valueOf(data);
 	}
 
-	public void setAccepted(String modId, String channelId) {
-		update(TABLE, "modId", modId, "channelId", channelId);
+	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
+		return countTicketsClaimed(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond(), roleTag);
 	}
 
-	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime) {
-		List<Integer> data = selectAfterTime(TABLE, guildId, modId, afterTime.getEpochSecond());
-		return data.size();
+	/**
+	 * Close requested:<p>
+	 *  0 - not requested;
+	 *  >1 - requested, await, close when time expires;  
+	 *  <-1 - closure canceled, do not request.
+	 * @param channelId
+	 * @param closeRequested
+	 */
+	public void setRequestStatus(String channelId, Long closeRequested) {
+		update(TABLE, "closeRequested", closeRequested, "channelId", channelId);
 	}
 
+	public Long getCloseTime(String channelId) {
+		Object data = selectOne(TABLE, "closeRequested", "channelId", channelId);
+		if (data == null) return 0L;
+		return ((Number) data).longValue();
+	}
 
 }

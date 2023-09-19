@@ -17,6 +17,7 @@ package union.objects.command;
 
 import javax.annotation.Nonnull;
 
+import union.objects.CmdAccessLevel;
 import union.utils.exception.CheckException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -46,7 +47,7 @@ public abstract class MessageContextMenu extends ContextMenu
 		}
 
 		// cooldown check, ignoring owner
-		if (cooldown>0 && !(event.isOwner())) {
+		if (cooldown>0 /* && !(event.isOwner()) */) {
 			String key = getCooldownKey(event);
 			int remaining = client.getRemainingCooldown(key);
 			if (remaining>0) {
@@ -120,16 +121,23 @@ public abstract class MessageContextMenu extends ContextMenu
 
 	@Override
 	public CommandData buildCommandData() {
+		// Set attributes
+		this.lu = bot.getLocaleUtil();
+		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
+
 		// Make the command data
 		CommandData data = Commands.message(getName());
+
+		// Check name localizations
+		if (!getNameLocalization().isEmpty()) {
+			//Add localizations
+			data.setNameLocalizations(getNameLocalization());
+		}
 		
-		if (this.userPermissions.length == 0)
-			if (this.isOwnerCommand())
-				data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
-			else
-				data.setDefaultPermissions(DefaultMemberPermissions.ENABLED);
+		if (!isOwnerCommand() || getAccessLevel().isLowerThan(CmdAccessLevel.ADMIN))
+			data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(getUserPermissions()));
 		else
-			data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(this.userPermissions));
+			data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
 
 		data.setGuildOnly(this.guildOnly);
 

@@ -396,7 +396,7 @@ public class GroupCmd extends CommandBase {
 					TimeUnit.SECONDS,
 					() -> {
 						event.getHook().editOriginalComponents(
-							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, path+".timed_out")).setDisabled(true).build())
+							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 						).queue();
 					}
 				);
@@ -526,7 +526,7 @@ public class GroupCmd extends CommandBase {
 					TimeUnit.SECONDS,
 					() -> {
 						event.getHook().editOriginalComponents(
-							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, path+".timed_out")).setDisabled(true).build())
+							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 						).queue();
 					}
 				);

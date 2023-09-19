@@ -14,6 +14,7 @@
 			"other_channel": "You lack the permission `{permission}` in the channel {channel} to do this command."
 		},
 		"no_send_perm": "I have no permission to send messages in your channel. Pls fix!",
+		"no_channel": "You don't own/has any voice channel.",
 		"guild_not_setup": "Server is not configured! Check `/help` for setup command.",
 		"access_level_low": "You don't have necessary access level to perform this command.",
 		"command": {
@@ -38,7 +39,8 @@
 		"interaction": {
 			"no_values": "None of the values has been selected.",
 			"no_access": "You cannot perform this action because you do not have the required access level."
-		}
+		},
+		"timed_out": "Timed out"
 	},
 	"misc": {
 		"and": "and",
@@ -62,6 +64,8 @@
 		"moderation": "Moderation category",
 		"verification": "Verification",
 		"ticketing": "Tickets",
+		"voice": "Custom voicechannels",
+		"report": "Report function",
 		"module_disabled": "This command(module) is disabled."
 	},
 	"role_type": {
@@ -71,13 +75,18 @@
 	},
 	"ticket": {
 		"close": "Close",
+		"claim": "Claim",
+		"claimed": "Claimed by: %s",
+		"unclaim": "Unclaim",
+		"cancel": "Cancel",
 		"rename": "Rename",
 		"role": "role",
 		"role_approve": "Approve all",
 		"role_title": "Requested roles",
 		"role_header": "**provide the following information:**",
 		"role_proof": "Proofs as requested by moderator.",
-		"role_footer": "*After the issuance of roles - the request will be deleted.*\n*Do not close the ticket, wait for the moderator!*"
+		"role_footer": "*After the issuance of roles - the request will be deleted.*\n*Do not close the ticket, wait for the moderator!*",
+		"autoclose_cancel": "The automated close on this ticket has been cancelled."
 	},
 	"logger": {
 		"user": "User",
@@ -150,7 +159,11 @@
 			"reason": "Reason"
 		},
 		"ticket": {
-			"closed": "Ticket closed | {ticket}",
+			"closed_title": "Ticket Closed",
+			"closed_value": "Ticket Name: {name}\nClosed By: {closed}\nCreated By: {created}\nClaimed By: {claimed}\n\nPlease see the attachment for the transcript.",
+			"closed_pm": "Please see attached transcript for your recent ticket at **{guild}**.\n\n**Closed By**: {closed}\n**Close date**: {time}\n**Close Reason**: {reason}",
+			"autoclosed": "No response, autoclosed",
+			"unclaimed": "UnClaimed",
 			"roles_title": "Roles issued | {ticket}",
 			"roles": "Assigned roles"
 		},
@@ -217,6 +230,66 @@
 					},
 					"not_valid": "Provided URL link is not valid.",
 					"done": "Appeal link set to `{link}`"
+				},
+				"report": {
+					"help": "Assign channel for receiving user reports/complains",
+					"usage": "report <#Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel to which to send complaints"
+					},
+					"cant_send": "I cant send messages in selected channel! Check my permissions or select other channel.",
+					"done": "Selected {channel} to receive user reports."
+				},
+				"voice": {
+					"help": "Manage custom VoiceChannel settings",
+					"create": {
+						"help": "Create custom VoiceChannels category",
+						"usage": "voice create",
+						"category_name": "Voice Channels",
+						"channel_name": "★ Join to create",
+						"done": "Successfully created channel {channel}! Setup is done."
+					},
+					"panel": {
+						"help": "Create panel for controlling custom VoiceChannels",
+						"usage": "voice panel <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select channel in which to create the panel"
+						},
+						"lock": "Lock",
+						"unlock": "Unlock",
+						"ghost": "Ghost",
+						"unghost": "Unghost",
+						"name": "Rename",
+						"limit": "Set limit",
+						"permit": "Permit",
+						"reject": "Reject",
+						"perms": "Permissions",
+						"delete": "Delete channel",
+						"embed_title": "Personal voice channels",
+						"embed_value": "To create your personal voice channel, join <#{id}>.\n\nYou can control your voice channel either by pressing buttons bellow or using my slash commands.",
+						"done": "Panel created in {channel}!"
+					},
+					"name": {
+						"help": "Sets default name for custom VoiceChannels",
+						"usage": "voice name <Default channel name>",
+						"name": {
+							"name": "name",
+							"help": "Enter string 1 <> 100 symbols, supports '{name}'"
+						},
+						"invalid_range": "Channel name must be in range from 1 to 100 symbols and not blank.",
+						"done": "Successfully changed default VoiceChannels name to `{value}`!"
+					},
+					"limit": {
+						"help": "Sets default user limit for custom VoiceChannels",
+						"usage": "voice limit <Default channel limit>",
+						"limit": {
+							"name": "limit",
+							"help": "Enter integer 0 <> 99"
+						},
+						"done": "Successfully changed default VoiceChannels limit to `{value}`!"
+					}
 				}
 			},
 			"module": {
@@ -237,7 +310,6 @@
 					"embed_value": "Select module from list bellow to be disabled.",
 					"select": "Select module",
 					"none": "__All modules are already disabled!__",
-					"timed_out": "Timed out",
 					"already": "Module already disabled!",
 					"done": "Module {module} successfully disabled."
 				},
@@ -248,13 +320,12 @@
 					"embed_value": "Select module from list bellow to be enabled.",
 					"select": "Select module",
 					"none": "__All modules are already enabled!__",
-					"timed_out": "Timed out",
 					"already": "Module already enabled!",
 					"done": "Module {module} successfully enabled."
 				}
 			},
 			"access": {
-				"help": "Manage roles (set Mod/Op) that has access to command use",
+				"help": "Manage access to command use",
 				"add": {
 					"help": "Allow access",
 					"mod": {
@@ -274,16 +345,17 @@
 							"name": "user",
 							"help": "Mention server member"
 						},
-						"already": "User already has Operator access!",
 						"done": "Successfully asigned {user} Operator access!"
 					},
 					"no_role": "Role not found.",
 					"no_member": "Member not found.",
+					"role_already": "This role already has access. Remove it and try again.",
+					"user_already": "This user already has access. Remove it and try again.",
 					"incorrect_role": "Selected role can't be set as Moderator.",
 					"incorrect_user": "Selected member can't be set as Operator."
 				},
 				"remove": {
-					"help": "Deny access",
+					"help": "Remove access",
 					"mod": {
 						"help": "Remove Moderator access from role",
 						"usage": "remove mod <@Role | ID>",
@@ -312,9 +384,9 @@
 					"usage": "view",
 					"embed": {
 						"title": "Roles with access",
-						"none_found": "*None of the roles has Mod access*",
+						"none_found": "*None of the roles/users has any access.*",
 						"none": "None",
-						"mod": "**Moderator access:**",
+						"mod": "**Moderator roles:**",
 						"operator": "**Operators:**"
 					}
 				}
@@ -344,7 +416,6 @@
 					"select_channel": "Select new channel, which will be used for logging {type}",
 					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
 					"as_log": "This channel is selected as a log channel for performed {type}.",
-					"timed_out": "Timed out",
 					"done": "Successfully set {channel} as log channel!",
 					"removed": "Log channels for all actions were removed."
 				},
@@ -354,6 +425,143 @@
 					"group": "Group actions",
 					"verify": "Verifications",
 					"ticketing": "Ticket actions"
+				}
+			}
+		},
+		"voice": {
+			"listener": {
+				"default_name": "{user}'s channel",
+				"cooldown": "Creating voice channels to quickly, wait a bit! Or you already own maximum VoiceChannels.",
+				"not_in_voice": "You are not connected to any voice channel.",
+				"panel": {
+					"lock": "Channel locked!",
+					"unlock": "Channel unlocked!",
+					"ghost": "Channel ghosted!",
+					"unghost": "Channel unghosted!",
+					"modal": "Provide information",
+					"name_label": "Channel name",
+					"name_done": "Channel renamed to {name}!",
+					"limit_label": "Channel limit",
+					"limit_done": "Channel user limit set to {limit}!",
+					"permit_label": "Select members and/or roles to which grand access to your channel.",
+					"permit_done": "Successfully permited {targets} to connect to your channel!",
+					"reject_label": "Select members and/or roles to whom deny access to your channel.",
+					"reject_done": "Successfully rejected {targets} from connecting to your channel!",
+					"not_self": "You can't add/remove yourself or me.",
+					"perms": {
+						"title": "Channel permissions for `{channel}`",
+						"field": "**Can View | Can Join | Holder**",
+						"everyone": "Everyone",
+						"roles": "**Roles:**",
+						"members": "**Members:**",
+						"none": "*None*"
+					},
+					"delete": "Channel deleted!"
+				}
+			},
+			"voice": {
+				"help": "Private VoiceChannels managment",
+				"lock": {
+					"help": "Locks your channel for @everyone (except: allowed users)",
+					"usage": "lock",
+					"done": "Successfully locked your channel!"
+				},
+				"unlock": {
+					"help": "Unlocks your channel for @everyone (except: disallowed users)",
+					"usage": "unlock",
+					"done": "Successfully unlocked your channel!"
+				},
+				"ghost": {
+					"help": "Hides your channel for @everyone (except: allowed users)",
+					"usage": "ghost",
+					"done": "Successfully ghosted your channel!"
+				},
+				"unghost": {
+					"help": "Unhides your channel for @everyone",
+					"usage": "unghost",
+					"done": "Successfully unghosted your channel!"
+				},
+				"name": {
+					"help": "Control your VC's name",
+					"set": {
+						"help": "Set your VC's name",
+						"usage": "name set <name>",
+						"name": {
+							"name": "name",
+							"help": "Enter string 1 <> 100 symbols, supports '{name}'"
+						}
+					},
+					"reset": {
+						"help": "Reset your VC's name to server's default",
+						"usage": "name reset"
+					},
+					"done": "Successfully changed your's channel name to `{value}`!"
+				},
+				"limit": {
+					"help": "Control your VC's user limit",
+					"set": {
+						"help": "Set your VC's user limit",
+						"usage": "limit set <limit>",
+						"limit": {
+							"name": "limit",
+							"help": "Enter integer 0 <> 99"
+						}
+					},
+					"reset": {
+						"help": "Reset your VC's user limit to server's default",
+						"usage": "limit reset"
+					},
+					"done": "Successfully changed your's channel limit to `{value}`!"
+				},
+				"claim": {
+					"help": "Claim ownership of channel once owner has left",
+					"usage": "claim",
+					"has_channel": "You already own other VoiceChannel.",
+					"not_custom": "You can't own this VoiceChannel.",
+					"has_owner": "The owner of this channel is in this VoiceChannel.",
+					"done": "You are now owner of this VoiceChannel {channel}!"
+				},
+				"permit": {
+					"help": "Gives the user permission to join your VC",
+					"usage": "permit <@Role | @Member | ...>",
+					"mentions": {
+						"name": "mentions",
+						"help": "Enter Role or Member mention/-s"
+					},
+					"invalid_args": "You didn't mention role/-s or any member/-s.",
+					"not_self": "You can't add yourself or me.",
+					"done": "Successfully permited {targets} to connect to your channel!"
+				},
+				"reject": {
+					"help": "Withdraw the user permission to join your VC",
+					"usage": "reject <@Role | @Member | ...>",
+					"mentions": {
+						"name": "mentions",
+						"help": "Enter Role or Member mention/-s"
+					},
+					"invalid_args": "You didn't mention role/-s or any member/-s.",
+					"not_self": "You can't remove yourself or me.",
+					"done": "Successfully rejected {targets} from connecting to your channel!"
+				},
+				"perms": {
+					"help": "Manage your VoiceChannel's permissions",
+					"view": {
+						"help": "View VC's permissions",
+						"usage": "perms view",
+						"embed": {
+							"title": "Channel permissions for `{channel}`",
+							"field": "**Can View | Can Join | Holder**",
+							"everyone": "Everyone",
+							"roles": "**Roles:**",
+							"members": "**Members:**",
+							"none": "*None*"
+						}
+					},
+					"reset": {
+						"help": "Reset VC's permissions to default (sync with category)",
+						"usage": "perms reset",
+						"done": "Successfully synced channel permissions with category!"
+					}
 				}
 			}
 		},
@@ -714,7 +922,6 @@
 					"no_guilds": "There are no other servers in the selected Group.",
 					"embed_title": "Server to be removed",
 					"embed_value": "Select server from the list below to be removed from Group `{group_name}`.",
-					"timed_out": "Timed out",
 					"done": "Successfully removed server __{guild_name}__ from Group `{group_name}`."
 				},
 				"rename": {
@@ -749,7 +956,6 @@
 					"is_shared": "Selected Group is set as `Shared`. Unable to add manage permission to any server in this Group.",
 					"embed_title": "Server",
 					"embed_value": "Select server from the list below.",
-					"timed_out": "Timed out",
 					"done": "Successfully set permission to `{manage}` for server __{guild_name}__ in Group `{group_name}`."
 				},
 				"view": {
@@ -870,6 +1076,7 @@
 					"moderation": "Moderation",
 					"verification": "Verification",
 					"ticketing": "Tickets",
+					"voice": "Voice",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -1005,15 +1212,22 @@
 		"ticketing": {
 			"embeds": {
 				"role_title": "Getting/Removing roles",
-				"role_value": "🟢 Obtaining a role:\n> Select an available role from the list below and follow the instructions.\n> ❗ In the created request, attach proofs.❗\n\n🔴 Removing a role:\n> Click the button below and select the roles you want to remove.\n\n📣 Alerts:\n> Click on the buttons below if you want to be notified of events on the server or other.",
-				"select": "Select role/-s",
+				"role_value": "🟢 Obtaining a role:\n> Click on the button below and select the desired roles. New ticket will be created for your request.\n\n🔴 Removing a role:\n> Click on the button below and select the roles you want to remove.\n\n📣 Alerts:\n> Click on the buttons below if you want to be notified of events on the server or other.",
+				"button_request": "Request roles",
 				"button_remove": "Remove roles",
-				"other": "Other role"
+				"other": "__Other role__"
 			},
 			"listener": {
-				"none_selected": "",
 				"no_assigned": "Can't remove any role that you have.",
-				"remove_title": "Select roles you wish to remove.\n*You may not assign some of removed roles back.*",
+				"request_title": "Select roles you want to request.\n*Clear selection, if you you selected wrong roles.*\nPress 'Other role/-s' if desired role is not present.\n\nWhen done - press 'Continue'.",
+				"request_other": "Other role/-s",
+				"request_clear": "Clear selection",
+				"request_continue": "Continue",
+				"request_selected": "Selected roles:",
+				"request_template": "Select role/-s",
+				"request_none": "You didn't selected any role to be requested.",
+				"request_empty": "Can't request any selected role. Contact server moderation.",
+				"remove_title": "Select roles you want to remove.\n*You will not be able to assign some of the removed roles back.*",
 				"remove_failed": "Couldn't complete your role removal request. See message bellow.",
 				"remove_done": "Roles {roles} removed!",
 				"toggle_failed": "Couldn't add/remove requested role. See message bellow and report it to the server Administration.",
@@ -1028,11 +1242,16 @@
 				"role_added": "Request approved, roles assigned to user.",
 				"role_dm": "{server}\n> Roles [{roles}] requested in ticket `role-{id}` assigned!\n-{mod}",
 				"role_none": "There aren't any roles that can be assigned. Manually assign user requested roles.",
-				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button."
+				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button.",
+				"close_request": "Hey! {user}, support have indicated that the ticket is now resolved. Would you like to close the ticket or do you have further questions? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
+				"close_auto": "Hi! {user}, this ticket has not received a response for some time. Do you want to close the ticket or is your request still unresolved? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
+				"user_left": "Sadly, the user that created this ticket has left the guild. If they rejoin, it will not automatically re-add them.",
+				"claimed": "The ticket has been successfully claimed by {user}.",
+				"unclaimed": "The ticket has been successfully un-claimed."
 			},
-			"tpanel": {
+			"rpanel": {
 				"help": "Manage the panels of the ticketing module",
-				"usage": "tpanel",
+				"usage": "rpanel",
 				"create": {
 					"help": "Send panel to selected channel",
 					"usage": "create <#Channel>",
@@ -1055,6 +1274,19 @@
 					"not_found": "Existing panel not found in selected channel",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
 					"done": "Panel updated in {channel}!"
+				},
+				"row": {
+					"help": "Update assignable role rows text placeholder",
+					"usage": "row <row number> <text>",
+					"row": {
+						"name": "row",
+						"help": "Enter row number (1-3)"
+					},
+					"text": {
+						"name": "text",
+						"help": "Enter text which will be shown in role selection placeholder"
+					},
+					"done": "Placeholder text for row `{row}` set to `{text}`."
 				}
 			},
 			"tcount": {
@@ -1064,18 +1296,24 @@
 					"name": "user",
 					"help": "Enter ID/mention the user"
 				},
-				"days": {
-					"name": "days",
-					"help": "Enter how much days prior to check for, default is 7 days"
+				"start_date": {
+					"name": "start_date",
+					"help": "Enter start date (day-month-year)"
 				},
-				"done": "Moderator: {user} ({id})\nAccepted tickets: `{count}`"
+				"end_date": {
+					"name": "end_date",
+					"help": "Enter end date (day-month-year)"
+				},
+				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
+				"wrong_date": "Wrong dates provided (before and after inputs).",
+				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`\nClaimed tickets: `{other}`"
 			},
 			"roles": {
 				"help": "Manage assignable roles via ticket system",
 				"usage": "roles",
 				"add": {
 					"help": "Add role",
-					"usage": "add <@Role> <type> [description]",
+					"usage": "add <@Role> <type> [description] [row]",
 					"role": {
 						"name": "role",
 						"help": "Select role which will be used added to the list"
@@ -1090,16 +1328,40 @@
 					},
 					"row": {
 						"name": "row",
-						"help": "![ Disabled ]!"
+						"help": "Select in which select menu (row) assignable role will be placed"
 					},
 					"no_role": "Role not found or is incorrect.",
 					"cant_interact": "I can't interact with selected role.",
 					"exists": "Role is already managed. Check `/roles view`",
 					"no_type": "Role type not found.",
-					"assign_max": "Maximum assignable roles managed (25). Clear the list, to add new roles.",
+					"rows_max": "All assignable roles rows are full (3x25). Clear any row, to add new roles.",
+					"row_max": "Row is full (25 roles). Clear this row, to add new roles.",
 					"toggle_max": "Maximum toggleable roles managed (5). Clear the list, to add new roles.",
 					"custom_max": "Maximum custom roles managed (25). Clear the list, to add new roles.",
 					"done": "Role {role} added to the list as `{type}` type role!"
+				},
+				"update": {
+					"help": "Update assignable role data",
+					"usage": "update <@Role> [description] [row]",
+					"role": {
+						"name": "role",
+						"help": "Select role which to update"
+					},
+					"description": {
+						"name": "description",
+						"help": "Change role description, enter 'NULL' to clear it"
+					},
+					"row": {
+						"name": "row",
+						"help": "Change in which select menu (row) assignable role will be placed"
+					},
+					"no_role": "Role not found or is incorrect.",
+					"not_exists": "Role is not set as assignable role, use `/roles add` to add it.",
+					"no_options": "No data to be updated for role.",
+					"embed_title": "Updated role's {role} data.",
+					"default_description": "\n> Role description cleared to default.",
+					"changed_description": "\n> Role description set to `{text}`.",
+					"changed_row": "\n> Changed assignable role's row to `{row}`."
 				},
 				"remove": {
 					"help": "Remove role from managed roles list",
@@ -1117,7 +1379,301 @@
 					"title": "Managed roles",
 					"none": "*None*"
 				}
+			},
+			"ticket": {
+				"help": "Ticket tools",
+				"panels": {
+					"help": "Manage ticket panels",
+					"new": {
+						"help": "Create new embed panel",
+						"usage": "panels new <Embed title> [description] [image URL] [footer]",
+						"embed_title": {
+							"name": "embed_title",
+							"help": "Enter embed's title"
+						},
+						"embed_description": {
+							"name": "embed_description",
+							"help": "Enter embed's description"
+						},
+						"embed_image": {
+							"name": "embed_image",
+							"help": "Enter embed's image (URL link)"
+						},
+						"embed_footer": {
+							"name": "embed_footer",
+							"help": "Enter embed's footer"
+						},
+						"max_panels": "This server has maximum panels created. Delete unused or modify existing.",
+						"image_not_valid": "Provided image URL link is not valid.",
+						"done": "Successfully created new panel!\nTitle: `{title}`\nPanel's ID: `{id}`"
+					},
+					"modify": {
+						"help": "Modify existing embed panel",
+						"usage": "panels modify <Panel ID> [Embed title] [description] [image URL] [footer]",
+						"panel_id": {
+							"name": "panel_id",
+							"help": "Enter panel's ID"
+						},
+						"embed_title": {
+							"name": "embed_title",
+							"help": "Enter embed's title"
+						},
+						"embed_description": {
+							"name": "embed_description",
+							"help": "Enter embed's description"
+						},
+						"embed_image": {
+							"name": "embed_image",
+							"help": "Enter embed's image (URL link)"
+						},
+						"embed_footer": {
+							"name": "embed_footer",
+							"help": "Enter embed's footer"
+						},
+						"not_found": "Panel by the provided ID not found.",
+						"image_not_valid": "Provided image URL link is not valid.",
+						"changed_title": "Embed's title changed",
+						"changed_description": "Embed's description changed",
+						"changed_image": "Embed's image changed",
+						"changed_footer": "Embed's footer changed",
+						"no_options": "No panel's fields to be updated.",
+						"done": "Updated panel's fields."
+					},
+					"view": {
+						"help": "Display information about selected embed panel, including connected tags",
+						"usage": "panels view <Panel ID>",
+						"panel_id": {
+							"name": "panel_id",
+							"help": "Enter panel's ID"
+						},
+						"not_found": "Panel by the provided ID not found."
+					},
+					"send": {
+						"help": "Send panel's embed into channel",
+						"usage": "panels send <Panel ID> <#Channel>",
+						"panel_id": {
+							"name": "panel_id",
+							"help": "Enter panel's ID"
+						},
+						"channel": {
+							"name": "channel",
+							"help": "Select channel in which to create the panel"
+						},
+						"not_found": "Panel by the provided ID not found.",
+						"cant_send": "I cant send messages in selected channel! Check my permissions or select other channel.",
+						"done": "Panel created in {channel}!"
+					},
+					"delete": {
+						"help": "Delete panel",
+						"usage": "panels delete <Panel ID>",
+						"panel_id": {
+							"name": "panel_id",
+							"help": "Enter panel's ID"
+						},
+						"not_found": "Panel by the provided ID not found.",
+						"done": "Ticket panel with ID `%s` deleted!"
+					}
+				},
+				"tags": {
+					"help": "Manage ticket tags",
+					"create": {
+						"help": "Create new ticket tag",
+						"usage": "tags create <Panel ID> <ticket type> [button text] [emoji] [category] [message] [support Roles] [ticket name] [button style]",
+						"panel_id": {
+							"name": "panel_id",
+							"help": "Enter panel's ID, to which attach this tag"
+						},
+						"tag_type": {
+							"name": "tag_type",
+							"help": "The type of ticket that will be created"
+						},
+						"button_text": {
+							"name": "button_text",
+							"help": "The text show on the button"
+						},
+						"emoji": {
+							"name": "emoji",
+							"help": "Reaction emoji, will shown on the button that user will click on"
+						},
+						"location": {
+							"name": "location",
+							"help": "The category this ticket is created in (ignored for thread-type tags)"
+						},
+						"message": {
+							"name": "message",
+							"help": "This message is sent upon ticket creation (supports {username} / {tag_username})"
+						},
+						"support_roles": {
+							"name": "support_roles",
+							"help": "Support roles that will be able to see this ticket"
+						},
+						"ticket_name": {
+							"name": "ticket_name",
+							"help": "This is the name of the ticket that is created (supports {username})"
+						},
+						"button_style": {
+							"name": "button_style",
+							"help": "The style/color of the button"
+						},
+						"not_found": "Panel by the provided ID not found.",
+						"max_tags": "Used panel has maximum tags attached. Delete unused or modify existing.",
+						"too_many_roles": "Too many support roles provided, maximum is 6.",
+						"done": "Successfully attached new tag to panel with ID `{panel}`!\nTag's ID: `{tag}`"
+					},
+					"modify": {
+						"help": "Create new ticket tag",
+						"usage": "tags modify <Tag ID> [ticket type] [button text] [emoji] [category] [message] [support Roles] [ticket name] [button style]",
+						"tag_id": {
+							"name": "tag_id",
+							"help": "Enter tag's ID"
+						},
+						"tag_type": {
+							"name": "tag_type",
+							"help": "The type of ticket that will be created"
+						},
+						"button_text": {
+							"name": "button_text",
+							"help": "The text show on the button"
+						},
+						"emoji": {
+							"name": "emoji",
+							"help": "Reaction emoji, will shown on the button that user will click on"
+						},
+						"location": {
+							"name": "location",
+							"help": "The category this ticket is created in (ignored for thread-type tags)"
+						},
+						"message": {
+							"name": "message",
+							"help": "This message is sent upon ticket creation (supports {username} / {tag_username})"
+						},
+						"support_roles": {
+							"name": "support_roles",
+							"help": "Support roles that will be able to see this ticket"
+						},
+						"ticket_name": {
+							"name": "ticket_name",
+							"help": "This is the name of the ticket that is created (supports {username})"
+						},
+						"button_style": {
+							"name": "button_style",
+							"help": "The style/color of the button"
+						},
+						"not_found": "Tag by the provided ID not found.",
+						"changed_type": "Ticket's type changed",
+						"changed_text": "Button's text changed",
+						"changed_emoji": "Button's emoji changed",
+						"changed_location": "New ticket's channel category changed",
+						"changed_message": "Ticket's message changed",
+						"changed_roles": "Ticket's support roles changed",
+						"changed_name": "Ticket's name changed",
+						"changed_style": "Button's style changed",
+						"no_options": "No tag's values to be updated.",
+						"done": "Updated tag's values."
+					},
+					"view": {
+						"help": "Display information about selected tag",
+						"usage": "tags view <Tag ID>",
+						"tag_id": {
+							"name": "tag_id",
+							"help": "Enter tag's ID"
+						},
+						"not_found": "Tag by the provided ID not found.",
+						"type": "Ticket's type",
+						"location": "Ticket's channel category",
+						"message": "Ticket's message",
+						"roles": "Ticket's support roles",
+						"name": "Ticket's name",
+						"none": "*None*"
+					},
+					"delete": {
+						"help": "Delete tag",
+						"usage": "tags delete <Tag ID>",
+						"tag_id": {
+							"name": "tag_id",
+							"help": "Enter tag's ID"
+						},
+						"not_found": "Tag by the provided ID not found.",
+						"done": "Ticket tag with ID `%s` deleted!"
+					}
+				},
+				"automation": {
+					"help": "Manage automation settings for tickets",
+					"usage": "automation [time] [author left]",
+					"autoclose": {
+						"name": "autoclose",
+						"help": "Asks ticket's author if ticket can be closed. Enter 0 to disable, or time in hours."
+					},
+					"author_left": {
+						"name": "author_left",
+						"help": "When ticket's author leaves server, should created ticket be closed?"
+					},
+					"no_options": "No tickets settings to be updated.",
+					"embed_title": "Updated tickets settings.",
+					"changed_autoclose": "\n> Autoclose time set to {time} hour/-s.",
+					"changed_left": "\n> When ticket's author leaves, ticket will be closed: {left}."
+				}
+			},
+			"close": {
+				"help": "Close ticket",
+				"usage": "close",
+				"reason": {
+					"name": "reason",
+					"help": "Close reason"
+				},
+				"not_ticket": "This channel is not a ticket."
+			},
+			"rclose": {
+				"help": "Sends a close request to ticket author",
+				"usage": "rclose",
+				"reason": {
+					"name": "reason",
+					"help": "Close reason"
+				},
+				"not_ticket": "This channel is not a ticket.",
+				"already_requested": "This ticket already requested for closure."
+			},
+			"add": {
+				"help": "Add user to a ticket",
+				"usage": "add <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select user to be added to this ticket"
+				},
+				"not_ticket": "This channel is not a ticket.",
+				"not_self": "You can't add yourself, ticket creator or me.",
+				"failed": "Unable to add selected user.",
+				"done": "Added {user} to this ticket."
+			},
+			"remove": {
+				"help": "Remove user from a ticket",
+				"usage": "remove <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select user to be removed from this ticket"
+				},
+				"not_ticket": "This channel is not a ticket.",
+				"not_self": "You can't remove yourself, ticket creator or me.",
+				"failed": "Unable to add selected user.",
+				"done": "Removed {user} from this ticket."
 			}
+		}
+	},
+	"menus": {
+		"account": {
+			"name": "Unionteams Account"
+		},
+		"report": {
+			"name": "Report message",
+			"done": "Message has been reported to the server moderation!",
+			"title": "Message reported",
+			"user": "User",
+			"channel": "Channel",
+			"complain": "Complained",
+			"content": "Content",
+			"link": "Open message",
+			"delete": "Delete message",
+			"deleted": "Message deleted by {name}!"
 		}
 	}
 }

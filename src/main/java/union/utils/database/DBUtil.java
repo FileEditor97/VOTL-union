@@ -2,11 +2,8 @@ package union.utils.database;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -169,11 +166,14 @@ public class DBUtil {
 	}
 
 	public List<List<String>> loadInstructions(Integer activeVersion) {
-		URL url = App.class.getResource("/database_updates");
 		List<String> lines = new ArrayList<>();
 		try {
-			Path path = Paths.get(url.toURI());
-			lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+			File tempFile = File.createTempFile("database_updates", ".tmp");
+			if (!fileManager.export(App.class.getResourceAsStream("/database_updates"), tempFile.toPath())) {
+				logger.error("Failed to write temp file {}!", tempFile.getName());
+			} else {
+				lines = Files.readAllLines(tempFile.toPath(), StandardCharsets.UTF_8);
+			}
 		} catch (Exception ex) {
 			logger.error("SQLite: Failed to open update file", ex);
 		}

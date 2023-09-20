@@ -39,6 +39,8 @@ dependencies {
 	implementation 'com.jayway.jsonpath:json-path:2.8.0'			// json path-er
 	implementation 'org.xerial:sqlite-jdbc:3.42.0.1'				// sqlite database
 	implementation 'com.mysql:mysql-connector-j:8.1.0'				// mysql database (Union)
+	// https://mvnrepository.com/artifact/org.jsoup/jsoup
+	implementation 'org.jsoup:jsoup:1.16.1'
 
 	// Eval
 	implementation 'org.apache.groovy:groovy:4.0.14'				// Groovy - code evaluation

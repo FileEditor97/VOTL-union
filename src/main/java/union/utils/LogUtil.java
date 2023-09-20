@@ -397,13 +397,13 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed getTicketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, User userCreated, String claimerId) {
+	public MessageEmbed getTicketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, String authorId, String claimerId) {
 		return embedUtil.getEmbed().setColor(Color.WHITE)
 			.setTitle(lu.getLocalized(locale, path+"ticket.closed_title"))
 			.setDescription(lu.getLocalized(locale, path+"ticket.closed_value")
 				.replace("{name}", channel.getName())
 				.replace("{closed}", (userClosed != null ? userClosed.getAsMention() : lu.getLocalized(locale, path+"ticket.autoclosed")))
-				.replace("{created}", userCreated.getAsMention())
+				.replace("{created}", User.fromId(authorId).getAsMention())
 				.replace("{claimed}", (claimerId != null ? User.fromId(claimerId).getAsMention() : lu.getLocalized(locale, path+"ticket.unclaimed")))
 			)
 			.setFooter("Channel ID: "+channel.getId())

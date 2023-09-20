@@ -30,7 +30,7 @@ public class TicketGlobalManager extends LiteDBBase {
 
 	public String getRowText(String guildId, Integer row) {
 		Object data = selectOne(TABLE, "rowName"+row, "guildId", guildId);
-		if (data == null) return "";
+		if (data == null) return "Select roles";
 		return data.toString();
 	}
 

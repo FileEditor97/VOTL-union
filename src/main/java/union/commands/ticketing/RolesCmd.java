@@ -56,7 +56,11 @@ public class RolesCmd extends CommandBase {
 				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"), false)
 					.setMaxLength(100),
 				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"), false)
-					.setRequiredRange(1, 3)
+					.addChoices(List.of(
+						new Choice("1", 1),
+						new Choice("2", 2),
+						new Choice("3", 3)
+					))
 			);
 		}
 
@@ -78,7 +82,7 @@ public class RolesCmd extends CommandBase {
 			}
 			String type = event.optString("type");
 			if (type.equals(RoleType.ASSIGN.toString())) {
-				Integer row = event.optInteger("row");
+				Integer row = event.optInteger("row", 0);
 				if (row == 0) {
 					for (Integer i = 1; i <= 3; i++) {
 						if (bot.getDBUtil().role.getRowSize(guildId, i) < 25) {
@@ -142,7 +146,11 @@ public class RolesCmd extends CommandBase {
 				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"))
 					.setMaxLength(100),
 				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"))
-					.setRequiredRange(1, 3)
+					.addChoices(List.of(
+						new Choice("1", 1),
+						new Choice("2", 2),
+						new Choice("3", 3)
+					))
 			);
 		}
 

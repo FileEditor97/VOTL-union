@@ -1247,7 +1247,8 @@
 				"close_auto": "Hi! {user}, this ticket has not received a response for some time. Do you want to close the ticket or is your request still unresolved? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
 				"user_left": "Sadly, the user that created this ticket has left the guild. If they rejoin, it will not automatically re-add them.",
 				"claimed": "The ticket has been successfully claimed by {user}.",
-				"unclaimed": "The ticket has been successfully un-claimed."
+				"unclaimed": "The ticket has been successfully un-claimed.",
+				"delete_countdown": "This ticket will be closed in 5 seconds."
 			},
 			"rpanel": {
 				"help": "Manage the panels of the ticketing module",

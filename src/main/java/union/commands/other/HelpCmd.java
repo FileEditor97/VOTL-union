@@ -109,7 +109,7 @@ public class HelpCmd extends CommandBase {
 			buffer.append(lu.getLocalized(locale, "bot.help.command_info.usage_value").replace("{usage}", lu.getLocalized(locale, command.getUsagePath()))).append("\n");
 		}
 		buffer.append("\n").append(lu.getLocalized(locale, "bot.help.command_info.usage_subvalue"));
-		return buffer.toString();
+		return buffer.toString().substring(0, Math.min(1024, buffer.length()));
 	}
 
 	private void sendHelp(SlashCommandEvent event, String filCat) {

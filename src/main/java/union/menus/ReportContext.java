@@ -8,6 +8,8 @@ import union.objects.command.MessageContextMenuEvent;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -20,14 +22,15 @@ public class ReportContext extends MessageContextMenu {
 		this.lu = bot.getLocaleUtil();
 		this.path = "menus.report";
 		this.module = CmdModule.REPORT;
-		this.cooldown = 20;
+		this.cooldown = 60;
 		this.cooldownScope = CooldownScope.USER_GUILD;
 	}
 
 	@Override
 	protected void execute(MessageContextMenuEvent event) {
 		String channelId = bot.getDBUtil().guild.getReportChannelId(event.getGuild().getId());
-		if (channelId == null || event.getTarget().getAuthor().isBot()) {
+		Member author = event.getTarget().getMember();
+		if (channelId == null || author.getUser().isBot() || author.hasPermission(Permission.ADMINISTRATOR)) {
 			event.reply(Constants.FAILURE).setEphemeral(true).queue();
 			return;
 		}

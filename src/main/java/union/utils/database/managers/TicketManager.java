@@ -72,7 +72,7 @@ public class TicketManager extends LiteDBBase {
 		return String.valueOf(data);
 	}
 
-	public Integer getAllOpenedByUser(String userId, String guildId, Integer tagId) {
+	public Integer countOpenedByUser(String userId, String guildId, Integer tagId) {
 		Object data = countSelect(TABLE, List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
 		if (data == null) return null;
 		return Integer.valueOf(data.toString());

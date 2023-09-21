@@ -439,7 +439,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		event.deferEdit().queue();
 
-		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, 1);
+		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, 0);
 		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).queue(
 			channel -> {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
@@ -533,10 +533,12 @@ public class InteractionListener extends ListenerAdapter {
 			event.getChannel().delete().queue();
 			return;
 		}
-		event.deferReply(true).queue();
-		bot.getTicketUtil().closeTicket(channelId, event.getUser(), (db.ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support"), failure -> {
-			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed")).queue();
-			bot.getLogger().error("Couldn't close ticket with channelID:"+channelId, failure);
+		event.editButton(Button.danger("ticket:close", bot.getLocaleUtil().getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒")).asDisabled()).queue();
+		event.getMessage().replyEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown")).build()).queue(msg -> {
+			bot.getTicketUtil().closeTicket(channelId, event.getUser(), (db.ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support"), failure -> {
+				msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed", failure.getMessage())).queue();
+				bot.getLogger().error("Couldn't close ticket with channelID:"+channelId, failure);
+			});
 		});
 	}
 

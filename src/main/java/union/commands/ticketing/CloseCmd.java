@@ -32,11 +32,13 @@ public class CloseCmd extends CommandBase {
 			event.getChannel().delete().queue();
 			return;
 		}
-		event.deferReply(true).queue();
 		String reason = bot.getDBUtil().ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support";
-		bot.getTicketUtil().closeTicket(channelId, event.getUser(), reason, failure -> {
-			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed")).queue();
-			bot.getLogger().error("Couldn't close ticket with channelID:"+channelId, failure);
+		event.replyEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown")).build()).queue(hook -> {
+			
+			bot.getTicketUtil().closeTicket(channelId, event.getUser(), reason, failure -> {
+				hook.editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed")).queue();
+				bot.getLogger().error("Couldn't close ticket with channelID:"+channelId, failure);
+			});
 		});
 	}
 

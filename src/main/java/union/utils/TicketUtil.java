@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -48,7 +49,7 @@ public class TicketUtil {
 
 		DiscordHtmlTranscripts transcripts = DiscordHtmlTranscripts.getInstance();
 		try (FileUpload file = transcripts.createTranscript(channel)) {
-			channel.delete().reason(reasonClosed).queueAfter(2, TimeUnit.SECONDS, done -> {
+			channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
 				db.ticket.closeTicket(now, channelId, reasonClosed);
 
 				String userId = db.ticket.getUserId(channelId);
@@ -68,9 +69,11 @@ public class TicketUtil {
 				logChannel.sendMessageEmbeds(embed).setFiles(file).queue();
 			}, failure -> {
 				bot.getLogger().error("Error while closing ticket, unable to delete", failure);
+				closeHandle.accept(failure);
 			});
-		} catch (InsufficientPermissionException | IOException ex) {
-			bot.getLogger().error("Error while closing ticket, file error", ex);
+		} catch (InsufficientPermissionException | IOException | ErrorResponseException ex) {
+			bot.getLogger().error("Error while closing ticket", ex);
+			closeHandle.accept(ex);
 		}
 	}
 

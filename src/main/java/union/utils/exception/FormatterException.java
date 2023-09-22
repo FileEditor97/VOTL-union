@@ -1,6 +1,6 @@
 package union.utils.exception;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 public class FormatterException extends Exception {
 	

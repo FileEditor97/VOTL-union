@@ -1,7 +1,5 @@
 plugins {
 	id 'java'
-	// Apply the application plugin to add support for building a CLI application in Java.
-	id 'application'
 	// ShadowJar
 	id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
@@ -25,27 +23,33 @@ repositories {
 }
 
 dependencies {
-	// This dependency is used by the application.
-	implementation 'com.google.guava:guava:32.1.2-jre'
-
 	// JDA library
+	// https://mvnrepository.com/artifact/net.dv8tion/JDA
 	implementation 'net.dv8tion:JDA:5.0.0-beta.13'					// JDA library
+	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
 	implementation 'ch.qos.logback:logback-classic:1.4.11'			// Logging (required by JDA)
+	// https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api
+	implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 
 	// Chewtils extentions
 	implementation 'pw.chew:jda-chewtils-commons:2.0-SNAPSHOT'		// Commons Package
 
 	// Tools
+	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
 	implementation 'com.jayway.jsonpath:json-path:2.8.0'			// json path-er
-	implementation 'org.xerial:sqlite-jdbc:3.42.0.1'				// sqlite database
+	// https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+	implementation 'org.xerial:sqlite-jdbc:3.43.0.0'				// sqlite database
+	// https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
 	implementation 'com.mysql:mysql-connector-j:8.1.0'				// mysql database (Union)
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
-	implementation 'org.jsoup:jsoup:1.16.1'
+	implementation 'org.jsoup:jsoup:1.16.1'							// HTML tools
 
 	// Eval
-	implementation 'org.apache.groovy:groovy:4.0.14'				// Groovy - code evaluation
+	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
+	implementation 'org.apache.groovy:groovy:4.0.15'				// Groovy - code evaluation
 
 	// Chewtils commands
+	// https://mvnrepository.com/artifact/org.json/json
 	implementation 'org.json:json:20230618'
 }
 
@@ -73,11 +77,6 @@ shadowJar {
 	archiveBaseName.set('VOTL')
 	archiveVersion.set(version)
 	archiveClassifier.set('')
-}
-
-application {
-	// Define the main class for the application.
-	mainClass = group
 }
 
 compileJava.options.encoding = 'UTF-8'

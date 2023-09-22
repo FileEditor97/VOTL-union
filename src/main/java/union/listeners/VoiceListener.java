@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import union.App;
 import union.utils.message.LocaleUtil;

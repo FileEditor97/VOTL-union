@@ -15,7 +15,7 @@
  */
 package union.objects.command;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import union.objects.CmdAccessLevel;
 import union.utils.exception.CheckException;

@@ -1,6 +1,6 @@
 package union.utils.exception;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;

@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 
 /**

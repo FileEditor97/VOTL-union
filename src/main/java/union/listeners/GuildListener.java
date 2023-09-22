@@ -3,7 +3,7 @@ package union.listeners;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import union.App;
 import union.objects.CmdAccessLevel;

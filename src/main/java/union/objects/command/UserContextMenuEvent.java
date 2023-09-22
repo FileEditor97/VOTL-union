@@ -28,7 +28,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.io.File;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 public class UserContextMenuEvent extends UserContextInteractionEvent
 {

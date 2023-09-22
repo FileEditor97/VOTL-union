@@ -5,7 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import union.App;
 import union.commands.CommandBase;

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import union.App;
 import union.objects.Emotes;
@@ -88,7 +88,7 @@ public class LocaleUtil {
 		for (DiscordLocale locale : bot.getFileManager().getLanguages()) {
 			// Also counts en-US as en-GB (otherwise rises problem)
 			// Later may be changed
-			if (locale.getLocale().equals("en-GB"))
+			if (locale.getLocale().equals(DiscordLocale.ENGLISH_UK.getLocale()))
 				localeMap.put(DiscordLocale.ENGLISH_US, getLocalized(DiscordLocale.ENGLISH_US, path));
 			localeMap.put(locale, getLocalized(locale, path));
 		}

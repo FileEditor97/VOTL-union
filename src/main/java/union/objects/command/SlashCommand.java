@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import union.objects.CmdAccessLevel;
 import union.utils.exception.CheckException;
@@ -303,8 +303,8 @@ public abstract class SlashCommand extends Command
 		// Add options and localizations
 		if (!getOptions().isEmpty()) {
 			getOptions().forEach(option -> {
-				option.setNameLocalizations(lu.getFullLocaleMap(String.format("%s.%s.name", getPath(), option.getName())));
-				option.setDescriptionLocalizations(lu.getFullLocaleMap(String.format("%s.%s.help", getPath(), option.getName())));
+				option.setNameLocalizations(lu.getFullLocaleMap("%s.%s.name".formatted(getPath(), option.getName())));
+				option.setDescriptionLocalizations(lu.getFullLocaleMap("%s.%s.help".formatted(getPath(), option.getName())));
 			});
 			data.addOptions(getOptions());
 		}
@@ -346,21 +346,28 @@ public abstract class SlashCommand extends Command
 				if (child.module == null) {
 					child.module = getModule();
 				}
+				// Set attributes
 				child.help = lu.getText(child.getHelpPath());
+				child.descriptionLocalization = lu.getFullLocaleMap(child.getHelpPath());
 				
 				// Create subcommand data
 				SubcommandData subcommandData = new SubcommandData(child.getName(), child.getHelp());
-				// Add options
+				
+				// Add options and check localizations
 				if (!child.getOptions().isEmpty()) {
+					child.getOptions().forEach(option -> {
+						option.setNameLocalizations(lu.getFullLocaleMap("%s.%s.name".formatted(child.getPath(), option.getName())));
+						option.setDescriptionLocalizations(lu.getFullLocaleMap("%s.%s.help".formatted(child.getPath(), option.getName())));
+					});
 					subcommandData.addOptions(child.getOptions());
 				}
 
-				//Check child name localizations
+				// Check child name localizations
 				if (!child.getNameLocalization().isEmpty()) {
 					//Add localizations
 					subcommandData.setNameLocalizations(child.getNameLocalization());
 				}
-				//Check child description localizations
+				// Check child description localizations
 				if (!child.getDescriptionLocalization().isEmpty()) {
 					//Add localizations
 					subcommandData.setDescriptionLocalizations(child.getDescriptionLocalization());

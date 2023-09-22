@@ -1,7 +1,5 @@
 package union.commands;
 
-import javax.annotation.Nonnull;
-
 import union.App;
 import union.objects.command.SlashCommand;
 import union.objects.command.SlashCommandEvent;
@@ -11,6 +9,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
+
+import jakarta.annotation.Nonnull;
 
 public abstract class CommandBase extends SlashCommand {
 	

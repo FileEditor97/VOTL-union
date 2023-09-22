@@ -2,7 +2,7 @@ package union.utils.message;
 
 import java.time.ZonedDateTime;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 import union.objects.command.CommandEvent;
 import union.objects.constants.Constants;

@@ -15,7 +15,7 @@
  */
 package union.objects.command;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * A series of {@link Enum}s used for defining the scope size for a

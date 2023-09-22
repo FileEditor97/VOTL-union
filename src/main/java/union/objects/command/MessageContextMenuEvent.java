@@ -28,7 +28,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.io.File;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * <h2><b>Message Context Menus In JDA-Chewtils</b></h2>

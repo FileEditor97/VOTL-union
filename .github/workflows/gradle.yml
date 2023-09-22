@@ -30,7 +30,7 @@ jobs:
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2.7.0
       with:
-        arguments: build
+        arguments: shadowjar
     - name: Get App Version
       id: get_version
       run: echo "version=$(./gradlew getReleaseVersion --console=plain -q --warning-mode=none)" >> $GITHUB_ENV

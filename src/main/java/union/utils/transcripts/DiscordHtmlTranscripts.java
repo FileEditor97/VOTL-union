@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.ISnowflake;
@@ -29,6 +30,8 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
+import jakarta.annotation.Nonnull;
 
  /**
  * Created by Ryzeon, forked by Inkception
@@ -61,6 +64,8 @@ public class DiscordHtmlTranscripts {
      *     <li>{@link net.dv8tion.jda.api.Permission#VIEW_CHANNEL VIEW_CHANNEL}</li>
      *     <li>{@link net.dv8tion.jda.api.Permission#MESSAGE_HISTORY MESSAGE_HISTORY}</li>
      * </ul>
+     * 
+     * @implNote Do not use! As it uses complete().
      *
      * @param channel The channel to create a transcript from
      * @return A {@link FileUpload} to e.g. send the created transcript to a channel
@@ -74,6 +79,19 @@ public class DiscordHtmlTranscripts {
                 generateFromMessages(channel.getIterableHistory().stream().collect(Collectors.toList())),
                 "transcript.html"
         );
+    }
+
+    public void queueCreateTranscript(GuildMessageChannel channel, @Nonnull Consumer<FileUpload> action, @Nonnull Consumer<? super Throwable> failure) {
+        channel.getIterableHistory()
+            .deadline(System.currentTimeMillis() + 4000)
+            .takeAsync(200)
+            .thenAcceptAsync(list -> {
+                try {
+                    action.accept(FileUpload.fromData(generateFromMessages(list), "transcript.html"));
+                } catch(Exception ex) {
+                    failure.accept(ex);
+                }
+            });
     }
 
     private InputStream findFile() {

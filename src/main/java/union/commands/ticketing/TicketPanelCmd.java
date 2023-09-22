@@ -43,11 +43,9 @@ public class TicketPanelCmd extends CommandBase {
 		this.path = "bot.ticketing.ticket";
 		this.children = new SlashCommand[]{new NewPanel(bot), new ModifyPanel(bot), new ViewPanel(bot), new SendPanel(bot), new DeletePanel(bot),
 			new CreateTag(bot), new ModifyTag(bot), new ViewTag(bot), new DeleteTag(bot),
-			/* new CloseTicket(bot), new RCloseTicket(bot), new ClaimTicket(bot), new UnclaimTicket(bot), new AddUserInTicket(bot), new RemoveUserInTicket(bot), */
 			new Automation(bot)};
 		this.category = CmdCategory.TICKETING;
-		//this.accessLevel = CmdAccessLevel.MOD;
-		this.accessLevel = CmdAccessLevel.ADMIN; //TODO: remove, once mod's Ticket Tools are added. Probably move to other command
+		this.accessLevel = CmdAccessLevel.ADMIN;
 	}
 
 	@Override

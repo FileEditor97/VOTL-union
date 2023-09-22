@@ -1,6 +1,5 @@
 package union.utils;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -23,12 +22,9 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.ErrorResponse;
-import net.dv8tion.jda.api.utils.FileUpload;
 
 public class TicketUtil {
 	
@@ -48,33 +44,34 @@ public class TicketUtil {
 		Instant now = Instant.now();
 
 		DiscordHtmlTranscripts transcripts = DiscordHtmlTranscripts.getInstance();
-		try (FileUpload file = transcripts.createTranscript(channel)) {
-			channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
-				db.ticket.closeTicket(now, channelId, reasonClosed);
+		transcripts.queueCreateTranscript(channel,
+			file -> {
+				channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
+					db.ticket.closeTicket(now, channelId, reasonClosed);
 
-				String userId = db.ticket.getUserId(channelId);
-				bot.JDA.retrieveUserById(userId).queue(user -> {
-					user.openPrivateChannel().queue(pm -> {
-						MessageEmbed embed = bot.getLogUtil().getTicketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
-						pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					String userId = db.ticket.getUserId(channelId);
+					bot.JDA.retrieveUserById(userId).queue(user -> {
+						user.openPrivateChannel().queue(pm -> {
+							MessageEmbed embed = bot.getLogUtil().getTicketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
+							pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+						});
 					});
+
+					String logChannelId = db.guild.getTicketLogChannel(guild.getId());
+					if (logChannelId == null) return;
+					TextChannel logChannel = guild.getJDA().getTextChannelById(logChannelId);
+					if (logChannel == null) return;
+
+					MessageEmbed embed = bot.getLogUtil().getTicketClosedEmbed(guild.getLocale(), channel, userClosed, userId, db.ticket.getClaimer(channelId));
+					logChannel.sendMessageEmbeds(embed).setFiles(file).queue();
+				}, failure -> {
+					bot.getLogger().error("Error while closing ticket, unable to delete", failure);
+					closeHandle.accept(failure);
 				});
+			},
+			closeHandle
+		);
 
-				String logChannelId = db.guild.getTicketLogChannel(guild.getId());
-				if (logChannelId == null) return;
-				TextChannel logChannel = guild.getJDA().getTextChannelById(logChannelId);
-				if (logChannel == null) return;
-
-				MessageEmbed embed = bot.getLogUtil().getTicketClosedEmbed(guild.getLocale(), channel, userClosed, userId, db.ticket.getClaimer(channelId));
-				logChannel.sendMessageEmbeds(embed).setFiles(file).queue();
-			}, failure -> {
-				bot.getLogger().error("Error while closing ticket, unable to delete", failure);
-				closeHandle.accept(failure);
-			});
-		} catch (InsufficientPermissionException | IOException | ErrorResponseException ex) {
-			bot.getLogger().error("Error while closing ticket", ex);
-			closeHandle.accept(ex);
-		}
 	}
 
 	public void createTicket(ButtonInteractionEvent event, GuildMessageChannel channel, String mentions, String message) {
@@ -86,7 +83,7 @@ public class TicketUtil {
 		Button close = Button.danger("ticket:close", bot.getLocaleUtil().getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒")).asDisabled();
 		Button claim = Button.primary("ticket:claim", bot.getLocaleUtil().getLocalized(event.getGuildLocale(), "ticket.claim"));
 		channel.sendMessageEmbeds(embed).setAllowedMentions(Collections.emptyList()).addActionRow(close, claim).queue(msg -> {
-			msg.editMessageComponents(ActionRow.of(close.asEnabled(), claim)).queueAfter(15, TimeUnit.SECONDS);
+			msg.editMessageComponents(ActionRow.of(close.asEnabled(), claim)).queueAfter(15, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL));
 		});
 
 		event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)

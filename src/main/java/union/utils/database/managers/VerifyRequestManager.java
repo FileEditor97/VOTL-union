@@ -40,12 +40,12 @@ public class VerifyRequestManager extends SqlDBBase {
 	}
 
 	public boolean existsDiscord(String discordId) {
-		if (select(TABLE, "steam_id", "discord_id", discordId).isEmpty()) return false;
+		if (selectOne(TABLE, "steam_id", "discord_id", discordId) == null) return false;
 		return true;
 	}
 
 	public boolean existsSteam(String steam64) {
-		if (select(TABLE, "discord_id", "steam_id", steam64).isEmpty()) return false;
+		if (selectOne(TABLE, "discord_id", "steam_id", steam64) == null) return false;
 		return true;
 	}
 

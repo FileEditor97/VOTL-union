@@ -40,7 +40,7 @@ public class AccountContext extends UserContextMenu {
 			.setTitle(bot.getDBUtil().verifyRequest.getSteamName(steam64), profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), bot.getSteamUtil().convertSteam64toSteamID(steam64), true)
-			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), steam64, true)
+			.addField("Links", "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
 			.addField(lu.getUserText(event, "bot.verification.account.field_discord"), user.getAsMention(), false);
 		
 		event.getHook().editOriginalEmbeds(builder.build()).queue();

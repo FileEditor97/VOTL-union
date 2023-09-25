@@ -105,12 +105,13 @@ public class SqlDBBase {
 
 		String result = null;
 		util.logger.debug(sql);
-		try (Connection conn = util.connectSQLite();
+		try (Connection conn = util.connectMySql();
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
+			rs.next();
 			result = rs.getString(selectKey);
 		} catch (SQLException ex) {
-			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
+			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}

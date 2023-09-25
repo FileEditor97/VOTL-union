@@ -81,7 +81,7 @@ public class AccountCmd extends CommandBase {
 			.setTitle(bot.getDBUtil().verifyRequest.getSteamName(steam64), profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), bot.getSteamUtil().convertSteam64toSteamID(steam64), true)
-			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), steam64, true)
+			.addField("Links", "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
 			.addField(lu.getUserText(event, path+".field_discord"), user.getAsMention(), false);
 		
 		event.replyEmbeds(builder.build()).queue();

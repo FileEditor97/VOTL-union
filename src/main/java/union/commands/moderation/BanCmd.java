@@ -151,12 +151,13 @@ public class BanCmd extends CommandBase {
 			}
 
 			// user has permament ban
+			String br = ban.getReason();
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_WARNING)
 				.setDescription(lu.getText(event, path+".already_banned"))
 				.addField(lu.getText(event, "logger.ban.short_title"), lu.getText(event, "logger.ban.short_info")
 					.replace("{username}", ban.getUser().getEffectiveName())
-					.replace("{reason}", ban.getReason())
+					.replace("{reason}", Optional.ofNullable(br).orElse("*none*"))
 					, false)
 				.build();
 			event.getHook().editOriginalEmbeds(embed).queue(msg -> {

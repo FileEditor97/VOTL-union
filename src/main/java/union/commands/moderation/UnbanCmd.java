@@ -77,7 +77,7 @@ public class UnbanCmd extends CommandBase {
 				.build();
 			// ask for ban sync
 			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
-				buttonSync(event, msg, ban.getUser(), ban.getReason(), reason);
+				buttonSync(event, msg, ban.getUser(), reason);
 			});
 
 			// log unban
@@ -88,7 +88,7 @@ public class UnbanCmd extends CommandBase {
 		});
 	}
 
-	private void buttonSync(SlashCommandEvent event, final Message message, User tu, String banReason, String reason) {
+	private void buttonSync(SlashCommandEvent event, final Message message, User tu, String reason) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) return;
 		String guildId = event.getGuild().getId();
 

@@ -421,7 +421,7 @@ public class TicketPanelCmd extends CommandBase {
 			if (type != null)			builder.addField(lu.getText(event, path+".changed_type"), (type > 1 ? "Channel" : "Thread"), true);
 			if (ticketName != null)		builder.addField(lu.getText(event, path+".changed_name"), ticketName, true);
 			if (category != null)		builder.addField(lu.getText(event, path+".changed_location"), category.getAsMention(), true);
-			if (!supportRoles.isEmpty())	builder.addField(lu.getText(event, path+".changed_roles"), ticketName, false);
+			if (supportRoleIds != null)	builder.addField(lu.getText(event, path+".changed_roles"), supportRoleIds, false);
 			if (message != null)		builder.addField(lu.getText(event, path+".changed_message"), message, false);
 			
 			if (builder.getFields().isEmpty()) {

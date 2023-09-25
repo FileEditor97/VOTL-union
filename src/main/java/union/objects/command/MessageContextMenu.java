@@ -47,7 +47,7 @@ public abstract class MessageContextMenu extends ContextMenu
 		}
 
 		// cooldown check, ignoring owner
-		if (cooldown>0 /* && !(event.isOwner()) */) {
+		if (cooldown>0 && !(event.isOwner())) {
 			String key = getCooldownKey(event);
 			int remaining = client.getRemainingCooldown(key);
 			if (remaining>0) {
@@ -57,6 +57,7 @@ public abstract class MessageContextMenu extends ContextMenu
 			else client.applyCooldown(key, cooldown);
 		}
 
+		// checks
 		if (event.isFromGuild()) {
 			Guild guild = event.getGuild();
 			Member author = event.getMember();
@@ -84,9 +85,8 @@ public abstract class MessageContextMenu extends ContextMenu
 		// run
 		try {
 			execute(event);
-		} catch(Throwable t) {
-			if (client.getListener() != null)
-			{
+		} catch (Throwable t) {
+			if (client.getListener() != null) {
 				client.getListener().onMessageContextMenuException(event, this, t);
 				return;
 			}

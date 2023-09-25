@@ -80,7 +80,8 @@ public class AccountCmd extends CommandBase {
 			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
 			.setTitle(bot.getDBUtil().verifyRequest.getSteamName(steam64), profileUrl)
 			.setThumbnail(avatarUrl)
-			.addField(lu.getUserText(event, path+".field_steam"), bot.getSteamUtil().convertSteam64toSteamID(steam64)+"\n"+steam64, false)
+			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), bot.getSteamUtil().convertSteam64toSteamID(steam64), true)
+			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), steam64, true)
 			.addField(lu.getUserText(event, path+".field_discord"), user.getAsMention(), false);
 		
 		event.replyEmbeds(builder.build()).queue();

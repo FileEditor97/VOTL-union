@@ -133,7 +133,7 @@ public class LogUtil {
 
 	@Nonnull
 	public MessageEmbed getUnbanEmbed(DiscordLocale locale, Ban banData, Member mod, String reason) {
-		return getUnbanEmbed(locale, banData.getUser().getName(), banData.getUser().getId(), mod.getAsMention(), banData.getReason(), reason);
+		return getUnbanEmbed(locale, banData.getUser().getName(), banData.getUser().getId(), mod.getAsMention(), Optional.ofNullable(banData.getReason()).orElse("none"), reason);
 	}
 
 	@Nonnull
@@ -142,7 +142,7 @@ public class LogUtil {
 			.setAuthor(lu.getLocalized(locale, path+"unban.title").replace("{user_tag}", userTag))
 			.addField(lu.getLocalized(locale, path+"user"), String.format("<@%s>", userId), true)
 			.addField(lu.getLocalized(locale, path+"mod"), modMention, true)
-			.addField(lu.getLocalized(locale, path+"unban.ban_reason"), (banReason!=null ? banReason : "-"), true)
+			.addField(lu.getLocalized(locale, path+"unban.ban_reason"), banReason, true)
 			.addField(lu.getLocalized(locale, path+"unban.reason"), reason, true)
 			.setFooter("ID: "+userId)
 			.setTimestamp(Instant.now())

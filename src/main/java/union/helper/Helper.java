@@ -3,6 +3,7 @@ package union.helper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -164,19 +165,19 @@ public class Helper {
 
 	public void runBan(Integer groupId, Guild master, User user, String reason) {
 		CompletableFuture.runAsync(() -> {
-			banUser(groupId, master, user, reason);
+			banUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
 		});
 	}
 
 	public void runUnban(Integer groupId, Guild master, User user, String reason) {
 		CompletableFuture.runAsync(() -> {
-			unbanUser(groupId, master, user, reason);
+			unbanUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
 		});
 	}
 
 	public void runKick(Integer groupId, Guild master, User user, String reason) {
 		CompletableFuture.runAsync(() -> {
-			kickUser(groupId, master, user, reason);
+			kickUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
 		});
 	}
 

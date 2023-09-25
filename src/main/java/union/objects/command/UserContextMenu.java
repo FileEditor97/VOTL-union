@@ -77,7 +77,7 @@ public abstract class UserContextMenu extends ContextMenu {
 		final CommandClient client = event.getClient();
 
 		// owner check
-		if(ownerCommand && !(event.isOwner())) {
+		if (ownerCommand && !(event.isOwner())) {
 			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.not_owner"));
 			return;
 		}

@@ -100,6 +100,21 @@ public class SqlDBBase {
 		return results;
 	}
 
+	protected String selectOne(final String table, final String selectKey, final String condKey, final Object condValue) {
+		String sql = "SELECT %s FROM %s WHERE %s=%s".formatted(selectKey, table, condKey, quote(condValue));
+
+		String result = null;
+		util.logger.debug(sql);
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			result = rs.getString(selectKey);
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return result;
+	}
+
 	// UPDATE sql
 	protected void update(final String table, final String updateKey, final Object updateValueObj, final String condKey, final Object condValueObj) {
 		String sql = "UPDATE "+table+" SET "+updateKey+"="+quote(updateValueObj)+" WHERE "+condKey+"="+quote(condValueObj);

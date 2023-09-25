@@ -16,40 +16,36 @@ public class VerifyRequestManager extends SqlDBBase {
 	}
 
 	public String getDiscordId(String steam64) {
-		List<String> data = select(TABLE, "discord_id", "steam_id", steam64);
-		if (data.isEmpty() || data.get(0) == null) return null;
-		return data.get(0);
+		String data = selectOne(TABLE, "discord_id", "steam_id", steam64);
+		if (data == null || data.isBlank()) return null;
+		return data;
 	}
 
 	public String getSteamName(String steam64) {
-		List<String> data = select(TABLE, "name", "steam_id", steam64);
-		if (data.isEmpty() || data.get(0) == null) return null;
-		return data.get(0);
+		String data = selectOne(TABLE, "name", "steam_id", steam64);
+		if (data == null || data.isBlank()) return null;
+		return data;
 	}
 
 	public String getSteamAvatarUrl(String steam64) {
-		List<String> data = select(TABLE, "avatar", "steam_id", steam64);
-		if (data.isEmpty() || data.get(0) == null) return null;
-		return data.get(0);
+		String data = selectOne(TABLE, "avatar", "steam_id", steam64);
+		if (data == null || data.isBlank()) return null;
+		return data;
 	}
 
 	public String getSteam64(String discordId) {
-		List<String> data = select(TABLE, "steam_id", "discord_id", discordId);
-		if (data.isEmpty() || data.get(0) == null) return null;
-		return data.get(0);
+		String data = selectOne(TABLE, "steam_id", "discord_id", discordId);
+		if (data == null || data.isBlank()) return null;
+		return data;
 	}
 
 	public boolean existsDiscord(String discordId) {
-		if (select(TABLE, "steam_id", "discord_id", discordId).isEmpty()) {
-			return false;
-		}
+		if (select(TABLE, "steam_id", "discord_id", discordId).isEmpty()) return false;
 		return true;
 	}
 
 	public boolean existsSteam(String steam64) {
-		if (select(TABLE, "discord_id", "steam_id", steam64).isEmpty()) {
-			return false;
-		}
+		if (select(TABLE, "discord_id", "steam_id", steam64).isEmpty()) return false;
 		return true;
 	}
 

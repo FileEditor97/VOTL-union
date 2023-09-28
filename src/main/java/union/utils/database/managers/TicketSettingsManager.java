@@ -3,11 +3,11 @@ package union.utils.database.managers;
 import union.utils.database.DBUtil;
 import union.utils.database.LiteDBBase;
 
-public class TicketGlobalManager extends LiteDBBase {
+public class TicketSettingsManager extends LiteDBBase {
 	
 	private final String TABLE = "ticketSettings";
 
-	public TicketGlobalManager(DBUtil util) {
+	public TicketSettingsManager(DBUtil util) {
 		super(util);
 	}
 

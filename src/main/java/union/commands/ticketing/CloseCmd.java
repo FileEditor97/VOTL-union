@@ -2,7 +2,6 @@ package union.commands.ticketing;
 
 import union.App;
 import union.commands.CommandBase;
-import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
@@ -15,7 +14,6 @@ public class CloseCmd extends CommandBase {
 		this.path = "bot.ticketing.close";
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
-		this.accessLevel = CmdAccessLevel.MOD;
 	}
 
 	@Override

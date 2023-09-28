@@ -72,7 +72,7 @@ public class CheckUtil {
 
 	public CheckUtil hasAccess(IReplyCallback replyCallback, Member member, CmdAccessLevel accessLevel) throws CheckException {
 		if (accessLevel.getLevel() > getAccessLevel(member).getLevel())
-			throw new CheckException(bot.getEmbedUtil().getError(replyCallback, "errors.access_level_low", "Required access level: "+accessLevel.getName()));
+			throw new CheckException(bot.getEmbedUtil().getError(replyCallback, "errors.interaction.no_access", "Required access level: "+accessLevel.getName()));
 		return this;
 	}
 

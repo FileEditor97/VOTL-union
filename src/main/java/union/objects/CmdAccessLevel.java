@@ -10,6 +10,7 @@ import java.util.Map;
  */
 public enum CmdAccessLevel {
 	ALL     (0, "everyone"),
+	HELPER	(1, "helper"),
 	MOD     (2, "moderator"),
 	ADMIN   (5, "administrator"),
 	OPERATOR(7, "group operator"),

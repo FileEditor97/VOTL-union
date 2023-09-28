@@ -28,7 +28,7 @@ public class RemoveUserCmd extends CommandBase {
 		);
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
-		this.accessLevel = CmdAccessLevel.MOD;
+		this.accessLevel = CmdAccessLevel.HELPER;
 	}
 
 	@Override

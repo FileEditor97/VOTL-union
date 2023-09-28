@@ -16,7 +16,6 @@
 		"no_send_perm": "I have no permission to send messages in your channel. Pls fix!",
 		"no_channel": "You don't own/has any voice channel.",
 		"guild_not_setup": "Server is not configured! Check `/help` for setup command.",
-		"access_level_low": "You don't have necessary access level to perform this command.",
 		"command": {
 			"not_owner": "Only an owner may run this command.",
 			"nsfw": "This command may only be used in NSFW text channels!",
@@ -328,15 +327,19 @@
 				"help": "Manage access to command use",
 				"add": {
 					"help": "Allow access",
-					"mod": {
-						"help": "Add role as a Mod",
-						"usage": "add mod <@Role | ID>",
+					"role": {
+						"help": "Add server's role an access",
+						"usage": "add role <@Role | ID> <Access level>",
 						"role": {
 							"name": "role",
 							"help": "Mention role"
 						},
-						"already": "Role already has Mod access!",
-						"done": "Successfully asigned {role} Mod access!"
+						"access_level": {
+							"name": "access_level",
+							"help": "Grant the role aselected access level"
+						},
+						"already": "Role already has some access!",
+						"done": "Successfully asigned {role} access `{level}`!"
 					},
 					"operator": {
 						"help": "Add Operator access to user",
@@ -356,15 +359,15 @@
 				},
 				"remove": {
 					"help": "Remove access",
-					"mod": {
-						"help": "Remove Moderator access from role",
-						"usage": "remove mod <@Role | ID>",
+					"role": {
+						"help": "Remove role from any access level",
+						"usage": "remove role <@Role | ID>",
 						"role": {
 							"name": "role",
 							"help": "Mention role"
 						},
-						"not_mod": "Selected role has no Moderator access",
-						"done": "Successfully removed from {role} Moderator access!"
+						"no_access": "Selected role lacks any access level.",
+						"done": "Successfully removed from {role} access `{level}`!"
 					},
 					"operator": {
 						"help": "Remove Operator access from user",
@@ -386,6 +389,7 @@
 						"title": "Roles with access",
 						"none_found": "*None of the roles/users has any access.*",
 						"none": "None",
+						"helper": "**Helper roles:**",
 						"mod": "**Moderator roles:**",
 						"operator": "**Operators:**"
 					}

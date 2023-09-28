@@ -18,7 +18,7 @@ public class AccountContext extends UserContextMenu {
 		this.name = "account";
 		this.path = "menus.account";
 		this.module = CmdModule.VERIFICATION;
-		this.accessLevel = CmdAccessLevel.MOD;
+		this.accessLevel = CmdAccessLevel.HELPER;
 	}
 
 	@Override

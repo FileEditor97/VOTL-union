@@ -396,7 +396,7 @@
 				}
 			},
 			"log": {
-				"help": "Log guild events",
+				"help": "Log server events",
 				"setup": {
 					"help": "Setup log channel",
 					"usage": "setup <#Channel>",

@@ -84,7 +84,7 @@ public class TicketTagManager extends LiteDBBase {
 			keys.add("ticketName");
 			values.add(ticketName);
 		}
-		if (buttonStyle != null) {
+		if (buttonStyle != -1) {
 			keys.add("buttonStyle");
 			values.add(buttonStyle);
 		}

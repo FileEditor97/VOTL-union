@@ -11,7 +11,6 @@ import union.utils.exception.CheckException;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -39,39 +38,46 @@ public class CheckUtil {
 		// Is bot developer
 		if (isDeveloper(member) || isBotOwner(member))
 			return CmdAccessLevel.DEV;
-		// Is guild owner
+		
+		// Is guild's owner
 		if (member.isOwner())
 			return CmdAccessLevel.OWNER;
+		
 		// Check for user level
 		CmdAccessLevel userLevel = bot.getDBUtil().access.getUserLevel(member.getGuild().getId(), member.getId());
 		if (userLevel.isHigherThan(CmdAccessLevel.ALL))
 			return userLevel;
+		
 		// Check if has Administrator privileges
-		if (member.hasPermission(Permission.ADMINISTRATOR)) {
+		if (member.hasPermission(Permission.ADMINISTRATOR))
 			return CmdAccessLevel.ADMIN;
-		}
-		// Check for mod role level
-		List<String> roleIds = bot.getDBUtil().access.getRoles(member.getGuild().getId(), CmdAccessLevel.MOD);
-		for (Role role : member.getRoles()) {
-			if (roleIds.contains(role.getId())) return CmdAccessLevel.MOD;
-		}
-		// Default
-		return CmdAccessLevel.ALL;
+
+		// Check for role level
+		List<String> roleIds = bot.getDBUtil().access.getAllRoles(member.getGuild().getId());
+		CmdAccessLevel level = member.getRoles()
+			.stream()
+			.filter(role -> roleIds.contains(role.getId()))
+			.map(role -> bot.getDBUtil().access.getRoleLevel(role.getId()))
+			.max(CmdAccessLevel::compareTo)
+			.orElse(CmdAccessLevel.ALL);
+		
+		return level;
 	}
 
 	public Boolean hasHigherAccess(Member who, Member than) {
-		return getAccessLevel(who).getLevel() > getAccessLevel(than).getLevel();
+		return getAccessLevel(who).isHigherThan(getAccessLevel(than));
 	}
 
 	public Boolean hasAccess(Member member, CmdAccessLevel accessLevel) {
-		if (getAccessLevel(member).getLevel() >= accessLevel.getLevel()) {
-			return true;
-		}
-		return false;
+		if (accessLevel.equals(CmdAccessLevel.ALL)) return true;
+		if (accessLevel.isHigherThan(getAccessLevel(member)))
+			return false;
+		return true;
 	}
 
 	public CheckUtil hasAccess(IReplyCallback replyCallback, Member member, CmdAccessLevel accessLevel) throws CheckException {
-		if (accessLevel.getLevel() > getAccessLevel(member).getLevel())
+		if (accessLevel.equals(CmdAccessLevel.ALL)) return this;
+		if (accessLevel.isHigherThan(getAccessLevel(member)))
 			throw new CheckException(bot.getEmbedUtil().getError(replyCallback, "errors.interaction.no_access", "Required access level: "+accessLevel.getName()));
 		return this;
 	}

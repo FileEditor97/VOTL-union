@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -56,21 +57,23 @@ public class RcloseCmd extends CommandBase {
 			createError(event, path+".already_requested");
 			return;
 		}
-		event.deferReply().queue();
-		Guild guild = event.getGuild();
-		
 
+		event.deferReply().queue();
+		
+		Guild guild = event.getGuild();
+		UserSnowflake user = User.fromId(bot.getDBUtil().ticket.getUserId(channelId));
 		Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
+
 		MessageEmbed embed = new EmbedBuilder()
 			.setColor(bot.getDBUtil().guild.getColor(guild.getId()))
 			.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_request")
-				.replace("{user}", User.fromId(bot.getDBUtil().ticket.getUserId(channelId)).getAsMention())
+				.replace("{user}", user.getAsMention())
 				.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))
 			.build();
 		Button close = Button.primary("ticket:close", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.close"));
 		Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
 		
-		event.getHook().editOriginalEmbeds(embed).setActionRow(close, cancel).queue();
+		event.getHook().editOriginal("||%s||".formatted(user.getAsMention())).setEmbeds(embed).setActionRow(close, cancel).queue();
 		bot.getDBUtil().ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
 	}
 

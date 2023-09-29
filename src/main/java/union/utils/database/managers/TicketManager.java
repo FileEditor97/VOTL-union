@@ -112,6 +112,12 @@ public class TicketManager extends LiteDBBase {
 		return String.valueOf(data);
 	}
 
+	public Boolean isRoleTicket(String channelId) {
+		Object data = selectOne(TABLE, "tagId", "channelId", channelId);
+		if (data == null) return false;
+		return ((Integer) data) == 0;
+	}
+
 	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
 		return countTicketsClaimed(TABLE, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond(), roleTag);
 	}

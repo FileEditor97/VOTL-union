@@ -503,7 +503,7 @@ public class InteractionListener extends ListenerAdapter {
 			} else {
 				guild.modifyMemberRoles(member, roles, null).reason("Request role-"+ticketId+" approved by "+event.getMember().getEffectiveName()).queue(done -> {
 					bot.getLogListener().onRolesApproved(member, event.getMember(), guild, roles, ticketId);
-					db.ticket.setClaimed(event.getMember().getId(), channelId);
+					db.ticket.setClaimed(channelId, event.getMember().getId());
 					event.replyEmbeds(bot.getEmbedUtil().getEmbed(event)
 						.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))
 						.setColor(Constants.COLOR_SUCCESS)
@@ -560,8 +560,8 @@ public class InteractionListener extends ListenerAdapter {
 	
 	// Ticket management
 	private void buttonTicketClaim(ButtonInteractionEvent event) {
-		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
-			// User has no Mod access (OR admin, server owner, dev) to approve role request
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access (OR admin, server owner, dev) to approve role request
 			replyError(event, "errors.interaction.no_access");
 			return;
 		}
@@ -584,8 +584,8 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonTicketUnclaim(ButtonInteractionEvent event) {
-		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
-			// User has no Mod access (OR admin, server owner, dev) to approve role request
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access (OR admin, server owner, dev) to approve role request
 			replyError(event, "errors.interaction.no_access");
 			return;
 		}

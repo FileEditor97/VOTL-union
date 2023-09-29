@@ -468,9 +468,9 @@ public abstract class SlashCommand extends Command
 		if (remaining <= 0)
 			return null;
 		
-		StringBuilder front = new StringBuilder(lu.getText(event,
-			"errors.cooldown.cooldown_left").replace("{time}", Integer.toString(remaining)
-		));
+		StringBuilder front = new StringBuilder(lu.getText(event,"errors.cooldown.cooldown_left")
+			.replace("{time}", Integer.toString(remaining))
+		);
 		if (cooldownScope.equals(CooldownScope.USER))
 			{}
 		else if (cooldownScope.equals(CooldownScope.USER_GUILD) && event.getGuild()==null)

@@ -71,12 +71,7 @@ public class HelpCmd extends CommandBase {
 		if (command == null) {
 			editError(event, "bot.help.command_info.no_command", "Requested: "+findCmd);
 		} else {
-			EmbedBuilder builder = null;
-			if (event.isFromGuild()) {
-				builder = bot.getEmbedUtil().getEmbed(event);
-			} else {
-				builder = bot.getEmbedUtil().getEmbed();
-			}
+			EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT);
 
 			builder.setTitle(lu.getLocalized(userLocale, "bot.help.command_info.title").replace("{command}", command.getName()))
 				.setDescription(lu.getLocalized(userLocale, "bot.help.command_info.value")
@@ -86,7 +81,8 @@ public class HelpCmd extends CommandBase {
 					.replace("{guild}", command.isGuildOnly() ? Emotes.CROSS_C.getEmote() : Emotes.CHECK_C.getEmote())
 					.replace("{module}", Optional.ofNullable(command.getModule()).map(mod -> lu.getLocalized(userLocale, mod.getPath())).orElse(Constants.NONE)))
 				.addField(lu.getLocalized(userLocale, "bot.help.command_info.help_title"), lu.getLocalized(userLocale, command.getHelpPath()), false)
-				.addField(lu.getLocalized(userLocale, "bot.help.command_info.usage_title"), getUsageText(userLocale, command), false);
+				.addField(lu.getLocalized(userLocale, "bot.help.command_info.usage_title"), getUsageText(userLocale, command), false)
+				.setFooter(lu.getLocalized(userLocale, "bot.help.command_info.usage_subvalue"));
 			
 			editHookEmbed(event, builder.build());
 		}
@@ -108,7 +104,6 @@ public class HelpCmd extends CommandBase {
 		} else {
 			buffer.append(lu.getLocalized(locale, "bot.help.command_info.usage_value").replace("{usage}", lu.getLocalized(locale, command.getUsagePath()))).append("\n");
 		}
-		buffer.append("\n").append(lu.getLocalized(locale, "bot.help.command_info.usage_subvalue"));
 		return buffer.toString().substring(0, Math.min(1024, buffer.length()));
 	}
 

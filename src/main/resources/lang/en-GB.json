@@ -336,10 +336,10 @@
 						},
 						"access_level": {
 							"name": "access_level",
-							"help": "Grant the role aselected access level"
+							"help": "Grant the role selected access level"
 						},
 						"already": "Role already has some access!",
-						"done": "Successfully asigned {role} access `{level}`!"
+						"done": "Successfully assigned {role} access `{level}`!"
 					},
 					"operator": {
 						"help": "Add Operator access to user",
@@ -360,7 +360,7 @@
 				"remove": {
 					"help": "Remove access",
 					"role": {
-						"help": "Remove role from any access level",
+						"help": "Remove any access level from role",
 						"usage": "remove role <@Role | ID>",
 						"role": {
 							"name": "role",
@@ -1069,7 +1069,7 @@
 				"usage_title": "Usage options",
 				"usage_value": "```/{usage}```",
 				"usage_child": "```/{base} {usage}```└ {help}",
-				"usage_subvalue": "`[]` ─ Optional\n`<>` ─ Required\n`A | B` ─ Selection"
+				"usage_subvalue": "[] ─ Optional\n<> ─ Required\nA | B ─ Selection"
 			},
 			"command_menu": {
 				"title": "Available commands:",

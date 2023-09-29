@@ -26,7 +26,7 @@ import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
 import union.utils.database.managers.TicketTagManager;
 import union.utils.database.managers.UserSettingsManager;
-import union.utils.database.managers.TicketGlobalManager;
+import union.utils.database.managers.TicketSettingsManager;
 import union.utils.database.managers.VerifyCacheManager;
 import union.utils.database.managers.VerifyManager;
 import union.utils.database.managers.VerifyRequestManager;
@@ -50,7 +50,7 @@ public class DBUtil {
 	public final GroupManager group;
 	public final VerifyManager verify;
 	public final VerifyCacheManager verifyCache;
-	public final TicketGlobalManager ticketSettings;
+	public final TicketSettingsManager ticketSettings;
 	public final TicketPanelManager panels;
 	public final TicketTagManager tags;
 	public final RoleManager role;
@@ -85,7 +85,7 @@ public class DBUtil {
 		group = new GroupManager(this);
 		verify = new VerifyManager(this);
 		verifyCache = new VerifyCacheManager(this);
-		ticketSettings = new TicketGlobalManager(this);
+		ticketSettings = new TicketSettingsManager(this);
 		panels = new TicketPanelManager(this);
 		tags = new TicketTagManager(this);
 		role = new RoleManager(this);

@@ -31,7 +31,7 @@ public class RcloseCmd extends CommandBase {
 		);
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
-		this.accessLevel = CmdAccessLevel.MOD;
+		this.accessLevel = CmdAccessLevel.HELPER;
 	}
 
 	private final Integer CLOSE_AFTER_DELAY = 12; // hours

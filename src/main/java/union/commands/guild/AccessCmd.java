@@ -28,7 +28,7 @@ public class AccessCmd extends CommandBase {
 		super(bot);
 		this.name = "access";
 		this.path = "bot.guild.access";
-		this.children = new SlashCommand[]{new View(bot), new AddMod(bot), new RemoveMod(bot), new AddOperator(bot), new RemoveOperator(bot)};
+		this.children = new SlashCommand[]{new View(bot), new AddRole(bot), new RemoveRole(bot), new AddOperator(bot), new RemoveOperator(bot)};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
 	}
@@ -52,13 +52,14 @@ public class AccessCmd extends CommandBase {
 			Guild guild = Objects.requireNonNull(event.getGuild());
 			String guildId = guild.getId();
 			
-			List<String> roleIds = bot.getDBUtil().access.getAllRoles(guildId);
+			List<String> helperIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.HELPER);
+			List<String> modIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.MOD);
 			List<String> userIds = bot.getDBUtil().access.getAllUsers(guildId);
 
 			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(event)
 				.setTitle(lu.getText(event, "bot.guild.access.view.embed.title"));
 
-			if (roleIds.isEmpty() && userIds.isEmpty()) {
+			if (helperIds.isEmpty() && modIds.isEmpty() && userIds.isEmpty()) {
 				editHookEmbed(event, 
 					embedBuilder.setDescription(
 						lu.getText(event, "bot.guild.access.view.embed.none_found")
@@ -68,9 +69,21 @@ public class AccessCmd extends CommandBase {
 			}
 
 			StringBuilder sb = new StringBuilder();
+
+			sb.append(lu.getText(event, "bot.guild.access.view.embed.helper")).append("\n");
+			if (helperIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
+			else for (String roleId : helperIds) {
+				Role role = guild.getRoleById(roleId);
+				if (role == null) {
+					bot.getDBUtil().access.removeRole(roleId);
+					continue;
+				}
+				sb.append("> %s `%s`\n".formatted(role.getAsMention(), roleId));
+			}
+
 			sb.append(lu.getText(event, "bot.guild.access.view.embed.mod")).append("\n");
-			if (roleIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
-			for (String roleId : roleIds) {
+			if (modIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
+			else for (String roleId : modIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
 					bot.getDBUtil().access.removeRole(roleId);
@@ -81,7 +94,7 @@ public class AccessCmd extends CommandBase {
 
 			sb.append("\n").append(lu.getText(event, "bot.guild.access.view.embed.operator")).append("\n");
 			if (userIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
-			for (String userId : userIds) {
+			else for (String userId : userIds) {
 				UserSnowflake user = User.fromId(userId);
 				sb.append("> %s `%s`\n".formatted(user.getAsMention(), userId));
 			}
@@ -92,15 +105,18 @@ public class AccessCmd extends CommandBase {
 
 	}
 
-	private class AddMod extends SlashCommand {
+	private class AddRole extends SlashCommand {
 
-		public AddMod(App bot) {
+		public AddRole(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "mod";
-			this.path = "bot.guild.access.add.mod";
+			this.name = "role";
+			this.path = "bot.guild.access.add.role";
 			this.options = List.of(
-				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true)
+				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
+				new OptionData(OptionType.INTEGER, "access_level", lu.getText(path+".access_level.help"), true)
+					.addChoice("Helper", CmdAccessLevel.HELPER.getLevel())
+					.addChoice("Moderator", CmdAccessLevel.MOD.getLevel())
 			);
 			this.subcommandGroup = new SubcommandGroupData("add", lu.getText("bot.guild.access.add.help"));
 		}
@@ -123,26 +139,32 @@ public class AccessCmd extends CommandBase {
 				editError(event, "bot.guild.access.add.incorrect_role");
 				return;
 			}
-			if (bot.getDBUtil().access.isMod(roleId)) {
-				editError(event, "bot.guild.access.add.mod.already");
+			if (bot.getDBUtil().access.isRole(roleId)) {
+				editError(event, "bot.guild.access.add.role.already");
 				return;
 			}
-			bot.getDBUtil().access.addRole(guildId, roleId, CmdAccessLevel.MOD);
+
+			CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
+			bot.getDBUtil().access.addRole(guildId, roleId, level);
+
 			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getText(event, "bot.guild.access.add.mod.done").replace("{role}", role.getAsMention()))
+				.setDescription(lu.getText(event, "bot.guild.access.add.role.done")
+					.replace("{role}", role.getAsMention())
+					.replace("{level}", level.getName())
+				)
 				.setColor(Constants.COLOR_SUCCESS);
 			editHookEmbed(event, embed.build());
 		}
 
 	}
 
-	private class RemoveMod extends SlashCommand {
+	private class RemoveRole extends SlashCommand {
 
-		public RemoveMod(App bot) {
+		public RemoveRole(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "mod";
-			this.path = "bot.guild.access.remove.mod";
+			this.name = "role";
+			this.path = "bot.guild.access.remove.role";
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true)
 			);
@@ -161,13 +183,18 @@ public class AccessCmd extends CommandBase {
 
 			String roleId = role.getId();
 
-			if (!bot.getDBUtil().access.isMod(roleId)) {
-				editError(event, "bot.guild.access.remove.mod.not_mod");
-				return;
+			CmdAccessLevel level = bot.getDBUtil().access.getRoleLevel(roleId);
+			if (level.equals(CmdAccessLevel.ALL)) {
+				editError(event, "bot.guild.access.remove.role.no_access");
 			}
+
 			bot.getDBUtil().access.removeRole(roleId);
+
 			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getText(event, "bot.guild.access.remove.mod.done").replace("{role}", role.getAsMention()))
+				.setDescription(lu.getText(event, "bot.guild.access.remove.role.done")
+					.replace("{role}", role.getAsMention())
+					.replace("{level}", level.getName())
+				)
 				.setColor(Constants.COLOR_SUCCESS);
 			editHookEmbed(event, embed.build());
 		}

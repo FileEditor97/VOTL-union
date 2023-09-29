@@ -86,7 +86,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public String getLastWebhookId(String guildId) {
 		Object data = selectOne(TABLE, "webhookId", "guildId", guildId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public void setAppealLink(String guildId, String link) {

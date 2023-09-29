@@ -398,7 +398,7 @@ public class TicketPanelCmd extends CommandBase {
 
 			String buttonText = event.optString("button_text");
 			String emoji = event.optString("emoji");
-			ButtonStyle buttonStyle = ButtonStyle.fromKey(event.optInteger("button_style", 1));
+			ButtonStyle buttonStyle = ButtonStyle.fromKey(event.optInteger("button_style", 0));
 			Integer type = event.optInteger("tag_type", null);
 			String ticketName = event.optString("ticket_name");
 			Category category = event.getOption("location", op -> op.getAsChannel().asCategory());
@@ -417,7 +417,7 @@ public class TicketPanelCmd extends CommandBase {
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event);
 			if (buttonText != null)		builder.addField(lu.getText(event, path+".changed_text"), buttonText, true);
 			if (emoji != null)			builder.addField(lu.getText(event, path+".changed_emoji"), emoji, true);
-			if (buttonStyle != null)	builder.addField(lu.getText(event, path+".changed_style"), buttonStyle.toString(), true);
+			if (buttonStyle != ButtonStyle.UNKNOWN)	builder.addField(lu.getText(event, path+".changed_style"), buttonStyle.toString(), true);
 			if (type != null)			builder.addField(lu.getText(event, path+".changed_type"), (type > 1 ? "Channel" : "Thread"), true);
 			if (ticketName != null)		builder.addField(lu.getText(event, path+".changed_name"), ticketName, true);
 			if (category != null)		builder.addField(lu.getText(event, path+".changed_location"), category.getAsMention(), true);

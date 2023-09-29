@@ -28,7 +28,7 @@ public class AccountCmd extends CommandBase {
 		);
 		this.category = CmdCategory.VERIFICATION;
 		this.module = CmdModule.VERIFICATION;
-		this.accessLevel = CmdAccessLevel.MOD;
+		this.accessLevel = CmdAccessLevel.HELPER;
 	}
 
 	@Override

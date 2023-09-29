@@ -1,9 +1,9 @@
 package union.commands.moderation;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import union.App;
 import union.commands.CommandBase;
@@ -353,27 +353,32 @@ public class GroupCmd extends CommandBase {
 				return;
 			}
 
-			List<String> guildIds = bot.getDBUtil().group.getGroupGuildIds(groupId);
-			if (guildIds.isEmpty()) {
-				createError(event, path+".no_guilds");
+			event.deferReply(true).queue();
+
+			List<Guild> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId).stream().map(id -> {
+				Guild guild = event.getJDA().getGuildById(id);
+				if (guild == null) {
+					guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
+				};
+				return guild;
+			}).filter(Objects::nonNull).toList();
+			if (guilds.isEmpty()) {
+				editError(event, path+".no_guilds");
 				return;
 			}
 
-			event.deferReply(true).queue();
 			String groupName = bot.getDBUtil().group.getName(groupId);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setTitle(lu.getText(event, path+".embed_title"))
 				.setDescription(lu.getText(event, path+".embed_value").replace("{group_name}", groupName))
 				.build();
+			
 			StringSelectMenu menu = StringSelectMenu.create("menu:remove-guild")
 				.setPlaceholder("Select")
 				.setMaxValues(1)
-				.addOptions(guildIds.stream().map(
-					guildId -> {
-						String guildName = event.getJDA().getGuildById(guildId).getName();
-						return SelectOption.of("%s (%s)".formatted(guildName, guildId), guildId);
-					}
-				).collect(Collectors.toList()))
+				.addOptions(guilds.stream().map(guild -> {
+					return SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId());
+				}).toList())
 				.build();
 			event.getHook().editOriginalEmbeds(embed).setActionRow(menu).queue(msg -> {
 				waiter.waitForEvent(
@@ -475,12 +480,6 @@ public class GroupCmd extends CommandBase {
 				return;
 			}
 
-			List<String> guildIds = bot.getDBUtil().group.getGroupGuildIds(groupId);
-			if (guildIds.isEmpty()) {
-				createError(event, path+".no_guilds");
-				return;
-			}
-
 			Boolean canManage = event.optBoolean("manage", false);
 			if (bot.getDBUtil().group.isShared(groupId) && canManage) {
 				createError(event, path+".is_shared");
@@ -488,20 +487,31 @@ public class GroupCmd extends CommandBase {
 			};
 
 			event.deferReply(true).queue();
+
+			List<Guild> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId).stream().map(id -> {
+				Guild guild = event.getJDA().getGuildById(id);
+				if (guild == null) {
+					guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
+				};
+				return guild;
+			}).filter(Objects::nonNull).toList();
+			if (guilds.isEmpty()) {
+				editError(event, path+".no_guilds");
+				return;
+			}
+
 			String groupName = bot.getDBUtil().group.getName(groupId);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setTitle(lu.getText(event, path+".embed_title"))
 				.setDescription(lu.getText(event, path+".embed_value").replace("{group_name}", groupName))
 				.build();
+			
 			StringSelectMenu menu = StringSelectMenu.create("menu:select-guild")
 				.setPlaceholder("Select")
 				.setMaxValues(1)
-				.addOptions(guildIds.stream().map(
-					guildId -> {
-						String guildName = event.getJDA().getGuildById(guildId).getName();
-						return SelectOption.of("%s (%s)".formatted(guildName, guildId), guildId);
-					}
-				).collect(Collectors.toList()))
+				.addOptions(guilds.stream().map(guild -> {
+					return SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId());
+				}).toList())
 				.build();
 			event.getHook().editOriginalEmbeds(embed).setActionRow(menu).queue(msg -> {
 				waiter.waitForEvent(

@@ -67,8 +67,14 @@ public class AccessManager extends LiteDBBase {
 		return data.stream().map(obj -> String.valueOf(obj)).toList();
 	}
 
-	public boolean isMod(String roleId) {
-		if (selectOne(ROLE_TABLE, "roleId", List.of("roleId", "level"), List.of(roleId, CmdAccessLevel.MOD)) == null) return false;
+	public List<String> getUsers(String guildId, CmdAccessLevel level) {
+		List<Object> data = select(USER_TABLE, "userId", List.of("guildId", "level"), List.of(guildId, level.getLevel()));
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(obj -> String.valueOf(obj)).toList();
+	}
+
+	public boolean isRole(String roleId) {
+		if (selectOne(ROLE_TABLE, "roleId", "roleId", roleId) == null) return false;
 		return true;
 	}
 

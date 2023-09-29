@@ -14,8 +14,10 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class VoiceListener extends ListenerAdapter {
 	
@@ -36,7 +38,7 @@ public class VoiceListener extends ListenerAdapter {
 
 		AudioChannelUnion channelLeft = event.getChannelLeft();
 		if (channelLeft != null && bot.getDBUtil().voice.existsChannel(channelLeft.getId()) && channelLeft.getMembers().isEmpty()) {
-			channelLeft.delete().reason("Custom channel, empty").queueAfter(500, TimeUnit.MILLISECONDS);
+			channelLeft.delete().reason("Custom channel, empty").queueAfter(500, TimeUnit.MILLISECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL));
 			bot.getDBUtil().voice.remove(channelLeft.getId());
 		}
 	}

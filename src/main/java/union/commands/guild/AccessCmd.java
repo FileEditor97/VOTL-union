@@ -71,7 +71,7 @@ public class AccessCmd extends CommandBase {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append(lu.getText(event, "bot.guild.access.view.embed.helper")).append("\n");
-			if (helperIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
+			if (helperIds.isEmpty()) sb.append("> %s\n".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
 			else for (String roleId : helperIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {

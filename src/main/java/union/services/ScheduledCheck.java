@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -76,19 +77,20 @@ public class ScheduledCheck {
 
 			if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {
 				Guild guild = channel.getGuild();
-
+				UserSnowflake user = User.fromId(db.ticket.getUserId(channelId));
 				Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
+
 				MessageEmbed embed = new EmbedBuilder()
 					.setColor(db.guild.getColor(guild.getId()))
 					.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_auto")
-						.replace("{user}", User.fromId(db.ticket.getUserId(channelId)).getAsMention())
+						.replace("{user}", user.getAsMention())
 						.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))
 					.build();
 				Button close = Button.primary("ticket:close", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.close"));
 				Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
 				
 				db.ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
-				channel.sendMessageEmbeds(embed).addActionRow(close, cancel).queue();
+				channel.sendMessage("||%s||".formatted(user.getAsMention())).addEmbeds(embed).addActionRow(close, cancel).queue();
 			}
 		});
 

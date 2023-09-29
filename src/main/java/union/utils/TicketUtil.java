@@ -50,12 +50,14 @@ public class TicketUtil {
 					db.ticket.closeTicket(now, channelId, reasonClosed);
 
 					String userId = db.ticket.getUserId(channelId);
-					bot.JDA.retrieveUserById(userId).queue(user -> {
-						user.openPrivateChannel().queue(pm -> {
-							MessageEmbed embed = bot.getLogUtil().getTicketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
-							pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					if (!db.ticket.isRoleTicket(channelId)) {
+						bot.JDA.retrieveUserById(userId).queue(user -> {
+							user.openPrivateChannel().queue(pm -> {
+								MessageEmbed embed = bot.getLogUtil().getTicketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
+								pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+							});
 						});
-					});
+					}
 
 					String logChannelId = db.guild.getTicketLogChannel(guild.getId());
 					if (logChannelId == null) return;

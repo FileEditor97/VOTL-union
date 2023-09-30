@@ -387,13 +387,16 @@ public class GroupCmd extends CommandBase {
 					actionMenu -> {
 						String targetId = actionMenu.getSelectedOptions().get(0).getValue();
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
+						if (targetGuild == null)
+							targetGuild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
 
 						bot.getDBUtil().group.remove(groupId, targetId);
-						bot.getLogListener().onGroupRemove(event, targetGuild, groupId, groupName);
+						if (targetGuild != null)
+							bot.getLogListener().onGroupRemove(event, targetGuild, groupId, groupName);
 
 						MessageEmbed editEmbed = bot.getEmbedUtil().getEmbed(event)
 							.setColor(Constants.COLOR_SUCCESS)
-							.setDescription(lu.getText(event, path+".done").replace("{guild_name}", targetGuild.getName()).replace("{group_name}", groupName))
+							.setDescription(lu.getText(event, path+".done").replace("{guild_name}", Optional.ofNullable(targetGuild.getName()).orElse("*Unknown*")).replace("{group_name}", groupName))
 							.build();
 						event.getHook().editOriginalEmbeds(editEmbed).setComponents().queue();
 					},

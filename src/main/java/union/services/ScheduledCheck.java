@@ -117,13 +117,13 @@ public class ScheduledCheck {
 	private void checkAccountUpdates() {
 		try {
 			lastAccountCheck = Instant.now();
-			List<Map<String, String>> data = db.verifyRequest.updatedAccounts();
+			List<Map<String, String>> data = db.unionVerify.updatedAccounts();
 			if (data.isEmpty()) return;
 
 			List<Map<String, String>> removeRoles = new ArrayList<Map<String, String>>();
 			for (Map<String, String> account : data) {
 				String steam64 = account.get("steam_id");
-				db.verifyRequest.clearUpdated(steam64);
+				db.unionVerify.clearUpdated(steam64);
 				
 				String cacheDiscordId = db.verifyCache.getDiscordId(steam64);
 				

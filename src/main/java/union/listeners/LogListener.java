@@ -532,7 +532,7 @@ public class LogListener {
 
 		try {
 			channel.sendMessageEmbeds(
-				logUtil.getVerifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.verifyRequest.getSteamName(steam64)), steam64)
+				logUtil.getVerifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64)
 			).queue();
 		} catch (InsufficientPermissionException ex) {}
 	}
@@ -551,7 +551,7 @@ public class LogListener {
 
 		try {
 			channel.sendMessageEmbeds(
-				logUtil.getUnverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.verifyRequest.getSteamName(steam64)), steam64, reason)
+				logUtil.getUnverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64, reason)
 			).queue();
 		} catch (InsufficientPermissionException ex) {}
 	}

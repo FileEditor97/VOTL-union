@@ -139,7 +139,7 @@ public class App {
 			.useHelpBuilder(false)
 			.setScheduleExecutor(executorService)
 			.setStatus(OnlineStatus.ONLINE)
-			.setActivity(Activity.watching("/help"))
+			.setActivity(Activity.customStatus("-> /help"))
 			.addSlashCommands(
 				// guild
 				new SetupCmd(this),
@@ -177,7 +177,7 @@ public class App {
 				// ticketing
 				new RolePanelCmd(this),
 				new TicketCountCmd(this),
-				new RolesCmd(this),
+				new TicketRolesCmd(this),
 				new TicketPanelCmd(this),
 				new CloseCmd(this),
 				new RcloseCmd(this),
@@ -230,7 +230,7 @@ public class App {
 			} catch (ErrorResponseException ex) { // Tries to reconnect to discord x times with some delay, else exits
 				if (retries > 0) {
 					retries--;
-					logger.info("Retrying connecting in "+cooldown+" seconds..."+retries+" more attempts");
+					logger.info("Retrying connecting in "+cooldown+" seconds... "+retries+" more attempts");
 					try {
 						Thread.sleep(cooldown*1000);
 					} catch (InterruptedException e) {

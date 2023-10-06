@@ -135,7 +135,7 @@ public class AccessCmd extends CommandBase {
 			Guild guild = Objects.requireNonNull(event.getGuild());
 			String guildId = guild.getId();
 
-			if (role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
+			if (role.isPublicRole() || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
 				editError(event, "bot.guild.access.add.incorrect_role");
 				return;
 			}

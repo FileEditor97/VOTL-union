@@ -65,6 +65,7 @@
 		"ticketing": "Tickets",
 		"voice": "Custom voicechannels",
 		"report": "Report function",
+		"roles": "Role management",
 		"module_disabled": "This command(module) is disabled."
 	},
 	"role_type": {
@@ -1081,6 +1082,7 @@
 					"verification": "Verification",
 					"ticketing": "Tickets",
 					"voice": "Voice",
+					"roles": "Roles",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -1189,7 +1191,7 @@
 				"not_found_discord": "Connected Discord profile not found",
 				"not_found_user": "Discord user not found",
 				"no_options": "No options provided, see `/help`",
-				"field_steam": "SteamID",
+				"field_rank": "Rank",
 				"field_discord": "Discord account"
 			},
 			"vfcheck": {
@@ -1313,9 +1315,9 @@
 				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`\nClaimed tickets: `{other}`"
 			},
-			"roles": {
+			"troles": {
 				"help": "Manage assignable roles via ticket system",
-				"usage": "roles",
+				"usage": "troles",
 				"add": {
 					"help": "Add role",
 					"usage": "add <@Role> <type> [description] [row]",
@@ -1337,7 +1339,7 @@
 					},
 					"no_role": "Role not found or is incorrect.",
 					"cant_interact": "I can't interact with selected role.",
-					"exists": "Role is already managed. Check `/roles view`",
+					"exists": "Role is already managed. Check `/troles view`",
 					"no_type": "Role type not found.",
 					"rows_max": "All assignable roles rows are full (3x25). Clear any row, to add new roles.",
 					"row_max": "Row is full (25 roles). Clear this row, to add new roles.",
@@ -1661,6 +1663,23 @@
 				"not_self": "You can't remove yourself, ticket creator or me.",
 				"failed": "Unable to add selected user.",
 				"done": "Removed {user} from this ticket."
+			}
+		},
+		"roles": {
+			"checkrank": {
+				"help": "(CRITICAL!) Check if users in selected role has selected rank on this connected Gmod server",
+				"usage": "checkrank <@Role> <rank>",
+				"role": {
+					"name": "role",
+					"help": "Select role whose users to check (role VIP/Donate Admin)"
+				},
+				"rank": {
+					"name": "rank",
+					"help": "Select rank for which to check"
+				},
+				"no_role": "Provided role not found.",
+				"incorrect_role": "Selected role can't be checked.",
+				"done": "Removed {role} from {count}/{max} users!"
 			}
 		}
 	},

@@ -25,11 +25,12 @@ import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
 import union.utils.database.managers.TicketTagManager;
+import union.utils.database.managers.UnionPlayerManager;
+import union.utils.database.managers.UnionVerifyManager;
 import union.utils.database.managers.UserSettingsManager;
 import union.utils.database.managers.TicketSettingsManager;
 import union.utils.database.managers.VerifyCacheManager;
 import union.utils.database.managers.VerifyManager;
-import union.utils.database.managers.VerifyRequestManager;
 import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
 import union.utils.file.FileManager;
@@ -60,22 +61,30 @@ public class DBUtil {
 	public final UserSettingsManager user;
 	public final VoiceChannelManager voice;
 	public final VerifyRequestManager verifyRequest;
+	public final UnionVerifyManager unionVerify;
+	public final UnionPlayerManager unionPlayers;
 
 	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
 
-	private String urlSQLite;
-	private String urlMySql;
-	private String sqldb;
-	private String username;
-	private String pass;
+	private final String urlSQLite;
+	private final String urlWebsite;
+	private final String userWebsite;
+	private final String passWebsite;
+	private final String urlCentralTemp;
+	private final String userCentral;
+	private final String passCentral;
 
 	public DBUtil(FileManager fileManager) {
 		this.fileManager = fileManager;
-		this.urlSQLite = "jdbc:sqlite:" + fileManager.getFiles().get("database");
-		this.sqldb = fileManager.getNullableString("config", "mysql-db");
-		this.urlMySql = "jdbc:mysql://" + fileManager.getNullableString("config", "mysql-ip") + ":3306/" + sqldb;
-		this.username = fileManager.getNullableString("config", "mysql-user");
-		this.pass = fileManager.getNullableString("config", "mysql-pass");
+		this.urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("database"));
+
+		this.urlWebsite = "jdbc:mysql://%s:3306/union".formatted(fileManager.getNullableString("config", "website-ip"));
+		this.userWebsite = fileManager.getNullableString("config", "website-user");
+		this.passWebsite = fileManager.getNullableString("config", "website-pass");
+
+		this.urlCentralTemp = "jdbc:mysql://%s:3306/".formatted(fileManager.getNullableString("config", "central-ip"));
+		this.userCentral = fileManager.getNullableString("config", "central-user");
+		this.passCentral = fileManager.getNullableString("config", "central-pass");
 		
 		guild = new GuildSettingsManager(this);
 		webhook = new WebhookManager(this);
@@ -98,10 +107,11 @@ public class DBUtil {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
 		} catch (Exception ex) {
-			logger.error("MySQL: Exiting, driver not found initiated", ex);
-			System.exit(0);
+			logger.error("MySQL: Exiting!\nMySQL-J driver not found initiated.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
+			System.exit(666);
 		}
-		verifyRequest = new VerifyRequestManager(this, sqldb);
+		unionVerify = new UnionVerifyManager(this, urlWebsite, userWebsite, passWebsite);
+		unionPlayers = new UnionPlayerManager(this, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
 	}
@@ -117,10 +127,10 @@ public class DBUtil {
 		return conn;
 	}
 
-	protected Connection connectMySql() {
+	protected Connection connectMySql(final String url) {
 		Connection conn = null;
 		try {
-			conn = DriverManager.getConnection(urlMySql, username, pass);
+			conn = DriverManager.getConnection(url);
 		} catch (SQLException ex) {
 			logger.error("MySQL: Connection error to database", ex);
 			return null;

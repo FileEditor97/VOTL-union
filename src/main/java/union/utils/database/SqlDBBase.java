@@ -13,9 +13,11 @@ import java.util.stream.Collectors;
 public class SqlDBBase {
 
 	private DBUtil util;
+	private final String url;
 
-	public SqlDBBase(DBUtil util) {
+	public SqlDBBase(DBUtil util, String url) {
 		this.util = util;
+		this.url = url;
 	}
 
 	// SELECT sql
@@ -36,7 +38,7 @@ public class SqlDBBase {
 
 		List<String> results = new ArrayList<String>();
 		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql();
+		try (Connection conn = util.connectMySql(url);
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
@@ -74,7 +76,7 @@ public class SqlDBBase {
 		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
 
 		util.logger.debug(sql.toString());
-		try (Connection conn = util.connectMySql();
+		try (Connection conn = util.connectMySql(url);
 		PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
 			List<String> keys = new ArrayList<>();
@@ -105,11 +107,26 @@ public class SqlDBBase {
 
 		String result = null;
 		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql();
+		try (Connection conn = util.connectMySql(url);
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
-			rs.next();
-			result = rs.getString(selectKey);
+			if (rs.next()) result = rs.getString(selectKey);
+		} catch (SQLException ex) {
+			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return result;
+	}
+
+	// SELECT with database selection
+	protected String selectOne(final String database, final String table, final String selectKey, final String condKey, final Object condValue) {
+		String sql = "SELECT %s FROM %s.%s WHERE %s=%s".formatted(selectKey, database, table, condKey, quote(condValue));
+
+		String result = null;
+		util.logger.debug(sql);
+		try (Connection conn = util.connectMySql(url);
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
 			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
 		}
@@ -121,7 +138,7 @@ public class SqlDBBase {
 		String sql = "UPDATE "+table+" SET "+updateKey+"="+quote(updateValueObj)+" WHERE "+condKey+"="+quote(condValueObj);
 
 		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql();
+		try (Connection conn = util.connectMySql(url);
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLException ex) {

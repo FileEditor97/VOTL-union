@@ -17,10 +17,16 @@
 		"dev server ID"
 	],
 	"webhook": "link to webhook, if you want to receive ERROR level logs",
-	"mysql-ip": "ip without port",
-    "mysql-db": "database",
-    "mysql-user": "username",
-    "mysql-pass": "password",
+	"website-ip": "ip without port",
+    "website-user": "username",
+    "website-pass": "password",
+	"central-ip": "ip without port",
+    "central-user": "username",
+    "central-pass": "password",
+	"central-dbs": {
+		"_enter guild id 1_": "db 1 name",
+		"_enter guild id 2_": "db 2 name"
+	},
 	"helper-token": ""
  }
  ```

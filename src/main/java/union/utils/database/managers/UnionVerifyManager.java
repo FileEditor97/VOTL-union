@@ -6,13 +6,13 @@ import java.util.Map;
 import union.utils.database.DBUtil;
 import union.utils.database.SqlDBBase;
 
-public class VerifyRequestManager extends SqlDBBase {
+public class UnionVerifyManager extends SqlDBBase {
 
 	private String TABLE;
 
-	public VerifyRequestManager(DBUtil util, String sqldb) {
-		super(util);
-		this.TABLE = sqldb + ".users";
+	public UnionVerifyManager(DBUtil util, String url, String user, String password) {
+		super(util, "%s?user=%s&password=%s".formatted(url, user, password));
+		this.TABLE = "union.users";
 	}
 
 	public String getDiscordId(String steam64) {

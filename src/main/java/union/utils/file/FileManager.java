@@ -176,11 +176,10 @@ public class FileManager {
 			return true;
 		} catch (FileNotFoundException ex) {
 			logger.error("Couldn't find file {}.json", name);
-			return false;
 		} catch (IOException ex) {
 			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
-			return false;
 		}
+		return false;
 	}
 
 	@Nonnull
@@ -200,14 +199,37 @@ public class FileManager {
 			return array;
 		} catch (FileNotFoundException ex) {
 			logger.error("Couldn't find file {}.json", name);
-			return new ArrayList<>();
 		} catch (KeyIsNull ex) {
 			logger.warn("Couldn't find \"{}\" in file {}.json", path, name);
-			return new ArrayList<>();
 		} catch (IOException ex) {
 			logger.warn("Couldn't process file {}.json", name, ex);
-			return new ArrayList<>();
 		}
+		return new ArrayList<>();
+	}
+
+	@SuppressWarnings("all")
+	@Nonnull
+	public Map<String, String> getMap(String name, String path){
+		File file = files.get(name);
+		if(file == null)
+			return Map.of();
+
+		Map<String, String> map = new HashMap<String, String>();
+		try {
+			map = JsonPath.using(CONF).parse(file).read("$." + path, Map.class);	
+			
+			if (map == null || map.isEmpty())
+				throw new KeyIsNull(path);
+				
+			return map;
+		} catch (FileNotFoundException ex) {
+			logger.error("Couldn't find file {}.json", name);
+		} catch (KeyIsNull ex) {
+			logger.warn("Couldn't find \"{}\" in file {}.json", path, name);
+		} catch (IOException ex) {
+			logger.warn("Couldn't process file {}.json", name, ex);
+		}
+		return Map.of();
 	}
 
 	public boolean export(InputStream inputStream, Path destination){

@@ -354,6 +354,24 @@ public class LiteDBBase {
 		return result;
 	}
 
+	//  specific SELECT, get expired temp roles
+	protected List<Map<String, String>> selectExpiredTempRoles(final String table, final Long time) {
+		String sql = "SELECT (roleId, userId) FROM %s WHERE (expireAfter<=%d)".formatted(table, time);
+
+		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
+		util.logger.debug(sql);
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			while (rs.next()) {
+				results.add(Map.of("roleId", rs.getString("roleId"), "userId", rs.getString("userId")));
+			}
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return results;
+	}
+
 	// UPDATE sql
 	protected void update(String table, String updateKey, Object updateValueObj, String condKey, Object condValueObj) {
 		update(table, List.of(updateKey), List.of(updateValueObj), List.of(condKey), List.of(condValueObj));

@@ -97,7 +97,7 @@ public class TempRoleCmd extends CommandBase {
 				editError(event, ex.getPath());
 				return;
 			}
-			if (duration.toSeconds() < 30 || duration.toDays() > 100) {
+			if (duration.toMinutes() < 30 || duration.toDays() > 100) {
 				editError(event, path+".time_limit", "Received: "+duration.toString());
 				return;
 			}

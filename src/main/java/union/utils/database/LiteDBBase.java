@@ -356,7 +356,7 @@ public class LiteDBBase {
 
 	//  specific SELECT, get expired temp roles
 	protected List<Map<String, String>> selectExpiredTempRoles(final String table, final Long time) {
-		String sql = "SELECT (roleId, userId) FROM %s WHERE (expireAfter<=%d)".formatted(table, time);
+		String sql = "SELECT roleId, userId FROM %s WHERE (expireAfter<=%d)".formatted(table, time);
 
 		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
 		util.logger.debug(sql);

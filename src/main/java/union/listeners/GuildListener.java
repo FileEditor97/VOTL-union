@@ -97,7 +97,7 @@ public class GuildListener extends ListenerAdapter {
 		db.guildVoice.remove(guildId);
 		db.panels.deleteAll(guildId);
 		db.tags.deleteAll(guildId);
-		db.requests.deleteAll(guildId);
+		db.tempRole.removeAll(guildId);
 		
 		db.guild.remove(guildId);
 

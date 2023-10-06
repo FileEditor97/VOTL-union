@@ -11,6 +11,7 @@ import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
 import union.commands.roles.CheckRankCmd;
+import union.commands.roles.TempRoleCmd;
 import union.commands.guild.*;
 import union.commands.ticketing.*;
 import union.commands.verification.*;
@@ -129,8 +130,8 @@ public class App {
 		executorService = Executors.newScheduledThreadPool(4, r -> (new Thread(r, "UTB Scheduler")));
 		scheduledCheck	= new ScheduledCheck(this);
 		
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 10, TimeUnit.MINUTES);
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.timedChecks(), 3, 10, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()
@@ -186,7 +187,8 @@ public class App {
 				// voice
 				new VoiceCmd(this),
 				// roles
-				new CheckRankCmd(this)
+				new CheckRankCmd(this),
+				new TempRoleCmd(this)
 			)
 			.addContextMenus(
 				new AccountContext(this),

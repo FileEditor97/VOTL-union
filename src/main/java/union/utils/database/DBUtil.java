@@ -20,8 +20,8 @@ import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
 import union.utils.database.managers.ModuleManager;
-import union.utils.database.managers.RequestsManager;
 import union.utils.database.managers.RoleManager;
+import union.utils.database.managers.TempRoleManager;
 import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
 import union.utils.database.managers.TicketTagManager;
@@ -56,11 +56,10 @@ public class DBUtil {
 	public final TicketTagManager tags;
 	public final RoleManager role;
 	public final TicketManager ticket;
-	public final RequestsManager requests;
 	public final GuildVoiceManager guildVoice;
 	public final UserSettingsManager user;
 	public final VoiceChannelManager voice;
-	public final VerifyRequestManager verifyRequest;
+	public final TempRoleManager tempRole;
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
 
@@ -99,10 +98,10 @@ public class DBUtil {
 		tags = new TicketTagManager(this);
 		role = new RoleManager(this);
 		ticket = new TicketManager(this);
-		requests = new RequestsManager(this);
 		guildVoice = new GuildVoiceManager(this);
 		user = new UserSettingsManager(this);
 		voice = new VoiceChannelManager(this);
+		tempRole = new TempRoleManager(this);
 		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();

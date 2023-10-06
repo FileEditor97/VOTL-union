@@ -1666,6 +1666,63 @@
 			}
 		},
 		"roles": {
+			"role": {
+				"help": "Manage user's roles",
+				"usage": "role"
+			},
+			"temprole": {
+				"help": "Manage temporary roles",
+				"usage": "temprole",
+				"assign": {
+					"help": "Assign to user temporary role",
+					"usage": "assign <@Role> <@User> <duration> [delete?]",
+					"role": {
+						"name": "role",
+						"help": "Select role which to assign"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user to which assign this role"
+					},
+					"time": {
+						"name": "time",
+						"help": "For how long to assign this role (Example: 2h, 2w5d (w-week, d-day, h-hour))"
+					},
+					"delete": {
+						"name": "delete",
+						"help": "Delete this role, after time has passed? (default-false)"
+					},
+					"no_role": "Role not found.",
+					"incorrect_role": "Selected role can't be assigned.",
+					"no_member": "Member not found.",
+					"incorrect_user": "Selected member can't be assigned role.",
+					"already_set": "Member already assigned this role.",
+					"time_limit": "Provided time is not accepted, must be 30m <-> 100d.",
+					"done": "Temporary assigned user {user} role {role} until {until}."
+				},
+				"cancel": {
+					"help": "Remove temporary role from user",
+					"usage": "cancel <@Role> <@User>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user"
+					},
+					"no_role": "Role not found.",
+					"no_member": "Member not found.",
+					"not_found": "Selected role is not assigned temporary to this user.",
+					"done": "Canceled temporary role."
+				},
+				"view": {
+					"help": "View all temporary assigned roles",
+					"usage": "view",
+					"empty": "No temporary assigned roles.",
+					"title": "Temporary roles"
+				}
+			},
 			"checkrank": {
 				"help": "(CRITICAL!) Check if users in selected role has selected rank on this connected Gmod server",
 				"usage": "checkrank <@Role> <rank>",

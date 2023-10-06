@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
+import union.commands.roles.CheckRankCmd;
 import union.commands.guild.*;
 import union.commands.ticketing.*;
 import union.commands.verification.*;
@@ -183,7 +184,9 @@ public class App {
 				new AddUserCmd(this),
 				new RemoveUserCmd(this),
 				// voice
-				new VoiceCmd(this)
+				new VoiceCmd(this),
+				// roles
+				new CheckRankCmd(this)
 			)
 			.addContextMenus(
 				new AccountContext(this),

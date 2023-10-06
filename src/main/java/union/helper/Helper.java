@@ -37,7 +37,7 @@ public class Helper {
 
 		guildListener = new GuildListener(this);
 		
-		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=3CFBSBV4XJI"))
+		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=nqQ0KkP0idc"))
 			.addEventListeners(guildListener);
 		this.JDA = helperBuilder.build();
 	}

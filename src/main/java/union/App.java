@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
+import union.commands.roles.CheckRankCmd;
+import union.commands.roles.TempRoleCmd;
 import union.commands.guild.*;
 import union.commands.ticketing.*;
 import union.commands.verification.*;
@@ -128,8 +130,8 @@ public class App {
 		executorService = Executors.newScheduledThreadPool(4, r -> (new Thread(r, "UTB Scheduler")));
 		scheduledCheck	= new ScheduledCheck(this);
 		
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.moderationChecks(), 5, 10, TimeUnit.MINUTES);
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 1, 2, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.timedChecks(), 3, 10, TimeUnit.MINUTES);
+		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()
@@ -138,7 +140,7 @@ public class App {
 			.useHelpBuilder(false)
 			.setScheduleExecutor(executorService)
 			.setStatus(OnlineStatus.ONLINE)
-			.setActivity(Activity.watching("/help"))
+			.setActivity(Activity.customStatus("-> /help"))
 			.addSlashCommands(
 				// guild
 				new SetupCmd(this),
@@ -176,14 +178,17 @@ public class App {
 				// ticketing
 				new RolePanelCmd(this),
 				new TicketCountCmd(this),
-				new RolesCmd(this),
+				new TicketRolesCmd(this),
 				new TicketPanelCmd(this),
 				new CloseCmd(this),
 				new RcloseCmd(this),
 				new AddUserCmd(this),
 				new RemoveUserCmd(this),
 				// voice
-				new VoiceCmd(this)
+				new VoiceCmd(this),
+				// roles
+				new CheckRankCmd(this),
+				new TempRoleCmd(this)
 			)
 			.addContextMenus(
 				new AccountContext(this),
@@ -227,7 +232,7 @@ public class App {
 			} catch (ErrorResponseException ex) { // Tries to reconnect to discord x times with some delay, else exits
 				if (retries > 0) {
 					retries--;
-					logger.info("Retrying connecting in "+cooldown+" seconds..."+retries+" more attempts");
+					logger.info("Retrying connecting in "+cooldown+" seconds... "+retries+" more attempts");
 					try {
 						Thread.sleep(cooldown*1000);
 					} catch (InterruptedException e) {

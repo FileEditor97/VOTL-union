@@ -6,7 +6,8 @@ public enum CmdModule {
 	VERIFICATION("modules.verification"),
 	TICKETING("modules.ticketing"),
 	VOICE("modules.voice"),
-	REPORT("modules.report");
+	REPORT("modules.report"),
+	ROLES("modules.roles");
 	
 	private final String path;
 	

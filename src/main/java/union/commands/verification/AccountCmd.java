@@ -1,6 +1,7 @@
 package union.commands.verification;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import union.App;
@@ -36,7 +37,7 @@ public class AccountCmd extends CommandBase {
 		User optUser = event.optUser("user");
 		if (optUser != null) {
 			String userId = optUser.getId();
-			String steam64 = bot.getDBUtil().verifyRequest.getSteam64(userId);
+			String steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
 			if (steam64 == null) {
 				createError(event, path+".not_found_steam", "Received: "+userId);
 				return;
@@ -52,7 +53,7 @@ public class AccountCmd extends CommandBase {
 			if (matches) {
 				id = bot.getSteamUtil().convertSteamIDtoSteam64(id);
 			}
-			String discordId = bot.getDBUtil().verifyRequest.getDiscordId(id);
+			String discordId = bot.getDBUtil().verifyCache.getDiscordId(id);
 			if (discordId == null) {
 				createError(event, path+".not_found_discord", "Received: "+id);
 				return;
@@ -74,14 +75,17 @@ public class AccountCmd extends CommandBase {
 	}
 
 	private void replyAccount(SlashCommandEvent event, final String steam64, User user) {
+		String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+		String rank = "`%s`".formatted(Optional.ofNullable(bot.getDBUtil().unionPlayers.getPlayerRank(event.getGuild().getId(), steamId)).orElse("-"));
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().verifyRequest.getSteamAvatarUrl(steam64) + "_full.jpg";
+		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64) + "_full.jpg";
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
-			.setTitle(bot.getDBUtil().verifyRequest.getSteamName(steam64), profileUrl)
+			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64), profileUrl)
 			.setThumbnail(avatarUrl)
-			.addField(lu.getUserText(event, "bot.verification.account.field_steam"), bot.getSteamUtil().convertSteam64toSteamID(steam64), true)
-			.addField("Links", "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
+			.addField("Steam", steamId, true)
+			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
+			.addField(lu.getUserText(event, path+".field_rank"), rank, true)
 			.addField(lu.getUserText(event, path+".field_discord"), user.getAsMention(), false);
 		
 		event.replyEmbeds(builder.build()).queue();

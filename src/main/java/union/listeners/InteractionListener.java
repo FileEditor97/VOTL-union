@@ -101,7 +101,13 @@ public class InteractionListener extends ListenerAdapter {
 
 		if (buttonId.startsWith("verify")) {
 			buttonVerify(event);
-		} else if (buttonId.startsWith("role")) {
+			return;
+		}
+		// Check verified
+		if (!isVerified(event)) return;
+
+		// Continue...
+		if (buttonId.startsWith("role")) {
 			String action = buttonId.split(":")[1];
 			switch (action) {
 				case "start_request":
@@ -200,6 +206,38 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
+	// Check verified
+	private Boolean isVerified(IReplyCallback event) {
+		Guild guild = event.getGuild();
+		if (!bot.getDBUtil().verify.isCheckEnabled(guild.getId())) return true;
+
+		User user = event.getUser();
+		if (bot.getDBUtil().verifyCache.isVerified(user.getId())) return true;
+
+		Role role = Objects.requireNonNull(guild.getRoleById(bot.getDBUtil().verify.getVerifyRole(guild.getId())));
+		
+		// check if still has account connected
+		String steam64 = bot.getDBUtil().unionVerify.getSteam64(user.getId());
+		if (steam64 == null) {
+			// remove verification role from user
+			try {
+				guild.removeRoleFromMember(user, role).reason("Autocheck: No account connected").queue(
+					success -> {
+						user.openPrivateChannel().queue(dm ->
+							dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.verification.role_removed").replace("{server}", guild.getName())).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
+						);
+						bot.getLogListener().onUnverified(user, null, guild, "Autocheck: No account connected");
+					}
+				);
+			} catch (Exception ex) {}
+			return false;
+		} else {
+			// add user to local database
+			bot.getDBUtil().verifyCache.addUser(user.getId(), steam64);
+			return true;
+		}
+	}
+
 	// Verify
 	private void buttonVerify(ButtonInteractionEvent event) {
 		Member member = event.getMember();
@@ -220,7 +258,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		String steam64 = db.verifyRequest.getSteam64(member.getId());
+		String steam64 = db.unionVerify.getSteam64(member.getId());
 		if (steam64 != null) {
 			// Give verify role to user
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
@@ -666,7 +704,8 @@ public class InteractionListener extends ListenerAdapter {
 
 			ChannelAction<TextChannel> action = category.createTextChannel(ticketName);
 			for (String roleId : supportRoles) action = action.addRolePermissionOverride(Long.valueOf(roleId), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null);
-			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+			action.clearPermissionOverrides()
+				.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
 				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
 				.queue(channel -> {
 				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);

@@ -23,6 +23,8 @@ import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.TimeFormat;
@@ -43,28 +45,12 @@ public class ScheduledCheck {
 		this.lastAccountCheck = Instant.now();
 	}
 
-	public void moderationChecks() {
+	// each 10-15 minutes
+	public void timedChecks() {
 		CompletableFuture.runAsync(() -> {
-			checkUnbans();
-		}).thenRunAsync(() -> {
 			checkTicketStatus();
-		});
-	}
-	
-	private void checkUnbans() {
-		List<Map<String, Object>> bans = db.ban.getExpirable();
-		if (bans.isEmpty()) return;
-		bans.stream().filter(ban ->
-			Duration.between(Instant.parse(ban.get("timeStart").toString()), Instant.now()).compareTo(Duration.parse(ban.get("duration").toString())) >= 0
-		).forEach(ban -> {
-			Integer banId = Integer.parseInt(ban.get("banId").toString());
-			Guild guild = bot.JDA.getGuildById(ban.get("guildId").toString());
-			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
-			guild.unban(User.fromId(ban.get("userId").toString())).reason("Temporary ban expired").queue(
-				s -> bot.getLogListener().onAutoUnban(ban, banId, guild),
-				f -> bot.getLogger().warn("Exception at unban attempt", f.getMessage())
-			);
-			db.ban.setInactive(banId);
+		}).thenRunAsync(() -> {
+			checkExpiredTempRoles();
 		});
 	}
 
@@ -108,22 +94,54 @@ public class ScheduledCheck {
 		});
 	}
 
+	private void checkExpiredTempRoles() {
+		List<Map<String, String>> expired = db.tempRole.expiredRoles(Instant.now());
+		if (expired.isEmpty()) return;
+
+		expired.forEach(data -> {
+			String roleId = data.get("roleId");
+			Role role = bot.JDA.getRoleById(roleId);
+			if (role == null) {
+				db.tempRole.removeRole(roleId);
+				return;
+			};
+			
+			if (db.tempRole.shouldDelete(roleId)) {
+				try {
+					role.delete().reason("Role expired").queue();
+				} catch (InsufficientPermissionException | HierarchyException ex) {
+					bot.getLogger().warn("Was unable to delete temporary role '%s' during scheduled check.".formatted(roleId), ex);
+				}
+				db.tempRole.removeRole(roleId);
+			} else {
+				String userId = data.get("userId");
+				role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
+					bot.getLogger().warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
+				});
+				db.tempRole.remove(roleId, userId);
+			}
+		});
+	}
+
+	// Each 2-5 minutes
 	public void regularChecks() {
 		CompletableFuture.runAsync(() -> {
 			checkAccountUpdates();
+		}).thenRunAsync(() -> {
+			checkUnbans();
 		});
 	}
 
 	private void checkAccountUpdates() {
 		try {
 			lastAccountCheck = Instant.now();
-			List<Map<String, String>> data = db.verifyRequest.updatedAccounts();
+			List<Map<String, String>> data = db.unionVerify.updatedAccounts();
 			if (data.isEmpty()) return;
 
 			List<Map<String, String>> removeRoles = new ArrayList<Map<String, String>>();
 			for (Map<String, String> account : data) {
 				String steam64 = account.get("steam_id");
-				db.verifyRequest.clearUpdated(steam64);
+				db.unionVerify.clearUpdated(steam64);
 				
 				String cacheDiscordId = db.verifyCache.getDiscordId(steam64);
 				
@@ -182,7 +200,21 @@ public class ScheduledCheck {
 		}
 	}
 
-	/* private void checkRequestsExpire() {
-		db.requests.purgeExpiredRequests();
-	} */
+	private void checkUnbans() {
+		List<Map<String, Object>> bans = db.ban.getExpirable();
+		if (bans.isEmpty()) return;
+		bans.stream().filter(ban ->
+			Duration.between(Instant.parse(ban.get("timeStart").toString()), Instant.now()).compareTo(Duration.parse(ban.get("duration").toString())) >= 0
+		).forEach(ban -> {
+			Integer banId = Integer.parseInt(ban.get("banId").toString());
+			Guild guild = bot.JDA.getGuildById(ban.get("guildId").toString());
+			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
+			guild.unban(User.fromId(ban.get("userId").toString())).reason("Temporary ban expired").queue(
+				s -> bot.getLogListener().onAutoUnban(ban, banId, guild),
+				f -> bot.getLogger().warn("Exception at unban attempt", f.getMessage())
+			);
+			db.ban.setInactive(banId);
+		});
+	}
+
 }

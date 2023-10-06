@@ -14,5 +14,6 @@ public final class CmdCategory {
 	public static final Category VERIFICATION = new Category("verification");
 	public static final Category TICKETING = new Category("ticketing");
 	public static final Category VOICE = new Category("voice");
+	public static final Category ROLES = new Category("roles");
 	public static final Category OTHER = new Category("other");
 }

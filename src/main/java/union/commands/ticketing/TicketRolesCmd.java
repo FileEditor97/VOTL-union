@@ -23,12 +23,12 @@ import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
-public class RolesCmd extends CommandBase {
+public class TicketRolesCmd extends CommandBase {
 	
-	public RolesCmd(App bot) {
+	public TicketRolesCmd(App bot) {
 		super(bot);
-		this.name = "roles";
-		this.path = "bot.ticketing.roles";
+		this.name = "troles";
+		this.path = "bot.ticketing.troles";
 		this.children = new SlashCommand[]{new Add(bot), new Update(bot), new Remove(bot), new View(bot)};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
@@ -44,7 +44,7 @@ public class RolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "add";
-			this.path = "bot.ticketing.roles.add";
+			this.path = "bot.ticketing.troles.add";
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
 				new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), true)
@@ -134,15 +134,9 @@ public class RolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "update";
-			this.path = "bot.ticketing.roles.update";
+			this.path = "bot.ticketing.troles.update";
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
-				/* new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), false)
-					.addChoices(List.of(
-						new Choice(lu.getText(RoleType.ASSIGN.getPath()), RoleType.ASSIGN.toString()),
-						new Choice(lu.getText(RoleType.TOGGLE.getPath()), RoleType.TOGGLE.toString()),
-						new Choice(lu.getText(RoleType.CUSTOM.getPath()), RoleType.CUSTOM.toString())
-					)), */
 				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"))
 					.setMaxLength(100),
 				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"))
@@ -192,34 +186,6 @@ public class RolesCmd extends CommandBase {
 				bot.getDBUtil().role.setDescription(role.getId(), description);
 			}
 
-			// Disallow role type change, as it may break several things (which requires checks)
-			/* String type = event.optString("type");
-			if (type != null) {
-				if (type.equals(RoleType.ASSIGN.toString())) {
-					if (bot.getDBUtil().role.getAssignable(guildId).size() >= 24) {
-						createError(event, path+".assign_max");
-						return;
-					}
-					bot.getDBUtil().role.setType(role.getId(), RoleType.ASSIGN);
-				} else if (type.equals(RoleType.TOGGLE.toString())) {
-					if (bot.getDBUtil().role.getToggleable(guildId).size() >= 5) {
-						createError(event, path+".toggle_max");
-						return;
-					}
-					bot.getDBUtil().role.setType(role.getId(), RoleType.TOGGLE);
-				} else if (type.equals(RoleType.CUSTOM.toString())) {
-					if (bot.getDBUtil().role.getCustom(guildId).size() >= 25) {
-						createError(event, path+".custom_max");
-						return;
-					}
-					bot.getDBUtil().role.setType(role.getId(), RoleType.CUSTOM);
-				} else {
-					createError(event, path+".no_type");
-					return;
-				}
-				response.append(lu.getText(event, path+".changed_type").replace("{type}", type));
-			} */
-
 			if (event.hasOption("row")) {
 				Integer row = event.optInteger("row");
 				bot.getDBUtil().role.setRow(role.getId(), row);
@@ -246,7 +212,7 @@ public class RolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "remove";
-			this.path = "bot.ticketing.roles.remove";
+			this.path = "bot.ticketing.troles.remove";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)
 			);
@@ -274,7 +240,7 @@ public class RolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "view";
-			this.path = "bot.ticketing.roles.view";
+			this.path = "bot.ticketing.troles.view";
 		}
 
 		@Override

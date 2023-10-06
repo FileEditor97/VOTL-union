@@ -32,7 +32,7 @@ public class MessageListener extends ListenerAdapter {
 		if (!event.getMember().getRoles().contains(role)) return;
 		
 		// check if still has account connected
-		String steam64 = bot.getDBUtil().verifyRequest.getSteam64(userId);
+		String steam64 = bot.getDBUtil().unionVerify.getSteam64(userId);
 		if (steam64 == null) {
 			// remove verification role from user
 			try {

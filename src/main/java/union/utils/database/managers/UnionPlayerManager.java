@@ -5,6 +5,8 @@ import java.util.Map;
 import union.utils.database.DBUtil;
 import union.utils.database.SqlDBBase;
 
+import jakarta.annotation.Nonnull;
+
 public class UnionPlayerManager extends SqlDBBase {
 
 	private final String TABLE_PLAYERS = "sam_players";
@@ -15,7 +17,7 @@ public class UnionPlayerManager extends SqlDBBase {
 		this.databases = databases;
 	}
 
-	public String getPlayerRank(String guildId, String steamId) {
+	public String getPlayerRank(@Nonnull String guildId, @Nonnull String steamId) {
 		// Find corresponding database
 		String database = databases.get(guildId);
 		if (database == null) return null;

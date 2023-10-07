@@ -1,6 +1,8 @@
 package union.commands.roles;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import union.App;
@@ -11,14 +13,13 @@ import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class CheckRankCmd extends CommandBase {
 	
@@ -57,37 +58,53 @@ public class CheckRankCmd extends CommandBase {
 			createError(event, "errors.unknown", "This Discord server is not connected to the database. Will not run!");
 			return;
 		}
-		event.deferReply().queue();
 
-		String requiredRank = event.optString("rank");
+		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".started"));
+		event.replyEmbeds(builder.build()).queue();
 
 		// Retrieve members with this role
 		event.getGuild().findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
 			Integer maxSize = members.size();
+			if (maxSize == 0) {
+				editError(event, path+".empty");
+				return;
+			}
 			if (maxSize > 200) {
 				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
 				return;
 			}
-			Integer removed = 0;
+			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());
+
+			String requiredRank = event.optString("rank");
+
+			List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
 				String steam64 = bot.getDBUtil().verifyCache.getSteam64(member.getId());
 				if (steam64 == null) {
-					guild.removeRoleFromMember(member, role).reason("Not verified").queue();
-					removed++;
+					completableFutures.add(guild.removeRoleFromMember(member, role).reason("Not verified").submit().exceptionally(ex -> null));
 					continue;
 				}
 				String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 				String rank = bot.getDBUtil().unionPlayers.getPlayerRank(guild.getId(), steamId);
-				if (!requiredRank.contains(rank)) {
-					guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).queue((null), new ErrorHandler().ignore(ErrorResponse.MISSING_PERMISSIONS));
-					removed++;
+				if (rank == null || !requiredRank.contains(rank)) {
+					completableFutures.add(guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).submit().exceptionally(ex -> null));
 				}
 			}
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString()))
-				.build()
-			);
+
+			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
+				.whenComplete((done, exception) -> {
+					if (exception != null) {
+						editError(event, "errors.unknown", exception.getMessage());
+					} else {
+						Integer removed = 0;
+						for (CompletableFuture<Void> future : completableFutures) {
+							if (!future.isCompletedExceptionally()) removed++;
+						}
+						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
+							.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())
+						).build());
+					}
+				});
 		}).onError(failure -> {
 			editError(event, "errors.unknown", failure.getMessage());
 		});

@@ -200,6 +200,24 @@
 				"help": "Generates json file with information about all bot's public commands",
 				"usage": "generate",
 				"error": "Unknown error, see below."
+			},
+			"forceaccess": {
+				"help": "Force role/user access in selected server",
+				"usage": "forceaccess <Server ID> <@Role/@User> <Access level>",
+				"server": {
+					"name": "server",
+					"help": "Enter server's ID"
+				},
+				"target": {
+					"name": "target",
+					"help": "Enter target's ID"
+				},
+				"access_level": {
+					"name": "access_level",
+					"help": "Grant the target selected access level"
+				},
+				"no_guild": "Selected server not found.",
+				"done": "Assigned {target} access {level}."
 			}
 		},
 		"guild": {
@@ -1009,16 +1027,17 @@
 						"bot_version": "Bot version: `VOTL-{bot_version}`",
 						"library": "Library: [`JDA {jda_version}`]({jda_github}) and [`JDA-Chewtils {chewtils_version}`]({chewtils_github})"
 					},
-					"commands_title": "Commands:",
+					"commands_title": "Commands",
 					"commands_value": "Use `/help` in any chat to get list of commands.",
 					"links": {
 						"title": "Links",
-						"discord": "[`Discord (Support)`]({guild_invite})",
-						"github": "[`Github`]({github_url})",
-						"privacy": "[`Privacy Policy`]({privacy_url})",
-						"terms": "[`Terms of Service`]({terms_url})",
+						"discord": "[Discord (Support)]({guild_invite})",
+						"github": "[Github]({github_url})",
+						"privacy": "[Privacy Policy]({privacy_url})",
+						"terms": "[Terms of Service]({terms_url})",
 						"unionteams_title": "UnionTeam's",
-						"unionteams_website": "[`Website`]({unionteams})"
+						"unionteams_website": "[Website]({unionteams})",
+						"translate": "Help translate!"
 					}
 				}
 			},
@@ -1668,7 +1687,55 @@
 		"roles": {
 			"role": {
 				"help": "Manage user's roles",
-				"usage": "role"
+				"usage": "role",
+				"add": {
+					"help": "Add a role to the specified user",
+					"usage": "add <@Role> <@User>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be added.",
+					"no_member": "Member not found.",
+					"done": "Added role `{role}` to {user}",
+					"failed": "Unable to add selected role to the user."
+				},
+				"remove": {
+					"help": "Remove a role from the specified user",
+					"usage": "remove <@Role> <@User>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be removed.",
+					"no_member": "Member not found.",
+					"done": "Removed role `{role}` from {user}",
+					"failed": "Unable to remove selected role from the user."
+				},
+				"removeall": {
+					"help": "Remove role from all users in the server",
+					"usage": "removeall <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be removed.",
+					"started": "Role removal in progress... {EMOTE_LOADING}",
+					"estimate": "\n*Estimated time for completion `%d` seconds.*",
+					"empty": "No members has this role.",
+					"done": "Removed role `{role}` from {count}/{max} users."
+				}
 			},
 			"temprole": {
 				"help": "Manage temporary roles",
@@ -1684,8 +1751,8 @@
 						"name": "user",
 						"help": "Select user to which assign this role"
 					},
-					"time": {
-						"name": "time",
+					"duration": {
+						"name": "duration",
 						"help": "For how long to assign this role (Example: 2h, 2w5d (w-week, d-day, h-hour))"
 					},
 					"delete": {
@@ -1697,7 +1764,7 @@
 					"no_member": "Member not found.",
 					"incorrect_user": "Selected member can't be assigned role.",
 					"already_set": "Member already assigned this role.",
-					"time_limit": "Provided time is not accepted, must be 30m <-> 100d.",
+					"time_limit": "Provided time is not accepted, must be 20m <-> 100d.",
 					"done": "Temporary assigned user {user} role {role} until {until}."
 				},
 				"cancel": {
@@ -1736,6 +1803,9 @@
 				},
 				"no_role": "Provided role not found.",
 				"incorrect_role": "Selected role can't be checked.",
+				"started": "Checking in progress... {EMOTE_LOADING}",
+				"estimate": "\n*Estimated time for completion `%d` seconds.*",
+				"empty": "No members has this role.",
 				"done": "Removed {role} from {count}/{max} users!"
 			}
 		}

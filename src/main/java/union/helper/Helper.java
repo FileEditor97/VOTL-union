@@ -73,30 +73,30 @@ public class Helper {
 		if (guildIds.isEmpty()) return;
 
 		Integer maxCount = guildIds.size();
-		List<String> success = new ArrayList<>();
-		for (int i = 0; i < maxCount; i++) {
-			Boolean last = i + 1 == maxCount;
-			Guild guild = getJDA().getGuildById(guildIds.get(i));
-			if (guild == null) {
-				if (last) logListener.helperOnSyncBan(groupId, master, user, reason, success.size(), maxCount);
-				continue;
-			};
+		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+		for (String guildId : guildIds) {
+			Guild guild = getJDA().getGuildById(guildId);
+			if (guild == null) continue;
 			// fail-safe check if has expirable ban (to prevent auto unban)
 			Map<String, Object> banData = db.ban.getMemberExpirable(user.getId(), guild.getId());
 			if (!banData.isEmpty()) {
 				db.ban.setInactive((Integer) banData.get("banId"));
 			}
-			
-			guild.ban(user, 0, TimeUnit.SECONDS).reason("Sync: "+reason).queue(
-				done -> {
-					success.add(guild.getId());
-					if (last) logListener.helperOnSyncBan(groupId, master, user, reason, success.size(), maxCount);
-				},
-				failure -> {
-					if (last) logListener.helperOnSyncBan(groupId, master, user, reason, success.size(), maxCount);
-				}
-			);
+			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason("Sync: "+reason).submit().exceptionally(ex -> null));
 		}
+
+		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
+			.whenComplete((done, exception) -> {
+				if (exception != null) {
+					logger.error("Bad thing at Helper ban logic", exception);
+				} else {
+					Integer banned = 0;
+					for (CompletableFuture<Void> future : completableFutures) {
+						if (!future.isCompletedExceptionally()) banned++;
+					}
+					logListener.helperOnSyncBan(groupId, master, user, reason, banned, maxCount);
+				}
+			});
 	}
 
 	private void unbanUser(Integer groupId, Guild master, User user, String reason) {
@@ -110,25 +110,26 @@ public class Helper {
 		if (guildIds.isEmpty()) return;
 
 		Integer maxCount = guildIds.size();
-		List<String> success = new ArrayList<>();
-		for (int i = 0; i < maxCount; i++) {
-			Boolean last = i + 1 == maxCount;
-			Guild guild = getJDA().getGuildById(guildIds.get(i));
-			if (guild == null) {
-				if (last) logListener.helperOnSyncBan(groupId, master, user, reason, success.size(), maxCount);
-				continue;
-			};
-			
-			guild.unban(user).reason("Sync: "+reason).queue(
-				done -> {
-					success.add(guild.getId());
-					if (last) logListener.helperOnSyncUnban(groupId, master, user, reason, success.size(), maxCount);
-				},
-				failure -> {
-					if (last) logListener.helperOnSyncUnban(groupId, master, user, reason, success.size(), maxCount);
-				}
-			);
+		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+		for (String guildId : guildIds) {
+			Guild guild = getJDA().getGuildById(guildId);
+			if (guild == null) continue;
+
+			completableFutures.add(guild.unban(user).reason("Sync: "+reason).submit().exceptionally(ex -> null));
 		}
+
+		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
+			.whenComplete((done, exception) -> {
+				if (exception != null) {
+					logger.error("Bad thing at Helper unban logic", exception);
+				} else {
+					Integer unbanned = 0;
+					for (CompletableFuture<Void> future : completableFutures) {
+						if (!future.isCompletedExceptionally()) unbanned++;
+					}
+					logListener.helperOnSyncUnban(groupId, master, user, reason, unbanned, maxCount);
+				}
+			});
 	}
 
 	private void kickUser(Integer groupId, Guild master, User user, String reason) {
@@ -142,25 +143,26 @@ public class Helper {
 		if (guildIds.isEmpty()) return;
 
 		Integer maxCount = guildIds.size();
-		List<String> success = new ArrayList<>();
-		for (int i = 0; i < maxCount; i++) {
-			Boolean last = i + 1 == maxCount;
-			Guild guild = getJDA().getGuildById(guildIds.get(i));
-			if (guild == null) {
-				if (last) logListener.helperOnSyncBan(groupId, master, user, reason, success.size(), maxCount);
-				continue;
-			};
-			
-			guild.kick(user).reason("Sync: "+reason).queue(
-				done -> {
-					success.add(guild.getId());
-					if (last) logListener.helperOnSyncKick(groupId, master, user, reason, success.size(), maxCount);
-				},
-				failure -> {
-					if (last) logListener.helperOnSyncKick(groupId, master, user, reason, success.size(), maxCount);
-				}
-			);
+		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+		for (String guildId : guildIds) {
+			Guild guild = getJDA().getGuildById(guildId);
+			if (guild == null) continue;
+
+			completableFutures.add(guild.kick(user).reason("Sync: "+reason).submit().exceptionally(ex -> null));
 		}
+
+		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
+			.whenComplete((done, exception) -> {
+				if (exception != null) {
+					logger.error("Bad thing at Helper unban logic", exception);
+				} else {
+					Integer kicked = 0;
+					for (CompletableFuture<Void> future : completableFutures) {
+						if (!future.isCompletedExceptionally()) kicked++;
+					}
+					logListener.helperOnSyncKick(groupId, master, user, reason, kicked, maxCount);
+				}
+			});
 	}
 
 	public void runBan(Integer groupId, Guild master, User user, String reason) {

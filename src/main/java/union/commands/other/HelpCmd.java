@@ -27,7 +27,6 @@ public class HelpCmd extends CommandBase {
 		this.name = "help";
 		this.path = "bot.help";
 		this.options = List.of(
-			new OptionData(OptionType.BOOLEAN, "show", lu.getText(path+".show.help")),
 			new OptionData(OptionType.STRING, "category", lu.getText(path+".category.help"))
 				.addChoice("Guild", "guild")
 				.addChoice("Owner", "owner")
@@ -36,8 +35,10 @@ public class HelpCmd extends CommandBase {
 				.addChoice("Verification", "verification")
 				.addChoice("Ticketing", "ticketing")
 				.addChoice("Voice", "voice")
+				.addChoice("Roles", "roles")
 				.addChoice("Other", "other"),
-			new OptionData(OptionType.STRING, "command", lu.getText(path+".command.help"), false, true).setRequiredLength(3, 20)
+			new OptionData(OptionType.STRING, "command", lu.getText(path+".command.help"), false, true).setRequiredLength(3, 20),
+			new OptionData(OptionType.BOOLEAN, "show", lu.getText(path+".show.help"))
 		);
 		this.category = CmdCategory.OTHER;
 		this.guildOnly = false;

@@ -50,7 +50,7 @@ public class TempRoleCmd extends CommandBase {
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
 				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
-				new OptionData(OptionType.STRING, "time", lu.getText(path+".time.help"), true),
+				new OptionData(OptionType.STRING, "duration", lu.getText(path+".duration.help"), true),
 				new OptionData(OptionType.BOOLEAN, "delete", lu.getText(path+".delete.help"))
 			);
 		}
@@ -92,12 +92,12 @@ public class TempRoleCmd extends CommandBase {
 			// Check duration
 			final Duration duration;
 			try {
-				duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
+				duration = bot.getTimeUtil().stringToDuration(event.optString("duration"), false);
 			} catch (FormatterException ex) {
 				editError(event, ex.getPath());
 				return;
 			}
-			if (duration.toMinutes() < 30 || duration.toDays() > 100) {
+			if (duration.toMinutes() < 20 || duration.toDays() > 100) {
 				editError(event, path+".time_limit", "Received: "+duration.toString());
 				return;
 			}

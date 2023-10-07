@@ -3,14 +3,15 @@ package union;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
 import union.commands.roles.CheckRankCmd;
+import union.commands.roles.RoleCmd;
 import union.commands.roles.TempRoleCmd;
 import union.commands.guild.*;
 import union.commands.ticketing.*;
@@ -25,6 +26,7 @@ import union.objects.command.CommandClient;
 import union.objects.command.CommandClientBuilder;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
+import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
 import union.utils.CheckUtil;
 import union.utils.LogUtil;
@@ -81,7 +83,7 @@ public class App {
 
 	private final LogListener logListener;
 	
-	private final ScheduledExecutorService executorService;
+	private final ScheduledExecutorService scheduledExecutor;
 	private final ScheduledCheck scheduledCheck;
 	
 	private final DBUtil dbUtil;
@@ -127,20 +129,20 @@ public class App {
 		messagesListener	= new MessageListener(this);
 		commandListener		= new CommandListener();
 
-		executorService = Executors.newScheduledThreadPool(4, r -> (new Thread(r, "UTB Scheduler")));
-		scheduledCheck	= new ScheduledCheck(this);
-		
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.timedChecks(), 3, 10, TimeUnit.MINUTES);
-		executorService.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
+		scheduledExecutor	= new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
+		scheduledCheck		= new ScheduledCheck(this);
+
+		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.timedChecks(), 3, 10, TimeUnit.MINUTES);
+		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()
 			.setOwnerId(fileManager.getString("config", "owner-id"))
 			.setServerInvite(Links.DISCORD)
 			.useHelpBuilder(false)
-			.setScheduleExecutor(executorService)
+			.setScheduleExecutor(scheduledExecutor)
 			.setStatus(OnlineStatus.ONLINE)
-			.setActivity(Activity.customStatus("-> /help"))
+			.setActivity(Activity.customStatus("/help"))
 			.addSlashCommands(
 				// guild
 				new SetupCmd(this),
@@ -152,6 +154,7 @@ public class App {
 				new EvalCmd(this),
 				new InviteCmd(this),
 				new GenerateListCmd(this),
+				new ForceAccessCmd(this),
 				// webhook
 				new WebhookCmd(this),
 				// moderation
@@ -188,7 +191,8 @@ public class App {
 				new VoiceCmd(this),
 				// roles
 				new CheckRankCmd(this),
-				new TempRoleCmd(this)
+				new TempRoleCmd(this),
+				new RoleCmd(this)
 			)
 			.addContextMenus(
 				new AccountContext(this),

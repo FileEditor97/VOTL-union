@@ -1009,16 +1009,17 @@
 						"bot_version": "Версия: `VOTL-{bot_version}`",
 						"library": "Библиотеки: [`JDA {jda_version}`]({jda_github}) и [`JDA-Chewtils {chewtils_version}`]({chewtils_github})"
 					},
-					"commands_title": "Команды:",
+					"commands_title": "Команды",
 					"commands_value": "Используйте `/help` чтобы получить список доступных команд.",
 					"links": {
 						"title": "Ссылки",
-						"discord": "[`Discord (Поддержка)`]({guild_invite})",
-						"github": "[`Github`]({github_url})",
-						"privacy": "[`Конфиденциальность`]({privacy_url})",
-						"terms": "[`Условия использования`]({terms_url})",
+						"discord": "[Discord (Поддержка)]({guild_invite})",
+						"github": "[Github]({github_url})",
+						"privacy": "[Конфиденциальность]({privacy_url})",
+						"terms": "[Условия использования]({terms_url})",
 						"unionteams_title": "UnionTeam's",
-						"unionteams_website": "[`Веб-сайт`]({unionteams})"
+						"unionteams_website": "[Веб-сайт]({unionteams})",
+						"translate": "Помогите с переводом!"
 					}
 				}
 			},
@@ -1684,9 +1685,9 @@
 						"name": "юзер",
 						"help": "Выберите пользователя, которому назначить эту роль"
 					},
-					"time": {
-						"name": "время",
-						"help": "Как долго назначать эту роль (например: 2h, 2w5d (w-неделя, d-день, h-час))"
+					"duration": {
+						"name": "длительность",
+						"help": "Насколько долго назначать эту роль (пример: 2h, 2w5d (w-неделя, d-дней, h-час))"
 					},
 					"delete": {
 						"name": "удалить",
@@ -1697,7 +1698,7 @@
 					"no_member": "Участник не найден.",
 					"incorrect_user": "Выбранному пользователю не может быть назначена роль.",
 					"already_set": "Участник уже имеет эту роль.",
-					"time_limit": "Установленное время не может быть принято, должно быть 30m <-> 100d.",
+					"time_limit": "Установленное время не может быть принято, должно быть 20m <-> 100d.",
 					"done": "Роль {role} временно назначена пользователю {user} до {until}."
 				},
 				"cancel": {

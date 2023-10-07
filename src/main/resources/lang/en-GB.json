@@ -1009,16 +1009,17 @@
 						"bot_version": "Bot version: `VOTL-{bot_version}`",
 						"library": "Library: [`JDA {jda_version}`]({jda_github}) and [`JDA-Chewtils {chewtils_version}`]({chewtils_github})"
 					},
-					"commands_title": "Commands:",
+					"commands_title": "Commands",
 					"commands_value": "Use `/help` in any chat to get list of commands.",
 					"links": {
 						"title": "Links",
-						"discord": "[`Discord (Support)`]({guild_invite})",
-						"github": "[`Github`]({github_url})",
-						"privacy": "[`Privacy Policy`]({privacy_url})",
-						"terms": "[`Terms of Service`]({terms_url})",
+						"discord": "[Discord (Support)]({guild_invite})",
+						"github": "[Github]({github_url})",
+						"privacy": "[Privacy Policy]({privacy_url})",
+						"terms": "[Terms of Service]({terms_url})",
 						"unionteams_title": "UnionTeam's",
-						"unionteams_website": "[`Website`]({unionteams})"
+						"unionteams_website": "[Website]({unionteams})",
+						"translate": "Help translate!"
 					}
 				}
 			},
@@ -1684,8 +1685,8 @@
 						"name": "user",
 						"help": "Select user to which assign this role"
 					},
-					"time": {
-						"name": "time",
+					"duration": {
+						"name": "duration",
 						"help": "For how long to assign this role (Example: 2h, 2w5d (w-week, d-day, h-hour))"
 					},
 					"delete": {
@@ -1697,7 +1698,7 @@
 					"no_member": "Member not found.",
 					"incorrect_user": "Selected member can't be assigned role.",
 					"already_set": "Member already assigned this role.",
-					"time_limit": "Provided time is not accepted, must be 30m <-> 100d.",
+					"time_limit": "Provided time is not accepted, must be 20m <-> 100d.",
 					"done": "Temporary assigned user {user} role {role} until {until}."
 				},
 				"cancel": {

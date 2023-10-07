@@ -78,7 +78,7 @@ public class CheckRankCmd extends CommandBase {
 				}
 				String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 				String rank = bot.getDBUtil().unionPlayers.getPlayerRank(guild.getId(), steamId);
-				if (!requiredRank.contains(rank)) {
+				if (rank == null || !requiredRank.contains(rank)) {
 					guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).queue((null), new ErrorHandler().ignore(ErrorResponse.MISSING_PERMISSIONS));
 					removed++;
 				}

@@ -84,9 +84,17 @@ public class AboutCmd extends CommandBase {
 				lu.getLocalized(userLocale, "bot.other.about.embed.links.unionteams_title"),
 				String.join(
 					"\n",
-					lu.getLocalized(userLocale, "bot.other.about.embed.links.unionteams_website").replace("{unionteams}", Links.UNIONTEAMS)
+					lu.getLocalized(userLocale, "bot.other.about.embed.links.unionteams_website").replace("{unionteams}", Links.UNIONTEAMS),
+					"[Rise of the Republic](%s)".formatted(Links.ROTR_INVITE),
+					"[The Force Conflict](%s)".formatted(Links.TFC_INVITE),
+					"[SCP RP](%s)".formatted(Links.SCP_INVITE)
 				),
 				true
+			)
+			.addField(
+				lu.getLocalized(userLocale, "bot.other.about.embed.links.translate"),
+				"[Crowdin.com](%s)".formatted(Links.CROWDIN),
+				false
 			);
 		
 		createReplyEmbed(event, event.isFromGuild() ? !event.optBoolean("show", false) : false, builder.build());

@@ -200,6 +200,24 @@
 				"help": "Generates json file with information about all bot's public commands",
 				"usage": "generate",
 				"error": "Unknown error, see below."
+			},
+			"forceaccess": {
+				"help": "Force role/user access in selected server",
+				"usage": "forceaccess <Server ID> <@Role/@User> <Access level>",
+				"server": {
+					"name": "server",
+					"help": "Enter server's ID"
+				},
+				"target": {
+					"name": "target",
+					"help": "Enter target's ID"
+				},
+				"access_level": {
+					"name": "access_level",
+					"help": "Grant the target selected access level"
+				},
+				"no_guild": "Selected server not found.",
+				"done": "Assigned {target} access {level}."
 			}
 		},
 		"guild": {
@@ -1669,7 +1687,55 @@
 		"roles": {
 			"role": {
 				"help": "Manage user's roles",
-				"usage": "role"
+				"usage": "role",
+				"add": {
+					"help": "Add a role to the specified user",
+					"usage": "add <@Role> <@User>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be added.",
+					"no_member": "Member not found.",
+					"done": "Added role `{role}` to {user}",
+					"failed": "Unable to add selected role to the user."
+				},
+				"remove": {
+					"help": "Remove a role from the specified user",
+					"usage": "remove <@Role> <@User>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be removed.",
+					"no_member": "Member not found.",
+					"done": "Removed role `{role}` from {user}",
+					"failed": "Unable to remove selected role from the user."
+				},
+				"removeall": {
+					"help": "Remove role from all users in the server",
+					"usage": "removeall <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be removed.",
+					"started": "Role removal in progress... {EMOTE_LOADING}",
+					"estimate": "\n*Estimated time for completion `%d` seconds.*",
+					"empty": "No members has this role.",
+					"done": "Removed role `{role}` from {count}/{max} users."
+				}
 			},
 			"temprole": {
 				"help": "Manage temporary roles",
@@ -1737,6 +1803,9 @@
 				},
 				"no_role": "Provided role not found.",
 				"incorrect_role": "Selected role can't be checked.",
+				"started": "Checking in progress... {EMOTE_LOADING}",
+				"estimate": "\n*Estimated time for completion `%d` seconds.*",
+				"empty": "No members has this role.",
 				"done": "Removed {role} from {count}/{max} users!"
 			}
 		}

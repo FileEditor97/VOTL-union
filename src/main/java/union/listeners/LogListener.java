@@ -2,15 +2,17 @@ package union.listeners;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
 
 import union.App;
+import union.objects.CmdAccessLevel;
+import union.objects.CmdModule;
+import union.objects.LogChannels;
 import union.objects.command.SlashCommandEvent;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
@@ -19,10 +21,13 @@ import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Guild.Ban;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public class LogListener {
 	
@@ -30,550 +35,410 @@ public class LogListener {
 	private final DBUtil db;
 	private final LogUtil logUtil;
 
+	public final Moderation mod = new Moderation();
+	public final Roles role = new Roles();
+	public final Groups group = new Groups();
+	public final Verification verify = new Verification();
+	public final Tickets ticket = new Tickets();
+	public final Server server = new Server();
+
 	public LogListener(App bot) {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
 		this.logUtil = bot.getLogUtil();
 	}
 
+	private TextChannel getLogChannel(LogChannels type, Guild guild) {
+		return Optional.ofNullable(db.guild.getLogChannel(type, guild.getId())).map(guild::getTextChannelById).orElse(null);
+	}
+
+	private TextChannel getLogChannel(LogChannels type, String guildId) {
+		return Optional.ofNullable(db.guild.getLogChannel(type, guildId)).map(bot.JDA::getTextChannelById).orElse(null);
+	}
+
+	private void sendLog(TextChannel channel, MessageEmbed embed) {
+		try {
+			channel.sendMessageEmbeds(embed).queue();
+		} catch (InsufficientPermissionException | IllegalArgumentException ex) {
+			return;
+		}
+	}
+
 	// Moderation actions
-	public void onBan(SlashCommandEvent event, User target, Member moderator, Integer banId) {
-		String guildId = Objects.requireNonNull(event.getGuild()).getId();
+	public class Moderation {
+		public void onBan(SlashCommandEvent event, User target, Member moderator, Integer banId) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
 
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		Map<String, Object> ban = db.ban.getInfo(banId);
-		if (ban.isEmpty() || ban == null) {
-			bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getBanEmbed(event.getGuildLocale(), ban, target.getAvatarUrl())
-			).queue();
-		} catch (InsufficientPermissionException ex) {}
-	}
-	
-	public void onSyncBan(SlashCommandEvent event, Guild guild, User target, String reason) {
-		String guildId = Objects.requireNonNull(guild).getId();
-
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getSyncBanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, reason)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onUnban(SlashCommandEvent event, Member moderator, Ban banData, String reason) {
-		String guildId = Objects.requireNonNull(event.getGuild()).getId();
-
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getUnbanEmbed(event.getGuildLocale(), banData, moderator, reason)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onSyncUnban(SlashCommandEvent event, Guild guild, User target, String banReason, String reason) {
-		String guildId = Objects.requireNonNull(guild).getId();
-
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getSyncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onAutoUnban(Map<String, Object> banMap, Integer banId, Guild guild) {
-		String channelId = db.guild.getModLogChannel(guild.getId());
-		if (channelId == null) return;
-		TextChannel channel = bot.JDA.getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getAutoUnbanEmbed(guild.getLocale(), banMap)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onChangeReason(SlashCommandEvent event, Integer banId, String oldReason, String newReason) {
-		String guildId = Objects.requireNonNull(event.getGuild()).getId();
-
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		Map<String, Object> ban = db.ban.getInfo(banId);
-		if (ban.isEmpty() || ban == null) {
-			bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getReasonChangeEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), oldReason, oldReason)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onChangeDuration(SlashCommandEvent event, Integer banId, Instant timeStart, Duration oldDuration, String newTime) {
-		String guildId = Objects.requireNonNull(event.getGuild()).getId();
-
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		Map<String, Object> ban = db.ban.getInfo(banId);
-		if (ban.isEmpty() || ban == null) {
-			bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getDurationChangeEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), timeStart, oldDuration, newTime)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onKick(SlashCommandEvent event, User target, User moderator, String reason) {
-		String guildId = Objects.requireNonNull(event.getGuild()).getId();
-
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getKickEmbed(event.getGuildLocale(), target.getName(), target.getId(), moderator.getName(), moderator.getId(), reason, target.getAvatarUrl(), true)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onSyncKick(SlashCommandEvent event, Guild guild, User target, String reason) {
-		String guildId = Objects.requireNonNull(guild).getId();
-
-		String channelId = db.guild.getModLogChannel(guildId);
-		if (channelId == null) return;
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getSyncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void helperOnSyncBan(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
-		String channelId = db.guild.getModLogChannel(master.getId());
-		if (channelId == null) return;
-		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getHelperBanEmbed(master.getLocale(), groupId, target, reason, success, max)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void helperOnSyncUnban(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
-		String channelId = db.guild.getModLogChannel(master.getId());
-		if (channelId == null) return;
-		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getHelperUnbanEmbed(master.getLocale(), groupId, target, reason, success, max)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void helperOnSyncKick(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
-		String channelId = db.guild.getModLogChannel(master.getId());
-		if (channelId == null) return;
-		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getHelperKickEmbed(master.getLocale(), groupId, target, reason, success, max)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void helperInformAction(Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
-		String masterId = db.group.getMaster(groupId);
-		if (masterId == null) return;
-		Guild master = bot.JDA.getGuildById(masterId);
-		if (master == null) return;
-
-		String channelId = db.guild.getModLogChannel(masterId);
-		if (channelId == null) return;
-		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getAuditLogEmbed(master.getLocale(), groupId, target, auditLogEntry)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void helperInformLeave(Integer groupId, @Nullable Guild guild, String guildId) {
-		String masterId = db.group.getMaster(groupId);
-		if (masterId == null) return;
-		Guild master = bot.JDA.getGuildById(masterId);
-		if (master == null) return;
-
-		String channelId = db.guild.getModLogChannel(masterId);
-		if (channelId == null) return;
-		TextChannel channel = master.getTextChannelById(channelId);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getBotLeaveEmbed(master.getLocale(), groupId, guild, guildId)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	// Group settings
-	public void onGroupCreation(SlashCommandEvent event, Integer groupId, String name) {
-		String masterId = event.getGuild().getId();
-
-		String channelId = db.guild.getGroupLogChannel(masterId);
-		if (channelId == null) {
-			return;
-		}
-		TextChannel channel = event.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getGroupCreationEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, event.getGuild().getIconUrl(), groupId, name)
-			).queue();
-		} catch (InsufficientPermissionException ex) {
-			return;
-		}
-	}
-
-	public void onGroupDeletion(SlashCommandEvent event, Integer groupId, String name) {
-		String masterId = event.getGuild().getId();
-		String masterIcon = event.getGuild().getIconUrl();
-
-		// For each group guild (except master) remove if from group DB and send log to log channel
-		List<String> guildIds = db.group.getGroupGuildIds(groupId);
-		for (String guildId : guildIds) {
-			db.group.remove(groupId, guildId);
-			String channelId = db.guild.getGroupLogChannel(guildId);
-			if (channelId == null) {
-				continue;
+			Map<String, Object> ban = db.ban.getInfo(banId);
+			if (ban.isEmpty() || ban == null) {
+				bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
+				return;
 			}
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel == null) {
-				continue;
+
+			sendLog(channel, logUtil.banEmbed(event.getGuildLocale(), ban, target.getAvatarUrl()));
+		}
+
+		public void onSyncBan(SlashCommandEvent event, Guild guild, User target, String reason) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.syncBanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, reason));
+		}
+
+		public void onUnban(SlashCommandEvent event, Member moderator, Ban banData, String reason) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.unbanEmbed(event.getGuildLocale(), banData, moderator, reason));
+		}
+
+		public void onSyncUnban(SlashCommandEvent event, Guild guild, User target, String banReason, String reason) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.syncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason));
+		}
+
+		public void onAutoUnban(Map<String, Object> banMap, Integer banId, Guild guild) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.autoUnbanEmbed(guild.getLocale(), banMap));
+		}
+
+		public void onKick(SlashCommandEvent event, User target, User moderator, String reason) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.kickEmbed(event.getGuildLocale(), target.getName(), target.getId(), moderator.getName(), moderator.getId(), reason, target.getAvatarUrl(), true));
+		}
+
+		public void onSyncKick(SlashCommandEvent event, Guild guild, User target, String reason) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.syncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason));
+		}
+
+		public void onChangeReason(SlashCommandEvent event, Integer banId, String oldReason, String newReason) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
+
+			Map<String, Object> ban = db.ban.getInfo(banId);
+			if (ban.isEmpty() || ban == null) {
+				bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
+				return;
 			}
+
+			sendLog(channel, logUtil.reasonChangedEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), oldReason, oldReason));
+		}
+
+		public void onChangeDuration(SlashCommandEvent event, Integer banId, Instant timeStart, Duration oldDuration, String newTime) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+			if (channel == null) return;
+
+			Map<String, Object> ban = db.ban.getInfo(banId);
+			if (ban.isEmpty() || ban == null) {
+				bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
+				return;
+			}
+
+			sendLog(channel, logUtil.durationChangedEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), timeStart, oldDuration, newTime));
+		}
+
+		public void onHelperSyncBan(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, master);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.helperBanEmbed(master.getLocale(), groupId, target, reason, success, max));
+		}
+
+		public void onHelperSyncUnban(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, master);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.helperUnbanEmbed(master.getLocale(), groupId, target, reason, success, max));
+		}
+
+		public void onHelperSyncKick(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, master);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.helperKickEmbed(master.getLocale(), groupId, target, reason, success, max));
+		}
+	}
+
+	// Roles actions
+	public class Roles {
+		public void onApproved(Member member, Member admin, Guild guild, List<Role> roles, String ticketId) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.rolesApprovedEmbed(guild.getLocale(), ticketId, member.getAsMention(), member.getId(), roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getAsMention()));
+		}
+
+		public void onCheckRank(Guild guild, User admin, Role role, String rankName) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.checkRankEmbed(guild.getLocale(), admin.getId(), role.getId(), rankName));
+		}
+
+		public void onRoleAdded(Guild guild, User mod, User target, Role role) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.roleAddedEmbed(guild.getLocale(), mod.getId(), target.getId(), target.getAvatarUrl(), role.getId()));
+		}
+
+		public void onRoleRemoved(Guild guild, User mod, User target, Role role) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.roleRemovedEmbed(guild.getLocale(), mod.getId(), target.getId(), target.getAvatarUrl(), role.getId()));
+		}
+
+		public void onRoleRemovedAll(Guild guild, User mod, Role role) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.roleRemovedAllEmbed(guild.getLocale(), mod.getId(), role.getId()));
+		}
+
+		public void onTempRoleAdded(Guild guild, User mod, User target, Role role, Duration duration) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.tempRoleAddedEmbed(guild.getLocale(), mod, target, role, duration));
+		}
+
+		public void onTempRoleRemoved(Guild guild, User mod, User target, Role role) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.tempRoleRemovedEmbed(guild.getLocale(), mod, target, role));
+		}
+
+		public void onTempRoleAutoRemoved(Guild guild, String targetId, Role role) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.tempRoleAutoRemovedEmbed(guild.getLocale(), targetId, role));
+		}
+	}
+
+	// Group actions
+	public class Groups {
+		public void onCreation(SlashCommandEvent event, Integer groupId, String name) {
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.groupCreatedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), event.getGuild().getId(), event.getGuild().getIconUrl(), groupId, name));
+		}
+
+		public void onDeletion(SlashCommandEvent event, Integer groupId, String name) {
+			String masterId = event.getGuild().getId();
+			String masterIcon = event.getGuild().getIconUrl();
+
+			// For each group guild (except master) remove if from group DB and send log to log channel
+			List<String> guildIds = db.group.getGroupGuildIds(groupId);
+			for (String guildId : guildIds) {
+				db.group.remove(groupId, guildId);
+
+				TextChannel channel = getLogChannel(LogChannels.GROUPS, guildId);
+				if (channel == null) continue;
+
+				sendLog(channel, logUtil.groupMemberDeletedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, name));
+			}
+
+			// Master log
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.groupOwnerDeletedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name));
+		}
+
+		public void onGuildAdded(SlashCommandEvent event, Integer groupId, String name, String targetId, String targetName) {
+			String ownerId = event.getGuild().getId();
+			String ownerIcon = event.getGuild().getIconUrl();
+
+			// Send log to added server
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, targetId);
+			if (channel != null) {
+				sendLog(channel, logUtil.groupMemberAddedEmbed(event.getGuildLocale(), ownerId, ownerIcon, groupId, name));
+			}
+
+			// Master log
+			channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.groupOwnerAddedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, targetName, targetId, groupId, name));
+		}
+
+		public void onGuildJoined(SlashCommandEvent event, Integer groupId, String name) {
+			String masterId = db.group.getMaster(groupId);
+			String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
+
+			// Send log to added server
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
+			if (channel != null) {
+				sendLog(channel, logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name));
+			}
+
+			// Master log
+			channel = getLogChannel(LogChannels.GROUPS, masterId);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.groupOwnerJoinedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, event.getGuild().getName(), event.getGuild().getId(), groupId, name));
+		}
+
+		public void onGuildLeft(SlashCommandEvent event, Integer groupId, String name) {
+			String masterId = db.group.getMaster(groupId);
+			String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
+
+			// Send log to removed server
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
+			if (channel != null) {
+				sendLog(channel, logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name));
+			}
+
+			// Master log
+			channel = getLogChannel(LogChannels.GROUPS, masterId);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.groupOwnerLeftEmbed(channel.getGuild().getLocale(), masterId, masterIcon, event.getGuild().getName(), event.getGuild().getId(), groupId, name));
+		}
+
+		public void onGuildRemoved(SlashCommandEvent event, Guild target, Integer groupId, String name) {
+			String masterId = event.getGuild().getId();
+			String masterIcon = event.getGuild().getIconUrl();
+
+			// Send log to removed server
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, target);
+			if (channel != null) {
+				sendLog(channel, logUtil.groupMemberLeftEmbed(channel.getGuild().getLocale(), "Forced, by group Master", masterId, masterIcon, groupId, name));
+			}
+
+			// Master log
+			channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.groupOwnerRemovedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, target.getName(), target.getId(), groupId, name));
+		}
+
+		public void onRenamed(SlashCommandEvent event, String oldName, Integer groupId, String newName) {
+			String masterId = event.getGuild().getId();
+			String masterIcon = event.getGuild().getIconUrl();
+
+			// Send log to each group guild
+			List<String> guildIds = db.group.getGroupGuildIds(groupId);
+			for (String guildId : guildIds) {
+				db.group.remove(groupId, guildId);
+
+				TextChannel channel = getLogChannel(LogChannels.GROUPS, guildId);
+				if (channel == null) continue;
+
+				sendLog(channel, logUtil.groupMemberRenamedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, oldName, newName));
+			}
+
+			// Master log
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.groupOwnerRenamedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, oldName, newName));
+		}
+
+		public void helperInformAction(Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
+			Guild master = Optional.ofNullable(db.group.getMaster(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			if (master == null) return;
+
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, master);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.auditLogEmbed(master.getLocale(), groupId, target, auditLogEntry));
+		}
+
+		public void helperInformLeave(Integer groupId, @Nullable Guild guild, String guildId) {
+			Guild master = Optional.ofNullable(db.group.getMaster(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			if (master == null) return;
+
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, master);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId));
+		}
+	}
+
+	// Verification actions
+	public class Verification {
+		public void onVerified(User user, String steam64, Guild guild) {
+			TextChannel channel = getLogChannel(LogChannels.VERIFICATION, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64));
+		}
+
+		public void onUnverified(User user, String steam64, Guild guild, String reason) {
+			TextChannel channel = getLogChannel(LogChannels.VERIFICATION, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64, reason));
+		}
+	}
+
+	// Tickets actions
+	public class Tickets {
+		public void onCreate(Guild guild, GuildMessageChannel messageChannel, User author) {
+			TextChannel channel = getLogChannel(LogChannels.TICKETS, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.ticketCreatedEmbed(guild.getLocale(), channel, author));
+		}
+
+		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, String authorId, FileUpload file) {
+			TextChannel channel = getLogChannel(LogChannels.TICKETS, guild);
+			if (channel == null) return;
 
 			try {
 				channel.sendMessageEmbeds(
-					logUtil.getGroupMemberDeletedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, name)
-				).queue();
-			} catch (InsufficientPermissionException ex) {
-				continue;
-			}
-		}
-
-		// Master log
-		String channelId = db.guild.getGroupLogChannel(masterId);
-		if (channelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupOwnerDeletedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
+					logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
+				).addFiles(file).queue();
+			} catch (InsufficientPermissionException | IllegalArgumentException ex) {
+				return;
 			}
 		}
 	}
 
-	public void onGroupAdded(SlashCommandEvent event, Integer groupId, String name, String targetId, String targetName) {
-		String ownerId = event.getGuild().getId();
-		String ownerIcon = event.getGuild().getIconUrl();
+	// Server actions
+	public class Server {
+		public void onAccessAdded(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
+			TextChannel channel = getLogChannel(LogChannels.SERVER, guild);
+			if (channel == null) return;
 
-		String ownerChannelId = db.guild.getGroupLogChannel(ownerId);
-		if (ownerChannelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(ownerChannelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupOwnerAddedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, targetName, targetId, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
+			sendLog(channel, logUtil.accessAdded(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
 		}
 
-		// Send log to added server's log channel
-		String channelId = db.guild.getGroupLogChannel(targetId);
-		if (channelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupMemberAddedEmbed(event.getGuildLocale(), ownerId, ownerIcon, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
-		}
-	}
+		public void onAccessRemoved(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
+			TextChannel channel = getLogChannel(LogChannels.SERVER, guild);
+			if (channel == null) return;
 
-	public void onGroupJoined(SlashCommandEvent event, Integer groupId, String name) {
-		String guildId = event.getGuild().getId();
-		String guildName = event.getGuild().getName();
-		String masterId = db.group.getMaster(groupId);
-		String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
-
-		String channelId = db.guild.getGroupLogChannel(guildId);
-		
-		if (channelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupMemberJoinEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
+			sendLog(channel, logUtil.accessRemoved(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
 		}
 
-		// Send log to group's master log channel
-		String masterChannelId = db.guild.getGroupLogChannel(masterId);
-		if (masterChannelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupOwnerJoinEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
-		}
-	}
+		public void onModuleEnabled(Guild guild, User mod, CmdModule module) {
+			TextChannel channel = getLogChannel(LogChannels.SERVER, guild);
+			if (channel == null) return;
 
-	public void onGroupLeave(SlashCommandEvent event, Integer groupId, String name) {
-		String guildId = event.getGuild().getId();
-		String guildName = event.getGuild().getName();
-		String masterId = db.group.getMaster(groupId);
-		String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
-
-		String channelId = db.guild.getGroupLogChannel(guildId);
-		if (channelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupMemberLeaveEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
+			sendLog(channel, logUtil.moduleEnabled(guild.getLocale(), mod, module));
 		}
 
-		// Send log to group's master log channel
-		String masterChannelId = db.guild.getGroupLogChannel(masterId);
-		if (masterChannelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupOwnerLeaveEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
+		public void onModuleDisabled(Guild guild, User mod, CmdModule module) {
+			TextChannel channel = getLogChannel(LogChannels.SERVER, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.moduleDisabled(guild.getLocale(), mod, module));
 		}
-	}
-
-	public void onGroupRemove(SlashCommandEvent event, Guild target, Integer groupId, String name) {
-		String targetId = target.getId();
-		String targetName = target.getName();
-		String masterId = event.getGuild().getId();
-		String masterIcon = event.getGuild().getIconUrl();
-
-		String channelId = db.guild.getGroupLogChannel(targetId);
-		if (channelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupMemberLeaveEmbed(channel.getGuild().getLocale(), "Forced, by group Master", masterId, masterIcon, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
-		}
-
-		// Send log to group's master log channel
-		String masterChannelId = db.guild.getGroupLogChannel(masterId);
-		if (masterChannelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupOwnerRemoveEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, targetName, targetId, groupId, name)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
-		}
-	}
-
-	public void onGroupRename(SlashCommandEvent event, String oldName, Integer groupId, String newName) {
-		String masterId = event.getGuild().getId();
-		String masterIcon = event.getGuild().getIconUrl();
-
-		// Send log to each group guild
-		List<String> guildIds = db.group.getGroupGuildIds(groupId);
-		for (String guildId : guildIds) {
-			String channelId = db.guild.getGroupLogChannel(guildId);
-			if (channelId == null) {
-				continue;
-			}
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel == null) {
-				continue;
-			}
-
-			try {
-				channel.sendMessageEmbeds(
-					logUtil.getGroupMemberRenamedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, oldName, newName)
-				).queue();
-			} catch (InsufficientPermissionException ex) {
-				continue;
-			}
-		}
-
-		// Master log
-		String channelId = db.guild.getGroupLogChannel(masterId);
-		if (channelId != null) {
-			TextChannel channel = event.getJDA().getTextChannelById(channelId);
-			if (channel != null) {
-				try {
-					channel.sendMessageEmbeds(
-						logUtil.getGroupOwnerRenamedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, oldName, newName)
-					).queue();
-				} catch (InsufficientPermissionException ex) {}
-			}
-		}
-	}
-
-	// Verification
-	public void onVerified(User user, String steam64, Guild guild) {
-		String guildId = Objects.requireNonNull(guild).getId();
-
-		String channelId = db.guild.getVerifyLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
-		TextChannel channel = guild.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getVerifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64)
-			).queue();
-		} catch (InsufficientPermissionException ex) {}
-	}
-
-	public void onUnverified(User user, String steam64, Guild guild, String reason) {
-		String guildId = Objects.requireNonNull(guild).getId();
-
-		String channelId = db.guild.getVerifyLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
-		TextChannel channel = guild.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getUnverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64, reason)
-			).queue();
-		} catch (InsufficientPermissionException ex) {}
-	}
-
-	// Ticketing
-	public void onRolesApproved(Member member, Member admin, Guild guild, List<Role> roles, String ticketId) {
-		String guildId = Objects.requireNonNull(guild).getId();
-
-		String channelId = db.guild.getTicketLogChannel(guildId);
-		if (channelId == null) {
-			return;
-		}
-		TextChannel channel = guild.getJDA().getTextChannelById(channelId);
-		if (channel == null) {
-			return;
-		}
-
-		try {
-			channel.sendMessageEmbeds(
-				logUtil.getRolesApprovedEmbed(guild.getLocale(), ticketId, member.getAsMention(), member.getId(), roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getAsMention())
-			).setAllowedMentions(Collections.emptyList()).queue();
-		} catch (InsufficientPermissionException ex) {}
 	}
 
 }

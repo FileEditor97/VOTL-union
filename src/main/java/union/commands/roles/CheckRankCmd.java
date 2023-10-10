@@ -100,6 +100,10 @@ public class CheckRankCmd extends CommandBase {
 						for (CompletableFuture<Void> future : completableFutures) {
 							if (!future.isCompletedExceptionally()) removed++;
 						}
+
+						// Log
+						bot.getLogListener().role.onCheckRank(guild, event.getUser(), role, requiredRank);
+						// Send reply
 						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
 							.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())
 						).build());

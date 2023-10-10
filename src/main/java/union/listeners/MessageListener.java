@@ -42,7 +42,7 @@ public class MessageListener extends ListenerAdapter {
 						user.openPrivateChannel().queue(dm ->
 							dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.verification.role_removed").replace("{server}", guild.getName())).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
 						);
-						bot.getLogListener().onUnverified(user, null, guild, "Autocheck: No account connected");
+						bot.getLogListener().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
 					}
 				);
 			} catch (Exception ex) {}

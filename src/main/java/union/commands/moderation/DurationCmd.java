@@ -71,6 +71,6 @@ public class DurationCmd extends CommandBase {
 			.build();
 		createReplyEmbed(event, embed);
 
-		bot.getLogListener().onChangeDuration(event, caseId, timeStart, Duration.parse(banData.get("duration").toString()), newTime);
+		bot.getLogListener().mod.onChangeDuration(event, caseId, timeStart, Duration.parse(banData.get("duration").toString()), newTime);
 	}
 }

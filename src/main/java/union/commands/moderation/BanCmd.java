@@ -138,7 +138,7 @@ public class BanCmd extends CommandBase {
 					});
 
 					// log ban
-					bot.getLogListener().onBan(event, tu, mod, banId);
+					bot.getLogListener().mod.onBan(event, tu, mod, banId);
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
@@ -213,7 +213,7 @@ public class BanCmd extends CommandBase {
 				});
 				
 				// log ban
-				bot.getLogListener().onBan(event, tu, mod, banId);
+				bot.getLogListener().mod.onBan(event, tu, mod, banId);
 			},
 			failed -> {
 				editError(event, "errors.unknown", failed.getMessage());

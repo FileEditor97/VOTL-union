@@ -111,6 +111,9 @@ public class TempRoleCmd extends CommandBase {
 
 			guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
 				bot.getDBUtil().tempRole.add(guild.getId(), roleId, userId, delete, until);
+				// Log
+				bot.getLogListener().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), role, duration);
+				// Send reply
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
@@ -161,6 +164,9 @@ public class TempRoleCmd extends CommandBase {
 			event.getGuild().removeRoleFromMember(member, role).reason("Canceled temporary role | by"+event.getMember().getEffectiveName()).queue();
 
 			bot.getDBUtil().tempRole.remove(role.getId(), member.getId());
+			// Log
+			bot.getLogListener().role.onTempRoleRemoved(event.getGuild(), event.getUser(), member.getUser(), role);
+			// Send reply
 			event.replyEmbeds(bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))

@@ -136,10 +136,14 @@ public class ModuleCmd extends CommandBase {
 							return;
 						}
 						bot.getDBUtil().module.add(guildId, sModule);
-						EmbedBuilder editEmbed = bot.getEmbedUtil().getEmbed(event)
+						// Send reply
+						hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
 							.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
-							.setColor(Constants.COLOR_SUCCESS);
-						hook.editOriginalEmbeds(editEmbed.build()).setComponents().queue();
+							.setColor(Constants.COLOR_SUCCESS)
+							.build()
+						).setComponents().queue();
+						// Log
+						bot.getLogListener().server.onModuleDisabled(event.getGuild(), event.getUser(), sModule);
 
 					},
 					30,
@@ -207,10 +211,14 @@ public class ModuleCmd extends CommandBase {
 									return;
 								}
 								bot.getDBUtil().module.remove(guildId, sModule);
-								EmbedBuilder editEmbed = bot.getEmbedUtil().getEmbed(event)
+								// Send reply
+								hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
 									.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
-									.setColor(Constants.COLOR_SUCCESS);
-								hook.editOriginalEmbeds(editEmbed.build()).setComponents().queue();
+									.setColor(Constants.COLOR_SUCCESS)
+									.build()
+								).setComponents().queue();
+								// Log
+								bot.getLogListener().server.onModuleEnabled(event.getGuild(), event.getUser(), sModule);
 							}
 						);
 

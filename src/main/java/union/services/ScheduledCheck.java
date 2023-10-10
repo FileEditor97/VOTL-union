@@ -119,6 +119,8 @@ public class ScheduledCheck {
 					bot.getLogger().warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
 				});
 				db.tempRole.remove(roleId, userId);
+				// Log
+				bot.getLogListener().role.onTempRoleAutoRemoved(role.getGuild(), userId, role);
 			}
 		});
 	}
@@ -190,7 +192,7 @@ public class ScheduledCheck {
 					guild.retrieveMemberById(userId).queue(member -> {
 						if (!member.getRoles().contains(role)) return;
 						guild.removeRoleFromMember(member, role).reason("Autocheck: Account unlinked").queue(success -> {
-							bot.getLogListener().onUnverified(member.getUser(), steam64, guild, "Autocheck: Account unlinked");
+							bot.getLogListener().verify.onUnverified(member.getUser(), steam64, guild, "Autocheck: Account unlinked");
 						});
 					}, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
 				});
@@ -210,7 +212,7 @@ public class ScheduledCheck {
 			Guild guild = bot.JDA.getGuildById(ban.get("guildId").toString());
 			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
 			guild.unban(User.fromId(ban.get("userId").toString())).reason("Temporary ban expired").queue(
-				s -> bot.getLogListener().onAutoUnban(ban, banId, guild),
+				s -> bot.getLogListener().mod.onAutoUnban(ban, banId, guild),
 				f -> bot.getLogger().warn("Exception at unban attempt", f.getMessage())
 			);
 			db.ban.setInactive(banId);

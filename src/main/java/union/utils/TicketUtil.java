@@ -17,7 +17,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -49,23 +48,17 @@ public class TicketUtil {
 				channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
 					db.ticket.closeTicket(now, channelId, reasonClosed);
 
-					String userId = db.ticket.getUserId(channelId);
+					String authorId = db.ticket.getUserId(channelId);
 					if (!db.ticket.isRoleTicket(channelId)) {
-						bot.JDA.retrieveUserById(userId).queue(user -> {
+						bot.JDA.retrieveUserById(authorId).queue(user -> {
 							user.openPrivateChannel().queue(pm -> {
-								MessageEmbed embed = bot.getLogUtil().getTicketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
+								MessageEmbed embed = bot.getLogUtil().ticketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
 								pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 							});
 						});
 					}
 
-					String logChannelId = db.guild.getTicketLogChannel(guild.getId());
-					if (logChannelId == null) return;
-					TextChannel logChannel = guild.getJDA().getTextChannelById(logChannelId);
-					if (logChannel == null) return;
-
-					MessageEmbed embed = bot.getLogUtil().getTicketClosedEmbed(guild.getLocale(), channel, userClosed, userId, db.ticket.getClaimer(channelId));
-					logChannel.sendMessageEmbeds(embed).setFiles(file).queue();
+					bot.getLogListener().ticket.onClose(guild, channel, userClosed, authorId, file);
 				}, failure -> {
 					bot.getLogger().error("Error while closing ticket, unable to delete", failure);
 					closeHandle.accept(failure);
@@ -88,10 +81,13 @@ public class TicketUtil {
 			msg.editMessageComponents(ActionRow.of(close.asEnabled(), claim)).queueAfter(15, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL));
 		});
 
+		// Send reply
 		event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 			.setDescription(bot.getLocaleUtil().getText(event, "bot.ticketing.listener.created").replace("{channel}", channel.getAsMention()))
 			.build()
 		).setComponents().queue();
+		// Log
+		bot.getLogListener().ticket.onCreate(event.getGuild(), channel, event.getUser());
 	}
 
 }

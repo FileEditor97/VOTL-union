@@ -1,6 +1,13 @@
 package union.utils.database.managers;
 
 import union.utils.database.LiteDBBase;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import union.objects.LogChannels;
 import union.objects.constants.Constants;
 import union.utils.database.DBUtil;
 
@@ -39,52 +46,34 @@ public class GuildSettingsManager extends LiteDBBase {
 		return Integer.decode(String.valueOf(data));
 	}
 
-	public void setModLogChannel(String guildId, String channelId) {
-		update(TABLE, "modLogId", channelId, "guildId", guildId);
+	public void setupLogChannels(String guildId, String channelId) {
+		update(TABLE, LogChannels.getAllNames(), Collections.nCopies(LogChannels.values().length, channelId), "guildId", guildId);
 	}
 
-	public void setGroupLogChannel(String guildId, String channelId) {
-		update(TABLE, "groupLogId", channelId, "guildId", guildId);
+	public void setLogChannel(LogChannels type, String guildId, String channelId) {
+		update(TABLE, type.getDBName(), channelId, "guildId", guildId);
 	}
 
-	public void setVerifyLogChannel(String guildId, String channelId) {
-		update(TABLE, "verificationLogId", channelId, "guildId", guildId);
-	}
-
-	public void setTicketLogChannel(String guildId, String channelId) {
-		update(TABLE, "ticketLogId", channelId, "guildId", guildId);
-	}
-
-	public String getModLogChannel(String guildId) {
-		Object data = selectOne(TABLE, "modLogId", "guildId", guildId);
+	public String getLogChannel(LogChannels type, String guildId) {
+		Object data = selectOne(TABLE, type.getDBName(), "guildId", guildId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
-	public String getGroupLogChannel(String guildId) {
-		Object data = selectOne(TABLE, "groupLogId", "guildId", guildId);
-		if (data == null) return null;
-		return String.valueOf(data);
-	}
-
-	public String getVerifyLogChannel(String guildId) {
-		Object data = selectOne(TABLE, "verificationLogId", "guildId", guildId);
-		if (data == null) return null;
-		return String.valueOf(data);
-	}
-
-	public String getTicketLogChannel(String guildId) {
-		Object data = selectOne(TABLE, "ticketLogId", "guildId", guildId);
-		if (data == null) return null;
-		return String.valueOf(data);
+	public Map<LogChannels, String> getAllLogChannels(String guildId) {
+		Map<String, Object> data = selectOne(TABLE, LogChannels.getAllNames(), "guildId", guildId);
+		if (data.values().stream().allMatch(Objects::isNull)) return null;
+		Map<LogChannels, String> result = new HashMap<>(data.size());
+		data.forEach((log, id) -> result.put(LogChannels.of(log), (String) id));
+		return result;
 	}
 
 	public void setLastWebhookId(String guildId, String webhookId) {
-		update(TABLE, "webhookId", webhookId, "guildId", guildId);
+		update(TABLE, "lastWebhook", webhookId, "guildId", guildId);
 	}
 
 	public String getLastWebhookId(String guildId) {
-		Object data = selectOne(TABLE, "webhookId", "guildId", guildId);
+		Object data = selectOne(TABLE, "lastWebhook", "guildId", guildId);
 		if (data == null) return null;
 		return (String) data;
 	}

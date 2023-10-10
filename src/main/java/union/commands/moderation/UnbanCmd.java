@@ -81,7 +81,7 @@ public class UnbanCmd extends CommandBase {
 			});
 
 			// log unban
-			bot.getLogListener().onUnban(event, event.getMember(), ban, reason);
+			bot.getLogListener().mod.onUnban(event, event.getMember(), ban, reason);
 		},
 		failure -> {
 			editError(event, path+".no_ban");

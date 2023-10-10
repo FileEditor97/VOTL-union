@@ -7,6 +7,7 @@ import jakarta.annotation.Nonnull;
 
 import union.App;
 import union.objects.CmdAccessLevel;
+import union.objects.LogChannels;
 import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -53,12 +54,12 @@ public class GuildListener extends ListenerAdapter {
 			String masterId = db.group.getMaster(groupId);
 			String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
 
-			String masterChannelId = db.guild.getGroupLogChannel(masterId);
+			String masterChannelId = db.guild.getLogChannel(LogChannels.GROUPS, masterId);
 			if (masterChannelId != null) {
 				TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
 				if (channel != null) {
 					try {
-						MessageEmbed masterEmbed = bot.getLogUtil().getGroupOwnerLeaveEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, groupName);
+						MessageEmbed masterEmbed = bot.getLogUtil().groupOwnerLeftEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, groupName);
 						channel.sendMessageEmbeds(masterEmbed).queue();
 					} catch (InsufficientPermissionException ex) {}
 				}
@@ -67,7 +68,7 @@ public class GuildListener extends ListenerAdapter {
 		for (Integer groupId : db.group.getOwnedGroups(guildId)) {
 			String groupName = db.group.getName(groupId);
 			for (String gid : db.group.getGroupGuildIds(groupId)) {
-				String channelId = db.guild.getGroupLogChannel(gid);
+				String channelId = db.guild.getLogChannel(LogChannels.GROUPS, gid);
 				if (channelId == null) {
 					continue;
 				}
@@ -77,7 +78,7 @@ public class GuildListener extends ListenerAdapter {
 				}
 
 				try {
-					MessageEmbed embed = bot.getLogUtil().getGroupMemberDeletedEmbed(channel.getGuild().getLocale(), guildId, event.getGuild().getIconUrl(), groupId, groupName);
+					MessageEmbed embed = bot.getLogUtil().groupMemberDeletedEmbed(channel.getGuild().getLocale(), guildId, event.getGuild().getIconUrl(), groupId, groupName);
 					channel.sendMessageEmbeds(embed).queue();
 				} catch (InsufficientPermissionException ex) {
 					continue;
@@ -126,7 +127,7 @@ public class GuildListener extends ListenerAdapter {
 			Role role = guild.getRoleById(roleId);
 			if (Objects.isNull(role)) return;
 			guild.addRoleToMember(event.getUser(), role).reason((Objects.isNull(cachedSteam64) ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64)).queue(success -> {
-				bot.getLogListener().onVerified(event.getUser(), cachedSteam64, guild);
+				bot.getLogListener().verify.onVerified(event.getUser(), cachedSteam64, guild);
 			});
 		}
 	}

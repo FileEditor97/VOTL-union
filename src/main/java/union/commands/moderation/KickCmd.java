@@ -110,7 +110,7 @@ public class KickCmd extends CommandBase {
 			});
 			
 			// log kick
-			bot.getLogListener().onKick(event, tm.getUser(), event.getUser(), reason);
+			bot.getLogListener().mod.onKick(event, tm.getUser(), event.getUser(), reason);
 			
 		},
 		failure -> {

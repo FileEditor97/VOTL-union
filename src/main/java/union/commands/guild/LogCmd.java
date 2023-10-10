@@ -1,12 +1,16 @@
 package union.commands.guild;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import union.App;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
+import union.objects.LogChannels;
 import union.objects.command.SlashCommand;
 import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
@@ -15,6 +19,7 @@ import union.utils.exception.CheckException;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -28,6 +33,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu.SelectTarget;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
@@ -85,10 +91,7 @@ public class LogCmd extends CommandBase {
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS);
 			
-			bot.getDBUtil().guild.setModLogChannel(event.getGuild().getId(), tc.getId());
-			bot.getDBUtil().guild.setGroupLogChannel(event.getGuild().getId(), tc.getId());
-			bot.getDBUtil().guild.setVerifyLogChannel(event.getGuild().getId(), tc.getId());
-			bot.getDBUtil().guild.setTicketLogChannel(event.getGuild().getId(), tc.getId());
+			bot.getDBUtil().guild.setupLogChannels(event.getGuild().getId(), channel.getId());
 			tc.sendMessageEmbeds(builder.setDescription(lu.getLocalized(event.getGuildLocale(), path+".as_log")).build()).queue();
 			createReplyEmbed(event, builder.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention())).build());
 		}
@@ -111,25 +114,19 @@ public class LogCmd extends CommandBase {
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
 				.setTitle(lu.getText(event, path+".title"));
 
-			String guildId = event.getGuild().getId();
-			String modChannelId = bot.getDBUtil().guild.getModLogChannel(guildId);
-			String groupChannelId = bot.getDBUtil().guild.getGroupLogChannel(guildId);
-			String verifyChannelId = bot.getDBUtil().guild.getVerifyLogChannel(guildId);
-			String ticketChannelId = bot.getDBUtil().guild.getTicketLogChannel(guildId);
-			if (modChannelId == null && groupChannelId == null && verifyChannelId == null && ticketChannelId == null) { 
+			Guild guild = event.getGuild();
+			Map<LogChannels, String> logChannels = bot.getDBUtil().guild.getAllLogChannels(guild.getId());
+			if (logChannels == null) { 
 				builder.setDescription(lu.getText(event, path+".none"));
 				editHookEmbed(event, builder.build());
 				return;
 			}
 
-			TextChannel modtc = (modChannelId == null ? null : event.getJDA().getTextChannelById(modChannelId));
-			TextChannel grouptc = (groupChannelId == null ? null : event.getJDA().getTextChannelById(groupChannelId));
-			TextChannel verifytc = (verifyChannelId == null ? null : event.getJDA().getTextChannelById(verifyChannelId));
-			TextChannel tickettc = (ticketChannelId == null ? null : event.getJDA().getTextChannelById(ticketChannelId));
-			builder.appendDescription(lu.getText(event, "bot.guild.log.types.moderation")+" - "+(modtc != null ? modtc.getAsMention() : "*not found*")+"\n")
-				.appendDescription(lu.getText(event, "bot.guild.log.types.group")+" - "+(grouptc != null ? grouptc.getAsMention() : "*not found*")+"\n")
-				.appendDescription(lu.getText(event, "bot.guild.log.types.verify")+" - "+(verifytc != null ? verifytc.getAsMention() : "*not found*")+"\n")
-				.appendDescription(lu.getText(event, "bot.guild.log.types.ticketing")+" - "+(tickettc != null ? tickettc.getAsMention() : "*not found*")+"\n");
+			String none = lu.getText(event, "bot.guild.log.types.none");
+			logChannels.forEach((lc, id) -> {
+				String text = Optional.ofNullable(id).map(guild::getTextChannelById).map(TextChannel::getAsMention).orElse(none);
+				builder.appendDescription("%s - %s\n".formatted(lu.getText(event, lc.getPath()), text));
+			});
 
 			ActionRow buttons = ActionRow.of(
 				Button.of(ButtonStyle.PRIMARY, "button:change", lu.getText(event, path+".button_change")),
@@ -153,10 +150,7 @@ public class LogCmd extends CommandBase {
 			String buttonPressed = interaction.getComponentId();
 
 			if (buttonPressed.equals("button:remove")) {
-				bot.getDBUtil().guild.setModLogChannel(guildId, "NULL");
-				bot.getDBUtil().guild.setGroupLogChannel(guildId, "NULL");
-				bot.getDBUtil().guild.setVerifyLogChannel(guildId, "NULL");
-				bot.getDBUtil().guild.setTicketLogChannel(guildId, "NULL");
+				bot.getDBUtil().guild.setupLogChannels(guildId, "NULL");
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 					.setDescription(lu.getText(event, path+".removed"))
 					.build();
@@ -164,10 +158,9 @@ public class LogCmd extends CommandBase {
 			} else {
 				StringSelectMenu menu = StringSelectMenu.create("menu:log_type")
 					.setPlaceholder(lu.getText(event, path+".menu_type"))
-					.addOption(lu.getText(event, "bot.guild.log.types.moderation"), "moderation")
-					.addOption(lu.getText(event, "bot.guild.log.types.group"), "group")
-					.addOption(lu.getText(event, "bot.guild.log.types.verify"), "verify")
-					.addOption(lu.getText(event, "bot.guild.log.types.ticketing"), "ticketing")
+					.addOptions(
+						Arrays.stream(LogChannels.values()).map(lc -> SelectOption.of(lu.getText(event, lc.getPath()), lc.getDBName())).toList()
+					)
 					.build();
 					event.getHook().editOriginalComponents(ActionRow.of(menu)).queue();
 
@@ -186,10 +179,10 @@ public class LogCmd extends CommandBase {
 
 		private void typeSelected(StringSelectInteractionEvent interaction, SlashCommandEvent event, String msgId) {
 			interaction.deferEdit().queue();
-			String selectedType = interaction.getValues().get(0);
+			LogChannels logChannel = LogChannels.of(interaction.getValues().get(0));
 
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getText(event, path+".select_channel").replace("{type}", lu.getText(event,"bot.guild.log.types."+selectedType)))
+				.setDescription(lu.getText(event, path+".select_channel").replace("{type}", lu.getText(event, logChannel.getPath())))
 				.build();
 			
 			EntitySelectMenu menu = EntitySelectMenu.create("menu:channel", SelectTarget.CHANNEL)
@@ -202,7 +195,7 @@ public class LogCmd extends CommandBase {
 			waiter.waitForEvent(
 				EntitySelectInteractionEvent.class,
 				e -> msgId.equals(e.getMessageId()) && e.getComponentId().equals("menu:channel"),
-				selectEvent -> channelSelected(selectEvent, event, msgId, selectedType),
+				selectEvent -> channelSelected(selectEvent, event, msgId, logChannel),
 				30,
 				TimeUnit.SECONDS,
 				() -> event.getHook().editOriginalComponents(ActionRow.of(
@@ -211,7 +204,7 @@ public class LogCmd extends CommandBase {
 			);
 		}
 
-		private void channelSelected(EntitySelectInteractionEvent interaction, SlashCommandEvent event, String msgId, String selectedType) {
+		private void channelSelected(EntitySelectInteractionEvent interaction, SlashCommandEvent event, String msgId, LogChannels logChannel) {
 			interaction.deferEdit().queue();
 
 			GuildChannel channel = null;
@@ -231,20 +224,13 @@ public class LogCmd extends CommandBase {
 			}
 
 			TextChannel newTc = (TextChannel) channel;
+			bot.getDBUtil().guild.setLogChannel(logChannel, event.getGuild().getId(), newTc.getId());
+			
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS);
 			
-			if (selectedType.equals("moderation")) {
-				bot.getDBUtil().guild.setModLogChannel(event.getGuild().getId(), newTc.getId());
-			} else if (selectedType.equals("group")) {
-				bot.getDBUtil().guild.setGroupLogChannel(event.getGuild().getId(), newTc.getId());
-			} else if (selectedType.equals("verify")) {
-				bot.getDBUtil().guild.setVerifyLogChannel(event.getGuild().getId(), newTc.getId());
-			} else if (selectedType.equals("ticketing")) {
-				bot.getDBUtil().guild.setTicketLogChannel(event.getGuild().getId(), newTc.getId());
-			}
 			newTc.sendMessageEmbeds(builder.setDescription(lu.getLocalized(event.getGuildLocale(), path+".as_log")
-				.replace("{type}", lu.getLocalized(event.getGuildLocale(),"bot.guild.log.types."+selectedType))).build()).queue();
+				.replace("{type}", lu.getLocalized(event.getGuildLocale(), logChannel.getPath()))).build()).queue();
 			event.getHook().editOriginalEmbeds(builder.setDescription(lu.getText(event, path+".done")
 				.replace("{channel}", newTc.getAsMention())).build()).setComponents().queue();
 		}

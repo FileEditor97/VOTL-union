@@ -48,6 +48,6 @@ public class ReasonCmd extends CommandBase {
 			.build();
 		createReplyEmbed(event, embed);
 
-		bot.getLogListener().onChangeReason(event, caseId, banData.get("reason").toString(), newReason);
+		bot.getLogListener().mod.onChangeReason(event, caseId, banData.get("reason").toString(), newReason);
 	}
 }

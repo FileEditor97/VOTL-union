@@ -63,7 +63,7 @@ public class VerifyCmd extends CommandBase {
 
 		guild.addRoleToMember(member, role).reason(String.format("Manual verification by %s", event.getUser().getName())).queue(
 			success -> {
-				bot.getLogListener().onVerified(member.getUser(), null, guild);
+				bot.getLogListener().verify.onVerified(member.getUser(), null, guild);
 				if (bot.getDBUtil().verifyCache.isVerified(member.getId())) {
 					bot.getDBUtil().verifyCache.setForced(member.getId());
 				} else {

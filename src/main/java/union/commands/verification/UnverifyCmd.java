@@ -60,7 +60,7 @@ public class UnverifyCmd extends CommandBase {
 
 		guild.removeRoleFromMember(member, role).reason(String.format("Manual unverification by %s | %s", event.getUser().getName(), reason)).queue(
 			success -> {
-				bot.getLogListener().onUnverified(member.getUser(), null, guild, reason);
+				bot.getLogListener().verify.onUnverified(member.getUser(), null, guild, reason);
 				bot.getDBUtil().verifyCache.removeByDiscord(member.getId());
 				createReplyEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".done")).build());
 			},

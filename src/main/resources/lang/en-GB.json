@@ -91,6 +91,7 @@
 	"logger": {
 		"user": "User",
 		"mod": "Moderator",
+		"target": "Target",
 		"master": "Master server",
 		"enforcer": "Done by",
 		"duration": "Duration",
@@ -165,13 +166,30 @@
 			"autoclosed": "No response, autoclosed",
 			"unclaimed": "UnClaimed",
 			"roles_title": "Roles issued | {ticket}",
-			"roles": "Assigned roles"
+			"roles": "Assigned roles",
+			"created": "Ticket Created",
+			"name": "Ticket's name"
 		},
 		"pm": {
 			"banned_temp": "You were banned from %s server for %s. | %s",
 			"banned": "You were permamently banned from %s server. | %s",
 			"kicked": "You were kicked from %s server. | %s",
 			"appeal": "\nAppeal this action by following this link:\n> %s"
+		},
+		"guild": {
+			"access_added": "Access granted to target",
+			"access_removed": "Access removed from target",
+			"access_level": "Access level"
+		},
+		"roles": {
+			"checkrank": "Role's members checked for required rank",
+			"rank": "Rank",
+			"role": "Role",
+			"added": "Role added to user",
+			"removed": "Role removed from user",
+			"removed_all": "Role was removed from all users",
+			"temp_added": "Role added temporary to user",
+			"temp_removed": "Temporaty role removed from user"
 		}
 	},
 	"bot": {
@@ -444,10 +462,13 @@
 				},
 				"types": {
 					"all": "All actions",
+					"none": "*not found*",
 					"moderation": "Moderation actions",
 					"group": "Group actions",
 					"verify": "Verifications",
-					"ticketing": "Ticket actions"
+					"tickets": "Ticket actions",
+					"roles": "Roles",
+					"server": "Bot's management"
 				}
 			}
 		},

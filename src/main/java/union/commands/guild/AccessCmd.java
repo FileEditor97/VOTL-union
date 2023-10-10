@@ -147,13 +147,17 @@ public class AccessCmd extends CommandBase {
 			CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
 			bot.getDBUtil().access.addRole(guildId, roleId, level);
 
-			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
+			// Log
+			bot.getLogListener().server.onAccessAdded(guild, event.getUser(), null, role, level);
+			// Send reply
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, "bot.guild.access.add.role.done")
 					.replace("{role}", role.getAsMention())
 					.replace("{level}", level.getName())
 				)
-				.setColor(Constants.COLOR_SUCCESS);
-			editHookEmbed(event, embed.build());
+				.setColor(Constants.COLOR_SUCCESS)
+				.build()
+			);
 		}
 
 	}
@@ -190,13 +194,17 @@ public class AccessCmd extends CommandBase {
 
 			bot.getDBUtil().access.removeRole(roleId);
 
-			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
+			// Log
+			bot.getLogListener().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
+			// Send reply
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.role.done")
 					.replace("{role}", role.getAsMention())
 					.replace("{level}", level.getName())
 				)
-				.setColor(Constants.COLOR_SUCCESS);
-			editHookEmbed(event, embed.build());
+				.setColor(Constants.COLOR_SUCCESS)
+				.build()
+			);
 		}
 
 	}
@@ -236,11 +244,17 @@ public class AccessCmd extends CommandBase {
 				editError(event, "bot.guild.access.add.user_already");
 				return;
 			}
+
 			bot.getDBUtil().access.addUser(guildId, userId, CmdAccessLevel.OPERATOR);
-			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
+			
+			// Log
+			bot.getLogListener().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
+			// Send reply
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, "bot.guild.access.add.operator.done").replace("{user}", member.getAsMention()))
-				.setColor(Constants.COLOR_SUCCESS);
-			editHookEmbed(event, embed.build());
+				.setColor(Constants.COLOR_SUCCESS)
+				.build()
+			);
 		}
 
 	}
@@ -276,11 +290,17 @@ public class AccessCmd extends CommandBase {
 				editError(event, "bot.guild.access.remove.operator.not_operator");
 				return;
 			}
+
 			bot.getDBUtil().access.removeUser(guildId, userId);
-			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
+
+			// Log
+			bot.getLogListener().server.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
+			// Send reply
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.operator.done").replace("{user}", user.getAsMention()))
-				.setColor(Constants.COLOR_SUCCESS);
-			editHookEmbed(event, embed.build());
+				.setColor(Constants.COLOR_SUCCESS)
+				.build()
+			);
 		}
 
 	}

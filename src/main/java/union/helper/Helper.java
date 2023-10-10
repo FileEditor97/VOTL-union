@@ -94,7 +94,7 @@ public class Helper {
 					for (CompletableFuture<Void> future : completableFutures) {
 						if (!future.isCompletedExceptionally()) banned++;
 					}
-					logListener.helperOnSyncBan(groupId, master, user, reason, banned, maxCount);
+					logListener.mod.onHelperSyncBan(groupId, master, user, reason, banned, maxCount);
 				}
 			});
 	}
@@ -127,7 +127,7 @@ public class Helper {
 					for (CompletableFuture<Void> future : completableFutures) {
 						if (!future.isCompletedExceptionally()) unbanned++;
 					}
-					logListener.helperOnSyncUnban(groupId, master, user, reason, unbanned, maxCount);
+					logListener.mod.onHelperSyncUnban(groupId, master, user, reason, unbanned, maxCount);
 				}
 			});
 	}
@@ -160,7 +160,7 @@ public class Helper {
 					for (CompletableFuture<Void> future : completableFutures) {
 						if (!future.isCompletedExceptionally()) kicked++;
 					}
-					logListener.helperOnSyncKick(groupId, master, user, reason, kicked, maxCount);
+					logListener.mod.onHelperSyncKick(groupId, master, user, reason, kicked, maxCount);
 				}
 			});
 	}

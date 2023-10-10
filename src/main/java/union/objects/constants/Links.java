@@ -1,6 +1,10 @@
 package union.objects.constants;
 
-public class Links {
+public final class Links {
+	private Links() {
+		throw new IllegalStateException("Utility class");
+	}
+
 	// Support discord server
 	public static final String DISCORD = "https://discord.gg/25K5S55wrU";
 	// Bot's sites

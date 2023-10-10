@@ -35,7 +35,7 @@ public class CaseCmd extends CommandBase {
 			createError(event, path+".not_found");
 			return;
 		}
-		MessageEmbed embed = bot.getLogUtil().getBanEmbed(event.getUserLocale(), banData);
+		MessageEmbed embed = bot.getLogUtil().banEmbed(event.getUserLocale(), banData);
 
 		createReplyEmbed(event, embed);
 	}

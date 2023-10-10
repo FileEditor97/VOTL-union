@@ -24,7 +24,7 @@ public class GuildListener extends ListenerAdapter {
 
 			// Get master guilds IDs and send logs to them
 			helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> 
-				helper.getLogListener().helperInformAction(groupId, event.getGuild(), event.getEntry())
+				helper.getLogListener().group.helperInformAction(groupId, event.getGuild(), event.getEntry())
 			);
 		}
 	}
@@ -32,14 +32,14 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildLeave(GuildLeaveEvent event) {
 		helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> 
-			helper.getLogListener().helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
+			helper.getLogListener().group.helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
 		);
 	}
 
 	@Override
 	public void onUnavailableGuildLeave(UnavailableGuildLeaveEvent event) {
 		helper.getDBUtil().group.getGuildGroups(event.getGuildId()).forEach(groupId -> 
-			helper.getLogListener().helperInformLeave(groupId, null, event.getGuildId())
+			helper.getLogListener().group.helperInformLeave(groupId, null, event.getGuildId())
 		);
 	}
 }

@@ -226,7 +226,7 @@ public class InteractionListener extends ListenerAdapter {
 						user.openPrivateChannel().queue(dm ->
 							dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.verification.role_removed").replace("{server}", guild.getName())).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
 						);
-						bot.getLogListener().onUnverified(user, null, guild, "Autocheck: No account connected");
+						bot.getLogListener().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
 					}
 				);
 			} catch (Exception ex) {}
@@ -264,7 +264,7 @@ public class InteractionListener extends ListenerAdapter {
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
 				success -> {
 					event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
-					bot.getLogListener().onVerified(member.getUser(), steam64, guild);
+					bot.getLogListener().verify.onVerified(member.getUser(), steam64, guild);
 					if (!bot.getDBUtil().verifyCache.isVerified(member.getId())) {
 						bot.getDBUtil().verifyCache.addUser(member.getId(), steam64);
 					}
@@ -506,6 +506,9 @@ public class InteractionListener extends ListenerAdapter {
 					msg.editMessageComponents(ActionRow.of(approve, close.asEnabled())).queueAfter(10, TimeUnit.SECONDS);
 				});
 
+				// Log
+				bot.getLogListener().ticket.onCreate(guild, channel, event.getUser());
+				// Send reply
 				event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, "bot.ticketing.listener.created").replace("{channel}", channel.getAsMention()))
 					.build()
@@ -540,7 +543,7 @@ public class InteractionListener extends ListenerAdapter {
 				).setEphemeral(true).queue();
 			} else {
 				guild.modifyMemberRoles(member, roles, null).reason("Request role-"+ticketId+" approved by "+event.getMember().getEffectiveName()).queue(done -> {
-					bot.getLogListener().onRolesApproved(member, event.getMember(), guild, roles, ticketId);
+					bot.getLogListener().role.onApproved(member, event.getMember(), guild, roles, ticketId);
 					db.ticket.setClaimed(channelId, event.getMember().getId());
 					event.replyEmbeds(bot.getEmbedUtil().getEmbed(event)
 						.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))

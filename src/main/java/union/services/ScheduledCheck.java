@@ -55,74 +55,82 @@ public class ScheduledCheck {
 	}
 
 	private void checkTicketStatus() {
-		List<String> opened = db.ticket.getOpenedChannels();
-		opened.forEach(channelId -> {
-			GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
-			Integer autocloseTime = db.ticketSettings.getAutocloseTime(channel.getGuild().getId());
-			if (autocloseTime == 0) return;
+		try {
+			List<String> opened = db.ticket.getOpenedChannels();
+			opened.forEach(channelId -> {
+				GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
+				Integer autocloseTime = db.ticketSettings.getAutocloseTime(channel.getGuild().getId());
+				if (autocloseTime == 0) return;
 
-			if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {
-				Guild guild = channel.getGuild();
-				UserSnowflake user = User.fromId(db.ticket.getUserId(channelId));
-				Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
+				if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {
+					Guild guild = channel.getGuild();
+					UserSnowflake user = User.fromId(db.ticket.getUserId(channelId));
+					Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
 
-				MessageEmbed embed = new EmbedBuilder()
-					.setColor(db.guild.getColor(guild.getId()))
-					.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_auto")
-						.replace("{user}", user.getAsMention())
-						.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))
-					.build();
-				Button close = Button.primary("ticket:close", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.close"));
-				Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
-				
-				db.ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
-				channel.sendMessage("||%s||".formatted(user.getAsMention())).addEmbeds(embed).addActionRow(close, cancel).queue();
-			}
-		});
-
-		opened = db.ticket.getExpiredTickets();
-		opened.forEach(channelId -> {
-			GuildChannel channel = bot.JDA.getGuildChannelById(channelId);
-			if (channel == null) {
-				db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
-				return;
-			}
-			bot.getTicketUtil().closeTicket(channelId, null, "Autoclosure", failure -> {
-				bot.getLogger().error("Failed to delete ticket channel, either already deleted or unknown error", failure);
-				db.ticket.setRequestStatus(channelId, -1L);
+					MessageEmbed embed = new EmbedBuilder()
+						.setColor(db.guild.getColor(guild.getId()))
+						.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_auto")
+							.replace("{user}", user.getAsMention())
+							.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))
+						.build();
+					Button close = Button.primary("ticket:close", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.close"));
+					Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
+					
+					db.ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
+					channel.sendMessage("||%s||".formatted(user.getAsMention())).addEmbeds(embed).addActionRow(close, cancel).queue();
+				}
 			});
-		});
+
+			opened = db.ticket.getExpiredTickets();
+			opened.forEach(channelId -> {
+				GuildChannel channel = bot.JDA.getGuildChannelById(channelId);
+				if (channel == null) {
+					db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
+					return;
+				}
+				bot.getTicketUtil().closeTicket(channelId, null, "Autoclosure", failure -> {
+					bot.getLogger().error("Failed to delete ticket channel, either already deleted or unknown error", failure);
+					db.ticket.setRequestStatus(channelId, -1L);
+				});
+			});
+		} catch (Throwable t) {
+			bot.getLogger().error("Exception caught during tickets checks.", t);
+		}
 	}
 
 	private void checkExpiredTempRoles() {
-		List<Map<String, String>> expired = db.tempRole.expiredRoles(Instant.now());
-		if (expired.isEmpty()) return;
+		try {
+			List<Map<String, String>> expired = db.tempRole.expiredRoles(Instant.now());
+			if (expired.isEmpty()) return;
 
-		expired.forEach(data -> {
-			String roleId = data.get("roleId");
-			Role role = bot.JDA.getRoleById(roleId);
-			if (role == null) {
-				db.tempRole.removeRole(roleId);
-				return;
-			};
-			
-			if (db.tempRole.shouldDelete(roleId)) {
-				try {
-					role.delete().reason("Role expired").queue();
-				} catch (InsufficientPermissionException | HierarchyException ex) {
-					bot.getLogger().warn("Was unable to delete temporary role '%s' during scheduled check.".formatted(roleId), ex);
+			expired.forEach(data -> {
+				String roleId = data.get("roleId");
+				Role role = bot.JDA.getRoleById(roleId);
+				if (role == null) {
+					db.tempRole.removeRole(roleId);
+					return;
+				};
+				
+				if (db.tempRole.shouldDelete(roleId)) {
+					try {
+						role.delete().reason("Role expired").queue();
+					} catch (InsufficientPermissionException | HierarchyException ex) {
+						bot.getLogger().warn("Was unable to delete temporary role '%s' during scheduled check.".formatted(roleId), ex);
+					}
+					db.tempRole.removeRole(roleId);
+				} else {
+					String userId = data.get("userId");
+					role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
+						bot.getLogger().warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
+					});
+					db.tempRole.remove(roleId, userId);
+					// Log
+					bot.getLogListener().role.onTempRoleAutoRemoved(role.getGuild(), userId, role);
 				}
-				db.tempRole.removeRole(roleId);
-			} else {
-				String userId = data.get("userId");
-				role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
-					bot.getLogger().warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
-				});
-				db.tempRole.remove(roleId, userId);
-				// Log
-				bot.getLogListener().role.onTempRoleAutoRemoved(role.getGuild(), userId, role);
-			}
-		});
+			});
+		} catch (Throwable t) {
+			bot.getLogger().error("Exception caught during expired roles check.", t);
+		}
 	}
 
 	// Each 2-5 minutes
@@ -197,8 +205,8 @@ public class ScheduledCheck {
 					}, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
 				});
 			});
-		} catch (Exception ex) {
-			bot.getLogger().error("Exception caught during verify checking.", ex);
+		} catch (Throwable t) {
+			bot.getLogger().error("Exception caught during verify checking.", t);
 		}
 	}
 

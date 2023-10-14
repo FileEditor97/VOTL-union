@@ -132,10 +132,10 @@ public class TimeUtil {
 
 		StringBuffer buffer = new StringBuffer();
 		Long days = duration.toDaysPart();
-		if (days >= 7) {
-			Integer weeks = Math.floorMod(days, 7);
+		if (days >= 7L) {
+			Long weeks = Math.floorDiv(days, 7L);
 			buffer.append("%s %s ".formatted(weeks, lu.getLocalized(locale, "misc.time.weeks")));
-			days -= weeks*7;
+			days = Math.floorMod(days, 7L);
 		}
 		if (days > 0) buffer.append("%s %s ".formatted(days, lu.getLocalized(locale, "misc.time.days")));
 		

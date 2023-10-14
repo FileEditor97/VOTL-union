@@ -1,6 +1,6 @@
 {
 	"embed": {
-		"footer": "Запрошено {user}"
+		"footer": "Запросил %s"
 	},
 	"errors": {
 		"title": "Ошибка",

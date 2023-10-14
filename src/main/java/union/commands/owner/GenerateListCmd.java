@@ -39,8 +39,11 @@ public class GenerateListCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		List<SlashCommand> commands = event.getClient().getSlashCommands();
 		if (commands.size() == 0) {
+			createReply(event, "Commands not found");
 			return;
 		}
+
+		event.deferReply(true).queue();
 
 		JSONObject result = new JSONObject();
 		for (Integer i = 0; i < commands.size(); i++) {
@@ -81,9 +84,9 @@ public class GenerateListCmd extends CommandBase {
 			writer.write(result.toString());
 			writer.flush();
 			writer.close();
-			event.replyFiles(FileUpload.fromData(file, "commands.json")).setEphemeral(true).queue(hook -> file.delete());
+			event.getHook().editOriginalAttachments(FileUpload.fromData(file, "commands.json")).queue(hook -> file.delete());
 		} catch (IOException | UncheckedIOException ex) {
-			createError(event, path+".error", ex.getMessage());
+			editError(event, path+".error", ex.getMessage());
 		}
 	}
 

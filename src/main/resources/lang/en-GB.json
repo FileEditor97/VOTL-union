@@ -1,6 +1,6 @@
 {
 	"embed": {
-		"footer": "Requested by {user}"
+		"footer": "Requested by %s"
 	},
 	"errors": {
 		"title": "Error",

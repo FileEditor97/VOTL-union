@@ -32,7 +32,7 @@ public class EmbedUtil {
 	@Nonnull
 	public EmbedBuilder getEmbed(IReplyCallback replyCallback) {
 		return getEmbed().setFooter(
-			lu.getUserText(replyCallback, "embed.footer"),
+			lu.getText(replyCallback, "embed.footer").formatted(replyCallback.getUser().getName()),
 			replyCallback.getUser().getEffectiveAvatarUrl()
 		);
 	}

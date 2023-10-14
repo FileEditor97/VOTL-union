@@ -705,10 +705,9 @@ public class InteractionListener extends ListenerAdapter {
 				return;
 			}
 
-			ChannelAction<TextChannel> action = category.createTextChannel(ticketName);
+			ChannelAction<TextChannel> action = category.createTextChannel(ticketName).clearPermissionOverrides();
 			for (String roleId : supportRoles) action = action.addRolePermissionOverride(Long.valueOf(roleId), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null);
-			action.clearPermissionOverrides()
-				.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
 				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
 				.queue(channel -> {
 				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);

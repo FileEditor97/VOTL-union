@@ -59,6 +59,11 @@ public class ScheduledCheck {
 			List<String> opened = db.ticket.getOpenedChannels();
 			opened.forEach(channelId -> {
 				GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
+				if (channel == null) {
+					// Should be closed???
+					bot.getDBUtil().ticket.forceCloseTicket(channelId);
+					return;
+				}
 				Integer autocloseTime = db.ticketSettings.getAutocloseTime(channel.getGuild().getId());
 				if (autocloseTime == 0) return;
 

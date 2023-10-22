@@ -381,7 +381,7 @@ public class LogUtil {
 	public MessageEmbed groupMemberAddedEmbed(DiscordLocale locale, String ownerId, String ownerIcon, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_SUCCESS)
-			.setTitle(localized(locale, "group.added"))
+			.setTitle(localized(locale, "group.add"))
 			.build();
 	}
 

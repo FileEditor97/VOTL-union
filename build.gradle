@@ -25,14 +25,11 @@ repositories {
 dependencies {
 	// JDA library
 	// https://mvnrepository.com/artifact/net.dv8tion/JDA
-	implementation 'net.dv8tion:JDA:5.0.0-beta.15'					// JDA library
+	implementation 'net.dv8tion:JDA:5.0.0-beta.16'					// JDA library
 	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
 	implementation 'ch.qos.logback:logback-classic:1.4.11'			// Logging (required by JDA)
 	// https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api
 	implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-
-	// Chewtils extentions
-	implementation 'pw.chew:jda-chewtils-commons:2.0-SNAPSHOT'		// Commons Package
 
 	// Tools
 	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path

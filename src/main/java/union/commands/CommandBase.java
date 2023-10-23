@@ -1,8 +1,8 @@
 package union.commands;
 
 import union.App;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;

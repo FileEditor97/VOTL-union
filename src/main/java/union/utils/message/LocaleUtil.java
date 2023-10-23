@@ -10,8 +10,8 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import union.App;
+import union.base.command.CommandEvent;
 import union.objects.Emotes;
-import union.objects.command.CommandEvent;
 import union.utils.file.lang.LangUtil;
 
 import net.dv8tion.jda.api.entities.Guild;

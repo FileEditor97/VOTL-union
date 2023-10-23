@@ -1047,7 +1047,7 @@
 					"bot_info": {
 						"title": "Bot info",
 						"bot_version": "Bot version: `VOTL-{bot_version}`",
-						"library": "Library: [`JDA {jda_version}`]({jda_github}) and [`JDA-Chewtils {chewtils_version}`]({chewtils_github})"
+						"library": "Library: [`JDA {jda_version}`]({jda_github}) and [`JDA-Chewtils`]({chewtils_github})"
 					},
 					"commands_title": "Commands",
 					"commands_value": "Use `/help` in any chat to get list of commands.",

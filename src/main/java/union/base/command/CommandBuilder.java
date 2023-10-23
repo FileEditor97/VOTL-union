@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command;
+package union.base.command;
 
 import net.dv8tion.jda.api.Permission;
 
@@ -26,11 +26,11 @@ import java.util.function.Consumer;
 import jakarta.annotation.Nonnull;
 
 /**
- * A chain-setter based builder for {@link union.objects.command.Command Commands}.
+ * A chain-setter based builder for {@link union.base.command.Command Commands}.
  *
  * <p>This is more useful for creation of commands "mid-runtime".
  * <br>A good usage would be to create a Command via eval and register it via
- * {@link union.objects.command.CommandClient#addCommand(Command)
+ * {@link union.base.command.CommandClient#addCommand(Command)
  * CommandClient#addCommand(Command)}.
  * 
  * <p>While useful during runtime, this is completely inferior to extending Command as a superclass
@@ -60,7 +60,7 @@ public class CommandBuilder
 	private boolean hidden = false;
 
 	/**
-	 * Sets the {@link union.objects.command.Command#name name}
+	 * Sets the {@link union.base.command.Command#name name}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  name
@@ -78,7 +78,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#help help}
+	 * Sets the {@link union.base.command.Command#help help}
 	 * snippet of the Command built from this CommandBuilder.
 	 *
 	 * @param  help
@@ -96,7 +96,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#category category}
+	 * Sets the {@link union.base.command.Command#category category}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  category
@@ -111,7 +111,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#arguments arguments}
+	 * Sets the {@link union.base.command.Command#arguments arguments}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  arguments
@@ -126,7 +126,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the Command built to be {@link union.objects.command.Command#guildOnly
+	 * Sets the Command built to be {@link union.base.command.Command#guildOnly
 	 * guild only}.
 	 *
 	 * @param  guildOnly
@@ -141,7 +141,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the name of a {@link union.objects.command.Command#requiredRole
+	 * Sets the name of a {@link union.base.command.Command#requiredRole
 	 * required role} to use the Command built from this CommandBuilder.
 	 *
 	 * @param  requiredRole
@@ -156,7 +156,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the Command built to be {@link union.objects.command.Command#ownerCommand
+	 * Sets the Command built to be {@link union.base.command.Command#ownerCommand
 	 * owner only}.
 	 *
 	 * @param  ownerCommand
@@ -171,7 +171,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#cooldown cooldown}
+	 * Sets the {@link union.base.command.Command#cooldown cooldown}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  cooldown
@@ -186,7 +186,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#userPermissions
+	 * Sets the {@link union.base.command.Command#userPermissions
 	 * required user permissions} of the Command built from this CommandBuilder.
 	 *
 	 * @param  userPermissions
@@ -204,7 +204,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#userPermissions
+	 * Sets the {@link union.base.command.Command#userPermissions
 	 * required user permissions} of the Command built from this CommandBuilder.
 	 *
 	 * @param  userPermissions
@@ -222,7 +222,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#botPermissions
+	 * Sets the {@link union.base.command.Command#botPermissions
 	 * required bot permissions} of the Command built from this CommandBuilder.
 	 *
 	 * @param  botPermissions
@@ -240,7 +240,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#botPermissions
+	 * Sets the {@link union.base.command.Command#botPermissions
 	 * required bot permissions} of the Command built from this CommandBuilder.
 	 *
 	 * @param  botPermissions
@@ -258,7 +258,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Adds a {@link union.objects.command.Command#aliases alias}
+	 * Adds a {@link union.base.command.Command#aliases alias}
 	 * for the Command built from this CommandBuilder.
 	 *
 	 * @param  alias
@@ -273,7 +273,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Adds {@link union.objects.command.Command#aliases aliases}
+	 * Adds {@link union.base.command.Command#aliases aliases}
 	 * for the Command built from this CommandBuilder.
 	 *
 	 * @param  aliases
@@ -289,7 +289,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#aliases aliases}
+	 * Sets the {@link union.base.command.Command#aliases aliases}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  aliases
@@ -307,7 +307,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#aliases aliases}
+	 * Sets the {@link union.base.command.Command#aliases aliases}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  aliases
@@ -324,7 +324,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Adds a {@link union.objects.command.Command#children child}
+	 * Adds a {@link union.base.command.Command#children child}
 	 * Command to the Command built from this CommandBuilder.
 	 *
 	 * @param  child
@@ -339,7 +339,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Adds {@link union.objects.command.Command#children child}
+	 * Adds {@link union.base.command.Command#children child}
 	 * Commands to the Command built from this CommandBuilder.
 	 *
 	 * @param  children
@@ -355,7 +355,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#children children}
+	 * Sets the {@link union.base.command.Command#children children}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  children
@@ -373,7 +373,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#children children}
+	 * Sets the {@link union.base.command.Command#children children}
 	 * of the Command built from this CommandBuilder.
 	 *
 	 * @param  children
@@ -390,7 +390,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#helpBiConsumer
+	 * Sets the {@link union.base.command.Command#helpBiConsumer
 	 * help BiConsumer} of the Command built from this CommandBuilder.
 	 *
 	 * @param  helpBiConsumer
@@ -405,7 +405,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the Command built to {@link union.objects.command.Command#usesTopicTags
+	 * Sets the Command built to {@link union.base.command.Command#usesTopicTags
 	 * use TopicTags}.
 	 *
 	 * @param  usesTopicTags
@@ -420,7 +420,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.Command#cooldownScope
+	 * Sets the {@link union.base.command.Command#cooldownScope
 	 * cooldown scope} of the Command built from this CommandBuilder.
 	 *
 	 * @param  cooldownScope
@@ -438,7 +438,7 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Sets the Command built to be {@link union.objects.command.Command#hidden hidden}
+	 * Sets the Command built to be {@link union.base.command.Command#hidden hidden}
 	 * from the help builder.
 	 *
 	 * @param  hidden
@@ -453,15 +453,15 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Builds the {@link union.objects.command.Command Command}
+	 * Builds the {@link union.base.command.Command Command}
 	 * using the previously provided information.
 	 *
-	 * <p>This uses the only the {@link union.objects.command.CommandEvent
+	 * <p>This uses the only the {@link union.base.command.CommandEvent
 	 * CommandEvent} parameter that would be provided during
-	 * {@link union.objects.command.Command#execute(CommandEvent) #execute(CommandEvent)},
+	 * {@link union.base.command.Command#execute(CommandEvent) #execute(CommandEvent)},
 	 * and no information about the Command can be retrieved using this.
 	 *
-	 * <p>An alternate method {@link union.objects.command.CommandBuilder#build(java.util.function.BiConsumer)} exists if you wish to retrieve information
+	 * <p>An alternate method {@link union.base.command.CommandBuilder#build(java.util.function.BiConsumer)} exists if you wish to retrieve information
 	 * about the Command built during execution.
 	 *
 	 * @param  execution
@@ -475,16 +475,16 @@ public class CommandBuilder
 	}
 
 	/**
-	 * Builds the {@link union.objects.command.Command Command}
+	 * Builds the {@link union.base.command.Command Command}
 	 * using the previously provided information.
 	 *
-	 * <p>This uses the both the {@link union.objects.command.CommandEvent
+	 * <p>This uses the both the {@link union.base.command.CommandEvent
 	 * CommandEvent} parameter that would be provided during
-	 * {@link union.objects.command.Command#execute(CommandEvent) #execute(CommandEvent)},
+	 * {@link union.base.command.Command#execute(CommandEvent) #execute(CommandEvent)},
 	 * and the Command built when, allowing info on the Command to be retrieved during execution.
 	 *
 	 * @param  execution
-	 *         The {@link java.util.function.BiConsumer} that runs on  {@link union.objects.command.Command#execute(CommandEvent)}.
+	 *         The {@link java.util.function.BiConsumer} that runs on  {@link union.base.command.Command#execute(CommandEvent)}.
 	 *
 	 * @return The Command built
 	 */

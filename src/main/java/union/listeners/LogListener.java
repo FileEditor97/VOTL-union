@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nullable;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.LogChannels;
-import union.objects.command.SlashCommandEvent;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
 

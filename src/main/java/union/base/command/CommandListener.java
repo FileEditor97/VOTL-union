@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command;
+package union.base.command;
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -153,7 +153,7 @@ public interface CommandListener {
 	 *
 	 * <p>This doesn't account for exceptions thrown during other pre-checks, and should not be treated as such!
 	 *
-	 * <p>An example of this misconception is via a {@link union.objects.command.Command.Category} test:
+	 * <p>An example of this misconception is via a {@link union.base.command.Command.Category} test:
 	 *
 	 * <pre><code> public class BadCommand extends Command {
 	 *
@@ -184,7 +184,7 @@ public interface CommandListener {
 	}
 
 	/**
-	 * Called when a {@link union.objects.command.SlashCommand SlashCommand}
+	 * Called when a {@link union.base.command.SlashCommand SlashCommand}
 	 * catches a {@link java.lang.Throwable Throwable} <b>during execution</b>.
 	 *
 	 * <p>This doesn't account for exceptions thrown during other pre-checks,

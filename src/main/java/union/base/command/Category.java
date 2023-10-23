@@ -1,12 +1,12 @@
-package union.objects.command;
+package union.base.command;
 
 import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
- * To be used in {@link union.objects.command.Command Command}s as a means of
+ * To be used in {@link union.base.command.Command Command}s as a means of
  * organizing commands into "Categories" as well as terminate command usage when the calling
- * {@link union.objects.command.CommandEvent CommandEvent} doesn't meet
+ * {@link union.base.command.CommandEvent CommandEvent} doesn't meet
  * certain requirements.
  *
  * @author John Grosh (jagrosh)
@@ -34,7 +34,7 @@ public class Category
 	 * A Command Category containing a name and a {@link java.util.function.Predicate}.
 	 *
 	 * <p>The command will be terminated if
-	 * {@link union.objects.command.Command.Category#test(union.objects.command.CommandEvent)}
+	 * {@link union.base.command.Command.Category#test(union.base.command.CommandEvent)}
 	 * returns {@code false}.
 	 *
 	 * @param  name
@@ -54,7 +54,7 @@ public class Category
 	 * and a failure response.
 	 *
 	 * <p>The command will be terminated if
-	 * {@link union.objects.command.Command.Category#test(union.objects.command.CommandEvent)}
+	 * {@link union.base.command.Command.Category#test(union.base.command.CommandEvent)}
 	 * returns {@code false}, and the failure response will be sent.
 	 *
 	 * @param  name
@@ -96,7 +96,7 @@ public class Category
 	 * Does not support SlashCommands.
 	 *
 	 * @param  event
-	 *         The {@link union.objects.command.CommandEvent CommandEvent}
+	 *         The {@link union.base.command.CommandEvent CommandEvent}
 	 *         that was called when this method is invoked
 	 *
 	 * @return {@code true} if the Predicate was not set, was set as null, or was

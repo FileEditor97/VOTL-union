@@ -1,8 +1,8 @@
 package union.commands.owner;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 
 import java.util.Optional;

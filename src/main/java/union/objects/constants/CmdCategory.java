@@ -1,6 +1,6 @@
 package union.objects.constants;
 
-import union.objects.command.Category;
+import union.base.command.Category;
 
 public final class CmdCategory {
 	private CmdCategory() {

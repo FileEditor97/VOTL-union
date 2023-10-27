@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command;
+package union.base.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,18 +23,18 @@ import java.util.function.Consumer;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
-import union.objects.command.impl.CommandClientImpl;
-
 import net.dv8tion.jda.annotations.DeprecatedSince;
 import net.dv8tion.jda.annotations.ForRemoval;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
+import union.base.command.impl.CommandClientImpl;
+
 /**
- * A simple builder used to create a {@link union.objects.command.impl.CommandClientImpl CommandClientImpl}.
+ * A simple builder used to create a {@link union.base.command.impl.CommandClientImpl CommandClientImpl}.
  *
- * <p>Once built, add the {@link union.objects.command.CommandClient CommandClient} as an EventListener to
+ * <p>Once built, add the {@link union.base.command.CommandClient CommandClient} as an EventListener to
  * {@link net.dv8tion.jda.api.JDA JDA} and it will automatically handle commands with ease!
  *
  * @author John Grosh (jagrosh)
@@ -66,10 +66,10 @@ public class CommandClientBuilder
 	private int linkedCacheSize = 0;
 
 	/**
-	 * Builds a {@link union.objects.command.impl.CommandClientImpl CommandClientImpl}
+	 * Builds a {@link union.base.command.impl.CommandClientImpl CommandClientImpl}
 	 * with the provided settings.
-	 * <br>Once built, only the {@link union.objects.command.CommandListener CommandListener},
-	 * and {@link union.objects.command.Command Command}s can be changed.
+	 * <br>Once built, only the {@link union.base.command.CommandListener CommandListener},
+	 * and {@link union.base.command.Command Command}s can be changed.
 	 *
 	 * @return The CommandClient built.
 	 */
@@ -212,12 +212,12 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Sets whether the {@link union.objects.command.CommandClient CommandClient} will use
+	 * Sets whether the {@link union.base.command.CommandClient CommandClient} will use
 	 * the builder to automatically create a help command or not.
 	 *
 	 * @param  useHelp
 	 *         {@code false} to disable the help command builder, otherwise the CommandClient
-	 *         will use either the default or one provided via {@link union.objects.command.CommandClientBuilder#setHelpConsumer(Consumer)}}.
+	 *         will use either the default or one provided via {@link union.base.command.CommandClientBuilder#setHelpConsumer(Consumer)}}.
 	 *
 	 * @return This builder
 	 */
@@ -233,7 +233,7 @@ public class CommandClientBuilder
 	 * the default help builder.
 	 *
 	 * @param  helpConsumer
-	 *         A consumer to accept a {@link union.objects.command.CommandEvent CommandEvent}
+	 *         A consumer to accept a {@link union.base.command.CommandEvent CommandEvent}
 	 *         when a help command is called.
 	 *
 	 * @return This builder
@@ -317,8 +317,8 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Adds a {@link union.objects.command.Command Command} and registers it to the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl} for this session.
+	 * Adds a {@link union.base.command.Command Command} and registers it to the
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
 	 *
 	 * @param  command
 	 *         The command to add
@@ -332,9 +332,9 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Adds and registers multiple {@link union.objects.command.Command Command}s to the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl} for this session.
-	 * <br>This is the same as calling {@link union.objects.command.CommandClientBuilder#addCommand(Command)} multiple times.
+	 * Adds and registers multiple {@link union.base.command.Command Command}s to the
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
+	 * <br>This is the same as calling {@link union.base.command.CommandClientBuilder#addCommand(Command)} multiple times.
 	 *
 	 * @param  commands
 	 *         The Commands to add
@@ -349,8 +349,8 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Adds a {@link union.objects.command.SlashCommand SlashCommand} and registers it to the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl} for this session.
+	 * Adds a {@link union.base.command.SlashCommand SlashCommand} and registers it to the
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
 	 *
 	 * @param  command
 	 *         The SlashCommand to add
@@ -364,9 +364,9 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Adds and registers multiple {@link union.objects.command.SlashCommand SlashCommand}s to the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl} for this session.
-	 * <br>This is the same as calling {@link union.objects.command.CommandClientBuilder#addSlashCommand(SlashCommand) addSlashCommand(SlashCommand)} multiple times.
+	 * Adds and registers multiple {@link union.base.command.SlashCommand SlashCommand}s to the
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
+	 * <br>This is the same as calling {@link union.base.command.CommandClientBuilder#addSlashCommand(SlashCommand) addSlashCommand(SlashCommand)} multiple times.
 	 *
 	 * @param  commands
 	 *         The Commands to add
@@ -381,8 +381,8 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Adds a {@link union.objects.command.ContextMenu ContextMenu} and registers it to the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl} for this session.
+	 * Adds a {@link union.base.command.ContextMenu ContextMenu} and registers it to the
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
 	 *
 	 * @param  contextMenu
 	 *         The Context Menu to add
@@ -396,9 +396,9 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Adds and registers multiple {@link union.objects.command.ContextMenu ContextMenu}s to the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl} for this session.
-	 * <br>This is the same as calling {@link union.objects.command.CommandClientBuilder#addContextMenu(ContextMenu) addContextMenu(ContextMenu)} multiple times.
+	 * Adds and registers multiple {@link union.base.command.ContextMenu ContextMenu}s to the
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
+	 * <br>This is the same as calling {@link union.base.command.CommandClientBuilder#addContextMenu(ContextMenu) addContextMenu(ContextMenu)} multiple times.
 	 *
 	 * @param  contextMenus
 	 *         The Context Menus to add
@@ -479,8 +479,8 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Sets the {@link union.objects.command.CommandListener CommandListener} for the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl}.
+	 * Sets the {@link union.base.command.CommandListener CommandListener} for the
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl}.
 	 *
 	 * @param  listener
 	 *         The CommandListener for the CommandClientImpl
@@ -495,7 +495,7 @@ public class CommandClientBuilder
 
 	/**
 	 * Sets the {@link java.util.concurrent.ScheduledExecutorService ScheduledExecutorService} for the
-	 * {@link union.objects.command.impl.CommandClientImpl CommandClientImpl}.
+	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl}.
 	 *
 	 * @param  executor
 	 *         The ScheduledExecutorService for the CommandClientImpl
@@ -534,7 +534,7 @@ public class CommandClientBuilder
 	 *
 	 * @param  linkedCacheSize
 	 *         The maximum number of paired responses that can be cached, or {@code <1} if the
-	 *         built {@link union.objects.command.CommandClient CommandClient}
+	 *         built {@link union.base.command.CommandClient CommandClient}
 	 *         will not use linked caching.
 	 *
 	 * @return This builder

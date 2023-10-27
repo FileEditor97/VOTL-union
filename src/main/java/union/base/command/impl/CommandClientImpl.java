@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command.impl;
+package union.base.command.impl;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -33,19 +33,20 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
-
-import union.objects.command.Category;
-import union.objects.command.Command;
-import union.objects.command.CommandClient;
-import union.objects.command.CommandEvent;
-import union.objects.command.CommandListener;
-import union.objects.command.ContextMenu;
-import union.objects.command.MessageContextMenu;
-import union.objects.command.MessageContextMenuEvent;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
-import union.objects.command.UserContextMenu;
-import union.objects.command.UserContextMenuEvent;
+import union.base.command.Category;
+import union.base.command.Command;
+import union.base.command.CommandClient;
+import union.base.command.CommandEvent;
+import union.base.command.CommandListener;
+import union.base.command.ContextMenu;
+import union.base.command.MessageContextMenu;
+import union.base.command.MessageContextMenuEvent;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
+import union.base.command.UserContextMenu;
+import union.base.command.UserContextMenuEvent;
+import union.base.utils.FixedSizeCache;
+import union.base.utils.SafeIdUtil;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.JDA;
@@ -68,22 +69,19 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.internal.utils.Checks;
 
-import com.jagrosh.jdautilities.commons.utils.FixedSizeCache;
-import com.jagrosh.jdautilities.commons.utils.SafeIdUtil;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An implementation of {@link union.objects.command.CommandClient CommandClient} to be used by a bot.
+ * An implementation of {@link union.base.command.CommandClient CommandClient} to be used by a bot.
  *
  * <p>This is a listener usable with {@link net.dv8tion.jda.api.JDA JDA}, as it implements
  * {@link net.dv8tion.jda.api.hooks.EventListener EventListener} in order to catch and use different kinds of
  * {@link net.dv8tion.jda.api.events.Event Event}s. The primary usage of this is where the CommandClient implementation
  * takes {@link net.dv8tion.jda.api.events.message.MessageReceivedEvent MessageReceivedEvent}s, and automatically
- * processes arguments, and provide them to a {@link union.objects.command.Command Command} for
+ * processes arguments, and provide them to a {@link union.base.command.Command Command} for
  * running and execution.
  *
  * @author John Grosh (jagrosh)

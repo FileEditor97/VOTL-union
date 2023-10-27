@@ -1,19 +1,18 @@
 package union.listeners;
 
-import union.objects.command.MessageContextMenu;
-import union.objects.command.MessageContextMenuEvent;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
-import union.objects.command.UserContextMenu;
-import union.objects.command.UserContextMenuEvent;
-
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import union.base.command.MessageContextMenu;
+import union.base.command.MessageContextMenuEvent;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
+import union.base.command.UserContextMenu;
+import union.base.command.UserContextMenuEvent;
 
-public class CommandListener implements union.objects.command.CommandListener {
+public class CommandListener implements union.base.command.CommandListener {
 
 	private final Logger LOGGER = (Logger) LoggerFactory.getLogger(CommandListener.class);
 	

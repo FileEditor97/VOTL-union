@@ -8,10 +8,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
+import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -26,8 +27,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 
 public class UnbanCmd extends CommandBase {
 

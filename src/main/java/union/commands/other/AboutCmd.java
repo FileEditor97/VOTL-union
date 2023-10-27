@@ -3,8 +3,8 @@ package union.commands.other;
 import java.util.List;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
@@ -14,8 +14,6 @@ import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-
-import com.jagrosh.jdautilities.commons.JDAUtilitiesInfo;
 
 public class AboutCmd extends CommandBase {
 
@@ -64,7 +62,6 @@ public class AboutCmd extends CommandBase {
 					lu.getLocalized(userLocale, "bot.other.about.embed.bot_info.library")
 						.replace("{jda_version}", JDAInfo.VERSION_MAJOR+"."+JDAInfo.VERSION_MINOR+"."+JDAInfo.VERSION_REVISION+"-"+JDAInfo.VERSION_CLASSIFIER)
 						.replace("{jda_github}", JDAInfo.GITHUB)
-						.replace("{chewtils_version}", JDAUtilitiesInfo.VERSION_MAJOR+"."+JDAUtilitiesInfo.VERSION_MINOR)
 						.replace("{chewtils_github}", Links.CHEWTILS_GITHUB)
 				),
 				false

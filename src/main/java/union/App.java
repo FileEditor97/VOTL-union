@@ -13,6 +13,9 @@ import union.commands.owner.*;
 import union.commands.roles.CheckRankCmd;
 import union.commands.roles.RoleCmd;
 import union.commands.roles.TempRoleCmd;
+import union.base.command.CommandClient;
+import union.base.command.CommandClientBuilder;
+import union.base.waiter.EventWaiter;
 import union.commands.guild.*;
 import union.commands.ticketing.*;
 import union.commands.verification.*;
@@ -22,8 +25,6 @@ import union.helper.Helper;
 import union.listeners.*;
 import union.menus.AccountContext;
 import union.menus.ReportContext;
-import union.objects.command.CommandClient;
-import union.objects.command.CommandClientBuilder;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
@@ -35,6 +36,7 @@ import union.utils.WebhookAppender;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
 import union.utils.file.lang.LangUtil;
+import union.utils.invite.InviteBuilder;
 import union.utils.message.*;
 
 import net.dv8tion.jda.api.JDA;
@@ -49,8 +51,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +96,7 @@ public class App {
 	private final LogUtil logUtil;
 	private final SteamUtil steamUtil;
 	private final TicketUtil ticketUtil;
+	private final InviteBuilder inviteBuilder;
 
 	public App() {
 
@@ -120,6 +121,7 @@ public class App {
 		logUtil		= new LogUtil(this);
 		steamUtil	= new SteamUtil();
 		ticketUtil	= new TicketUtil(this);
+		inviteBuilder = new InviteBuilder();
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
@@ -133,7 +135,7 @@ public class App {
 		scheduledCheck		= new ScheduledCheck(this);
 
 		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.timedChecks(), 3, 10, TimeUnit.MINUTES);
-		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
+		//scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()
@@ -299,6 +301,10 @@ public class App {
 
 	public TicketUtil getTicketUtil() {
 		return ticketUtil;
+	}
+
+	public InviteBuilder getInviteBuilder() {
+		return inviteBuilder;
 	}
 
 	public LogListener getLogListener() {

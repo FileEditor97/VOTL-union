@@ -60,6 +60,10 @@ public class TicketManager extends LiteDBBase {
 		update(TABLE, List.of("closed", "timeClosed", "reasonClosed"), List.of(1, timeClosed.getEpochSecond(), Optional.ofNullable(reason).orElse("NULL")), "channelId", channelId);
 	}
 
+	public void forceCloseTicket(String channelId) {
+		update(TABLE, "closed", 1, "channelId", channelId);
+	}
+
 	// get status
 	public boolean isOpened(String channelId) {
 		if (selectOne(TABLE, "ticketId", List.of("channelId", "closed"), List.of(channelId, 0)) == null) return false;

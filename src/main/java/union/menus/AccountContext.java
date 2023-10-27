@@ -3,10 +3,10 @@ package union.menus;
 import java.util.Optional;
 
 import union.App;
+import union.base.command.UserContextMenu;
+import union.base.command.UserContextMenuEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.UserContextMenu;
-import union.objects.command.UserContextMenuEvent;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;

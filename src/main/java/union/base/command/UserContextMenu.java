@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command;
+package union.base.command;
 
 import jakarta.annotation.Nonnull;
 
@@ -27,16 +27,52 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public abstract class MessageContextMenu extends ContextMenu
-{
+/**
+ * <h2><b>User Context Menus In JDA-Chewtils</b></h2>
+ *
+ * <p>The internal inheritance for User Context Menus used in JDA-Chewtils is that of the object.
+ *
+ * <p>Classes created inheriting this class gain the unique traits of commands operated using the menu Extension.
+ * <br>Using several fields, a menu can define properties that make it unique and complex while maintaining
+ * a low level of development.
+ * <br>All classes extending this class can define any number of these fields in a object constructor and then
+ * create the menu action/response in the abstract {@link UserContextMenu#execute(UserContextMenuEvent)} body:
+ *
+ * <pre><code> public class ExampleCmd extends UserContextMenu {
+ *
+ *      public ExampleCmd() {
+ *          this.name = "Example";
+ *      }
+ *
+ *      {@literal @Override}
+ *      protected void execute(UserContextMenu event) {
+ *          event.reply("Hey look! This would be the bot's reply if this was a command!");
+ *      }
+ *
+ * }</code></pre>
+ *
+ * Execution is with the provision of a UserContextInteractionEvent-CommandClient wrapper called a
+ * {@link UserContextMenuEvent} and is performed in two steps:
+ * <ul>
+ *     <li>{@link UserContextMenu#run(UserContextMenuEvent) run} - The menu runs
+ *     through a series of conditionals, automatically terminating the command instance if one is not met,
+ *     and possibly providing an error response.</li>
+ *
+ *     <li>{@link UserContextMenu#execute(UserContextMenuEvent) execute} - The menu,
+ *     now being cleared to run, executes and performs whatever lies in the abstract body method.</li>
+ * </ul>
+ *
+ * @author Olivia (Chew)
+ */
+public abstract class UserContextMenu extends ContextMenu {
 	/**
-	 * Runs checks for the {@link MessageContextMenu} with the given {@link MessageContextMenuEvent} that called it.
+	 * Runs checks for the {@link UserContextMenu} with the given {@link MessageContextMenuEvent} that called it.
 	 * <br>Will terminate, and possibly respond with a failure message, if any checks fail.
 	 *
 	 * @param  event
-	 *         The MessageContextMenuEvent that triggered this menu
+	 *         The UserContextMenuEvent that triggered this Context Menu
 	 */
-	public final void run(MessageContextMenuEvent event) {
+	public final void run(UserContextMenuEvent event) {
 		// client 
 		final CommandClient client = event.getClient();
 
@@ -87,7 +123,7 @@ public abstract class MessageContextMenu extends ContextMenu
 			execute(event);
 		} catch (Throwable t) {
 			if (client.getListener() != null) {
-				client.getListener().onMessageContextMenuException(event, this, t);
+				client.getListener().onUserContextMenuException(event, this, t);
 				return;
 			}
 			// otherwise we rethrow
@@ -95,28 +131,28 @@ public abstract class MessageContextMenu extends ContextMenu
 		}
 
 		if (client.getListener() != null)
-		client.getListener().onCompletedMessageContextMenu(event, this);
+		client.getListener().onCompletedUserContextMenu(event, this);
 	}
 
 	/**
-	 * The main body method of a {@link MessageContextMenu}.
+	 * The main body method of a {@link UserContextMenu}.
 	 * <br>This is the "response" for a successful
-	 * {@link MessageContextMenu#run(MessageContextMenuEvent)}
+	 * {@link UserContextMenu#run(UserContextMenuEvent)}
 	 *
 	 * @param  event
-	 *         The {@link MessageContextMenuEvent} that triggered this menu.
+	 *         The {@link UserContextMenuEvent} that triggered this menu.
 	 */
-	protected abstract void execute(MessageContextMenuEvent event);
+	protected abstract void execute(UserContextMenuEvent event);
 
-	private void terminate(MessageContextMenuEvent event, @Nonnull MessageEmbed embed) {
+	private void terminate(UserContextMenuEvent event, @Nonnull MessageEmbed embed) {
 		terminate(event, MessageCreateData.fromEmbeds(embed));
 	}
 
-	private void terminate(MessageContextMenuEvent event, MessageCreateData message) {
+	private void terminate(UserContextMenuEvent event, MessageCreateData message) {
 		if (message!=null)
 			event.reply(message).setEphemeral(true).queue();
 		if (event.getClient().getListener()!=null)
-			event.getClient().getListener().onTerminatedMessageContextMenu(event, this);
+			event.getClient().getListener().onTerminatedUserContextMenu(event, this);
 	}
 
 	@Override
@@ -126,14 +162,14 @@ public abstract class MessageContextMenu extends ContextMenu
 		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
 
 		// Make the command data
-		CommandData data = Commands.message(getName());
+		CommandData data = Commands.user(getName());
 
 		// Check name localizations
 		if (!getNameLocalization().isEmpty()) {
 			//Add localizations
 			data.setNameLocalizations(getNameLocalization());
 		}
-		
+
 		if (!isOwnerCommand() || getAccessLevel().isLowerThan(CmdAccessLevel.ADMIN))
 			data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(getUserPermissions()));
 		else

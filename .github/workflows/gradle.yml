@@ -33,7 +33,7 @@ jobs:
         arguments: shadowjar
     - name: Get App Version
       id: get_version
-      run: echo "version=$(./gradlew getReleaseVersion --console=plain -q --warning-mode=none)" >> $GITHUB_ENV
+      run: echo "version=$(./gradlew getVersion --console=plain -q --warning-mode=none)" >> $GITHUB_ENV
     - uses: actions/upload-artifact@v3.1.2
       with:
         name: Package

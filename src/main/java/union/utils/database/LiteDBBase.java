@@ -372,6 +372,24 @@ public class LiteDBBase {
 		return results;
 	}
 
+	//  specific SELECT, get roles in guild with invites
+	protected Map<String, String> selectRoleInvites(final String table, final String guildId) {
+		String sql = "SELECT roleId, discordInvite FROM %s WHERE (guildId='%s' AND discordInvite IS NOT NULL)".formatted(table, guildId);
+
+		Map<String, String> results = new HashMap<String, String>();
+		util.logger.debug(sql);
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			while (rs.next()) {
+				results.put(rs.getString("roleId"), rs.getString("discordInvite"));
+			}
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return results;
+	}
+
 	// UPDATE sql
 	protected void update(String table, String updateKey, Object updateValueObj, String condKey, Object condValueObj) {
 		update(table, List.of(updateKey), List.of(updateValueObj), List.of(condKey), List.of(condValueObj));

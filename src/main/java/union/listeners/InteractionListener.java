@@ -71,7 +71,7 @@ public class InteractionListener extends ListenerAdapter {
 	private final EventWaiter waiter;
 
 	public InteractionListener(App bot, EventWaiter waiter) {
-		// TODO: add timeout - 5 sec
+		// TODO: Add cooldowns
 		this.bot = bot;
 		this.lu = bot.getLocaleUtil();
 		this.db = bot.getDBUtil();
@@ -104,7 +104,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 		// Check verified
-		if (!isVerified(event)) return;
+		if (event.isFromGuild() && !isVerified(event)) return;
 
 		// Continue...
 		if (buttonId.startsWith("role")) {
@@ -154,6 +154,8 @@ public class InteractionListener extends ListenerAdapter {
 			}
 		} else if (buttonId.startsWith("tag")) {
 			buttonTagCreateTicket(event);
+		} else if (buttonId.startsWith("invites")) {
+			buttonShowInvites(event);
 		} else if (buttonId.startsWith("delete")) {
 			buttonReportDelete(event);
 		} else if (buttonId.startsWith("voice")) {
@@ -550,14 +552,15 @@ public class InteractionListener extends ListenerAdapter {
 						.setColor(Constants.COLOR_SUCCESS)
 						.build()
 					).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
-					member.getUser().openPrivateChannel().queue(
-						dm -> dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.role_dm")
+					member.getUser().openPrivateChannel().queue(dm -> {
+						Button showInvites = Button.secondary("invites:"+guild.getId(), lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.invites.button"));
+						dm.sendMessage(lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.role_dm")
 							.replace("{roles}", roles.stream().map(role -> role.getName()).collect(Collectors.joining(" | ")))
 							.replace("{server}", guild.getName())
 							.replace("{id}", ticketId)
-							.replace("{mod}", event.getMember().getEffectiveName()))
-							.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
-					);
+							.replace("{mod}", event.getMember().getEffectiveName())
+						).addActionRow(showInvites).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					});
 				}, failure -> {
 					replyError(event, "bot.ticketing.listener.role_failed", failure.getMessage());
 				});
@@ -888,6 +891,49 @@ public class InteractionListener extends ListenerAdapter {
 		bot.getDBUtil().voice.remove(vc.getId());
 		vc.delete().reason("Channel owner request").queue();
 		replySuccess(event, "bot.voice.listener.panel.delete");
+	}
+
+	// Show role invites
+	private void buttonShowInvites(ButtonInteractionEvent event) {
+		event.deferReply(true).queue();
+		if (event.isFromGuild()) {
+			Guild guild = event.getGuild();
+			Map<String, String> roles = bot.getDBUtil().role.getRolesWithInvites(guild.getId());
+			List<String> invites = event.getMember().getRoles().stream()
+				.map(role -> role.getId())
+				.filter(roles::containsKey)
+				.map(id -> roles.get(id))
+				.toList();
+			sendInvites(event, guild, invites);
+		} else {
+			Guild guild = event.getJDA().getGuildById(event.getComponentId().split(":")[1]);
+			if (guild == null) {
+				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.invites.no_guild")).queue();
+				return;
+			}
+			guild.retrieveMember(event.getUser()).queue(member -> {
+				Map<String, String> roles = bot.getDBUtil().role.getRolesWithInvites(guild.getId());
+				List<String> invites = member.getRoles().stream()
+					.map(role -> role.getId())
+					.filter(roles::containsKey)
+					.map(id -> roles.get(id))
+					.toList();
+				sendInvites(event, guild, invites);
+			}, failure -> {
+				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.invites.no_guild", "Server ID: "+guild.getId())).queue();
+			});
+		}
+	}
+
+	private void sendInvites(ButtonInteractionEvent event, Guild guild, List<String> invites) {
+		if (invites.isEmpty()) {
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.invites.none")).queue();
+			return;
+		}
+		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+			.setAuthor(lu.getLocalized(event.getUserLocale(), "bot.ticketing.listener.invites.title").formatted(guild.getName()), null, guild.getIconUrl());
+		invites.forEach(invite -> builder.appendDescription("> "+invite));
+		event.getHook().editOriginalEmbeds(builder.build()).queue();
 	}
 
 	@Override

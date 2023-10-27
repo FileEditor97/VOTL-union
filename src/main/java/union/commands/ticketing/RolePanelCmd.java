@@ -90,6 +90,9 @@ public class RolePanelCmd extends CommandBase {
 				});
 				actionRows.add(ActionRow.of(buttons));
 			}
+			if (bot.getDBUtil().role.getRolesWithInvites(guildId).size() > 0) {
+				actionRows.add(ActionRow.of(Button.secondary("invites", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_invites"))));
+			}
 
 			MessageEmbed embed = new EmbedBuilder()
 				.setColor(bot.getDBUtil().guild.getColor(guildId))
@@ -162,6 +165,9 @@ public class RolePanelCmd extends CommandBase {
 						buttons.add(Button.primary("role_toggle:"+roleId, (description.length() > 100 ? description.substring(0, 100) : description)));
 					});
 					actionRows.add(ActionRow.of(buttons));
+				}
+				if (bot.getDBUtil().role.getRolesWithInvites(guildId).size() > 0) {
+					actionRows.add(ActionRow.of(Button.secondary("invites", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_invites"))));
 				}
 				
 				msg.editMessageComponents(actionRows).queue();

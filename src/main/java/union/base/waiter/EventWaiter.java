@@ -52,6 +52,7 @@ import java.util.function.Predicate;
  * 
  * @author John Grosh (jagrosh)
  */
+@SuppressWarnings("all")
 public class EventWaiter implements EventListener
 {
     private static final Logger LOG = LoggerFactory.getLogger(EventWaiter.class);
@@ -231,7 +232,6 @@ public class EventWaiter implements EventListener
     
     @Override
     @SubscribeEvent
-    @SuppressWarnings("unchecked")
     public final void onEvent(GenericEvent event)
     {
         Class c = event.getClass();

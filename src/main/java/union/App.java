@@ -36,6 +36,7 @@ import union.utils.WebhookAppender;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
 import union.utils.file.lang.LangUtil;
+import union.utils.invite.InviteBuilder;
 import union.utils.message.*;
 
 import net.dv8tion.jda.api.JDA;
@@ -95,6 +96,7 @@ public class App {
 	private final LogUtil logUtil;
 	private final SteamUtil steamUtil;
 	private final TicketUtil ticketUtil;
+	private final InviteBuilder inviteBuilder;
 
 	public App() {
 
@@ -119,6 +121,7 @@ public class App {
 		logUtil		= new LogUtil(this);
 		steamUtil	= new SteamUtil();
 		ticketUtil	= new TicketUtil(this);
+		inviteBuilder = new InviteBuilder();
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
@@ -132,7 +135,7 @@ public class App {
 		scheduledCheck		= new ScheduledCheck(this);
 
 		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.timedChecks(), 3, 10, TimeUnit.MINUTES);
-		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
+		//scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
 
 		// Define a command client
 		CommandClient commandClient = new CommandClientBuilder()
@@ -298,6 +301,10 @@ public class App {
 
 	public TicketUtil getTicketUtil() {
 		return ticketUtil;
+	}
+
+	public InviteBuilder getInviteBuilder() {
+		return inviteBuilder;
 	}
 
 	public LogListener getLogListener() {

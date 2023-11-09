@@ -167,17 +167,21 @@ public enum CooldownScope
 		this.errorPath = errorPath;
 	}
 
-	String genKey(String name, long id)
+	public String genKey(String name, long id)
 	{
 		return genKey(name, id, -1);
 	}
 
-	String genKey(String name, long idOne, long idTwo)
+	public String genKey(String name, long idOne, long idTwo)
 	{
 		if(this.equals(GLOBAL))
 			return name+"|"+format;
 		else if(idTwo==-1)
 			return name+"|"+String.format(format,idOne);
 		else return name+"|"+String.format(format,idOne,idTwo);
+	}
+
+	public String getErrorPath() {
+		return errorPath;
 	}
 }

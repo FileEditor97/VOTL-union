@@ -324,6 +324,17 @@ public class LogUtil {
 			.build();
 	}
 
+	@Nonnull
+	public MessageEmbed checkRoleChildGuild(DiscordLocale locale, String modId, String roleId, String guildName, String guildId) {
+		return getEmbed(AMBER_LIGHT)
+			.setAuthor(localized(locale, "roles.checkrank"), null, null)
+			.addField(localized(locale, "roles.role"), "<@&%s>".formatted(roleId), true)
+			.addField(localized(locale, "roles.guild"), "`%s` (%s)".formatted(guildName, guildId), true)
+			.addField(localized(locale, "enforcer"), "<@%s>".formatted(modId), false)
+			.setFooter("ID: "+modId)
+			.build();
+	}
+
 
 	// Groups
 	@Nonnull

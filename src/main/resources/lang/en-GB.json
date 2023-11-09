@@ -22,7 +22,8 @@
 			"guild_only": "This command cannot be used in private messages! Use this command in server, where I am."
 		},
 		"cooldown": {
-			"cooldown_left": "That command is on cooldown for {time} more seconds",
+			"cooldown_command": "That command is on cooldown for {time} more seconds",
+			"cooldown_button": "This button is on cooldown for {time} more seconds",
 			"channel": "in this channel",
 			"guild": "in this server",
 			"shard": "on this shard",
@@ -190,7 +191,8 @@
 			"removed": "Role removed from user",
 			"removed_all": "Role was removed from all users",
 			"temp_added": "Role added temporary to user",
-			"temp_removed": "Temporaty role removed from user"
+			"temp_removed": "Temporaty role removed from user",
+			"guild": "Target server"
 		}
 	},
 	"bot": {
@@ -1848,6 +1850,26 @@
 				"estimate": "\n*Estimated time for completion `%d` seconds.*",
 				"empty": "No members has this role.",
 				"done": "Removed {role} from {count}/{max} users!"
+			},
+			"checkservers": {
+				"help": "(CRITICAL!) Check if users in selected role has joined selected server",
+				"usage": "checkservers <@Role> <server ID>",
+				"role": {
+					"name": "role",
+					"help": "Select role whose users to check"
+				},
+				"server": {
+					"name": "server",
+					"help": "Enter server ID which users must be joined (Helper bot must join it)"
+				},
+				"no_role": "Provided role not found.",
+				"incorrect_role": "Selected role can't be checked.",
+				"no_helper": "Helper bot is not enabled, this command will not run (contact developer).",
+				"no_guild": "Server by provided ID not found. Either ID is incorrect or Helper bot has not joined this server.",
+				"started": "Checking in progress... {EMOTE_LOADING}",
+				"estimate": "\n*Estimated time for completion `%d` seconds.*",
+				"empty": "No members has this role.",
+				"done": "Removed {role} from {count}/{max} users, checked server '{guild}'!"
 			}
 		}
 	},

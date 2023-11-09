@@ -138,7 +138,7 @@ public class TicketManager extends LiteDBBase {
 		update(TABLE, "closeRequested", closeRequested, "channelId", channelId);
 	}
 
-	public Long getCloseTime(String channelId) {
+	public Long getTimeClosing(String channelId) {
 		Object data = selectOne(TABLE, "closeRequested", "channelId", channelId);
 		if (data == null) return 0L;
 		return ((Number) data).longValue();

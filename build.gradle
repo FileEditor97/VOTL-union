@@ -25,21 +25,21 @@ repositories {
 dependencies {
 	// JDA library
 	// https://mvnrepository.com/artifact/net.dv8tion/JDA
-	implementation 'net.dv8tion:JDA:5.0.0-beta.16'					// JDA library
+	implementation 'net.dv8tion:JDA:5.0.0-beta.17'					// JDA library
 	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
 	implementation 'ch.qos.logback:logback-classic:1.4.11'			// Logging (required by JDA)
 	// https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api
-	implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+	implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0-M1'
 
 	// Tools
 	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
 	implementation 'com.jayway.jsonpath:json-path:2.8.0'			// json path-er
 	// https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-	implementation 'org.xerial:sqlite-jdbc:3.43.0.0'				// sqlite database
+	implementation 'org.xerial:sqlite-jdbc:3.43.2.2'				// sqlite database
 	// https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
-	implementation 'com.mysql:mysql-connector-j:8.1.0'				// mysql database (Union)
+	implementation 'com.mysql:mysql-connector-j:8.2.0'				// mysql database (Union)
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
-	implementation 'org.jsoup:jsoup:1.16.1'							// HTML tools
+	implementation 'org.jsoup:jsoup:1.16.2'							// HTML tools
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
@@ -47,7 +47,7 @@ dependencies {
 
 	// Chewtils commands
 	// https://mvnrepository.com/artifact/org.json/json
-	implementation 'org.json:json:20230618'
+	implementation 'org.json:json:20231013'
 }
 
 // Changes builded libraries directory from 'libs' to 'lib'

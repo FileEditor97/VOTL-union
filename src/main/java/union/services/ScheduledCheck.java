@@ -81,7 +81,7 @@ public class ScheduledCheck {
 					Button close = Button.primary("ticket:close", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.close"));
 					Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
 					
-					db.ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
+					db.ticket.setRequestStatus(channelId, closeTime.getEpochSecond());
 					channel.sendMessage("||%s||".formatted(user.getAsMention())).addEmbeds(embed).addActionRow(close, cancel).queue();
 				}
 			});

@@ -23,15 +23,15 @@ import ch.qos.logback.classic.Logger;
 public class Helper {
 
 	private final JDA JDA;
-	private final JDA botJDA;
+	private final JDA mainJDA;
 	private final DBUtil db;
 	private final LogListener logListener;
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Helper.class);
 
 	private final GuildListener guildListener;
 	
-	public Helper(JDA botJDA, DBUtil dbUtil, LogListener logListener, final String token) throws Exception {
-		this.botJDA = botJDA;
+	public Helper(JDA mainJDA, DBUtil dbUtil, LogListener logListener, final String token) throws Exception {
+		this.mainJDA = mainJDA;
 		this.db = dbUtil;
 		this.logListener = logListener;
 
@@ -46,8 +46,8 @@ public class Helper {
 		return JDA;
 	}
 
-	public JDA getBotJDA() {
-		return botJDA;
+	public JDA getMainJDA() {
+		return mainJDA;
 	}
 
 	public DBUtil getDBUtil() {

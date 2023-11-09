@@ -51,7 +51,7 @@ public class RcloseCmd extends CommandBase {
 			event.getChannel().delete().queue();
 			return;
 		}
-		if (bot.getDBUtil().ticket.getCloseTime(channelId) > 0) {
+		if (bot.getDBUtil().ticket.getTimeClosing(channelId) > 0) {
 			// If request already exists (if there is no cancel button - GG)
 			// TODO: create cancel command, to cancel close request
 			createError(event, path+".already_requested");
@@ -74,7 +74,7 @@ public class RcloseCmd extends CommandBase {
 		Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
 		
 		event.getHook().editOriginal("||%s||".formatted(user.getAsMention())).setEmbeds(embed).setActionRow(close, cancel).queue();
-		bot.getDBUtil().ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
+		bot.getDBUtil().ticket.setRequestStatus(channelId, closeTime.getEpochSecond());
 	}
 
 }

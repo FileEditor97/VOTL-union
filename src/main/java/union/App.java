@@ -10,9 +10,7 @@ import java.util.concurrent.TimeUnit;
 import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
-import union.commands.roles.CheckRankCmd;
-import union.commands.roles.RoleCmd;
-import union.commands.roles.TempRoleCmd;
+import union.commands.roles.*;
 import union.base.command.CommandClient;
 import union.base.command.CommandClientBuilder;
 import union.base.waiter.EventWaiter;
@@ -69,6 +67,7 @@ public class App {
 
 	public final JDA JDA;
 	public final EventWaiter WAITER;
+	private final CommandClient commandClient;
 
 	private final FileManager fileManager = new FileManager();
 
@@ -138,7 +137,7 @@ public class App {
 		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
 
 		// Define a command client
-		CommandClient commandClient = new CommandClientBuilder()
+		commandClient = new CommandClientBuilder()
 			.setOwnerId(fileManager.getString("config", "owner-id"))
 			.setServerInvite(Links.DISCORD)
 			.useHelpBuilder(false)
@@ -194,7 +193,8 @@ public class App {
 				// roles
 				new CheckRankCmd(this),
 				new TempRoleCmd(this),
-				new RoleCmd(this)
+				new RoleCmd(this),
+				new CheckServerCmd(this)
 			)
 			.addContextMenus(
 				new AccountContext(this),
@@ -253,6 +253,10 @@ public class App {
 		}
 
 		this.JDA = jda;
+	}
+
+	public CommandClient getClient() {
+		return commandClient;
 	}
 
 	public Logger getLogger() {

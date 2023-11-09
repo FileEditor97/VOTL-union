@@ -74,7 +74,6 @@ public class InteractionListener extends ListenerAdapter {
 	private final EventWaiter waiter;
 
 	public InteractionListener(App bot, EventWaiter waiter) {
-		// TODO: Add cooldowns
 		this.bot = bot;
 		this.lu = bot.getLocaleUtil();
 		this.db = bot.getDBUtil();

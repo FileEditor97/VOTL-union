@@ -201,7 +201,7 @@ public class RoleCmd extends CommandBase {
 								.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())
 							).build());
 						}
-					});
+					}).thenRun(guild::pruneMemberCache); // Prune member cache
 			}).onError(failure -> {
 				editError(event, "errors.unknown", failure.getMessage());
 			});

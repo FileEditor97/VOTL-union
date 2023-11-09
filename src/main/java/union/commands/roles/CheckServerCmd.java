@@ -21,23 +21,20 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
-public class CheckRankCmd extends CommandBase {
+public class CheckServerCmd extends CommandBase {
 	
-	public CheckRankCmd(App bot) {
+	public CheckServerCmd(App bot) {
 		super(bot);
-		this.name = "checkrank";
-		this.path = "bot.roles.checkrank";
+		this.name = "checkservers";
+		this.path = "bot.roles.checkservers";
 		this.options = List.of(
 			new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
-			new OptionData(OptionType.STRING, "rank", lu.getText(path+".rank.help"), true)
-				.addChoice("VIP/Donate Admin", "vip/adminpay")
-				.addChoice("Admin (⚠️)", "admin")
-				.addChoice("Eventmaster (⚠️)", "eventmaster")
+			new OptionData(OptionType.STRING, "server", lu.getText(path+".server.help"), true)
 		);
 		this.category = CmdCategory.ROLES;
 		this.accessLevel = CmdAccessLevel.ADMIN;
 		this.cooldownScope = CooldownScope.GUILD;
-		this.cooldown = 360;
+		this.cooldown = 120;
 	}
 
 	@Override
@@ -53,17 +50,24 @@ public class CheckRankCmd extends CommandBase {
 			return;
 		}
 
-		// Check if this guild has connected DB table
-		if (bot.getFileManager().getNullableString("config", "central-dbs."+guild.getId()) == null) {
-			createError(event, "errors.unknown", "This Discord server is not connected to the database. Will not run!");
+		// Check if guild is accessable by helper bot
+		if (bot.getHelper() == null) {
+			createError(event, path+".no_helper");
 			return;
 		}
-
+		String guildId = event.optString("server");
+		Guild targetGuild = bot.getHelper().getJDA().getGuildById(guildId);
+		if (targetGuild == null || targetGuild.equals(guild)) {
+			createError(event, path+".no_guild");
+			return;
+		}
+		String guildName = guild.getName();
+		
 		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".started"));
 		event.replyEmbeds(builder.build()).queue();
 
 		// Retrieve members with this role
-		event.getGuild().findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
+		guild.findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
 			Integer maxSize = members.size();
 			if (maxSize == 0) {
 				editError(event, path+".empty");
@@ -73,22 +77,12 @@ public class CheckRankCmd extends CommandBase {
 				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
 				return;
 			}
-			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());
-
-			String requiredRank = event.optString("rank");
+			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.floorMod(maxSize, 2))).build());
 
 			List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
-				String steam64 = bot.getDBUtil().verifyCache.getSteam64(member.getId());
-				if (steam64 == null) {
-					completableFutures.add(guild.removeRoleFromMember(member, role).reason("Not verified").submit().exceptionally(ex -> null));
-					continue;
-				}
-				String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
-				String rank = bot.getDBUtil().unionPlayers.getPlayerRank(guild.getId(), steamId);
-				if (rank == null || !requiredRank.contains(rank)) {
-					completableFutures.add(guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).submit().exceptionally(ex -> null));
-				}
+				if (!targetGuild.isMember(member))
+					completableFutures.add(guild.removeRoleFromMember(member, role).reason("Not inside server '%s'".formatted(guildName)).submit().exceptionally(ex -> null));
 			}
 
 			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
@@ -102,13 +96,18 @@ public class CheckRankCmd extends CommandBase {
 						}
 
 						// Log
-						bot.getLogListener().role.onCheckRank(guild, event.getUser(), role, requiredRank);
+						bot.getLogListener().role.onRoleCheckChildGuild(guild, event.getUser(), role, targetGuild);
 						// Send reply
 						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
-							.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())
+							.replace("{role}", role.getName()).replace("{count}", removed.toString())
+							.replace("{max}", maxSize.toString()).replace("{guild}", guildName)
 						).build());
 					}
-				}).thenRun(guild::pruneMemberCache); // Prune member cache;
+				}).thenRun(() -> {
+					// Prune member cache
+					guild.pruneMemberCache();
+					targetGuild.pruneMemberCache();
+				});
 		}).onError(failure -> {
 			editError(event, "errors.unknown", failure.getMessage());
 		});

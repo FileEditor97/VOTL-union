@@ -193,7 +193,8 @@ public class App {
 				// roles
 				new CheckRankCmd(this),
 				new TempRoleCmd(this),
-				new RoleCmd(this)
+				new RoleCmd(this),
+				new CheckServerCmd(this)
 			)
 			.addContextMenus(
 				new AccountContext(this),

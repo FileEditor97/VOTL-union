@@ -226,6 +226,13 @@ public class LogListener {
 
 			sendLog(channel, logUtil.tempRoleAutoRemovedEmbed(guild.getLocale(), targetId, role));
 		}
+
+		public void onRoleCheckChildGuild(Guild guild, User admin, Role role, Guild targetGuild) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.checkRoleChildGuild(guild.getLocale(), admin.getId(), role.getId(), targetGuild.getId(), targetGuild.getId()));
+		}
 	}
 
 	// Group actions

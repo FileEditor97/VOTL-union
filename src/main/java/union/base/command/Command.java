@@ -429,7 +429,7 @@ public abstract class Command extends Interaction
 		if (remaining <= 0)
 			return null;
 		
-		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_left")
+		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_command")
 			.replace("{time}", Integer.toString(remaining))
 		);
 		if(cooldownScope.equals(CooldownScope.USER))

@@ -162,7 +162,7 @@ public class RolePanelCmd extends CommandBase {
 						Role role = guild.getRoleById(roleId);
 						if (role == null) return;
 						String description = data.get("description").toString();
-						buttons.add(Button.primary("role_toggle:"+roleId, (description.length() > 100 ? description.substring(0, 100) : description)));
+						buttons.add(Button.primary("role:toggle:"+roleId, (description.length() > 100 ? description.substring(0, 100) : description)));
 					});
 					actionRows.add(ActionRow.of(buttons));
 				}

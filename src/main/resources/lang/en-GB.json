@@ -22,7 +22,8 @@
 			"guild_only": "This command cannot be used in private messages! Use this command in server, where I am."
 		},
 		"cooldown": {
-			"cooldown_left": "That command is on cooldown for {time} more seconds",
+			"cooldown_command": "That command is on cooldown for {time} more seconds",
+			"cooldown_button": "This button is on cooldown for {time} more seconds",
 			"channel": "in this channel",
 			"guild": "in this server",
 			"shard": "on this shard",

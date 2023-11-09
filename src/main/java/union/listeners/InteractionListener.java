@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import union.App;
+import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
@@ -38,6 +39,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
@@ -60,6 +62,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import jakarta.annotation.Nonnull;
 
@@ -93,14 +96,29 @@ public class InteractionListener extends ListenerAdapter {
 	public void timedOut(ComponentInteraction event) {
 		event.editMessageEmbeds(bot.getEmbedUtil().getError(event, "errors.timed_out")).setComponents().queue();
 	}
-	
+
+
+	// Check for cooldown parametrs, if exists - check if cooldown active, else apply it
+	private void runButtonInteraction(ButtonInteractionEvent event, Cooldown cooldown, @Nonnull Runnable function) {
+		if (cooldown != null) {
+			String key = getCooldownKey(cooldown, event);
+			int remaining = bot.getClient().getRemainingCooldown(key);
+			if (remaining > 0) {
+				event.reply(getCooldownErrorString(cooldown, event, remaining)).setEphemeral(true).queue();
+				return;
+			} else {
+				bot.getClient().applyCooldown(key, cooldown.getTime());
+			}
+		}
+		function.run();
+	}
 	
 	@Override
 	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
 		String buttonId = event.getComponentId();
 
 		if (buttonId.startsWith("verify")) {
-			buttonVerify(event);
+			runButtonInteraction(event, Cooldown.BUTTON_VERIFY, () -> buttonVerify(event));
 			return;
 		}
 		// Check verified
@@ -111,19 +129,19 @@ public class InteractionListener extends ListenerAdapter {
 			String action = buttonId.split(":")[1];
 			switch (action) {
 				case "start_request":
-					buttonRoleShowSelection(event);
+					runButtonInteraction(event, Cooldown.BUTTON_ROLE_SHOW, () -> buttonRoleShowSelection(event));
 					break;
 				case "other":
-					buttonRoleSelectionOther(event);
+					runButtonInteraction(event, Cooldown.BUTTON_ROLE_OTHER, () -> buttonRoleSelectionOther(event));
 					break;
 				case "clear":
-					buttonRoleSelectionClear(event);
+					runButtonInteraction(event, Cooldown.BUTTON_ROLE_CLEAR, () -> buttonRoleSelectionClear(event));
 					break;
 				case "remove":
-					buttonRoleRemove(event);
+					runButtonInteraction(event, Cooldown.BUTTON_ROLE_REMOVE, () -> buttonRoleRemove(event));
 					break;
 				case "toggle":
-					buttonRoleToggle(event);
+					runButtonInteraction(event, Cooldown.BUTTON_ROLE_TOGGLE, () -> buttonRoleToggle(event));
 					break;
 				default:
 					break;
@@ -132,32 +150,32 @@ public class InteractionListener extends ListenerAdapter {
 			String action = buttonId.split(":")[1];
 			switch (action) {
 				case "role_create":
-					buttonRoleTicketCreate(event);
+					runButtonInteraction(event, Cooldown.BUTTON_ROLE_TICKET, () -> buttonRoleTicketCreate(event));
 					break;
 				case "role_approve":
-					buttonRoleTicketApprove(event);
+					runButtonInteraction(event, Cooldown.BUTTON_ROLE_APPROVE, () -> buttonRoleTicketApprove(event));
 					break;
 				case "close":
-					buttonTicketClose(event);
+					runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLOSE, () -> buttonTicketClose(event));
 					break;
 				case "cancel":
-					buttonTicketCloseCancel(event);
+					runButtonInteraction(event, Cooldown.BUTTON_TICKET_CANCEL, () -> buttonTicketCloseCancel(event));
 					break;
 				case "claim":
-					buttonTicketClaim(event);
+					runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLAIM, () -> buttonTicketClaim(event));
 					break;
 				case "unclaim":
-					buttonTicketUnclaim(event);
+					runButtonInteraction(event, Cooldown.BUTTON_TICKET_UNCLAIM, () -> buttonTicketUnclaim(event));
 					break;
 				default:
 					break;
 			}
 		} else if (buttonId.startsWith("tag")) {
-			buttonTagCreateTicket(event);
+			runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
 		} else if (buttonId.startsWith("invites")) {
-			buttonShowInvites(event);
+			runButtonInteraction(event, Cooldown.BUTTON_INVITES, () -> buttonShowInvites(event));
 		} else if (buttonId.startsWith("delete")) {
-			buttonReportDelete(event);
+			runButtonInteraction(event, Cooldown.BUTTON_REPORT_DELETE, () -> buttonReportDelete(event));
 		} else if (buttonId.startsWith("voice")) {
 			if (!event.getMember().getVoiceState().inAudioChannel()) {
 				replyError(event, "bot.voice.listener.not_in_voice");
@@ -173,34 +191,34 @@ public class InteractionListener extends ListenerAdapter {
 			String action = buttonId.split(":")[1];
 			switch (action) {
 				case "lock":
-					buttonVoiceLock(event, vc);
+					runButtonInteraction(event, null, () -> buttonVoiceLock(event, vc));
 					break;
 				case "unlock":
-					buttonVoiceUnlock(event, vc);
+					runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
 					break;
 				case "ghost":
-					buttonVoiceGhost(event, vc);
+					runButtonInteraction(event, null, () -> buttonVoiceGhost(event, vc));
 					break;
 				case "unghost":
-					buttonVoiceUnghost(event, vc);
+					runButtonInteraction(event, null, () -> buttonVoiceUnghost(event, vc));
 					break;
 				case "name":
-					buttonVoiceName(event);
+					runButtonInteraction(event, null, () -> buttonVoiceName(event));
 					break;
 				case "limit":
-					buttonVoiceLimit(event);
+					runButtonInteraction(event, null, () -> buttonVoiceLimit(event));
 					break;
 				case "permit":
-					buttonVoicePermit(event);
+					runButtonInteraction(event, null, () -> buttonVoicePermit(event));
 					break;
 				case "reject":
-					buttonVoiceReject(event);
+					runButtonInteraction(event, null, () -> buttonVoiceReject(event));
 					break;
 				case "perms":
-					buttonVoicePerms(event, vc);
+					runButtonInteraction(event, null, () -> buttonVoicePerms(event, vc));
 					break;
 				case "delete":
-					buttonVoiceDelete(event, vc);
+					runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
 					break;
 				default:
 					break;
@@ -1143,6 +1161,83 @@ public class InteractionListener extends ListenerAdapter {
 				return Emotes.CROSS_C.getEmote();
 		}
 		return Emotes.NONE.getEmote();
+	}
+
+
+	private enum Cooldown {
+		BUTTON_VERIFY(10, CooldownScope.USER),
+		BUTTON_ROLE_SHOW(20, CooldownScope.USER),
+		BUTTON_ROLE_OTHER(2, CooldownScope.USER),
+		BUTTON_ROLE_CLEAR(4, CooldownScope.USER),
+		BUTTON_ROLE_REMOVE(10, CooldownScope.USER),
+		BUTTON_ROLE_TOGGLE(2, CooldownScope.USER),
+		BUTTON_ROLE_TICKET(30, CooldownScope.USER),
+		BUTTON_ROLE_APPROVE(10, CooldownScope.CHANNEL),
+		BUTTON_TICKET_CLOSE(10, CooldownScope.CHANNEL),
+		BUTTON_TICKET_CANCEL(4, CooldownScope.CHANNEL),
+		BUTTON_TICKET_CLAIM(20, CooldownScope.USER_CHANNEL),
+		BUTTON_TICKET_UNCLAIM(20, CooldownScope.USER_CHANNEL),
+		BUTTON_TICKET_CREATE(15, CooldownScope.USER),
+		BUTTON_INVITES(10, CooldownScope.USER),
+		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD);
+
+		private final int time;
+		private final CooldownScope scope;
+
+		Cooldown(@Nonnull int time, @Nonnull CooldownScope scope) {
+			this.time = time;
+			this.scope = scope;
+		}
+
+		public int getTime() {
+			return this.time;
+		}
+
+		public CooldownScope getScope() {
+			return this.scope;
+		}
+	}
+
+	private String getCooldownKey(Cooldown cooldown, GenericInteractionCreateEvent event) {
+		String name = cooldown.toString();
+		CooldownScope cooldownScope = cooldown.getScope();
+		switch (cooldown.getScope()) {
+			case USER:         return cooldownScope.genKey(name,event.getUser().getIdLong());
+			case USER_GUILD:   return Optional.of(event.getGuild()).map(g -> cooldownScope.genKey(name,event.getUser().getIdLong(),g.getIdLong()))
+				.orElse(CooldownScope.USER_CHANNEL.genKey(name,event.getUser().getIdLong(), event.getChannel().getIdLong()));
+			case USER_CHANNEL: return cooldownScope.genKey(name,event.getUser().getIdLong(),event.getChannel().getIdLong());
+			case GUILD:        return Optional.of(event.getGuild()).map(g -> cooldownScope.genKey(name,g.getIdLong()))
+				.orElse(CooldownScope.CHANNEL.genKey(name,event.getChannel().getIdLong()));
+			case CHANNEL:      return cooldownScope.genKey(name,event.getChannel().getIdLong());
+			case SHARD:
+				event.getJDA().getShardInfo();
+				return cooldownScope.genKey(name, event.getJDA().getShardInfo().getShardId());
+			case USER_SHARD:
+				event.getJDA().getShardInfo();
+				return cooldownScope.genKey(name,event.getUser().getIdLong(),event.getJDA().getShardInfo().getShardId());
+			case GLOBAL:       return cooldownScope.genKey(name, 0);
+			default:           return "";
+		}
+	}
+
+	private MessageCreateData getCooldownErrorString(Cooldown cooldown, GenericInteractionCreateEvent event, int remaining) {
+		if (remaining <= 0)
+			return null;
+		
+		StringBuilder front = new StringBuilder(lu.getLocalized(event.getUserLocale(), "errors.cooldown.cooldown_button")
+			.replace("{time}", Integer.toString(remaining))
+		);
+		CooldownScope cooldownScope = cooldown.getScope();
+		if (cooldownScope.equals(CooldownScope.USER))
+			{}
+		else if (cooldownScope.equals(CooldownScope.USER_GUILD) && event.getGuild()==null)
+			front.append(" " + lu.getLocalized(event.getUserLocale(), CooldownScope.USER_CHANNEL.getErrorPath()));
+		else if (cooldownScope.equals(CooldownScope.GUILD) && event.getGuild()==null)
+			front.append(" " + lu.getLocalized(event.getUserLocale(), CooldownScope.CHANNEL.getErrorPath()));
+		else
+			front.append(" " + lu.getLocalized(event.getUserLocale(), cooldownScope.getErrorPath()));
+
+		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));
 	}
 
 }

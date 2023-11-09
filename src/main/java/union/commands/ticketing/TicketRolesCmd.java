@@ -105,10 +105,10 @@ public class TicketRolesCmd extends CommandBase {
 						return;
 					}
 				}
-				String link = event.optString("invite");
+				String link = event.optString("invite", "").replaceFirst("(https:\\/\\/)?(discord)?(\\.?gg\\/)?", "").trim();
 				if (link != null) {
 					final Integer frow = row;
-					InviteImpl.resolve(event.getJDA(), link, false).queue(invite -> {
+					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
 						if (invite.isFromGuild() && invite.isExpirable()) {
 							editError(event, path+".invalid_invite", "Not server type invite");
 							return;
@@ -116,7 +116,7 @@ public class TicketRolesCmd extends CommandBase {
 						bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), frow, RoleType.ASSIGN, invite.getUrl());
 						sendSuccess(event, type, role);
 					}, failure -> {
-						editError(event, path+".invalid_invite", "Link `%s`".formatted(link));
+						editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString()));
 					});
 				} else {
 					bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, RoleType.ASSIGN, "NULL");

@@ -231,7 +231,7 @@ public class LogListener {
 			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.checkRoleChildGuild(guild.getLocale(), admin.getId(), role.getId(), targetGuild.getId(), targetGuild.getId()));
+			sendLog(channel, logUtil.checkRoleChildGuild(guild.getLocale(), admin.getId(), role.getId(), targetGuild.getName(), targetGuild.getId()));
 		}
 	}
 

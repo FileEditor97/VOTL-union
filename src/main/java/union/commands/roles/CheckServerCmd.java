@@ -61,7 +61,7 @@ public class CheckServerCmd extends CommandBase {
 			createError(event, path+".no_guild");
 			return;
 		}
-		String guildName = guild.getName();
+		String guildName = targetGuild.getName();
 		
 		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".started"));
 		event.replyEmbeds(builder.build()).queue();
@@ -81,8 +81,11 @@ public class CheckServerCmd extends CommandBase {
 
 			List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
-				if (!targetGuild.isMember(member))
-					completableFutures.add(guild.removeRoleFromMember(member, role).reason("Not inside server '%s'".formatted(guildName)).submit().exceptionally(ex -> null));
+				completableFutures.add(targetGuild.retrieveMember(member).submit().thenCompose(m -> m == null ?
+					guild.removeRoleFromMember(m, role).reason("Not inside server '%s'".formatted(guildName)).submit().exceptionally(ex -> null)
+					: 
+					CompletableFuture.completedFuture(null)
+				));
 			}
 
 			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))

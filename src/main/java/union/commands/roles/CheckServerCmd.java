@@ -90,7 +90,7 @@ public class CheckServerCmd extends CommandBase {
 			List<CompletableFuture<Boolean>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
 				completableFutures.add(targetGuild.retrieveMember(member).submit()
-					.exceptionallyCompose(ex -> null)
+					.exceptionally(ex -> null)
 					.thenCompose(m -> m == null ?
 						guild.removeRoleFromMember(member, role).reason("Not inside server '%s'".formatted(guildName)).submit()
 							.thenCompose(v -> CompletableFuture.completedFuture(true))
@@ -111,7 +111,7 @@ public class CheckServerCmd extends CommandBase {
 							try {
 								if (!future.isCompletedExceptionally() && future.get().equals(true)) removed++;
 							} catch (InterruptedException | ExecutionException ex) {
-								ex.printStackTrace();
+								bot.getLogger().error("At CheckServerCmd\n", ex);
 								editError(event, "errors.unknown", ex.getLocalizedMessage());
 							}
 						}

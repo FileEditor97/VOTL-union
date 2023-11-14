@@ -181,7 +181,10 @@
 		"guild": {
 			"access_added": "Access granted to target",
 			"access_removed": "Access removed from target",
-			"access_level": "Access level"
+			"access_level": "Access level",
+			"module": "Module",
+			"module_enabled": "Module enabled",
+			"module_disabled": "Module disabled"
 		},
 		"roles": {
 			"checkrank": "Role's members checked for required rank",

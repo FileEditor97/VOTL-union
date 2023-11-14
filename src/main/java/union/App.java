@@ -143,7 +143,7 @@ public class App {
 			.useHelpBuilder(false)
 			.setScheduleExecutor(scheduledExecutor)
 			.setStatus(OnlineStatus.ONLINE)
-			.setActivity(Activity.customStatus("/help"))
+			.setActivity(Activity.customStatus(">>>  /help  <<<"))
 			.addSlashCommands(
 				// guild
 				new SetupCmd(this),

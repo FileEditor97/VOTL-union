@@ -60,9 +60,11 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 import jakarta.annotation.Nonnull;
 
@@ -72,6 +74,8 @@ public class InteractionListener extends ListenerAdapter {
 	private final LocaleUtil lu;
 	private final DBUtil db;
 	private final EventWaiter waiter;
+
+	private final List<Permission> AdminPerms = List.of(Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES);
 
 	public InteractionListener(App bot, EventWaiter waiter) {
 		this.bot = bot;
@@ -771,8 +775,17 @@ public class InteractionListener extends ListenerAdapter {
 
 	// Voice
 	private void buttonVoiceLock(ButtonInteractionEvent event, VoiceChannel vc) {
+		// Verify role
+		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 		try {
-			vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VOICE_CONNECT).queue();
+			//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VOICE_CONNECT).queue();
+			if (verifyRoleId != null) {
+				Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+				if (verifyRole != null) {
+					vc.upsertPermissionOverride(verifyRole).deny(Permission.VOICE_CONNECT).queue();
+				}
+			}
 		} catch (InsufficientPermissionException ex) {
 			event.reply(bot.getEmbedUtil().createPermError(event, ex.getPermission(), true)).setEphemeral(true).queue();
 			return;
@@ -781,8 +794,17 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonVoiceUnlock(ButtonInteractionEvent event, VoiceChannel vc) {
+		// Verify role
+		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 		try {
-			vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VOICE_CONNECT).queue();
+			//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VOICE_CONNECT).queue();
+			if (verifyRoleId != null) {
+				Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+				if (verifyRole != null) {
+					vc.upsertPermissionOverride(verifyRole).setAllowed(Permission.VOICE_CONNECT).queue();
+				}
+			}
 		} catch (InsufficientPermissionException ex) {
 			event.reply(bot.getEmbedUtil().createPermError(event, ex.getPermission(), true)).setEphemeral(true).queue();
 			return;
@@ -791,8 +813,17 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonVoiceGhost(ButtonInteractionEvent event, VoiceChannel vc) {
+		// Verify role
+		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 		try {
-			vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VIEW_CHANNEL).queue();
+			//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VIEW_CHANNEL).queue();
+			if (verifyRoleId != null) {
+				Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+				if (verifyRole != null) {
+					vc.upsertPermissionOverride(verifyRole).deny(Permission.VIEW_CHANNEL).queue();
+				}
+			}
 		} catch (InsufficientPermissionException ex) {
 			event.reply(bot.getEmbedUtil().createPermError(event, ex.getPermission(), true)).setEphemeral(true).queue();
 			return;
@@ -801,8 +832,17 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonVoiceUnghost(ButtonInteractionEvent event, VoiceChannel vc) {
+		// Verify role
+		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 		try {
-			vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VIEW_CHANNEL).queue();
+			//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VIEW_CHANNEL).queue();
+			if (verifyRoleId != null) {
+				Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+				if (verifyRole != null) {
+					vc.upsertPermissionOverride(verifyRole).setAllowed(Permission.VIEW_CHANNEL).queue();
+				}
+			}
 		} catch (InsufficientPermissionException ex) {
 			event.reply(bot.getEmbedUtil().createPermError(event, ex.getPermission(), true)).setEphemeral(true).queue();
 			return;
@@ -1078,69 +1118,57 @@ public class InteractionListener extends ListenerAdapter {
 					return;
 				}
 				if (members.contains(author) || members.contains(guild.getSelfMember())) {
-					event.replyEmbeds(bot.getEmbedUtil().getError(event, "bot.voice.listener.panel.not_self"));
+					event.editMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.voice.listener.panel.not_self"))
+						.setContent("").setComponents().queue();
 					return;
 				}
 
 				List<String> mentionStrings = new ArrayList<>();
 				String text = "";
+
+				VoiceChannelManager manager = vc.getManager();
 				
 				if (action.equals("permit")) {
 					for (Member member : members) {
-						try {
-							vc.getManager().putPermissionOverride(member, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null).queue();
-							mentionStrings.add(member.getEffectiveName());
-						} catch (InsufficientPermissionException ex) {
-							event.replyEmbeds(bot.getEmbedUtil().getError(event, "errors.missing_perms.self"));
-							return;
-						}
+						manager = manager.putPermissionOverride(member, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null);
+						mentionStrings.add(member.getEffectiveName());
 					}
-			
+		
 					for (Role role : roles) {
-						if (!role.hasPermission(new Permission[]{Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES}))
-							try {
-								vc.getManager().putPermissionOverride(role, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null).queue();
-								mentionStrings.add(role.getName());
-							} catch (InsufficientPermissionException ex) {
-								event.replyEmbeds(bot.getEmbedUtil().getError(event, "errors.missing_perms.self"));
-								return;
-							}
+						if (!role.hasPermission(AdminPerms)) {
+							manager = manager.putPermissionOverride(role, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null);
+							mentionStrings.add(role.getName());
+						}
 					}
 	
 					text = lu.getUserText(event, "bot.voice.listener.panel.permit_done", mentionStrings);
 				} else {
 					for (Member member : members) {
-						try {
-							vc.getManager().putPermissionOverride(member, null, EnumSet.of(Permission.VOICE_CONNECT)).queue();
-							mentionStrings.add(member.getEffectiveName());
-						} catch (InsufficientPermissionException ex) {
-							event.replyEmbeds(bot.getEmbedUtil().getError(event, "errors.missing_perms.self"));
-							return;
-						}
+						manager = manager.putPermissionOverride(member, null, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL));
 						if (vc.getMembers().contains(member)) {
 							guild.kickVoiceMember(member).queue();
 						}
+						mentionStrings.add(member.getEffectiveName());
 					}
-			
+		
 					for (Role role : roles) {
-						if (!role.hasPermission(new Permission[]{Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES}))
-							try {
-								vc.getManager().putPermissionOverride(role, null, EnumSet.of(Permission.VOICE_CONNECT)).queue();
-								mentionStrings.add(role.getName());
-							} catch (InsufficientPermissionException ex) {
-								event.replyEmbeds(bot.getEmbedUtil().getError(event, "errors.missing_perms.self"));
-								return;
-							}
+						if (!role.hasPermission(AdminPerms)) {
+							manager = manager.putPermissionOverride(role, null, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL));
+							mentionStrings.add(role.getName());
+						}
 					}
 
 					text = lu.getUserText(event, "bot.voice.listener.panel.reject_done", mentionStrings);
 				}
 
-				event.editMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
-						.setDescription(text)
-						.build()
-					).setContent("").setComponents().queue();
-				
+				final MessageEmbed embed = bot.getEmbedUtil().getEmbed(event).setDescription(text).build();
+				manager.queue(done -> {
+					event.editMessageEmbeds(embed)
+						.setContent("").setComponents().queue();
+				}, failure -> {
+					event.editMessage(MessageEditData.fromCreateData(bot.getEmbedUtil().createPermError(event, Permission.MANAGE_PERMISSIONS, true)))
+						.setContent("").setComponents().queue();
+				});
 			}
 		}
 	}

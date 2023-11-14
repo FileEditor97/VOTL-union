@@ -80,6 +80,13 @@ public class CheckServerCmd extends CommandBase {
 			}
 			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.floorDiv(maxSize, 2))).build());
 
+			/* 1. If user is not in target server:
+			Try remove the role from user in this server
+			 If success - return "true"
+			 If failed (ex, lacks permissions or other) - return "false"
+			2. If user is in target server:
+			 return "false" 
+			So count only those, fromn whom role was removed*/
 			List<CompletableFuture<Boolean>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
 				completableFutures.add(targetGuild.retrieveMember(member).submit()
@@ -93,7 +100,6 @@ public class CheckServerCmd extends CommandBase {
 					)
 				);
 			}
-			guild.isMember(null);
 
 			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 				.whenComplete((done, exception) -> {
@@ -103,10 +109,10 @@ public class CheckServerCmd extends CommandBase {
 						Integer removed = 0;
 						for (CompletableFuture<Boolean> future : completableFutures) {
 							try {
-								if (!future.isCompletedExceptionally() && future.get().equals(false)) removed++;
-							} catch (InterruptedException | ExecutionException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+								if (!future.isCompletedExceptionally() && future.get().equals(true)) removed++;
+							} catch (InterruptedException | ExecutionException ex) {
+								ex.printStackTrace();
+								editError(event, "errors.unknown", ex.getLocalizedMessage());
 							}
 						}
 

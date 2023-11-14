@@ -3,6 +3,7 @@ package union.commands.roles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import union.App;
@@ -77,16 +78,22 @@ public class CheckServerCmd extends CommandBase {
 				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
 				return;
 			}
-			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.floorMod(maxSize, 2))).build());
+			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.floorDiv(maxSize, 2))).build());
 
-			List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+			List<CompletableFuture<Boolean>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
-				completableFutures.add(targetGuild.retrieveMember(member).submit().thenCompose(m -> m == null ?
-					guild.removeRoleFromMember(m, role).reason("Not inside server '%s'".formatted(guildName)).submit().exceptionally(ex -> null)
-					: 
-					CompletableFuture.completedFuture(null)
-				));
+				completableFutures.add(targetGuild.retrieveMember(member).submit()
+					.exceptionallyCompose(ex -> null)
+					.thenCompose(m -> m == null ?
+						guild.removeRoleFromMember(member, role).reason("Not inside server '%s'".formatted(guildName)).submit()
+							.thenCompose(v -> CompletableFuture.completedFuture(true))
+							.exceptionallyCompose(ex -> CompletableFuture.completedFuture(false))
+						: 
+						CompletableFuture.completedFuture(false)
+					)
+				);
 			}
+			guild.isMember(null);
 
 			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 				.whenComplete((done, exception) -> {
@@ -94,8 +101,13 @@ public class CheckServerCmd extends CommandBase {
 						editError(event, "errors.unknown", exception.getMessage());
 					} else {
 						Integer removed = 0;
-						for (CompletableFuture<Void> future : completableFutures) {
-							if (!future.isCompletedExceptionally()) removed++;
+						for (CompletableFuture<Boolean> future : completableFutures) {
+							try {
+								if (!future.isCompletedExceptionally() && future.get().equals(false)) removed++;
+							} catch (InterruptedException | ExecutionException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 
 						// Log

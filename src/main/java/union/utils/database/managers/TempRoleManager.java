@@ -31,6 +31,10 @@ public class TempRoleManager extends LiteDBBase {
 		deleteAll(TABLE, "guildId", guildId);
 	}
 
+	public void updateTime(String roleId, String userId, Instant expireAfter) {
+		update(TABLE, "expireAfter", expireAfter.getEpochSecond(), List.of("roleId", "userId"), List.of(roleId, userId));
+	}
+
 	public Instant expireAt(String roleId, String userId) {
 		Object data = selectOne(TABLE, "expireAfter", List.of("roleId", "userId"), List.of(roleId, userId));
 		if (data == null) return null;

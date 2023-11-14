@@ -181,7 +181,10 @@
 		"guild": {
 			"access_added": "Access granted to target",
 			"access_removed": "Access removed from target",
-			"access_level": "Access level"
+			"access_level": "Access level",
+			"module": "Module",
+			"module_enabled": "Module enabled",
+			"module_disabled": "Module disabled"
 		},
 		"roles": {
 			"checkrank": "Role's members checked for required rank",
@@ -191,6 +194,7 @@
 			"removed": "Role removed from user",
 			"removed_all": "Role was removed from all users",
 			"temp_added": "Role added temporary to user",
+			"temp_updated": "Temporary role updated for user",
 			"temp_removed": "Temporaty role removed from user",
 			"guild": "Target server"
 		}
@@ -1807,7 +1811,7 @@
 					"no_member": "Member not found.",
 					"incorrect_user": "Selected member can't be assigned role.",
 					"already_set": "Member already assigned this role.",
-					"time_limit": "Provided time is not accepted, must be 20m <-> 100d.",
+					"time_limit": "Provided time must be between 10m <-> 150d.",
 					"done": "Temporary assigned user {user} role {role} until {until}."
 				},
 				"cancel": {
@@ -1825,6 +1829,27 @@
 					"no_member": "Member not found.",
 					"not_found": "Selected role is not assigned temporary to this user.",
 					"done": "Canceled temporary role."
+				},
+				"extend": {
+					"help": "Extend temporary role time for user",
+					"usage": "extend <@Role> <@User> <add duration>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user"
+					},
+					"duration": {
+						"name": "duration",
+						"help": "For how long to extend this role (Example: 2h, 2w5d (w-week, d-day, h-hour))"
+					},
+					"no_role": "Role not found.",
+					"no_member": "Member not found.",
+					"not_found": "Selected role is not assigned temporary to this user.",
+					"time_limit": "Provided time must be between 10m <-> 150d.",
+					"done": "Extended temporary role {role} assignment for user {user} until {until}."
 				},
 				"view": {
 					"help": "View all temporary assigned roles",

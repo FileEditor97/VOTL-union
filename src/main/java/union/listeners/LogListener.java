@@ -220,6 +220,13 @@ public class LogListener {
 			sendLog(channel, logUtil.tempRoleRemovedEmbed(guild.getLocale(), mod, target, role));
 		}
 
+		public void onTempRoleUpdated(Guild guild, User mod, User target, Role role, Instant until) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.tempRoleUpdatedEmbed(guild.getLocale(), mod, target, role, until));
+		}
+
 		public void onTempRoleAutoRemoved(Guild guild, String targetId, Role role) {
 			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
 			if (channel == null) return;

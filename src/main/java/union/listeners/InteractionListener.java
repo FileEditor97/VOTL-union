@@ -1007,8 +1007,6 @@ public class InteractionListener extends ListenerAdapter {
 
 			String main = event.getValue("main").getAsString();
 			db.verify.setMainText(guildId, main.isBlank() ? "NULL" : main);
-			String description = event.getValue("description").getAsString();
-			db.verify.setInstructionText(guildId, description.isBlank() ? "NULL" : description);
 
 			event.replyEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))

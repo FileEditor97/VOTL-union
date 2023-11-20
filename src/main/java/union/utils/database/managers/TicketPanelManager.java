@@ -60,7 +60,7 @@ public class TicketPanelManager extends LiteDBBase {
 	public List<Integer> getPanelIds(String guildId) {
 		List<Object> data = select(TABLE, "panelId", "guildId", guildId);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> (Integer) obj).collect(Collectors.toList());
+		return data.stream().map(obj -> (Integer) obj).toList();
 	}
 
 	public void updatePanel(Integer panelId, String title, String description, String image, String footer) {
@@ -90,7 +90,6 @@ public class TicketPanelManager extends LiteDBBase {
 		Map<String, Object> data = selectOne(TABLE, List.of("title", "description", "image", "footer"), "panelId", panelId);
 		if (data.isEmpty()) return null;
 		return (Map) data;
-		//return data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (String) e.getValue()));
 	}
 
 	public String getPanelTitle(Integer panelId) {

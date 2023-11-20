@@ -100,7 +100,7 @@ public class TicketTagManager extends LiteDBBase {
 	public List<Integer> getTagIds(String guildId) {
 		List<Object> data = select(TABLE, "tagId", "guildId", guildId);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> (Integer) obj).collect(Collectors.toList());
+		return data.stream().map(obj -> (Integer) obj).toList();
 	}
 
 	public Integer countPanelTags(Integer panelId) {

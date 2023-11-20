@@ -1149,6 +1149,7 @@
 			"embed": {
 				"title": "Link your account to complete verification",
 				"howto": "How to link your account?",
+				"description": "To get full access to the server (sending messages, application and complaint channels), follow the link below and link your Steam and Discord account.",
 				"guide": "1. Go to the project website https://unionteams.ru/\n2. Login to your Personal account via Steam\n3. Link your Discord account in the Personal account"
 			},
 			"listener": {

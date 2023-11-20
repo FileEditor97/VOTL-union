@@ -17,6 +17,7 @@
 package union.utils.invite;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild.VerificationLevel;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.Route;
 import net.dv8tion.jda.internal.JDAImpl;
@@ -27,6 +28,7 @@ import net.dv8tion.jda.internal.utils.EntityString;
 import jakarta.annotation.Nonnull;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 public class InviteImpl implements Invite {
 
@@ -34,17 +36,17 @@ public class InviteImpl implements Invite {
 	private final String code;
 	private final boolean expires;
 	private final OffsetDateTime timeExpires;
-	private final boolean isGuild;
+	private final Guild guild;
 	private final Invite.InviteType type;
 
 	public InviteImpl(final JDAImpl api, final String code, final boolean expires,
-			final OffsetDateTime timeExpires, final boolean isGuild, final Invite.InviteType type)
+			final OffsetDateTime timeExpires, final Guild guild, final Invite.InviteType type)
 	{
 		this.api = api;
 		this.code = code;
 		this.expires = expires;
 		this.timeExpires = timeExpires;
-		this.isGuild = isGuild;
+		this.guild = guild;
 		this.type = type;
 	}
 
@@ -92,8 +94,13 @@ public class InviteImpl implements Invite {
 	}
 
 	@Override
+	public Guild getGuild() {
+		return this.guild;
+	}
+
+	@Override
 	public boolean isFromGuild() {
-		return this.isGuild;
+		return this.guild != null;
 	}
 
 	@Override
@@ -116,6 +123,109 @@ public class InviteImpl implements Invite {
 		return new EntityString(this)
 				.addMetadata("code", code)
 				.toString();
+	}
+
+	public static class GuildImpl implements Guild {
+
+		private final String iconId, name, splashId;
+		private final int presenceCount, memberCount;
+        private final long id;
+        private final VerificationLevel verificationLevel;
+        private final Set<String> features;
+
+		public GuildImpl(final long id, final String iconId, final String name, final String splashId,
+                         final VerificationLevel verificationLevel, final int presenceCount, final int memberCount,
+						 final Set<String> features)
+		{
+			this.id = id;
+            this.iconId = iconId;
+            this.name = name;
+            this.splashId = splashId;
+            this.verificationLevel = verificationLevel;
+            this.presenceCount = presenceCount;
+            this.memberCount = memberCount;
+            this.features = features;
+		}
+
+		public GuildImpl(final net.dv8tion.jda.api.entities.Guild guild)
+        {
+            this(guild.getIdLong(), guild.getIconId(), guild.getName(), guild.getSplashId(),
+                 guild.getVerificationLevel(), -1, -1, guild.getFeatures());
+        }
+
+        @Override
+        public String getIconId()
+        {
+            return this.iconId;
+        }
+
+        @Override
+        public String getIconUrl()
+        {
+            return this.iconId == null ? null
+                    : "https://cdn.discordapp.com/icons/" + this.id + "/" + this.iconId + ".png";
+        }
+
+        @Override
+        public long getIdLong()
+        {
+            return id;
+        }
+
+        @Nonnull
+        @Override
+        public String getName()
+        {
+            return this.name;
+        }
+
+        @Override
+        public String getSplashId()
+        {
+            return this.splashId;
+        }
+
+        @Override
+        public String getSplashUrl()
+        {
+            return this.splashId == null ? null
+                    : "https://cdn.discordapp.com/splashes/" + this.id + "/" + this.splashId + ".png";
+        }
+
+        @Nonnull
+        @Override
+        public VerificationLevel getVerificationLevel()
+        {
+            return verificationLevel;
+        }
+        
+        @Override
+        public int getOnlineCount()
+        {
+            return presenceCount;
+        }
+        
+        @Override
+        public int getMemberCount()
+        {
+            return memberCount;
+        }
+
+        @Nonnull
+        @Override
+        public Set<String> getFeatures()
+        {
+            return features;
+        }
+
+        @Override
+        public String toString()
+        {
+            return new EntityString(this)
+                    .setName(name)
+                    .toString();
+        }
+
 	}
 
 }

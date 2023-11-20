@@ -19,7 +19,15 @@ public class LiteDBBase {
 
 	// INSERT sql
 	protected void insert(String table, String insertKey, Object insertValueObj) {
-		insert(table, List.of(insertKey), List.of(insertValueObj));
+		String sql = "INSERT INTO %s(%s) VALUES(%s);".formatted(table, insertKey, quote(insertValueObj));
+		util.logger.debug(sql);
+
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			st.executeUpdate();
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at INSERT\nrequest: {}", sql, ex);
+		}
 	}
 	
 	protected void insert(final String table, final List<String> insertKeys, final List<Object> insertValuesObj) {
@@ -28,7 +36,7 @@ public class LiteDBBase {
 			insertValues.add(quote(obj));
 		}
 
-		String sql = "INSERT INTO "+table+" ("+String.join(", ", insertKeys)+") VALUES ("+String.join(", ", insertValues)+")";
+		String sql = "INSERT INTO %s(%s) VALUES(%s);".formatted(table, String.join(", ", insertKeys), String.join(", ", insertValues));
 		util.logger.debug(sql);
 		try (Connection conn = util.connectSQLite();
 		PreparedStatement st = conn.prepareStatement(sql)) {
@@ -39,8 +47,19 @@ public class LiteDBBase {
 	}
 
 	// SELECT sql
-	protected Object selectOne(String table, String selectKey, String condKey, Object condValueObj) {
-		return selectOne(table, selectKey, List.of(condKey), List.of(condValueObj));
+	protected Object selectOne(final String table, final String selectKey, final String condKey, final Object condValueObj) {
+		String sql = "SELECT %s FROM %s WHERE %s=%s;".formatted(selectKey, table, condKey, quote(condValueObj));
+
+		Object result = null;
+		util.logger.debug(sql);
+		try (Connection conn = util.connectSQLite();
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			result = rs.getObject(selectKey);
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return result;
 	}
 
 	protected Object selectOne(final String table, final String selectKey, final List<String> condKeys, final List<Object> condValuesObj) {

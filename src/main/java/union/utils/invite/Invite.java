@@ -17,11 +17,16 @@
 package union.utils.invite;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild.VerificationLevel;
+import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.utils.ImageProxy;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Representation of a Discord Invite.
@@ -119,6 +124,144 @@ public interface Invite {
      * @return Whether this invite is for guild
      */
     boolean isFromGuild();
+
+    /**
+     * An {@link Invite.Guild Invite.Guild} object
+     * containing information about this invite's origin guild.
+     *
+     * @return Information about this invite's origin guild or null in case of a group invite
+     * 
+     * @see    Invite.Guild
+     */
+    Guild getGuild();
+
+     /**
+     * POJO for the guild information provided by an invite.
+     * 
+     * @see #getGuild()
+     */
+    interface Guild extends ISnowflake {
+        /**
+         * The icon id of this guild.
+         *
+         * @return The guild's icon id
+         *
+         * @see    #getIconUrl()
+         */
+        @Nullable
+        String getIconId();
+
+        /**
+         * The icon url of this guild.
+         *
+         * @return The guild's icon url
+         *
+         * @see    #getIconId()
+         */
+        @Nullable
+        String getIconUrl();
+
+        /**
+         * Returns an {@link ImageProxy} for this guild's icon
+         *
+         * @return Possibly-null {@link ImageProxy} of this guild's icon
+         *
+         * @see    #getIconUrl()
+         */
+        @Nullable
+        default ImageProxy getIcon()
+        {
+            final String iconUrl = getIconUrl();
+            return iconUrl == null ? null : new ImageProxy(iconUrl);
+        }
+
+        /**
+         * The name of this guild.
+         *
+         * @return The guild's name
+         */
+        @Nonnull
+        String getName();
+
+        /**
+         * The splash image id of this guild.
+         *
+         * @return The guild's splash image id or {@code null} if the guild has no splash image
+         *
+         * @see    #getSplashUrl()
+         */
+        @Nullable
+        String getSplashId();
+
+        /**
+         * Returns the splash image url of this guild.
+         *
+         * @return The guild's splash image url or {@code null} if the guild has no splash image
+         *
+         * @see    #getSplashId()
+         */
+        @Nullable
+        String getSplashUrl();
+
+        /**
+         * Returns an {@link ImageProxy} for this invite guild's splash image.
+         *
+         * @return Possibly-null {@link ImageProxy} of this invite guild's splash image
+         *
+         * @see    #getSplashUrl()
+         */
+        @Nullable
+        default ImageProxy getSplash()
+        {
+            final String splashUrl = getSplashUrl();
+            return splashUrl == null ? null : new ImageProxy(splashUrl);
+        }
+
+        /**
+         * Returns the {@link net.dv8tion.jda.api.entities.Guild.VerificationLevel VerificationLevel} of this guild.
+         * 
+         * @return the verification level of the guild
+         */
+        @Nonnull
+        VerificationLevel getVerificationLevel();
+        
+        /**
+         * Returns the approximate count of online members in the guild. If the online member count was not included in the
+         * invite, this will return -1. Counts will usually only be returned when resolving the invite via the 
+         * {@link #resolve(net.dv8tion.jda.api.JDA, java.lang.String, boolean) Invite.resolve()} method with the
+         * withCounts boolean set to {@code true}
+         * 
+         * @return the approximate count of online members in the guild, or -1 if not present in the invite
+         */
+        int getOnlineCount();
+        
+        /**
+         * Returns the approximate count of total members in the guild. If the total member count was not included in the
+         * invite, this will return -1. Counts will usually only be returned when resolving the invite via the 
+         * {@link #resolve(net.dv8tion.jda.api.JDA, java.lang.String, boolean) Invite.resolve()} method with the
+         * withCounts boolean set to {@code true}
+         * 
+         * @return the approximate count of total members in the guild, or -1 if not present in the invite
+         */
+        int getMemberCount();
+
+        /**
+         * The Features of the {@link Invite.Guild Guild}.
+         * <p>
+         * <b>Possible known features:</b>
+         * <ul>
+         *     <li>VIP_REGIONS - Guild has VIP voice regions</li>
+         *     <li>VANITY_URL - Guild a vanity URL (custom invite link)</li>
+         *     <li>INVITE_SPLASH - Guild has custom invite splash. See {@link #getSplashId()} and {@link #getSplashUrl()}</li>
+         *     <li>VERIFIED - Guild is "verified"</li>
+         *     <li>MORE_EMOJI - Guild is able to use more than 50 emoji</li>
+         * </ul>
+         *
+         * @return Never-null, unmodifiable Set containing all of the Guild's features.
+         */
+        @Nonnull
+        Set<String> getFeatures();
+    }
 
     /**
      * Enum representing the type of an invite.

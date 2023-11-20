@@ -2,7 +2,6 @@ package union.utils.database.managers;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import union.objects.CmdModule;
 import union.utils.database.LiteDBBase;
@@ -31,7 +30,7 @@ public class ModuleManager extends LiteDBBase {
 	public List<CmdModule> getDisabled(String guildId) {
 		List<Object> data = select(TABLE, "module", "guildId", guildId);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> CmdModule.valueOf(String.valueOf(obj))).collect(Collectors.toList());
+		return data.stream().map(obj -> CmdModule.valueOf((String) obj)).toList();
 	}
 
 	public boolean isDisabled(String guildId, CmdModule module) {

@@ -2,16 +2,17 @@ package union.commands.roles;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import union.App;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.exception.FormatterException;
@@ -26,12 +27,14 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
 public class TempRoleCmd extends CommandBase {
+
+	private final int MAX_DAYS = 150;
 	
 	public TempRoleCmd(App bot) {
 		super(bot);
 		this.name = "temprole";
 		this.path = "bot.roles.temprole";
-		this.children = new SlashCommand[]{new Assign(bot), new Cancel(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Assign(bot), new Cancel(bot), new Extend(bot), new View(bot)};
 		this.category = CmdCategory.ROLES;
 		this.module = CmdModule.ROLES;
 		this.accessLevel = CmdAccessLevel.MOD;
@@ -97,7 +100,7 @@ public class TempRoleCmd extends CommandBase {
 				editError(event, ex.getPath());
 				return;
 			}
-			if (duration.toMinutes() < 20 || duration.toDays() > 100) {
+			if (duration.toMinutes() < 10 || duration.toDays() > MAX_DAYS) {
 				editError(event, path+".time_limit", "Received: "+duration.toString());
 				return;
 			}
@@ -161,7 +164,7 @@ public class TempRoleCmd extends CommandBase {
 				return;
 			}
 
-			event.getGuild().removeRoleFromMember(member, role).reason("Canceled temporary role | by"+event.getMember().getEffectiveName()).queue();
+			event.getGuild().removeRoleFromMember(member, role).reason("Canceled temporary role | by "+event.getMember().getEffectiveName()).queue();
 
 			bot.getDBUtil().tempRole.remove(role.getId(), member.getId());
 			// Log
@@ -172,6 +175,69 @@ public class TempRoleCmd extends CommandBase {
 				.setDescription(lu.getText(event, path+".done"))
 				.build()
 			).setEphemeral(true).queue();
+		}
+
+	}
+
+	private class Extend extends SlashCommand {
+
+		public Extend(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "extend";
+			this.path = "bot.roles.temprole.extend";
+			this.options = List.of(
+				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
+				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
+				new OptionData(OptionType.STRING, "duration", lu.getText(path+".duration.help"), true)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			// Check role
+			Role role = event.optRole("role");
+			if (role == null) {
+				createError(event, path+".no_role");
+				return;
+			}
+			// Check member
+			Member member = event.optMember("user");
+			if (member == null) {
+				createError(event, path+".no_member");
+				return;
+			}
+			// Check time
+			Instant previousTime = bot.getDBUtil().tempRole.expireAt(role.getId(), member.getId());
+			if (previousTime == null) {
+				createError(event, path+".not_found");
+				return;
+			}
+
+			// Check duration
+			final Duration duration;
+			try {
+				duration = bot.getTimeUtil().stringToDuration(event.optString("duration"), false);
+			} catch (FormatterException ex) {
+				editError(event, ex.getPath());
+				return;
+			}
+			Instant until = previousTime.plus(duration);
+			if (duration.toMinutes() < 10 || until.isAfter(Instant.now().plus(MAX_DAYS, ChronoUnit.DAYS))) {
+				editError(event, path+".time_limit", "New duration: %s days".formatted(Duration.between(Instant.now(), until).toDays()));
+				return;
+			}
+
+			bot.getDBUtil().tempRole.updateTime(role.getId(), member.getId(), until);
+			// Log
+			bot.getLogListener().role.onTempRoleUpdated(event.getGuild(), event.getUser(), member.getUser(), role, until);
+			// Send reply
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				.setColor(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
+					.replace("{until}", bot.getTimeUtil().formatTime(until, true)))
+				.build()
+			);
 		}
 
 	}

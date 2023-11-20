@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command;
+package union.base.command;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -38,7 +38,7 @@ import jakarta.annotation.Nonnull;
  * a low level of development.
  * <br>All Commands extending this class can define any number of these fields in a object constructor and then
  * create the command action/response in the abstract
- * {@link union.objects.command.Command#execute(CommandEvent) #execute(CommandEvent)} body:
+ * {@link union.base.command.Command#execute(CommandEvent) #execute(CommandEvent)} body:
  *
  * <pre><code> public class ExampleCmd extends Command {
  *
@@ -56,13 +56,13 @@ import jakarta.annotation.Nonnull;
  * }</code></pre>
  *
  * Execution is with the provision of a MessageReceivedEvent-CommandClient wrapper called a
- * {@link union.objects.command.CommandEvent CommandEvent} and is performed in two steps:
+ * {@link union.base.command.CommandEvent CommandEvent} and is performed in two steps:
  * <ul>
- *     <li>{@link union.objects.command.Command#run(CommandEvent) run} - The command runs
+ *     <li>{@link union.base.command.Command#run(CommandEvent) run} - The command runs
  *     through a series of conditionals, automatically terminating the command instance if one is not met,
  *     and possibly providing an error response.</li>
  *
- *     <li>{@link union.objects.command.Command#execute(CommandEvent) execute} - The command,
+ *     <li>{@link union.base.command.Command#execute(CommandEvent) execute} - The command,
  *     now being cleared to run, executes and performs whatever lies in the abstract body method.</li>
  * </ul>
  *
@@ -86,7 +86,7 @@ public abstract class Command extends Interaction
 	protected String help = "no help available";
 
 	/**
-	 * The {@link union.objects.command.Command.Category Category} of the command.
+	 * The {@link union.base.command.Command.Category Category} of the command.
 	 * <br>This can perform any other checks not completed by the default conditional fields.
 	 */
 	protected Category category = null;
@@ -113,7 +113,7 @@ public abstract class Command extends Interaction
 
 	/**
 	 * The aliases of the command, when calling a command these function identically to calling the
-	 * {@link union.objects.command.Command#name Command.name}.
+	 * {@link union.base.command.Command#name Command.name}.
 	 * This options only works for normal commands, not slash commands.
 	 */
 	protected String[] aliases = new String[0];
@@ -146,19 +146,19 @@ public abstract class Command extends Interaction
 	protected boolean hidden = false;
 
 	/**
-	 * The main body method of a {@link union.objects.command.Command Command}.
+	 * The main body method of a {@link union.base.command.Command Command}.
 	 * <br>This is the "response" for a successful
-	 * {@link union.objects.command.Command#run(CommandEvent) #run(CommandEvent)}.
+	 * {@link union.base.command.Command#run(CommandEvent) #run(CommandEvent)}.
 	 *
 	 * @param  event
-	 *         The {@link union.objects.command.CommandEvent CommandEvent} that
+	 *         The {@link union.base.command.CommandEvent CommandEvent} that
 	 *         triggered this Command
 	 */
 	protected abstract void execute(CommandEvent event);
 
 	/**
-	 * Runs checks for the {@link union.objects.command.Command Command} with the
-	 * given {@link union.objects.command.CommandEvent CommandEvent} that called it.
+	 * Runs checks for the {@link union.base.command.Command Command} with the
+	 * given {@link union.base.command.CommandEvent CommandEvent} that called it.
 	 * <br>Will terminate, and possibly respond with a failure message, if any checks fail.
 	 *
 	 * @param  event
@@ -280,7 +280,7 @@ public abstract class Command extends Interaction
 	}
 
 	/**
-	 * Gets the {@link union.objects.command.Command#name Command.name} for the Command.
+	 * Gets the {@link union.base.command.Command#name Command.name} for the Command.
 	 *
 	 * @return The name for the Command
 	 */
@@ -291,7 +291,7 @@ public abstract class Command extends Interaction
 	}
 
 	/**
-	 * Gets the {@link union.objects.command.Command#help Command.help} for the Command.
+	 * Gets the {@link union.base.command.Command#help Command.help} for the Command.
 	 *
 	 * @return The help for the Command
 	 */
@@ -302,7 +302,7 @@ public abstract class Command extends Interaction
 	}
 
 	/**
-	 * Gets the {@link union.objects.command.Command#category Command.category} for the Command.
+	 * Gets the {@link union.base.command.Command#category Command.category} for the Command.
 	 *
 	 * @return The category for the Command
 	 */
@@ -312,7 +312,7 @@ public abstract class Command extends Interaction
 	}
 
 	/**
-	 * Gets the {@link union.objects.command.Command#arguments Command.arguments} for the Command.
+	 * Gets the {@link union.base.command.Command#arguments Command.arguments} for the Command.
 	 *
 	 * @return The arguments for the Command
 	 */
@@ -333,7 +333,7 @@ public abstract class Command extends Interaction
 	}
 
 	/**
-	 * Gets the {@link union.objects.command.Command#requiredRole Command.requiredRole} for the Command.
+	 * Gets the {@link union.base.command.Command#requiredRole Command.requiredRole} for the Command.
 	 *
 	 * @return The requiredRole for the Command
 	 */
@@ -343,7 +343,7 @@ public abstract class Command extends Interaction
 	}
 
 	/**
-	 * Gets the {@link union.objects.command.Command#aliases Command.aliases} for the Command.
+	 * Gets the {@link union.base.command.Command#aliases Command.aliases} for the Command.
 	 *
 	 * @return The aliases for the Command
 	 */
@@ -353,7 +353,7 @@ public abstract class Command extends Interaction
 	}
 
 	/**
-	 * Gets the {@link union.objects.command.Command#children Command.children} for the Command.
+	 * Gets the {@link union.base.command.Command#children Command.children} for the Command.
 	 *
 	 * @return The children for the Command
 	 */
@@ -386,7 +386,7 @@ public abstract class Command extends Interaction
 
 	/**
 	 * Gets the proper cooldown key for this Command under the provided
-	 * {@link union.objects.command.CommandEvent CommandEvent}.
+	 * {@link union.base.command.CommandEvent CommandEvent}.
 	 *
 	 * @param  event
 	 *         The CommandEvent to generate the cooldown for.
@@ -415,7 +415,7 @@ public abstract class Command extends Interaction
 
 	/**
 	 * Gets an error message for this Command under the provided
-	 * {@link union.objects.command.CommandEvent CommanEvent}.
+	 * {@link union.base.command.CommandEvent CommanEvent}.
 	 *
 	 * @param  event
 	 *         The CommandEvent to generate the error message for.
@@ -429,7 +429,7 @@ public abstract class Command extends Interaction
 		if (remaining <= 0)
 			return null;
 		
-		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_left")
+		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_command")
 			.replace("{time}", Integer.toString(remaining))
 		);
 		if(cooldownScope.equals(CooldownScope.USER))

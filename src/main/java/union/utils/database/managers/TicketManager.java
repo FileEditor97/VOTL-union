@@ -60,6 +60,10 @@ public class TicketManager extends LiteDBBase {
 		update(TABLE, List.of("closed", "timeClosed", "reasonClosed"), List.of(1, timeClosed.getEpochSecond(), Optional.ofNullable(reason).orElse("NULL")), "channelId", channelId);
 	}
 
+	public void forceCloseTicket(String channelId) {
+		update(TABLE, "closed", 1, "channelId", channelId);
+	}
+
 	// get status
 	public boolean isOpened(String channelId) {
 		if (selectOne(TABLE, "ticketId", List.of("channelId", "closed"), List.of(channelId, 0)) == null) return false;
@@ -69,19 +73,19 @@ public class TicketManager extends LiteDBBase {
 	public String getOpenedChannel(String userId, String guildId, Integer tagId) {
 		Object data = selectOne(TABLE, "channelId", List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public Integer countOpenedByUser(String userId, String guildId, Integer tagId) {
 		Object data = countSelect(TABLE, List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
 		if (data == null) return null;
-		return Integer.valueOf(data.toString());
+		return (Integer) data;
 	}
 
 	public Integer countAllOpenedByUser(String userId, String guildId) {
 		Object data = countSelect(TABLE, List.of("userId", "guildId", "closed"), List.of(userId, guildId, 0));
 		if (data == null) return null;
-		return Integer.valueOf(data.toString());
+		return (Integer) data;
 	}
 
 	public List<String> getOpenedChannels() {
@@ -103,7 +107,7 @@ public class TicketManager extends LiteDBBase {
 	public String getUserId(String channelId) {
 		Object data = selectOne(TABLE, "userId", "channelId", channelId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public String getTicketId(String channelId) {
@@ -115,7 +119,7 @@ public class TicketManager extends LiteDBBase {
 	public Boolean isRoleTicket(String channelId) {
 		Object data = selectOne(TABLE, "tagId", "channelId", channelId);
 		if (data == null) return false;
-		return ((Integer) data) == 0;
+		return (Integer) data == 0;
 	}
 
 	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
@@ -134,7 +138,7 @@ public class TicketManager extends LiteDBBase {
 		update(TABLE, "closeRequested", closeRequested, "channelId", channelId);
 	}
 
-	public Long getCloseTime(String channelId) {
+	public Long getTimeClosing(String channelId) {
 		Object data = selectOne(TABLE, "closeRequested", "channelId", channelId);
 		if (data == null) return 0L;
 		return ((Number) data).longValue();

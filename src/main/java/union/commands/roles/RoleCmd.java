@@ -7,12 +7,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import union.App;
+import union.base.command.CooldownScope;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.CooldownScope;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -201,7 +201,7 @@ public class RoleCmd extends CommandBase {
 								.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())
 							).build());
 						}
-					});
+					}).thenRun(guild::pruneMemberCache); // Prune member cache
 			}).onError(failure -> {
 				editError(event, "errors.unknown", failure.getMessage());
 			});

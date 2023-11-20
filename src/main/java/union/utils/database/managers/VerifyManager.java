@@ -41,17 +41,7 @@ public class VerifyManager extends LiteDBBase {
 	public String getMainText(String guildId) {
 		Object data = selectOne(TABLE, "mainText", "guildId", guildId);
 		if (data == null) return "No text";
-		return setNewline(String.valueOf(data));
-	}
-
-	public void setInstructionText(String guildId, String text) {
-		update(TABLE, "instructionText", removeNewline(text), "guildId", guildId);
-	}
-
-	public String getInstructionText(String guildId) {
-		Object data = selectOne(TABLE, "instructionText", "guildId", guildId);
-		if (data == null) return "No text";
-		return setNewline(String.valueOf(data));
+		return setNewline((String) data);
 	}
 
 	private String removeNewline(String text) {
@@ -74,8 +64,7 @@ public class VerifyManager extends LiteDBBase {
 	public boolean isCheckEnabled(String guildId) {
 		Object data = selectOne(TABLE, "enabledCheck", "guildId", guildId);
 		if (data == null) return false;
-		if (data.equals(1)) return true;
-		return false;
+		return (Integer) data == 1;
 	}
 
 }

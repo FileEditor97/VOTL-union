@@ -10,3 +10,5 @@ DROP TABLE "ticketType";ALTER TABLE "ticketPanel" RENAME TO "ticketSettings";ALT
 ALTER TABLE "guild" ADD "reportChannelId" TEXT;CREATE TABLE "guildVoice" ("guildId" TEXT NOT NULL UNIQUE, "categoryId" TEXT, "channelId" TEXT, "defaultName" TEXT, "defaultLimit" INTEGER DEFAULT 0, FOREIGN KEY("guildId") REFERENCES "guild"("guildId"));CREATE TABLE "user" ("userId" TEXT NOT NULL UNIQUE, "voiceName" TEXT, "voiceLimit" INTEGER);CREATE TABLE "voiceChannel" ("userId" TEXT NOT NULL, "channelId" TEXT NOT NULL UNIQUE)
 DROP TABLE "requestPrepare";CREATE TABLE "tempRoles" ("guildId" TEXT NOT NULL,"roleId" TEXT NOT NULL,"userId" TEXT NOT NULL,"deleteAfter" INTEGER DEFAULT 0,"expireAfter" INTEGER,FOREIGN KEY("guildId") REFERENCES "guild"("guildId"))
 ALTER TABLE "guild" ADD "serverLogId" TEXT;ALTER TABLE "guild" ADD "roleLogId" TEXT
+ALTER TABLE "requestRole" ADD "discordInvite" TEXT
+ALTER TABLE "verify" DROP "instructionText"

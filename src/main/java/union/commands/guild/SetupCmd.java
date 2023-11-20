@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Objects;
 
 import union.App;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.Emotes;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 

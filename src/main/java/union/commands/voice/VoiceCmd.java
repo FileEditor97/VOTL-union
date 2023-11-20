@@ -8,11 +8,11 @@ import java.util.Optional;
 import jakarta.annotation.Nonnull;
 
 import union.App;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdModule;
 import union.objects.Emotes;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -27,6 +27,7 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
+import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 
 public class VoiceCmd extends CommandBase {
 	
@@ -63,9 +64,18 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
+			// Verify role
+			String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
-				vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VOICE_CONNECT).queue();
+				//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VOICE_CONNECT).queue();
+				if (verifyRoleId != null) {
+					Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+					if (verifyRole != null) {
+						vc.upsertPermissionOverride(verifyRole).deny(Permission.VOICE_CONNECT).queue();
+					}
+				}
 			} catch (InsufficientPermissionException ex) {
 				createPermError(event, ex.getPermission(), true);
 				return;
@@ -97,9 +107,18 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
+			// Verify role
+			String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
-				vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VOICE_CONNECT).queue();
+				//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VOICE_CONNECT).queue();
+				if (verifyRoleId != null) {
+					Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+					if (verifyRole != null) {
+						vc.upsertPermissionOverride(verifyRole).setAllowed(Permission.VOICE_CONNECT).queue();
+					}
+				}
 			} catch (InsufficientPermissionException ex) {
 				createPermError(event, ex.getPermission(), true);
 				return;
@@ -131,9 +150,18 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
+			// Verify role
+			String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
-				vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VIEW_CHANNEL).queue();
+				//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).deny(Permission.VIEW_CHANNEL).queue();
+				if (verifyRoleId != null) {
+					Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+					if (verifyRole != null) {
+						vc.upsertPermissionOverride(verifyRole).deny(Permission.VIEW_CHANNEL).queue();
+					}
+				}
 			} catch (InsufficientPermissionException ex) {
 				createPermError(event, ex.getPermission(), true);
 				return;
@@ -165,9 +193,18 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
+			// Verify role
+			String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
-				vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VIEW_CHANNEL).queue();
+				//vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VIEW_CHANNEL).queue();
+				if (verifyRoleId != null) {
+					Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
+					if (verifyRole != null) {
+						vc.upsertPermissionOverride(verifyRole).setAllowed(Permission.VIEW_CHANNEL).queue();
+					}
+				}
 			} catch (InsufficientPermissionException ex) {
 				createPermError(event, ex.getPermission(), true);
 				return;
@@ -369,6 +406,8 @@ public class VoiceCmd extends CommandBase {
 
 	private class Permit extends SlashCommand {
 
+		private final List<Permission> AdminPerms = List.of(Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES);
+
 		public Permit(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -412,37 +451,35 @@ public class VoiceCmd extends CommandBase {
 
 			List<String> mentionStrings = new ArrayList<>();
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
+			VoiceChannelManager vcManager = vc.getManager();
 
 			for (Member member : members) {
-				try {
-					vc.getManager().putPermissionOverride(member, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null).queue();
-					mentionStrings.add(member.getEffectiveName());
-				} catch (InsufficientPermissionException ex) {
-					editPermError(event, Permission.MANAGE_PERMISSIONS, true);
-					return;
-				}
+				vcManager = vcManager.putPermissionOverride(member, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null);
+				mentionStrings.add(member.getEffectiveName());
 			}
 
 			for (Role role : roles) {
-				if (!role.hasPermission(new Permission[]{Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES}))
-					try {
-						vc.getManager().putPermissionOverride(role, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null).queue();
-						mentionStrings.add(role.getName());
-					} catch (InsufficientPermissionException ex) {
-						editPermError(event, Permission.MANAGE_PERMISSIONS, true);
-						return;
-					}
+				if (!role.hasPermission(AdminPerms)) {
+					vcManager = vcManager.putPermissionOverride(role, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null);
+					mentionStrings.add(role.getName());
+				}
 			}
 
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getUserText(event, path+".done", mentionStrings))
-				.build()
-			);
+			vcManager.queue(done -> {
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+					.setDescription(lu.getUserText(event, path+".done", mentionStrings))
+					.build()
+				);
+			}, failure -> {
+				editPermError(event, Permission.MANAGE_PERMISSIONS, true);
+			});
 		}
 
 	}
 
 	private class Reject extends SlashCommand {
+
+		private final List<Permission> AdminPerms = List.of(Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES);
 
 		public Reject(App bot) {
 			this.bot = bot;
@@ -487,33 +524,31 @@ public class VoiceCmd extends CommandBase {
 
 			List<String> mentionStrings = new ArrayList<>();
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
+			VoiceChannelManager vcManager = vc.getManager();
 
 			for (Member member : members) {
-				try {
-					vc.getManager().putPermissionOverride(member, null, EnumSet.of(Permission.VOICE_CONNECT)).queue();
-					mentionStrings.add(member.getEffectiveName());
-				} catch (InsufficientPermissionException ex) {
-					editPermError(event, Permission.MANAGE_PERMISSIONS, true);
-					return;
+				vcManager = vcManager.putPermissionOverride(member, null, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL));
+				if (vc.getMembers().contains(member)) {
+					event.getGuild().kickVoiceMember(member).queue();
 				}
+				mentionStrings.add(member.getEffectiveName());
 			}
 
 			for (Role role : roles) {
-				if (!role.hasPermission(new Permission[]{Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES}))
-					try {
-						vc.getManager().putPermissionOverride(role, null, EnumSet.of(Permission.VOICE_CONNECT)).queue();
-						mentionStrings.add(role.getName());
-					} catch (InsufficientPermissionException ex) {
-						editPermError(event, Permission.MANAGE_PERMISSIONS, true);
-						return;
-					}
+				if (!role.hasPermission(AdminPerms)) {
+					vcManager = vcManager.putPermissionOverride(role, null, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL));
+					mentionStrings.add(role.getName());
+				}
 			}
 
-			editHookEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
+			vcManager.queue(done -> {
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 					.setDescription(lu.getUserText(event, path+".done", mentionStrings))
 					.build()
-			);
+				);
+			}, failure -> {
+				editPermError(event, Permission.MANAGE_PERMISSIONS, true);
+			});
 		}
 		
 	}
@@ -648,9 +683,10 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
-			VoiceChannel vc = event.getGuild().getVoiceChannelById(author.getId());
+			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
 				vc.getManager().sync().queue();
+				vc.upsertPermissionOverride(author).setAllowed(Permission.MANAGE_CHANNEL).queue();
 			} catch (InsufficientPermissionException ex) {
 				createPermError(event, ex.getPermission(), true);
 				return;

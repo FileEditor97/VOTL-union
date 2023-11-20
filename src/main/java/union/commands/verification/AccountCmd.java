@@ -5,10 +5,10 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -43,7 +43,7 @@ public class AccountCmd extends CommandBase {
 				return;
 			}
 
-			replyAccount(event, steam64, optUser);
+			replyAccountFull(event, steam64, optUser);
 			return;
 		}
 
@@ -55,7 +55,7 @@ public class AccountCmd extends CommandBase {
 			}
 			String discordId = bot.getDBUtil().verifyCache.getDiscordId(id);
 			if (discordId == null) {
-				createError(event, path+".not_found_discord", "Received: "+id);
+				replyAccountSteam(event, id);
 				return;
 			}
 
@@ -63,7 +63,7 @@ public class AccountCmd extends CommandBase {
 			event.getJDA().retrieveUserById(discordId).queue(
 				user -> {
 					// create embed
-					replyAccount(event, steam64, user);
+					replyAccountFull(event, steam64, user);
 				},
 				failed -> {
 					createError(event, path+".not_found_user", "User ID: "+discordId);
@@ -74,7 +74,7 @@ public class AccountCmd extends CommandBase {
 		createError(event, path+".no_options");
 	}
 
-	private void replyAccount(SlashCommandEvent event, final String steam64, User user) {
+	private void replyAccountFull(SlashCommandEvent event, final String steam64, User user) {
 		String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 		String rank = "`%s`".formatted(Optional.ofNullable(bot.getDBUtil().unionPlayers.getPlayerRank(event.getGuild().getId(), steamId)).orElse("-"));
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
@@ -90,4 +90,19 @@ public class AccountCmd extends CommandBase {
 		
 		event.replyEmbeds(builder.build()).queue();
 	}
+
+	private void replyAccountSteam(SlashCommandEvent event, final String steam64) {
+		String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+		String rank = "`%s`".formatted(Optional.ofNullable(bot.getDBUtil().unionPlayers.getPlayerRank(event.getGuild().getId(), steamId)).orElse("-"));
+		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
+		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64), profileUrl)
+			.addField("Steam", steamId, true)
+			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
+			.addField(lu.getUserText(event, path+".field_rank"), rank, true)
+			.addField(lu.getUserText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), false);
+		
+		event.replyEmbeds(builder.build()).queue();
+	}
+
 }

@@ -3,8 +3,7 @@ package union.utils.message;
 import java.time.ZonedDateTime;
 
 import jakarta.annotation.Nonnull;
-
-import union.objects.command.CommandEvent;
+import union.base.command.CommandEvent;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;

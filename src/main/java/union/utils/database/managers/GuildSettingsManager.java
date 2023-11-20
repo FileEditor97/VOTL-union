@@ -43,7 +43,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public Integer getColor(String guildId) {
 		Object data = selectOne(TABLE, "color", "guildId", guildId);
 		if (data == null) return Constants.COLOR_DEFAULT;
-		return Integer.decode(String.valueOf(data));
+		return Integer.decode((String) data);
 	}
 
 	public void setupLogChannels(String guildId, String channelId) {
@@ -85,7 +85,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public String getAppealLink(String guildId) {
 		Object data = selectOne(TABLE, "appealLink", "guildId", guildId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public void setReportChannelId(String guildId, String channelId) {
@@ -95,7 +95,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public String getReportChannelId(String guildId) {
 		Object data = selectOne(TABLE, "reportChannelId", "guildId", guildId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 }

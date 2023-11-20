@@ -1,10 +1,10 @@
 package union.menus;
 
 import union.App;
+import union.base.command.CooldownScope;
+import union.base.command.MessageContextMenu;
+import union.base.command.MessageContextMenuEvent;
 import union.objects.CmdModule;
-import union.objects.command.CooldownScope;
-import union.objects.command.MessageContextMenu;
-import union.objects.command.MessageContextMenuEvent;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;

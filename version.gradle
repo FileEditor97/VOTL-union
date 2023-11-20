@@ -60,7 +60,7 @@ task patchVersionUpdate(group: 'versioning', description: 'Bump to next patch ve
     }
 }
 
-task releaseVersion(group: 'versioning', description: 'Make the version a release') {
+task setReleaseVersion(group: 'versioning', description: 'Make the version a release') {
     doFirst {
         def versionFile = file('version.properties')
         ant.propertyfile(file: versionFile) {
@@ -69,7 +69,7 @@ task releaseVersion(group: 'versioning', description: 'Make the version a releas
     }
 }
 
-task preReleaseVersion(group: 'versioning', description: 'Make the version a pre release') {
+task setPreReleaseVersion(group: 'versioning', description: 'Make the version a pre release') {
     doFirst {
         def versionFile = file('version.properties')
         ant.propertyfile(file: versionFile) {
@@ -78,7 +78,7 @@ task preReleaseVersion(group: 'versioning', description: 'Make the version a pre
     }
 }
 
-task getReleaseVersion(group: 'versioning', description: 'Return release version') {
+task getVersion(group: 'versioning', description: 'Return release version') {
     doFirst {
         println 'v' + loadVersion().getVersion()
     }

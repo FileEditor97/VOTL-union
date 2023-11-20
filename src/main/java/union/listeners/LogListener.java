@@ -10,10 +10,10 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nullable;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.LogChannels;
-import union.objects.command.SlashCommandEvent;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
 
@@ -220,11 +220,25 @@ public class LogListener {
 			sendLog(channel, logUtil.tempRoleRemovedEmbed(guild.getLocale(), mod, target, role));
 		}
 
+		public void onTempRoleUpdated(Guild guild, User mod, User target, Role role, Instant until) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.tempRoleUpdatedEmbed(guild.getLocale(), mod, target, role, until));
+		}
+
 		public void onTempRoleAutoRemoved(Guild guild, String targetId, Role role) {
 			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
 			if (channel == null) return;
 
 			sendLog(channel, logUtil.tempRoleAutoRemovedEmbed(guild.getLocale(), targetId, role));
+		}
+
+		public void onRoleCheckChildGuild(Guild guild, User admin, Role role, Guild targetGuild) {
+			TextChannel channel = getLogChannel(LogChannels.ROLES, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.checkRoleChildGuild(guild.getLocale(), admin.getId(), role.getId(), targetGuild.getName(), targetGuild.getId()));
 		}
 	}
 

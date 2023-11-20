@@ -1,9 +1,9 @@
 package union.commands.ticketing;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdModule;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 
 public class CloseCmd extends CommandBase {

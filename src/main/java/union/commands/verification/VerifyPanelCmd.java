@@ -3,11 +3,11 @@ package union.commands.verification;
 import java.util.List;
 
 import union.App;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -106,7 +106,7 @@ public class VerifyPanelCmd extends CommandBase {
 
 			MessageEmbed help = new EmbedBuilder().setColor(color)
 				.setTitle(lu.getLocalized(event.getGuildLocale(), "bot.verification.embed.title"))
-				.setDescription(bot.getDBUtil().verify.getInstructionText(guildId))
+				.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.verification.embed.description"))
 				.addField(lu.getLocalized(event.getGuildLocale(), "bot.verification.embed.howto"), lu.getLocalized(event.getGuildLocale(), "bot.verification.embed.guide"), false)
 				.build();
 			
@@ -129,15 +129,11 @@ public class VerifyPanelCmd extends CommandBase {
 			if (!bot.getDBUtil().verify.exists(guildId)) bot.getDBUtil().verify.add(guildId);
 
 			TextInput main = TextInput.create("main", lu.getText(event, path+".main"), TextInputStyle.PARAGRAPH)
-				.setPlaceholder("Press button below to verify")
+				.setPlaceholder("Verify here")
 				.setRequired(false)
 				.build();
-			TextInput description = TextInput.create("description", lu.getText(event, path+".description"), TextInputStyle.PARAGRAPH)
-				.setPlaceholder("By completing verification you will receive full access")
-				.setRequired(false)
-				.build();
-			
-			event.replyModal(Modal.create("vfpanel", lu.getText(event, path+".panel")).addActionRow(main).addActionRow(description).build()).queue();
+
+			event.replyModal(Modal.create("vfpanel", lu.getText(event, path+".panel")).addActionRow(main).build()).queue();
 		}
 
 	}

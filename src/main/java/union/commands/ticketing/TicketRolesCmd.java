@@ -3,16 +3,18 @@ package union.commands.ticketing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import union.App;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.RoleType;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.invite.InviteImpl;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -60,7 +62,9 @@ public class TicketRolesCmd extends CommandBase {
 						new Choice("1", 1),
 						new Choice("2", 2),
 						new Choice("3", 3)
-					))
+					)),
+				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"), false)
+					.setMaxLength(40)
 			);
 		}
 
@@ -80,6 +84,7 @@ public class TicketRolesCmd extends CommandBase {
 				createError(event, path+".exists");
 				return;
 			}
+			event.deferReply(true).queue();
 			String type = event.optString("type");
 			if (type.equals(RoleType.ASSIGN.toString())) {
 				Integer row = event.optInteger("row", 0);
@@ -91,36 +96,55 @@ public class TicketRolesCmd extends CommandBase {
 						}
 					}
 					if (row == 0) {
-						createError(event, path+".rows_max");
+						editError(event, path+".rows_max");
 						return;
 					}
 				} else {
 					if (bot.getDBUtil().role.getRowSize(guildId, row) >= 25) {
-						createError(event, path+".row_max", "Row: %s".formatted(row));
+						editError(event, path+".row_max", "Row: %s".formatted(row));
 						return;
 					}
 				}
-				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, RoleType.ASSIGN);
+				String link = event.optString("invite", "").replaceFirst("(https:\\/\\/)?(discord)?(\\.?gg\\/)?", "").trim();
+				if (link != null) {
+					final Integer frow = row;
+					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
+						if (invite.isFromGuild() && invite.isExpirable()) {
+							editError(event, path+".invalid_invite", "Not server type invite");
+							return;
+						}
+						bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), frow, RoleType.ASSIGN, invite.getUrl());
+						sendSuccess(event, type, role);
+					}, failure -> {
+						editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString()));
+					});
+				} else {
+					bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, RoleType.ASSIGN, "NULL");
+					sendSuccess(event, type, role);
+				}
 			} else if (type.equals(RoleType.TOGGLE.toString())) {
 				if (bot.getDBUtil().role.getToggleable(guildId).size() >= 5) {
-					createError(event, path+".toggle_max");
+					editError(event, path+".toggle_max");
 					return;
 				}
 				String description = event.optString("description", role.getName());
 				description = description.substring(0, Math.min(description.length(), 80));
-				bot.getDBUtil().role.add(guildId, role.getId(), description, null, RoleType.TOGGLE);
+				bot.getDBUtil().role.add(guildId, role.getId(), description, null, RoleType.TOGGLE, "NULL");
+				sendSuccess(event, type, role);
 			} else if (type.equals(RoleType.CUSTOM.toString())) {
 				if (bot.getDBUtil().role.getCustom(guildId).size() >= 25) {
-					createError(event, path+".custom_max");
+					editError(event, path+".custom_max");
 					return;
 				}
-				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), null, RoleType.CUSTOM);
+				bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), null, RoleType.CUSTOM, "NULL");
+				sendSuccess(event, type, role);
 			} else {
-				createError(event, path+".no_type");
-				return;
+				editError(event, path+".no_type");
 			}
-			
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+		}
+
+		private void sendSuccess(SlashCommandEvent event, String type, Role role) {
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{type}", type))
 				.setColor(Constants.COLOR_SUCCESS)
 				.build());
@@ -144,7 +168,9 @@ public class TicketRolesCmd extends CommandBase {
 						new Choice("1", 1),
 						new Choice("2", 2),
 						new Choice("3", 3)
-					))
+					)),
+				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"), false)
+					.setMaxLength(40)
 			);
 		}
 
@@ -160,6 +186,7 @@ public class TicketRolesCmd extends CommandBase {
 				return;
 			}
 			
+			event.deferReply(true).queue();
 			StringBuffer response = new StringBuffer();
 
 			if (event.hasOption("description")) {
@@ -192,16 +219,41 @@ public class TicketRolesCmd extends CommandBase {
 				response.append(lu.getText(event, path+".changed_row").replace("{row}", row.toString()));
 			}
 
+			if (event.hasOption("invite")) {
+				String link = event.optString("invite").replaceFirst("(https:\\/\\/)?(discord)?(\\.?gg\\/)?", "").trim();
+				if (link.toLowerCase().equals("null")) {
+					bot.getDBUtil().role.setInvite(role.getId(), "NULL");
+					response.append(lu.getText(event, path+".default_invite"));
+					sendReply(event, response, role);
+				} else {
+					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
+						if (invite.isFromGuild() && invite.isExpirable()) {
+							response.append(lu.getText(event, path+".invalid_invite"));
+						} else {
+							bot.getDBUtil().role.setInvite(role.getId(), invite.getUrl());
+							response.append(lu.getText(event, path+".changed_invite").replace("{link}", invite.getUrl()));
+						}
+						sendReply(event, response, role);
+					}, failure -> {
+						response.append(lu.getText(event, path+".invalid_invite"));
+						sendReply(event, response, role);
+					});
+				}
+			} else {
+				sendReply(event, response, role);
+			}
+		}
+
+		private void sendReply(SlashCommandEvent event, StringBuffer response, Role role) {
 			if (response.isEmpty()) {
-				createError(event, path+".no_options");
+				editError(event, path+".no_options");
 				return;
 			}
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, path+".embed_title").replace("{role}", role.getAsMention()))
 				.appendDescription(response.toString())
 				.setColor(Constants.COLOR_SUCCESS)
 				.build());
-
 		}
 
 	}
@@ -288,7 +340,8 @@ public class TicketRolesCmd extends CommandBase {
 				bot.getDBUtil().role.remove(roleId);
 				return;
 			}
-			buffer.append(String.format("%s `%s` | %s\n", role.getAsMention(), roleId, data.get("description")));
+			String withLink = Optional.ofNullable(data.get("discordInvite")).map(l -> "[`%s`](%s)".formatted(roleId, l)).orElse("`%s`".formatted(roleId));
+			buffer.append(String.format("%s %s | %s\n", role.getAsMention(), withLink, data.get("description")));
 			if (buffer.length() > 900) {
 				fields.add(new Field((fields.isEmpty() ? title : ""), buffer.toString(), false));
 				buffer.setLength(0);

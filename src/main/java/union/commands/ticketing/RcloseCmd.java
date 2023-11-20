@@ -5,10 +5,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -51,7 +51,7 @@ public class RcloseCmd extends CommandBase {
 			event.getChannel().delete().queue();
 			return;
 		}
-		if (bot.getDBUtil().ticket.getCloseTime(channelId) > 0) {
+		if (bot.getDBUtil().ticket.getTimeClosing(channelId) > 0) {
 			// If request already exists (if there is no cancel button - GG)
 			// TODO: create cancel command, to cancel close request
 			createError(event, path+".already_requested");
@@ -74,7 +74,7 @@ public class RcloseCmd extends CommandBase {
 		Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
 		
 		event.getHook().editOriginal("||%s||".formatted(user.getAsMention())).setEmbeds(embed).setActionRow(close, cancel).queue();
-		bot.getDBUtil().ticket.setRequestStatus(channelId, closeTime.toEpochMilli());
+		bot.getDBUtil().ticket.setRequestStatus(channelId, closeTime.getEpochSecond());
 	}
 
 }

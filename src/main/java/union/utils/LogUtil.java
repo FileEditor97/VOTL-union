@@ -314,6 +314,17 @@ public class LogUtil {
 			.build();
 	}
 
+	public MessageEmbed tempRoleUpdatedEmbed(DiscordLocale locale, User mod, User user, Role role, Instant until) {
+		return getEmbed(GREEN_LIGHT)
+			.setAuthor(localized(locale, "roles.temp_updated"), null, user.getAvatarUrl())
+			.addField(localized(locale, "user"), user.getAsMention(), true)
+			.addField(localized(locale, "roles.role"), role.getAsMention(), true)
+			.addField(localized(locale, "duration"), bot.getTimeUtil().formatTime(until, false), true)
+			.addField(localized(locale, "mod"), mod.getAsMention(), false)
+			.setFooter("ID: "+user.getId())
+			.build();
+	}
+
 	@Nonnull
 	public MessageEmbed tempRoleAutoRemovedEmbed(DiscordLocale locale, String targetId, Role role) {
 		return getEmbed(RED_LIGHT)
@@ -321,6 +332,17 @@ public class LogUtil {
 			.addField(localized(locale, "user"), "<@%s>".formatted(targetId), true)
 			.addField(localized(locale, "roles.role"), role.getAsMention(), true)
 			.setFooter("ID: "+targetId)
+			.build();
+	}
+
+	@Nonnull
+	public MessageEmbed checkRoleChildGuild(DiscordLocale locale, String modId, String roleId, String guildName, String guildId) {
+		return getEmbed(AMBER_LIGHT)
+			.setAuthor(localized(locale, "roles.checkrank"), null, null)
+			.addField(localized(locale, "roles.role"), "<@&%s>".formatted(roleId), true)
+			.addField(localized(locale, "roles.guild"), "`%s` (%s)".formatted(guildName, guildId), true)
+			.addField(localized(locale, "enforcer"), "<@%s>".formatted(modId), false)
+			.setFooter("ID: "+modId)
 			.build();
 	}
 
@@ -381,7 +403,7 @@ public class LogUtil {
 	public MessageEmbed groupMemberAddedEmbed(DiscordLocale locale, String ownerId, String ownerIcon, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_SUCCESS)
-			.setTitle(localized(locale, "group.added"))
+			.setTitle(localized(locale, "group.add"))
 			.build();
 	}
 

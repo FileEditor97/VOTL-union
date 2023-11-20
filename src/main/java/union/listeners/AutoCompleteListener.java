@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
-
-import union.objects.command.CommandClient;
-import union.objects.command.SlashCommand;
+import union.base.command.CommandClient;
+import union.base.command.SlashCommand;
 import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;

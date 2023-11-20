@@ -10,12 +10,13 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nonnull;
 
 import union.App;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
+import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.Emotes;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -26,8 +27,6 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 
 public class ModuleCmd extends CommandBase {
 	

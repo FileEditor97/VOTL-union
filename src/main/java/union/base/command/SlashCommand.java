@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command;
+package union.base.command;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -157,9 +157,9 @@ public abstract class SlashCommand extends Command
 	public void onAutoComplete(CommandAutoCompleteInteractionEvent event) {}
 
 	/**
-	 * The main body method of a {@link union.objects.command.Command Command}.
+	 * The main body method of a {@link union.base.command.Command Command}.
 	 * <br>This is the "response" for a successful
-	 * {@link union.objects.command.Command#run(CommandEvent) #run(CommandEvent)}.
+	 * {@link union.base.command.Command#run(CommandEvent) #run(CommandEvent)}.
 	 * <b>
 	 *     Because this is a SlashCommand, this is called, but does nothing.
 	 *     You can still override this if you want to have a separate response for normal [prefix][name].
@@ -167,7 +167,7 @@ public abstract class SlashCommand extends Command
 	 * </b>
 	 *
 	 * @param  event
-	 *         The {@link union.objects.command.CommandEvent CommandEvent} that
+	 *         The {@link union.base.command.CommandEvent CommandEvent} that
 	 *         triggered this Command
 	 */
 	@Override
@@ -468,7 +468,7 @@ public abstract class SlashCommand extends Command
 		if (remaining <= 0)
 			return null;
 		
-		StringBuilder front = new StringBuilder(lu.getText(event,"errors.cooldown.cooldown_left")
+		StringBuilder front = new StringBuilder(lu.getText(event,"errors.cooldown.cooldown_command")
 			.replace("{time}", Integer.toString(remaining))
 		);
 		if (cooldownScope.equals(CooldownScope.USER))

@@ -3,9 +3,9 @@ package union.commands.owner;
 import java.util.List;
 
 import union.App;
+import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 
 import net.dv8tion.jda.api.entities.Guild;

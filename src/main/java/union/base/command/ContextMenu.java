@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package union.objects.command;
+package union.base.command;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -136,7 +136,7 @@ public abstract class ContextMenu extends Interaction
 		if (remaining <= 0)
 			return null;
 		
-		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_left")
+		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_command")
 			.replace("{time}", Integer.toString(remaining))
 		);
 		if(cooldownScope.equals(CooldownScope.USER))

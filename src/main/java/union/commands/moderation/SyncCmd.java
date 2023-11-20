@@ -6,12 +6,13 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import union.App;
+import union.base.command.CooldownScope;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
+import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.command.CooldownScope;
-import union.objects.command.SlashCommand;
-import union.objects.command.SlashCommandEvent;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -25,8 +26,6 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
-
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 
 public class SyncCmd extends CommandBase {
 

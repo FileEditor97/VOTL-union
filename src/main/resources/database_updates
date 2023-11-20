@@ -11,3 +11,4 @@ ALTER TABLE "guild" ADD "reportChannelId" TEXT;CREATE TABLE "guildVoice" ("guild
 DROP TABLE "requestPrepare";CREATE TABLE "tempRoles" ("guildId" TEXT NOT NULL,"roleId" TEXT NOT NULL,"userId" TEXT NOT NULL,"deleteAfter" INTEGER DEFAULT 0,"expireAfter" INTEGER,FOREIGN KEY("guildId") REFERENCES "guild"("guildId"))
 ALTER TABLE "guild" ADD "serverLogId" TEXT;ALTER TABLE "guild" ADD "roleLogId" TEXT
 ALTER TABLE "requestRole" ADD "discordInvite" TEXT
+ALTER TABLE "verify" DROP "instructionText"

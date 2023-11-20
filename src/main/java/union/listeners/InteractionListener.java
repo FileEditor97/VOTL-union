@@ -310,8 +310,9 @@ public class InteractionListener extends ListenerAdapter {
 			}
 			// Reply with instruction on how to verify, buttons - link and refresh
 			Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
-			EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId)).setTitle(lu.getText(event, "bot.verification.embed.title"))
-				.setDescription(bot.getDBUtil().verify.getInstructionText(guildId))
+			EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId))
+				.setTitle(lu.getText(event, "bot.verification.embed.title"))
+				.setDescription(lu.getText(event, "bot.verification.embed.description"))
 				.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
 
 			event.getHook().editOriginalEmbeds(builder.build()).setActionRow(verify, refresh).queue();

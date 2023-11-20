@@ -31,7 +31,7 @@ public class TicketSettingsManager extends LiteDBBase {
 	public String getRowText(String guildId, Integer row) {
 		Object data = selectOne(TABLE, "rowName"+row, "guildId", guildId);
 		if (data == null) return "Select roles";
-		return data.toString();
+		return (String) data;
 	}
 
 	public void setAutocloseTime(String guildId, Integer hours) {
@@ -51,7 +51,7 @@ public class TicketSettingsManager extends LiteDBBase {
 	public Boolean getAutocloseLeft(String guildId) {
 		Object data = selectOne(TABLE, "autocloseLeft", "guildId", guildId);
 		if (data == null) return false;
-		return data.equals(1);
+		return (Integer) data == 1;
 	}
 
 }

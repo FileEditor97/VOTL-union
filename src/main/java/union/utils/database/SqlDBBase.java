@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class SqlDBBase {
 
@@ -26,7 +25,7 @@ public class SqlDBBase {
 	}
 
 	protected List<String> select(final String table, final String selectKey, final List<String> condKeys, final List<String> condValuesInp) {
-		List<String> condValues = condValuesInp.stream().map(value -> quote(value)).collect(Collectors.toList());
+		List<String> condValues = condValuesInp.stream().map(value -> quote(value)).toList();
 
 		String sql = "SELECT "+selectKey+" FROM "+table+" WHERE ";
 		for (int i = 0; i < condKeys.size(); i++) {
@@ -55,7 +54,7 @@ public class SqlDBBase {
 	}
 
 	protected List<Map<String, String>> select(final String table, final List<String> selectKeys, final List<String> condKeys, final List<String> condValuesInp) {
-		List<String> condValues = condValuesInp.stream().map(value -> quote(value)).collect(Collectors.toList());
+		List<String> condValues = condValuesInp.stream().map(value -> quote(value)).toList();
 
 		StringBuffer sql = new StringBuffer("SELECT "); //* FROM "+table+" WHERE ";
 

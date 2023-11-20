@@ -2,7 +2,6 @@ package union.utils.database.managers;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import union.utils.database.DBUtil;
 import union.utils.database.LiteDBBase;
@@ -38,7 +37,7 @@ public class VerifyCacheManager extends LiteDBBase {
 	public List<String> getForcedUsers() {
 		List<Object> objs = select(TABLE, "discordId", "forced", 1);
 		if (objs.isEmpty()) return Collections.emptyList();
-		return objs.stream().map(obj -> String.valueOf(obj)).collect(Collectors.toList());
+		return objs.stream().map(obj -> (String) obj).toList();
 	}
 
 	public boolean isVerified(String discordId) {
@@ -62,13 +61,13 @@ public class VerifyCacheManager extends LiteDBBase {
 	public String getSteam64(String discordId) {
 		Object data = selectOne(TABLE, "steam64", "discordId", discordId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public String getDiscordId(String steam64) {
 		Object data = selectOne(TABLE, "discordId", "steam64", steam64);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public void purgeVerified() {

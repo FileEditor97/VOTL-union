@@ -73,19 +73,19 @@ public class TicketManager extends LiteDBBase {
 	public String getOpenedChannel(String userId, String guildId, Integer tagId) {
 		Object data = selectOne(TABLE, "channelId", List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public Integer countOpenedByUser(String userId, String guildId, Integer tagId) {
 		Object data = countSelect(TABLE, List.of("userId", "guildId", "tagId", "closed"), List.of(userId, guildId, tagId, 0));
 		if (data == null) return null;
-		return Integer.valueOf(data.toString());
+		return (Integer) data;
 	}
 
 	public Integer countAllOpenedByUser(String userId, String guildId) {
 		Object data = countSelect(TABLE, List.of("userId", "guildId", "closed"), List.of(userId, guildId, 0));
 		if (data == null) return null;
-		return Integer.valueOf(data.toString());
+		return (Integer) data;
 	}
 
 	public List<String> getOpenedChannels() {
@@ -107,19 +107,19 @@ public class TicketManager extends LiteDBBase {
 	public String getUserId(String channelId) {
 		Object data = selectOne(TABLE, "userId", "channelId", channelId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public String getTicketId(String channelId) {
 		Object data = selectOne(TABLE, "ticketId", "channelId", channelId);
 		if (data == null) return null;
-		return String.valueOf(data);
+		return (String) data;
 	}
 
 	public Boolean isRoleTicket(String channelId) {
 		Object data = selectOne(TABLE, "tagId", "channelId", channelId);
 		if (data == null) return false;
-		return ((Integer) data) == 0;
+		return (Integer) data == 0;
 	}
 
 	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {

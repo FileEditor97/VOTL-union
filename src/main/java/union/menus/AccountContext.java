@@ -1,12 +1,11 @@
 package union.menus;
 
-import java.util.Optional;
-
 import union.App;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
+import union.objects.PlayerInfo;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -36,7 +35,7 @@ public class AccountContext extends UserContextMenu {
 		}
 
 		String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
-		String rank = "`%s`".formatted(Optional.ofNullable(bot.getDBUtil().unionPlayers.getPlayerRank(event.getGuild().getId(), steamId)).orElse("-"));
+		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64) + "_full.jpg";
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
@@ -45,7 +44,8 @@ public class AccountContext extends UserContextMenu {
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
-			.addField(lu.getUserText(event, "bot.verification.account.field_rank"), rank, true)
+			.addField(lu.getUserText(event, "bot.verification.account.field_rank"), "`%s`".formatted(playerInfo.getRank()), true)
+			.addField(lu.getUserText(event, "bot.verification.account.field_playtime"), "**%s** %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
 			.addField(lu.getUserText(event, "bot.verification.account.field_discord"), user.getAsMention(), false);
 		
 		event.getHook().editOriginalEmbeds(builder.build()).queue();

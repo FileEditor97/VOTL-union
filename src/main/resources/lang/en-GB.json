@@ -1240,6 +1240,7 @@
 				"not_found_user": "Discord user not found",
 				"no_options": "No options provided, see `/help`",
 				"field_rank": "Rank",
+				"field_playtime": "Play time",
 				"field_discord": "Discord account"
 			},
 			"vfcheck": {

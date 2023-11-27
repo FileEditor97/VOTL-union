@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import union.objects.PlayerInfo;
+
 public class SqlDBBase {
 
 	private DBUtil util;
@@ -152,5 +154,22 @@ public class SqlDBBase {
 			return str;
 		}
 		return "'" + String.valueOf(value).replaceAll("'", "''") + "'"; // smt's -> 'smt''s'
+	}
+
+
+	// Specific SELECT
+	protected PlayerInfo selectPlayerInfo(final String database, final String table, final String steamId) {
+		String sql = "SELECT rank, play_time FROM %s.%s WHERE steamid=%s;".formatted(database, table, quote(steamId));
+
+		PlayerInfo result = new PlayerInfo(steamId);
+		util.logger.debug(sql);
+		try (Connection conn = util.connectMySql(url);
+		PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+			if (rs.next()) result.setInfo(rs.getString("rank"), rs.getLong("play_time"));
+		} catch (SQLException ex) {
+			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return result;
 	}
 }

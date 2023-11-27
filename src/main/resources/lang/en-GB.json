@@ -1895,7 +1895,7 @@
 				"started": "Checking in progress... {EMOTE_LOADING}",
 				"estimate": "\n*Estimated time for completion `%d` seconds.*",
 				"empty": "No members has this role.",
-				"done": "Removed {role} from {count}/{max} users, checked server '{guild}'!"
+				"done": "Removed {role} from {count}/{max} users, checked server `{guild}`!"
 			}
 		}
 	},

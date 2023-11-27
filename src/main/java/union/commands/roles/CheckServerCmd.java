@@ -74,11 +74,11 @@ public class CheckServerCmd extends CommandBase {
 				editError(event, path+".empty");
 				return;
 			}
-			if (maxSize > 200) {
-				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
+			if (maxSize > 400) {
+				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
 				return;
 			}
-			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.floorDiv(maxSize, 2))).build());
+			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.round(maxSize*0.7))).build());
 
 			/* 1. If user is not in target server:
 			Try remove the role from user in this server

@@ -92,7 +92,13 @@ public class AccountCmd extends CommandBase {
 	}
 
 	private void replyAccountSteam(SlashCommandEvent event, final String steam64) {
-		String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+		String steamId;
+		try {
+			steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+		} catch (NumberFormatException ex) {
+			event.replyEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Incorrect SteamID provided\n`%s`".formatted(steam64)));
+			return;
+		}
 		String rank = "`%s`".formatted(Optional.ofNullable(bot.getDBUtil().unionPlayers.getPlayerRank(event.getGuild().getId(), steamId)).orElse("-"));
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)

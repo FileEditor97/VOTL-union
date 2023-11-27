@@ -1240,6 +1240,7 @@
 				"not_found_user": "Пользователь Discord не найден",
 				"no_options": "Опции отсутствуют, см. `/help`",
 				"field_rank": "Rank",
+				"field_playtime": "Наигранное время",
 				"field_discord": "Аккаунт Discord"
 			},
 			"vfcheck": {

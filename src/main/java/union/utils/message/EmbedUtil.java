@@ -53,19 +53,19 @@ public class EmbedUtil {
 		if (self) {
 			if (channel == null) {
 				msg = lu.getText(replyCallback, "errors.missing_perms.self")
-					.replace("{permissions}", perm.getName());
+					.replace("{permission}", perm.getName());
 			} else {
 				msg = lu.getText(replyCallback, "errors.missing_perms.self_channel")
-					.replace("{permissions}", perm.getName())
+					.replace("{permission}", perm.getName())
 					.replace("{channel}", channel.getAsMention());
 			}
 		} else {
 			if (channel == null) {
 				msg = lu.getText(replyCallback, "errors.missing_perms.other")
-					.replace("{permissions}", perm.getName());
+					.replace("{permission}", perm.getName());
 			} else {
 				msg = lu.getText(replyCallback, "errors.missing_perms.other_channel")
-					.replace("{permissions}", perm.getName())
+					.replace("{permission}", perm.getName())
 					.replace("{channel}", channel.getAsMention());
 			}
 		}

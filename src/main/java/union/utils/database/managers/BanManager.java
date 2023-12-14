@@ -13,11 +13,11 @@ public class BanManager extends LiteDBBase {
 
 	private final String TABLE = "ban";
 
-	public final Util utils;
+	public final Utils utils;
 	
 	public BanManager(DBUtil util) {
 		super(util);
-		this.utils = new Util();
+		this.utils = new Utils();
 	}
 
 	// add new ban
@@ -122,7 +122,7 @@ public class BanManager extends LiteDBBase {
 		update(TABLE, "expirable", 0, "banId", banId);
 	}
 
-	public class Util {
+	public class Utils {
 		public boolean isExpirable(Map<String, Object> banMap) {
 			if (banMap.get("expirable").equals(1)) return true;
 			return false;

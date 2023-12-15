@@ -2,6 +2,7 @@ package union.utils.database.managers;
 
 import java.util.Map;
 
+import union.objects.PlayerInfo;
 import union.utils.database.DBUtil;
 import union.utils.database.SqlDBBase;
 
@@ -22,8 +23,15 @@ public class UnionPlayerManager extends SqlDBBase {
 		String database = databases.get(guildId);
 		if (database == null) return null;
 		// Get data from database table
-		String data = selectOne(database, TABLE_PLAYERS, "rank", "steamid", steamId);
-		return data;
+		return selectOne(database, TABLE_PLAYERS, "rank", "steamid", steamId);
+	}
+
+	public PlayerInfo getPlayerInfo(@Nonnull String guildId, @Nonnull String steamId) {
+		// Find corresponding database
+		String database = databases.get(guildId);
+		if (database == null) return new PlayerInfo(steamId);
+		// Get data from database table
+		return selectPlayerInfo(database, TABLE_PLAYERS, steamId);
 	}
 
 }

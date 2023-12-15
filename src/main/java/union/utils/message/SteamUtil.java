@@ -4,7 +4,7 @@ public class SteamUtil {
 
 	public SteamUtil() {}
 
-	public String convertSteam64toSteamID(String steam64) {
+	public String convertSteam64toSteamID(String steam64) throws NumberFormatException {
 		Long steamId64 = Long.valueOf(steam64);
 
 		Long universe = (steamId64 >> 56) & 0xFF;

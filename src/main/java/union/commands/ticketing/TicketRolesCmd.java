@@ -106,7 +106,7 @@ public class TicketRolesCmd extends CommandBase {
 					}
 				}
 				String link = event.optString("invite", "").replaceFirst("(https:\\/\\/)?(discord)?(\\.?gg\\/)?", "").trim();
-				if (link != null) {
+				if (!link.isBlank()) {
 					final Integer frow = row;
 					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
 						if (invite.isFromGuild() && invite.isExpirable()) {

@@ -955,11 +955,9 @@ public class InteractionListener extends ListenerAdapter {
 		if (event.isFromGuild()) {
 			Guild guild = event.getGuild();
 			Map<String, String> roles = bot.getDBUtil().role.getRolesWithInvites(guild.getId());
-			List<String> invites = event.getMember().getRoles().stream()
-				.map(role -> role.getId())
-				.filter(roles::containsKey)
-				.map(id -> roles.get(id))
-				.toList();
+			Map<String, String> invites = event.getMember().getRoles().stream()
+				.filter(role -> roles.containsKey(role.getId()))
+				.collect(Collectors.toMap(Role::getName, role -> roles.get(role.getId())));
 			sendInvites(event, guild, invites);
 		} else {
 			Guild guild = event.getJDA().getGuildById(event.getComponentId().split(":")[1]);
@@ -969,11 +967,9 @@ public class InteractionListener extends ListenerAdapter {
 			}
 			guild.retrieveMember(event.getUser()).queue(member -> {
 				Map<String, String> roles = bot.getDBUtil().role.getRolesWithInvites(guild.getId());
-				List<String> invites = member.getRoles().stream()
-					.map(role -> role.getId())
-					.filter(roles::containsKey)
-					.map(id -> roles.get(id))
-					.toList();
+				Map<String, String> invites = member.getRoles().stream()
+					.filter(role -> roles.containsKey(role.getId()))
+					.collect(Collectors.toMap(Role::getName, role -> roles.get(role.getId())));
 				sendInvites(event, guild, invites);
 			}, failure -> {
 				sendError(event, "bot.ticketing.listener.invites.no_guild", "Server ID: "+guild.getId());
@@ -981,15 +977,15 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
-	private void sendInvites(ButtonInteractionEvent event, Guild guild, List<String> invites) {
+	private void sendInvites(ButtonInteractionEvent event, Guild guild, Map<String, String> invites) {
 		if (invites.isEmpty()) {
 			sendError(event, "bot.ticketing.listener.invites.none");
 			return;
 		}
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setAuthor(lu.getLocalized(event.getUserLocale(), "bot.ticketing.listener.invites.title").formatted(guild.getName()), null, guild.getIconUrl());
-		invites.forEach(invite -> builder.appendDescription("> "+invite));
-		event.getHook().sendMessageEmbeds(builder.build()).setEphemeral(true).queue();
+		invites.forEach((k, v) -> builder.appendDescription("%s\n> %s\n".formatted(k, v)));
+		event.getHook().editOriginalEmbeds(builder.build()).queue();
 	}
 
 	@Override

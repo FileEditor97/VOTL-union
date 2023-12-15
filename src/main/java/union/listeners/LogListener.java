@@ -407,7 +407,7 @@ public class LogListener {
 			TextChannel channel = getLogChannel(LogChannels.TICKETS, guild);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.ticketCreatedEmbed(guild.getLocale(), channel, author));
+			sendLog(channel, logUtil.ticketCreatedEmbed(guild.getLocale(), messageChannel, author));
 		}
 
 		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, String authorId, FileUpload file) {

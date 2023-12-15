@@ -106,7 +106,7 @@ public class TempRoleCmd extends CommandBase {
 			}
 
 			Boolean delete = event.optBoolean("delete", false);
-			if (!event.getMember().hasPermission(Permission.MANAGE_ROLES)) {
+			if (delete && !event.getMember().hasPermission(Permission.MANAGE_ROLES)) {
 				editPermError(event, Permission.MANAGE_ROLES, false);
 				return;
 			}

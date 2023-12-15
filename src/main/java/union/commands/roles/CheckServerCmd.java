@@ -74,11 +74,11 @@ public class CheckServerCmd extends CommandBase {
 				editError(event, path+".empty");
 				return;
 			}
-			if (maxSize > 200) {
-				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
+			if (maxSize > 400) {
+				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
 				return;
 			}
-			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.floorDiv(maxSize, 2))).build());
+			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.round(maxSize*0.7))).build());
 
 			/* 1. If user is not in target server:
 			Try remove the role from user in this server
@@ -90,7 +90,7 @@ public class CheckServerCmd extends CommandBase {
 			List<CompletableFuture<Boolean>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
 				completableFutures.add(targetGuild.retrieveMember(member).submit()
-					.exceptionallyCompose(ex -> null)
+					.exceptionally(ex -> null)
 					.thenCompose(m -> m == null ?
 						guild.removeRoleFromMember(member, role).reason("Not inside server '%s'".formatted(guildName)).submit()
 							.thenCompose(v -> CompletableFuture.completedFuture(true))
@@ -111,7 +111,7 @@ public class CheckServerCmd extends CommandBase {
 							try {
 								if (!future.isCompletedExceptionally() && future.get().equals(true)) removed++;
 							} catch (InterruptedException | ExecutionException ex) {
-								ex.printStackTrace();
+								bot.getLogger().error("At CheckServerCmd\n", ex);
 								editError(event, "errors.unknown", ex.getLocalizedMessage());
 							}
 						}

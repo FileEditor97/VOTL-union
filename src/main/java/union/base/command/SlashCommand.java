@@ -260,8 +260,7 @@ public abstract class SlashCommand extends Command
 	 * @return {@code true} if the User is the Owner, else {@code false}
 	 */
 	public boolean isOwner(SlashCommandEvent event, CommandClient client) {
-		String userId = event.getUser().getId();
-		if (client.getOwnerId().equals(userId))
+		if (client.getOwnerId().equals(event.getUser().getId()))
 			return true;
 		return false;
 	}

@@ -82,10 +82,10 @@ public class TicketUtil {
 		});
 
 		// Send reply
-		event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+		event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 			.setDescription(bot.getLocaleUtil().getText(event, "bot.ticketing.listener.created").replace("{channel}", channel.getAsMention()))
 			.build()
-		).setComponents().queue();
+		).setEphemeral(true).queue();
 		// Log
 		bot.getLogListener().ticket.onCreate(event.getGuild(), channel, event.getUser());
 	}

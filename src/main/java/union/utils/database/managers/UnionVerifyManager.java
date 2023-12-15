@@ -8,11 +8,10 @@ import union.utils.database.SqlDBBase;
 
 public class UnionVerifyManager extends SqlDBBase {
 
-	private String TABLE;
+	private final String TABLE = "union.users";
 
 	public UnionVerifyManager(DBUtil util, String url, String user, String password) {
 		super(util, "%s?user=%s&password=%s".formatted(url, user, password));
-		this.TABLE = "union.users";
 	}
 
 	public String getDiscordId(String steam64) {

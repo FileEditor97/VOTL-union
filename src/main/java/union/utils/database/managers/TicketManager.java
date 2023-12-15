@@ -113,7 +113,7 @@ public class TicketManager extends LiteDBBase {
 	public String getTicketId(String channelId) {
 		Object data = selectOne(TABLE, "ticketId", "channelId", channelId);
 		if (data == null) return null;
-		return String.valueOf(data); // Cast-ing will not work, as it is integer value
+		return String.valueOf(data);
 	}
 
 	public Boolean isRoleTicket(String channelId) {

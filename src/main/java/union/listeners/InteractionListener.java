@@ -499,7 +499,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, 0);
-		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).queue(
+		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).setInvitable(false).queue(
 			channel -> {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
 				
@@ -709,7 +709,7 @@ public class InteractionListener extends ListenerAdapter {
 		String ticketName = (((String) tagInfo.get("ticketName"))+ticketId).replace("{username}", user.getName());
 		if (type.equals(1)) {
 			// Thread ticket
-			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).queue(channel -> {
+			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).setInvitable(false).queue(channel -> {
 				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);
 				
 				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);

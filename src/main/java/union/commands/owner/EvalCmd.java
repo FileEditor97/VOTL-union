@@ -28,10 +28,6 @@ public class EvalCmd extends CommandBase {
 		this.path = "bot.owner.eval";
 		this.options = List.of(
 			new OptionData(OptionType.STRING, "code", lu.getText(path+".code.help"), true) 
-			// Я блять ненавижу эту штуку
-			// Нужно переделовать через modals, но для этого нужно вначале получить комманду от пользователя
-			// позже выслать форму для заполения и только потом обработать ее
-			// ............пиздец
 		);
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;

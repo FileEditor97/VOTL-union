@@ -90,7 +90,7 @@ public class AccountCmd extends CommandBase {
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64), profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
+			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%s)".formatted(steam64, steam64), true)
 			.addField(lu.getUserText(event, path+".field_rank"), "`%s`".formatted(playerInfo.getRank()), true)
 			.addField(lu.getUserText(event, path+".field_playtime"), "%s %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
 			.addField(lu.getUserText(event, path+".field_discord"), user.getAsMention(), false);

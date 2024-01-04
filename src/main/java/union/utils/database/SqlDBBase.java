@@ -1,6 +1,5 @@
 package union.utils.database;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,11 +12,11 @@ import union.objects.PlayerInfo;
 
 public class SqlDBBase {
 
-	private DBUtil util;
+	private final ConnectionUtil cu;
 	private final String url;
 
-	public SqlDBBase(DBUtil util, String url) {
-		this.util = util;
+	public SqlDBBase(ConnectionUtil connectionUtil, String url) {
+		this.cu = connectionUtil;
 		this.url = url;
 	}
 
@@ -38,15 +37,14 @@ public class SqlDBBase {
 		}
 
 		List<String> results = new ArrayList<String>();
-		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+		cu.logger.debug(sql);
+		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
 				results.add(rs.getString(selectKey));
 			}
 		} catch (SQLException ex) {
-			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return results;
 	}
@@ -76,9 +74,8 @@ public class SqlDBBase {
 
 		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
 
-		util.logger.debug(sql.toString());
-		try (Connection conn = util.connectMySql(url);
-		PreparedStatement st = conn.prepareStatement(sql.toString())) {
+		cu.logger.debug(sql.toString());
+		try (PreparedStatement st = cu.prepareStatement(url, sql.toString())) {
 			ResultSet rs = st.executeQuery();
 			List<String> keys = new ArrayList<>();
 			
@@ -98,7 +95,7 @@ public class SqlDBBase {
 				results.add(data);
 			}
 		} catch (SQLException ex) {
-			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return results;
 	}
@@ -107,13 +104,12 @@ public class SqlDBBase {
 		String sql = "SELECT %s FROM %s WHERE %s=%s".formatted(selectKey, table, condKey, quote(condValue));
 
 		String result = null;
-		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+		cu.logger.debug(sql);
+		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
-			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}
@@ -123,13 +119,12 @@ public class SqlDBBase {
 		String sql = "SELECT %s FROM %s.%s WHERE %s=%s".formatted(selectKey, database, table, condKey, quote(condValue));
 
 		String result = null;
-		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+		cu.logger.debug(sql);
+		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
-			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}
@@ -138,12 +133,11 @@ public class SqlDBBase {
 	protected void update(final String table, final String updateKey, final Object updateValueObj, final String condKey, final Object condValueObj) {
 		String sql = "UPDATE "+table+" SET "+updateKey+"="+quote(updateValueObj)+" WHERE "+condKey+"="+quote(condValueObj);
 
-		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+		cu.logger.debug(sql);
+		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
 			st.executeUpdate();
 		} catch (SQLException ex) {
-			util.logger.warn("DB MySQL: Error at UPDATE\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MySQL: Error at UPDATE\nrequest: {}", sql, ex);
 		}
 	}
 
@@ -162,13 +156,12 @@ public class SqlDBBase {
 		String sql = "SELECT rank, play_time FROM %s.%s WHERE steamid=%s;".formatted(database, table, quote(steamId));
 
 		PlayerInfo result = new PlayerInfo(steamId);
-		util.logger.debug(sql);
-		try (Connection conn = util.connectMySql(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+		cu.logger.debug(sql);
+		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result.setInfo(rs.getString("rank"), rs.getLong("play_time"));
 		} catch (SQLException ex) {
-			util.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}

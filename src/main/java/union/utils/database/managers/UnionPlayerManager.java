@@ -1,8 +1,8 @@
 package union.utils.database.managers;
 
 import java.util.Map;
+import java.util.Objects;
 
-import union.objects.PlayerInfo;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
 
@@ -32,6 +32,39 @@ public class UnionPlayerManager extends SqlDBBase {
 		if (database == null) return new PlayerInfo(steamId);
 		// Get data from database table
 		return selectPlayerInfo(database, TABLE_PLAYERS, steamId);
+	}
+
+	public static class PlayerInfo {
+		private final String steamId;
+		private String rank;
+		private Long playedHours; // in hours
+
+		public PlayerInfo(String steamId) {
+			this.steamId = steamId;
+		}
+
+		public PlayerInfo(String steamId, String rank, Long playTimeSeconds) {
+			this.steamId = steamId;
+			this.rank = rank;
+			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
+		}
+
+		public void setInfo(String rank, Long playTimeSeconds) {
+			this.rank = rank;
+			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
+		}
+
+		public String getSteamId() {
+			return steamId;
+		}
+
+		public String getRank() {
+			return Objects.requireNonNullElse(rank, "-");
+		}
+
+		public Long getPlayTime() {
+			return Objects.requireNonNullElse(playedHours, 0L);
+		}
 	}
 
 }

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import union.objects.PlayerInfo;
+import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 
 public class SqlDBBase {
 

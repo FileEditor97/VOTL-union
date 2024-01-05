@@ -114,7 +114,7 @@ public class BanManager extends LiteDBBase {
 		execute("UPDATE %s SET active=0 WHERE (banId=%d)".formatted(table, banId));
 	}
 
-	public class BanData {
+	public static class BanData {
 		private final Integer banId;
 		private final String userId;
 		private final String userTag;

@@ -101,7 +101,7 @@ public class TicketPanelManager extends LiteDBBase {
 		return quote(text).replace("\\n", "<br>");
 	}
 
-	public class Panel {
+	public static class Panel {
 		private final String title;
 		private final String description;
 		private final String image;

@@ -135,7 +135,7 @@ public class TicketTagManager extends LiteDBBase {
 		return quote(text).replace("\\n", "<br>");
 	}
 
-	public class Tag {
+	public static class Tag {
 		private final Integer tagType;
 		private final String buttonText;
 		private final String ticketName;

@@ -20,6 +20,7 @@ import union.objects.Emotes;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.TicketTagManager.Tag;
 import union.utils.message.LocaleUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -688,9 +689,8 @@ public class InteractionListener extends ListenerAdapter {
 			db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
 		}
 
-		Map<String, Object> tagInfo = db.tags.getTagInfo(tagId);
-		Integer type = (Integer) tagInfo.get("tagType");
-		if (type == null || type.equals(0)) {
+		Tag tag = db.tags.getTagInfo(tagId);
+		if (tag == null) {
 			sendTicketError(event, "Unknown tag with ID: "+tagId);
 			return;
 		}
@@ -698,16 +698,16 @@ public class InteractionListener extends ListenerAdapter {
 		User user = event.getUser();
 
 		StringBuffer mentions = new StringBuffer(user.getAsMention());
-		List<String> supportRoles = Optional.ofNullable((String) tagInfo.get("supportRoles")).map(text -> Arrays.asList(text.split(";"))).orElse(Collections.emptyList());
+		List<String> supportRoles = Optional.ofNullable(tag.getSupportRoles()).map(text -> Arrays.asList(text.split(";"))).orElse(Collections.emptyList());
 		supportRoles.forEach(roleId -> mentions.append(" <@&%s>".formatted(roleId)));
 
-		String message = Optional.ofNullable((String) tagInfo.get("message"))
-			.map(text -> setNewline(text).replace("{username}", user.getName()).replace("{tag_username}", user.getAsMention()))
+		String message = Optional.ofNullable(tag.getMessage())
+			.map(text -> text.replace("{username}", user.getName()).replace("{tag_username}", user.getAsMention()))
 			.orElse("Ticket's controls");
 		
 		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, tagId);
-		String ticketName = (((String) tagInfo.get("ticketName"))+ticketId).replace("{username}", user.getName());
-		if (type.equals(1)) {
+		String ticketName = (tag.getTicketName()+ticketId).replace("{username}", user.getName());
+		if (tag.getTagType() == 1) {
 			// Thread ticket
 			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).setInvitable(false).queue(channel -> {
 				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);
@@ -719,10 +719,9 @@ public class InteractionListener extends ListenerAdapter {
 			});
 		} else {
 			// Channel ticket
-			String categoryId = (String) tagInfo.get("location");
-			Category category = Optional.ofNullable(categoryId).map(id -> event.getGuild().getCategoryById(id)).orElse(event.getChannel().asTextChannel().getParentCategory());
+			Category category = Optional.ofNullable(tag.getLocation()).map(id -> event.getGuild().getCategoryById(id)).orElse(event.getChannel().asTextChannel().getParentCategory());
 			if (category == null) {
-				sendTicketError(event, "Target category not found, with ID: "+categoryId);
+				sendTicketError(event, "Target category not found, with ID: "+tag.getLocation());
 				return;
 			}
 
@@ -736,13 +735,9 @@ public class InteractionListener extends ListenerAdapter {
 				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
 			}, 
 			failure -> {
-				sendTicketError(event, "Unable to create new channel in target category, with ID: "+categoryId);
+				sendTicketError(event, "Unable to create new channel in target category, with ID: "+tag.getLocation());
 			});
 		}
-	}
-
-	private String setNewline(String text) {
-		return text.replaceAll("<br>", "\n");
 	}
 
 	private void sendTicketError(ButtonInteractionEvent event, String reason) {

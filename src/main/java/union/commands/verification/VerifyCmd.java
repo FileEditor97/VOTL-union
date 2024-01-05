@@ -52,29 +52,24 @@ public class VerifyCmd extends CommandBase {
 		}
 
 		if (member.getRoles().contains(role)) {
-			if (bot.getDBUtil().verifyCache.isVerified(member.getId())) {
-				bot.getDBUtil().verifyCache.setForced(member.getId());
-			} else {
-				bot.getDBUtil().verifyCache.addForcedUser(member.getId());
-			}
+			bot.getDBUtil().verifyCache.addForcedUser(member.getId());
+			
 			createError(event, "bot.verification.user_verified");
-			return;
-		}
-
-		guild.addRoleToMember(member, role).reason(String.format("Manual verification by %s", event.getUser().getName())).queue(
-			success -> {
-				bot.getLogListener().verify.onVerified(member.getUser(), null, guild);
-				if (bot.getDBUtil().verifyCache.isVerified(member.getId())) {
-					bot.getDBUtil().verifyCache.setForced(member.getId());
-				} else {
+		} else {
+			guild.addRoleToMember(member, role).reason(String.format("Manual verification by %s", event.getUser().getName())).queue(
+				success -> {
+					bot.getLogListener().verify.onVerified(member.getUser(), null, guild);
 					bot.getDBUtil().verifyCache.addForcedUser(member.getId());
+
+					createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".done")).build());
+				},
+				failure -> {
+					createError(event, "bot.verification.failed_role");
+					bot.getLogger().info(String.format("Was unable to add verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
 				}
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".done")).build());
-			},
-			failure -> {
-				createError(event, "bot.verification.failed_role");
-				bot.getLogger().info(String.format("Was unable to add verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
-			});
+			);
+		}
+		
 	}
 
 }

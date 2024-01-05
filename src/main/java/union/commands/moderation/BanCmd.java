@@ -1,11 +1,9 @@
 package union.commands.moderation;
 
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +18,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.BanManager.BanData;
 import union.utils.exception.FormatterException;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -64,7 +63,7 @@ public class BanCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(false).queue();
+		event.deferReply().queue();
 		
 		User targetUser = event.optUser("user");
 		String time = event.optString("time");
@@ -111,18 +110,18 @@ public class BanCmd extends CommandBase {
 			});
 		}
 
-		guild.retrieveBan(tu).queueAfter(2, TimeUnit.SECONDS, ban -> {
-			Map<String, Object> banData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
-			if (!banData.isEmpty()) {
-				Integer caseId = Integer.valueOf(banData.get("banId").toString());
+		guild.retrieveBan(tu).queue(ban -> {
+			BanData oldBanData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
+			if (oldBanData != null) {
+				// Active expirable ban
 				if (duration.isZero()) {
 					// make current temporary ban inactive
-					bot.getDBUtil().ban.setInactive(caseId);
+					bot.getDBUtil().ban.setInactive(oldBanData.getBanId());
 					// create new entry
-					Integer banId = 1 + bot.getDBUtil().ban.lastId();
 					Member mod = event.getMember();
-					bot.getDBUtil().ban.add(banId, tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
-						guild.getId(), reason, Timestamp.from(Instant.now()), duration);
+					bot.getDBUtil().ban.add(tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
+						guild.getId(), reason, Instant.now(), duration);
+					BanData newBanData = bot.getDBUtil().ban.getMemberLast(tu.getId(), guild.getId());
 					// create embed
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_SUCCESS)
@@ -137,12 +136,12 @@ public class BanCmd extends CommandBase {
 					});
 
 					// log ban
-					bot.getLogListener().mod.onBan(event, tu, mod, banId);
+					bot.getLogListener().mod.onBan(event, tu, mod, newBanData);
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_WARNING)
-						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", caseId.toString()))
+						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getBanId().toString()))
 						.build();
 					event.getHook().editOriginalEmbeds(embed).queue();
 				}
@@ -184,17 +183,16 @@ public class BanCmd extends CommandBase {
 				}
 			}
 
-			guild.ban(tu, (delete ? 10 : 0), TimeUnit.HOURS).reason(reason).queue(done -> {
-				// get new caseId/banId
-				Integer banId = 1 + bot.getDBUtil().ban.lastId();
+			guild.ban(tu, (delete ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
 				// fail-safe check if has expirable ban (to prevent auto unban)
-				Map<String, Object> banData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
-				if (!banData.isEmpty()) {
-					bot.getDBUtil().ban.setInactive(Integer.valueOf(banData.get("banId").toString()));
+				BanData oldBanData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
+				if (oldBanData != null) {
+					bot.getDBUtil().ban.setInactive(oldBanData.getBanId());
 				}
 				// add info to db
-				bot.getDBUtil().ban.add(banId, tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
-					guild.getId(), reason, Timestamp.from(Instant.now()), duration);
+				bot.getDBUtil().ban.add(tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
+					guild.getId(), reason, Instant.now(), duration);
+				BanData newBanData = bot.getDBUtil().ban.getMemberLast(tu.getId(), guild.getId());
 				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_SUCCESS)
@@ -212,7 +210,7 @@ public class BanCmd extends CommandBase {
 				});
 				
 				// log ban
-				bot.getLogListener().mod.onBan(event, tu, mod, banId);
+				bot.getLogListener().mod.onBan(event, tu, mod, newBanData);
 			},
 			failed -> {
 				editError(event, "errors.unknown", failed.getMessage());

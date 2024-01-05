@@ -42,10 +42,6 @@ public class VerifyRoleCmd extends CommandBase {
 			return;
 		}
 
-		if (!bot.getDBUtil().verify.exists(guild.getId())) {
-			bot.getDBUtil().verify.add(guild.getId());
-		}
-
 		bot.getDBUtil().verify.setVerifyRole(guild.getId(), role.getId());
 
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)

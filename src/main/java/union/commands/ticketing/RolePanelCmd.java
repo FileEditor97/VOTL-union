@@ -204,10 +204,6 @@ public class RolePanelCmd extends CommandBase {
 			Integer row = event.optInteger("row");
 			String text = event.optString("text");
 
-			if (!bot.getDBUtil().ticketSettings.exists(guildId)) {
-				bot.getDBUtil().ticketSettings.add(guildId);
-			}
-
 			bot.getDBUtil().ticketSettings.setRowText(guildId, row, text);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)

@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 
 import union.App;
 import union.base.command.SlashCommand;
@@ -36,7 +35,7 @@ public class SetupCmd extends CommandBase {
 		super(bot);
 		this.name = "setup";
 		this.path = "bot.guild.setup";
-		this.children = new SlashCommand[]{new Main(bot), new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), 
+		this.children = new SlashCommand[]{new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), 
 			new Voice(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot)
 		};
 		this.category = CmdCategory.GUILD;
@@ -46,7 +45,7 @@ public class SetupCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {}
 
-	private class Main extends SlashCommand {
+	/* private class Main extends SlashCommand {
 		
 		public Main(App bot) {
 			this.bot = bot;
@@ -78,7 +77,7 @@ public class SetupCmd extends CommandBase {
 			}
 		}
 
-	}
+	} */
 
 	private class PanelColor extends SlashCommand {
 

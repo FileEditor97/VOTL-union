@@ -1,137 +1,185 @@
 package union.utils.database.managers;
 
-import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import union.utils.database.LiteDBBase;
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 
 public class BanManager extends LiteDBBase {
 
-	private final String TABLE = "ban";
+	private final String table = "ban";
 
-	public final Utils utils;
+	private final List<String> fullBanKeys = List.of("banId", "userId", "userTag", "modId", "modTag", "guildId", "reason", "timeStart", "duration");
 	
-	public BanManager(DBUtil util) {
-		super(util);
-		this.utils = new Utils();
+	public BanManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	// add new ban
-	public void add(Integer banId, String userId, String userName, String modId, String modName, String guildId, String reason, Timestamp timeStart, Duration duration) {
-		insert(TABLE, List.of("banId", "userId", "userTag", "modId", "modTag", "guildId", "reason", "timeStart", "duration", "expirable"),
-			List.of(banId, userId, userName, modId, modName, guildId, reason, timeStart.toString(), duration.toString(), (duration.isZero() ? 0 : 1)));
+	public void add(String userId, String userName, String modId, String modName, String guildId, String reason, Instant timeStart, Duration duration) {
+		execute("INSERT INTO %s(userId, userTag, modId, modTag, guildId, reason, timeStart, duration) VALUES (%s, %s, %s, %s, %s, %s, %d, %d)"
+			.formatted(table, userId, quote(userName), modId, quote(modName), guildId, quote(reason), timeStart.getEpochSecond(), duration.getSeconds()));
 	}
 
 	// get last ban's ID
-	public Integer lastId() {
-		Object data = selectLast(TABLE, "banId");
-		if (data == null) return 0;
-		return Integer.parseInt(data.toString());
-	}
-
-	// remove existing ban
-	public void remove(Integer banId) {
-		delete(TABLE, "banId", banId);
+	public Integer getIncrement() {
+		return getIncrement(table);
 	}
 
 	// update ban reason
 	public void updateReason(Integer banId, String reason) {
-		update(TABLE, "reason", reason, "banId", banId);
+		execute("UPDATE %s SET reason=%s WHERE (banId=%d)".formatted(table, quote(reason), banId));
 	}
 
 	// update ban duration
 	public void updateDuration(Integer banId, Duration duration) {
-		update(TABLE, "duration", duration, "banId", duration.toString());
+		execute("UPDATE %s SET duration=%d WHERE (banId=%d)".formatted(table, quote(duration.getSeconds()), banId));
 	}
 
 	// get ban info
-	public Map<String, Object> getInfo(Integer banId) {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of(), "banId", banId);
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyMap();
-		return banDataList.get(0);
+	public BanData getInfo(Integer banId) {
+		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (banId=%d)".formatted(table, banId), fullBanKeys);
+		if (data==null) return null;
+		return new BanData(data);
 	}
 
-	// get all bans in guild
-	public List<Map<String, Object>> getGuildAll(String guildId) {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of(), "guildId", guildId);
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyList();
-		return banDataList;
+	// get last 20 bans in guild
+	public List<BanData> getGuildAll(String guildId) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%s) ORDER BY banId DESC LIMIT 20".formatted(table, guildId), fullBanKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(map -> new BanData(map)).toList();
 	}
 
-	// get all bans in guild by mod
-	public List<Map<String, Object>> getGuildMod(String guildId, String modId) {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of(), List.of("guildId", "modId"), List.of(guildId, modId));
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyList();
-		return banDataList;
+	// get last 20 bans in guild by mod
+	public List<BanData> getGuildMod(String guildId, String modId) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%s AND modId=%s) ORDER BY banId DESC LIMIT 20".formatted(table, guildId, modId), fullBanKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(map -> new BanData(map)).toList();
 	}
 
-	// get all bans in guild for user
-	public List<Map<String, Object>> getGuildUser(String guildId, String userId) {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of(), List.of("guildId", "userId"), List.of(guildId, userId));
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyList();
-		return banDataList;
+	// get last 10 bans in guild for user
+	public List<BanData> getGuildUser(String guildId, String userId) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%s AND userId=%s) ORDER BY banId DESC LIMIT 10".formatted(table, guildId, userId), fullBanKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(map -> new BanData(map)).toList();
 	}
 
-	// get ban start time and duration
-	public Map<String, Object> getTime(Integer banId) {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of("timeStart", "duration"), "banId", banId);
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyMap();
-		return banDataList.get(0);
+	// get all active bans
+	public List<BanData> getActive(String guildId) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1) ORDER BY banId DESC LIMIT 20".formatted(table), fullBanKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(map -> new BanData(map)).toList();
 	}
 
-	// get all expirable bans in guild
-	public List<Map<String, Object>> getGuildExpirable(String guildId) {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of(), List.of("guildId", "expirable"), List.of(guildId, 1));
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyList();
-		return banDataList;
+	// get all active expirable bans
+	public List<BanData> getActiveExpirable(String guildId) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND duration>0) ORDER BY banId DESC LIMIT 20".formatted(table), fullBanKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(map -> new BanData(map)).toList();
 	}
 
-	// get all expirable bans
-	public List<Map<String, Object>> getExpirable() {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of(), "expirable", 1);
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyList();
-		return banDataList;
+	// get all active expired bans
+	public List<BanData> getExpired() {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND timeStart+duration<%d) ORDER BY banId DESC LIMIT 10".formatted(table, Instant.now().getEpochSecond()), fullBanKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(map -> new BanData(map)).toList();
 	}
 
 	// get user active temporary ban data
-	public Map<String, Object> getMemberExpirable(String userId, String guildId) {
-		List<Map<String, Object>> banDataList = select(TABLE, List.of(), List.of("guildId", "userId", "expirable"), List.of(guildId, userId, 1));
-		if (banDataList.isEmpty() || banDataList.get(0) == null) return Collections.emptyMap();
-		return banDataList.get(0);
+	public BanData getMemberActive(String userId, String guildId) {
+		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (guildId=%s AND userId=%s AND active=1)".formatted(table, Instant.now().getEpochSecond()), fullBanKeys);
+		if (data == null) return null;
+		return new BanData(data);
 	}
 
-	// if user has temporary ban
-	public boolean hasExpirable(String userId, String guildId) {
-		Object data = selectOne(TABLE, "expirable", List.of("guildId", "userId"), List.of(guildId, userId));
-		if (data == null) return false;
-		if (data.equals(1)) return true;
-		return false;
+	// get user active temporary ban data
+	public BanData getMemberExpirable(String userId, String guildId) {
+		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (guildId=%s AND userId=%s AND active=1 AND duration>0)".formatted(table, Instant.now().getEpochSecond()), fullBanKeys);
+		if (data == null) return null;
+		return new BanData(data);
 	}
 
-	// set ban as expirable
-	public void setExpirable(Integer banId) {
-		update(TABLE, "expirable", 1, "banId", banId);
+	public BanData getMemberLast(String userId, String guildId) {
+		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (guildId=%s AND userId=%s) ORDER BY banId DESC LIMIT 1".formatted(table, Instant.now().getEpochSecond()), fullBanKeys);
+		if (data == null) return null;
+		return new BanData(data);
 	}
 
 	// set ban as expirable
 	public void setInactive(Integer banId) {
-		update(TABLE, "expirable", 0, "banId", banId);
+		execute("UPDATE %s SET active=0 WHERE (banId=%d)".formatted(table, banId));
 	}
 
-	public class Utils {
-		public boolean isExpirable(Map<String, Object> banMap) {
-			if (banMap.get("expirable").equals(1)) return true;
-			return false;
+	public class BanData {
+		private final Integer banId;
+		private final String userId;
+		private final String userTag;
+		private final String modId;
+		private final String modTag;
+		private final String guildId;
+		private final String reason;
+		private final Instant timeStart;
+		private final Duration duration;
+		private final Boolean active;
+
+		public BanData(Map<String, Object> map) {
+			this.banId = (Integer) map.get("banId");
+			this.userId = (String) map.get("userId");
+			this.userTag = (String) map.get("userTag");
+			this.modId = (String) map.get("modId");
+			this.modTag = (String) map.get("modTag");
+			this.guildId = (String) map.get("guildId");
+			this.reason = (String) map.get("reason");
+			this.timeStart = Instant.ofEpochSecond((Integer) map.get("timeStart"));
+			this.duration = Duration.ofSeconds((Integer) map.getOrDefault("duration", 0));
+			this.active = ((Integer) map.get("active")) == 1;
 		}
 
-		public boolean isPermament(Map<String, Object> banMap) {
-			if (banMap.get("duration").toString().equals(Duration.ZERO.toString())) return true;
-			return false;
+		public Integer getBanId() {
+			return banId;
 		}
-	}  
+
+		public String getUserId() {
+			return userId;
+		}
+		public String getUserTag() {
+			return userTag;
+		}
+
+		public String getModId() {
+			return modId;
+		}
+		public String getModTag() {
+			return modTag;
+		}
+
+		public String getGuildId() {
+			return guildId;
+		}
+
+		public String getReason() {
+			return reason;
+		}
+
+		public Instant getTimeStart() {
+			return timeStart;
+		}
+
+		public Duration getDuration() {
+			return duration;
+		}
+
+		public Boolean isActive() {
+			return active;
+		}
+
+		public Instant getTimeEnd() {
+			return timeStart.plus(duration);
+		}
+	}
 
 }

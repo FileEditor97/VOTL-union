@@ -1,7 +1,6 @@
 package union.commands.moderation;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -15,6 +14,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.BanManager.BanData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -64,12 +64,12 @@ public class SyncCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			Map<String, Object> banData = bot.getDBUtil().ban.getInfo(event.optInteger("id", 0));
-			if (banData.isEmpty() || !event.getGuild().getId().equals(banData.get("guildId").toString())) {
+			BanData banData = bot.getDBUtil().ban.getInfo(event.optInteger("id", 0));
+			if (banData == null || event.getGuild().getId() != banData.getGuildId()) {
 				editError(event, path+".not_found");
 				return;
 			}
-			if (bot.getDBUtil().ban.utils.isExpirable(banData) || !bot.getDBUtil().ban.utils.isPermament(banData)) {
+			if (!banData.isActive() || !banData.getDuration().isZero()) {
 				editError(event, path+".expirable_ban");
 				return;
 			}
@@ -82,7 +82,7 @@ public class SyncCmd extends CommandBase {
 			}
 
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event);
-			event.getGuild().retrieveBan(User.fromId(banData.get("userId").toString())).queue(ban -> {
+			event.getGuild().retrieveBan(User.fromId(banData.getUserId())).queue(ban -> {
 				MessageEmbed embed = builder.setDescription(lu.getText(event, path+".embed_title")).build();
 				ActionRow button = ActionRow.of(
 					Button.of(ButtonStyle.PRIMARY, "button:confirm", lu.getText(event, path+".button_confirm"))

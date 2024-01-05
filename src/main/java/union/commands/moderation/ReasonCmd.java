@@ -1,7 +1,6 @@
 package union.commands.moderation;
 
 import java.util.List;
-import java.util.Map;
 
 import union.App;
 import union.base.command.SlashCommandEvent;
@@ -10,6 +9,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.BanManager.BanData;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -22,7 +22,7 @@ public class ReasonCmd extends CommandBase {
 		this.name = "reason";
 		this.path = "bot.moderation.reason";
 		this.options = List.of(
-			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"), true).setMinValue(0),
+			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"), true).setMinValue(1),
 			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help"), true).setMaxLength(400)
 		);
 		this.category = CmdCategory.MODERATION;
@@ -32,10 +32,11 @@ public class ReasonCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		Integer caseId = event.optInteger("id", 0);
-		Map<String, Object> banData = bot.getDBUtil().ban.getInfo(caseId);
-		if (banData.isEmpty() || !event.getGuild().getId().equals(banData.get("guildId").toString())) {
-			createError(event, path+".not_found");
+		event.deferReply().queue();
+		Integer caseId = event.optInteger("id");
+		BanData banData = bot.getDBUtil().ban.getInfo(caseId);
+		if (banData == null || event.getGuild().getId() != banData.getGuildId()) {
+			editError(event, path+".not_found");
 			return;
 		}
 
@@ -46,8 +47,8 @@ public class ReasonCmd extends CommandBase {
 			.setColor(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{reason}", newReason))
 			.build();
-		createReplyEmbed(event, embed);
+		editHookEmbed(event, embed);
 
-		bot.getLogListener().mod.onChangeReason(event, caseId, banData.get("reason").toString(), newReason);
+		bot.getLogListener().mod.onChangeReason(event, banData, newReason);
 	}
 }

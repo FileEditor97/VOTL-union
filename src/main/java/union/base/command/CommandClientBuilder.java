@@ -23,8 +23,6 @@ import java.util.function.Consumer;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
-import net.dv8tion.jda.annotations.DeprecatedSince;
-import net.dv8tion.jda.annotations.ForRemoval;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -171,27 +169,6 @@ public class CommandClientBuilder
 	 */
 	public CommandClientBuilder setPrefixFunction(Function<MessageReceivedEvent, String> prefixFunction) {
 		this.prefixFunction = prefixFunction;
-		return this;
-	}
-
-	/**
-	 * Sets the pre-process function. This code is executed before every command.<br>
-	 * Returning "true" will allow processing to proceed.<br>
-	 * Returning "false" or "null" will prevent the Command from executing.
-	 *
-	 * @param commandPreProcessFunction
-	 *        The function to execute
-	 *
-	 * @deprecated Please use {@link #setCommandPreProcessBiFunction(BiFunction)} instead.
-	 *             You can simply add a new parameter for the command, it doesn't have to be used.
-	 * @return This builder
-	 */
-	@Deprecated
-	@DeprecatedSince("1.24.0")
-	@ForRemoval(deadline = "2.0")
-	public CommandClientBuilder setCommandPreProcessFunction(Function<MessageReceivedEvent, Boolean> commandPreProcessFunction)
-	{
-		this.commandPreProcessFunction = commandPreProcessFunction;
 		return this;
 	}
 

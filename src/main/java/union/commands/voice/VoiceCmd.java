@@ -273,7 +273,6 @@ public class VoiceCmd extends CommandBase {
 		name = name.replace("{user}", event.getMember().getEffectiveName());
 		event.getGuild().getVoiceChannelById(channelId).getManager().setName(name.substring(0, Math.min(100, name.length()))).queue();
 
-		if (!bot.getDBUtil().user.exists(userId)) bot.getDBUtil().user.add(userId);
 		bot.getDBUtil().user.setName(userId, name);
 
 		createReplyEmbed(event, 
@@ -318,7 +317,7 @@ public class VoiceCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			Integer limit = bot.getDBUtil().guildVoice.getLimit(event.getGuild().getId());
+			Integer limit = Optional.ofNullable(bot.getDBUtil().guildVoice.getLimit(event.getGuild().getId())).orElse(0);
 			sendLimitReply(event, limit);			
 		}
 	}
@@ -333,7 +332,6 @@ public class VoiceCmd extends CommandBase {
 
 		event.getGuild().getVoiceChannelById(channelId).getManager().setUserLimit(limit).queue();
 
-		if (!bot.getDBUtil().user.exists(userId)) bot.getDBUtil().user.add(userId);
 		bot.getDBUtil().user.setLimit(userId, limit);
 
 		createReplyEmbed(event, 

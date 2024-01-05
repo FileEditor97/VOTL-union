@@ -1,10 +1,8 @@
 package union.utils;
 
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.Optional;
 
 import jakarta.annotation.Nonnull;
@@ -13,6 +11,7 @@ import jakarta.annotation.Nullable;
 import union.App;
 import union.objects.CmdModule;
 import union.objects.constants.Constants;
+import union.utils.database.managers.BanManager.BanData;
 import union.utils.message.LocaleUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -65,31 +64,22 @@ public class LogUtil {
 	// Moderation
 	//  Ban
 	@Nonnull
-	public MessageEmbed banEmbed(DiscordLocale locale, Map<String, Object> banMap) {
-		return banEmbed(locale, banMap, null);
+	public MessageEmbed banEmbed(DiscordLocale locale, BanData banData) {
+		return banEmbed(locale, banData, null);
 	}
 
 	@Nonnull
-	public MessageEmbed banEmbed(DiscordLocale locale, Map<String, Object> banMap, String userIcon) {
-		return banEmbed(locale, (Integer) banMap.get("banId"), (String) banMap.get("userTag"), (String) banMap.get("userId"),
-			(String) banMap.get("modTag"), (String) banMap.get("modId"), Timestamp.valueOf((String) banMap.get("timeStart")),
-			Duration.parse((String) banMap.get("duration")), (String) banMap.get("reason"), userIcon);
-	}
-
-	@Nonnull
-	private MessageEmbed banEmbed(DiscordLocale locale, Integer banId, String userTag, String userId, String modTag, String modId, Timestamp start, Duration duration, String reason, String userIcon) {
-		Instant timeStart = start.toInstant();
-		Instant timeEnd = timeStart.plus(duration);
+	public MessageEmbed banEmbed(DiscordLocale locale, BanData banData, String userIcon) {
 		return getEmbed(RED_DARK)
-			.setAuthor(localized(locale, "ban.title").replace("{case_id}", banId.toString()).replace("{user_tag}", userTag), null, userIcon)
-			.addField(localized(locale, "user"), "<@%s>".formatted(userId), true)
-			.addField(localized(locale, "mod"), "<@%s>".formatted(modId), true)
-			.addField(localized(locale, "duration"), duration.isZero() ? localized(locale, "permanently") : 
+			.setAuthor(localized(locale, "ban.title").replace("{case_id}", banData.getBanId().toString()).replace("{user_tag}", banData.getUserTag()), null, userIcon)
+			.addField(localized(locale, "user"), "<@%s>".formatted(banData.getUserId()), true)
+			.addField(localized(locale, "mod"), "<@%s>".formatted(banData.getModId()), true)
+			.addField(localized(locale, "duration"), banData.getDuration().isZero() ? localized(locale, "permanently") : 
 				localized(locale, "temporary")
-					.replace("{time}", bot.getTimeUtil().formatTime(timeEnd, false)), true)
-			.addField(localized(locale, "ban.reason"), reason, true)
-			.setFooter("ID: "+userId)
-			.setTimestamp(timeStart)
+					.replace("{time}", bot.getTimeUtil().formatTime(banData.getTimeEnd(), false)), true)
+			.addField(localized(locale, "ban.reason"), banData.getReason(), true)
+			.setFooter("ID: "+banData.getUserId())
+			.setTimestamp(banData.getTimeStart())
 			.build();
 	}
 
@@ -159,8 +149,8 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed autoUnbanEmbed(DiscordLocale locale, Map<String, Object> banMap) {
-		return autoUnbanEmbed(locale, (String) banMap.get("userTag"), (String) banMap.get("userId"), (String) banMap.get("reason"), Duration.parse((String) banMap.get("duration")));
+	public MessageEmbed autoUnbanEmbed(DiscordLocale locale, BanData banData) {
+		return autoUnbanEmbed(locale, banData.getUserTag(), banData.getUserId(), banData.getReason(), banData.getDuration());
 	}
 
 	@Nonnull

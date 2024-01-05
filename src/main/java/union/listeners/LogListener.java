@@ -3,7 +3,6 @@ package union.listeners;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -16,6 +15,7 @@ import union.objects.CmdModule;
 import union.objects.LogChannels;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.BanManager.BanData;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
@@ -66,17 +66,16 @@ public class LogListener {
 
 	// Moderation actions
 	public class Moderation {
-		public void onBan(SlashCommandEvent event, User target, Member moderator, Integer banId) {
+		public void onBan(SlashCommandEvent event, User target, Member moderator, BanData banData) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
 			if (channel == null) return;
 
-			Map<String, Object> ban = db.ban.getInfo(banId);
-			if (ban.isEmpty() || ban == null) {
-				bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
+			if (banData == null) {
+				bot.getLogger().warn("Unknown ban provided with interaction ", event.getName());
 				return;
 			}
 
-			sendLog(channel, logUtil.banEmbed(event.getGuildLocale(), ban, target.getAvatarUrl()));
+			sendLog(channel, logUtil.banEmbed(event.getGuildLocale(), banData, target.getAvatarUrl()));
 		}
 
 		public void onSyncBan(SlashCommandEvent event, Guild guild, User target, String reason) {
@@ -100,11 +99,11 @@ public class LogListener {
 			sendLog(channel, logUtil.syncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason));
 		}
 
-		public void onAutoUnban(Map<String, Object> banMap, Integer banId, Guild guild) {
+		public void onAutoUnban(BanData banData, Guild guild) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, guild);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.autoUnbanEmbed(guild.getLocale(), banMap));
+			sendLog(channel, logUtil.autoUnbanEmbed(guild.getLocale(), banData));
 		}
 
 		public void onKick(SlashCommandEvent event, User target, User moderator, String reason) {
@@ -121,30 +120,28 @@ public class LogListener {
 			sendLog(channel, logUtil.syncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason));
 		}
 
-		public void onChangeReason(SlashCommandEvent event, Integer banId, String oldReason, String newReason) {
+		public void onChangeReason(SlashCommandEvent event, BanData banData, String newReason) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
 			if (channel == null) return;
 
-			Map<String, Object> ban = db.ban.getInfo(banId);
-			if (ban.isEmpty() || ban == null) {
-				bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
+			if (banData == null) {
+				bot.getLogger().warn("Unknown ban provided with interaction ", event.getName());
 				return;
 			}
 
-			sendLog(channel, logUtil.reasonChangedEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), oldReason, oldReason));
+			sendLog(channel, logUtil.reasonChangedEmbed(event.getGuildLocale(), banData.getBanId(), banData.getUserTag(), banData.getUserId(), event.getUser().getId(), banData.getReason(), newReason));
 		}
 
-		public void onChangeDuration(SlashCommandEvent event, Integer banId, Instant timeStart, Duration oldDuration, String newTime) {
+		public void onChangeDuration(SlashCommandEvent event, BanData banData, String newTime) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
 			if (channel == null) return;
 
-			Map<String, Object> ban = db.ban.getInfo(banId);
-			if (ban.isEmpty() || ban == null) {
-				bot.getLogger().warn("That is not supposed to happen... Ban ID: %s", banId);
+			if (banData == null) {
+				bot.getLogger().warn("Unknown ban provided with interaction ", event.getName());
 				return;
 			}
 
-			sendLog(channel, logUtil.durationChangedEmbed(event.getGuildLocale(), banId, ban.get("userTag").toString(), ban.get("userId").toString(), event.getUser().getId(), timeStart, oldDuration, newTime));
+			sendLog(channel, logUtil.durationChangedEmbed(event.getGuildLocale(), banData.getBanId(), banData.getUserTag(), banData.getUserId(), event.getUser().getId(), banData.getTimeStart(), banData.getDuration(), newTime));
 		}
 
 		public void onHelperSyncBan(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {

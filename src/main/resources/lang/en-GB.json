@@ -56,7 +56,8 @@
 			"hours": "hours",
 			"days": "days",
 			"weeks": "weeks"
-		}
+		},
+		"ban_expired": "Temporary ban expired"
 	},
 	"modules": {
 		"webhook": "Webhook commands",

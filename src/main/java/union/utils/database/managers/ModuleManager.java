@@ -5,37 +5,36 @@ import java.util.List;
 
 import union.objects.CmdModule;
 import union.utils.database.LiteDBBase;
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 
 public class ModuleManager extends LiteDBBase {
 
-	private final String TABLE = "moduleOff";
+	private final String table = "moduleOff";
 	
-	public ModuleManager(DBUtil util) {
-		super(util);
+	public ModuleManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void add(String guildId, CmdModule module) {
-		insert(TABLE, List.of("guildId", "module"), List.of(guildId, module.toString()));
+		execute("INSERT INTO %s(guildId, module) VALUES (%s, %s)".formatted(table, guildId, module.toString()));
 	}
 
 	public void remove(String guildId, CmdModule module) {
-		delete(TABLE, List.of("guildId", "module"), List.of(guildId, module.toString()));
+		execute("DELETE FROM %s WHERE (guildId=%s AND module=%s)".formatted(table, guildId, quote(module.toString())));
 	}
 
 	public void removeAll(String guildId) {
-		delete(TABLE, "guildId", guildId);
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public List<CmdModule> getDisabled(String guildId) {
-		List<Object> data = select(TABLE, "module", "guildId", guildId);
+		List<String> data = select("SELECT module FROM %s WHERE (guildId=%s)", "module", String.class);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> CmdModule.valueOf((String) obj)).toList();
+		return data.stream().map(v -> CmdModule.valueOf(v)).toList();
 	}
 
 	public boolean isDisabled(String guildId, CmdModule module) {
-		if (selectOne(TABLE, "guildId", List.of("guildId", "module"), List.of(guildId, module.toString())) == null) return false;
-		return true;
+		return selectOne("SELECT module FROM %s WHERE (guildId=%s AND module=%s)".formatted(table, guildId, quote(module.toString())), "module", String.class) != null;
 	}
 
 }

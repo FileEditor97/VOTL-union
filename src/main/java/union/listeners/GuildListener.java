@@ -1,6 +1,5 @@
 package union.listeners;
 
-import java.util.Map;
 import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
@@ -9,6 +8,7 @@ import union.App;
 import union.objects.CmdAccessLevel;
 import union.objects.LogChannels;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.BanManager.BanData;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -35,10 +35,6 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildJoin(@Nonnull GuildJoinEvent event) {
 		String guildId = event.getGuild().getId();
-		// check if not exists in DB and adds it
-		if (db.guild.add(guildId)) {
-			bot.getLogger().info("Automatically added guild '"+event.getGuild().getName()+"'("+guildId+") to db");
-		}
 		bot.getLogger().info("Joined guild '"+event.getGuild().getName()+"'("+guildId+")");
 	}
 
@@ -108,9 +104,9 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildUnban(@Nonnull GuildUnbanEvent event) {
-		Map<String, Object> banData = db.ban.getMemberExpirable(event.getUser().getId(), event.getGuild().getId());
-		if (!banData.isEmpty()) {
-			db.ban.setInactive(Integer.valueOf(banData.get("badId").toString()));
+		BanData banData = db.ban.getMemberExpirable(event.getUser().getId(), event.getGuild().getId());
+		if (banData != null) {
+			db.ban.setInactive(banData.getBanId());
 		}
 	}
 

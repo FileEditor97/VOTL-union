@@ -1,86 +1,75 @@
 package union.utils.database.managers;
 
-import java.util.Collections;
 import java.util.List;
 
 import union.utils.database.LiteDBBase;
 import union.objects.CmdAccessLevel;
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 
 public class AccessManager extends LiteDBBase {
 
-	private final String ROLE_TABLE = "roleAccess";
-	private final String USER_TABLE = "userAccess";
+	private final String table_role = "roleAccess";
+	private final String table_user = "userAccess";
 	
-	public AccessManager(DBUtil util) {
-		super(util);
+	public AccessManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void addRole(String guildId, String roleId, CmdAccessLevel level) {
-		insert(ROLE_TABLE, List.of("guildId", "roleId", "level"), List.of(guildId, roleId, level.getLevel()));
+		execute("INSERT INTO %s(guildId, roleId, level) VALUES (%s, %s, %d)".formatted(table_role, guildId, roleId, level.getLevel()));
 	}
 
 	public void addUser(String guildId, String userId, CmdAccessLevel level) {
-		insert(USER_TABLE, List.of("guildId", "userId", "level"), List.of(guildId, userId, level.getLevel()));
+		execute("INSERT INTO %s(guildId, userId, level) VALUES (%s, %s, %d)".formatted(table_user, guildId, userId, level.getLevel()));
 	}
 
 	public void removeRole(String roleId) {
-		delete(ROLE_TABLE, "roleId", roleId);
+		execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table_role, roleId));
 	}
 	
 	public void removeUser(String guildId, String userId) {
-		delete(USER_TABLE, List.of("guildId", "userId"), List.of(guildId, userId));
+		execute("DELETE FROM %s WHERE (guildId=%s AND userId=%s)".formatted(table_user, guildId, userId));
 	}
 
 	public void removeAll(String guildId) {
-		delete(ROLE_TABLE, "guildId", guildId);
-		delete(USER_TABLE, "guildId", guildId);
+		execute("DELETE FROM %s WHERE (guildId=%s); DELETE FROM %s WHERE (guildId=%s);".formatted(table_role, guildId, table_user, guildId));
 	}
 
 	public CmdAccessLevel getRoleLevel(String roleId) {
-		Object data = selectOne(ROLE_TABLE, "level", "roleId", roleId);
+		Integer data = selectOne("SELECT level FROM %s WHERE (roleId=%s)".formatted(table_role, roleId), "level", Integer.class);
 		if (data == null) return CmdAccessLevel.ALL;
-		return CmdAccessLevel.byLevel((Integer) data);
+		return CmdAccessLevel.byLevel(data);
 	}
 
 	public CmdAccessLevel getUserLevel(String guildId, String userId) {
-		Object data = selectOne(USER_TABLE, "level", List.of("guildId", "userId"), List.of(guildId, userId));
+		Integer data = selectOne("SELECT level FROM %s WHERE (guildId=%s AND userId=%s)".formatted(table_user, guildId, userId), "level", Integer.class);
 		if (data == null) return CmdAccessLevel.ALL;
-		return CmdAccessLevel.byLevel((Integer) data);
+		return CmdAccessLevel.byLevel(data);
 	}
 
 	public List<String> getAllRoles(String guildId) {
-		List<Object> data = select(ROLE_TABLE, "roleId", "guildId", guildId);
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).toList();
+		return select("SELECT roleId FROM %s WHERE (guildId=%s)".formatted(table_role, guildId), "roleId", String.class);
 	}
 
 	public List<String> getRoles(String guildId, CmdAccessLevel level) {
-		List<Object> data = select(ROLE_TABLE, "roleId", List.of("guildId", "level"), List.of(guildId, level.getLevel()));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).toList();
+		return select("SELECT roleId FROM %s WHERE (guildId=%s AND level=%d)".formatted(table_role, guildId, level.getLevel()), "roleId", String.class);
 	}
 
 	public List<String> getAllUsers(String guildId) {
-		List<Object> data = select(USER_TABLE, "userId", "guildId", guildId);
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).toList();
+		return select("SELECT userId FROM %s WHERE (guildId=%s)".formatted(table_user, guildId), "userId", String.class);
 	}
 
 	public List<String> getUsers(String guildId, CmdAccessLevel level) {
-		List<Object> data = select(USER_TABLE, "userId", List.of("guildId", "level"), List.of(guildId, level.getLevel()));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).toList();
+		return select("SELECT userId FROM %s WHERE (guildId=%s AND level=%d)".formatted(table_user, guildId, level.getLevel()), "userId", String.class);
 	}
 
 	public boolean isRole(String roleId) {
-		if (selectOne(ROLE_TABLE, "roleId", "roleId", roleId) == null) return false;
-		return true;
+		return selectOne("SELECT roleId FROM %s WHERE (roleId=%s)".formatted(table_role, roleId), "roleId", String.class) != null;
 	}
 
 	public boolean isOperator(String guildId, String userId) {
-		if (selectOne(USER_TABLE, "userId", List.of("guildId", "userId", "level"), List.of(guildId, userId, CmdAccessLevel.OPERATOR)) == null) return false;
-		return true;
+		return selectOne("SELECT userId FROM %s WHERE (guildId=%s AND userId=%s AND level=%d)"
+			.formatted(table_role, guildId, userId, CmdAccessLevel.OPERATOR), "userId", String.class) != null;
 	}
 
 }

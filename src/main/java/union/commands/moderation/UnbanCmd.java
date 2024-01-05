@@ -49,7 +49,7 @@ public class UnbanCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(false).queue();
+		event.deferReply().queue();
 		Guild guild = Objects.requireNonNull(event.getGuild());
 
 		User tu = event.optUser("user");
@@ -74,16 +74,25 @@ public class UnbanCmd extends CommandBase {
 					.replace("{user_tag}", tu.getName())
 					.replace("{reason}", reason))
 				.build();
-			// ask for ban sync
+			// ask for unban sync
 			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
-				buttonSync(event, msg, ban.getUser(), reason);
+				buttonSync(event, msg, tu, reason);
 			});
 
 			// log unban
 			bot.getLogListener().mod.onUnban(event, event.getMember(), ban, reason);
 		},
 		failure -> {
-			editError(event, path+".no_ban");
+			// create embed
+			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
+				.setColor(Constants.COLOR_FAILURE)
+				.setDescription(lu.getText(event, path+".no_ban")
+					.replace("{user_tag}", tu.getName()))
+				.build();
+			// ask for unban sync
+			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
+				buttonSync(event, msg, tu, reason);
+			});
 		});
 	}
 

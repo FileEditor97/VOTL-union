@@ -3,15 +3,15 @@ package union.utils.database.managers;
 import java.util.List;
 import java.util.Map;
 
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
 
 public class UnionVerifyManager extends SqlDBBase {
 
 	private final String TABLE = "union.users";
 
-	public UnionVerifyManager(DBUtil util, String url, String user, String password) {
-		super(util, "%s?user=%s&password=%s".formatted(url, user, password));
+	public UnionVerifyManager(ConnectionUtil cu, String url, String user, String password) {
+		super(cu, "%s?user=%s&password=%s".formatted(url, user, password));
 	}
 
 	public String getDiscordId(String steam64) {
@@ -39,19 +39,16 @@ public class UnionVerifyManager extends SqlDBBase {
 	}
 
 	public boolean existsDiscord(String discordId) {
-		if (selectOne(TABLE, "steam_id", "discord_id", discordId) == null) return false;
-		return true;
+		return selectOne(TABLE, "steam_id", "discord_id", discordId) != null;
 	}
 
 	public boolean existsSteam(String steam64) {
-		if (selectOne(TABLE, "discord_id", "steam_id", steam64) == null) return false;
-		return true;
+		return selectOne(TABLE, "discord_id", "steam_id", steam64) != null;
 	}
 
 	// Check for any changed accounts
 	public List<Map<String, String>> updatedAccounts() {
-		List<Map<String, String>> data = select(TABLE, List.of("discord_id", "steam_id"), "discord_updated", "1");
-		return data;
+		return select(TABLE, List.of("discord_id", "steam_id"), "discord_updated", "1");
 	}
 
 	public void clearUpdated(String steam64) {

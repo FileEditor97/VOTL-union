@@ -1,130 +1,110 @@
 package union.utils.database.managers;
 
-import java.util.Collections;
 import java.util.List;
 
 import union.utils.database.LiteDBBase;
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 
 public class GroupManager extends LiteDBBase {
 
-	private final String TABLE_MASTER = "groupMaster";
-	private final String TABLE_MEMBERS = "groupMembers";
+	private final String table_masters = "groupMaster";
+	private final String table_members = "groupMembers";
 	
-	public GroupManager(DBUtil util) {
-		super(util);
+	public GroupManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	// groupMaster table
 	public void create(String guildId, String name, Boolean isShared) {
-		insert(TABLE_MASTER, List.of("masterId", "name", "isShared"), List.of(guildId, name, (isShared ? 1 : 0)));
+		execute("INSERT INTO %s(masterId, name, isShared) VALUES (%s, %s, %d)".formatted(table_masters, guildId, quote(name), isShared ? 1 : 0));
 	}
 
 	public Integer getIncrement() {
-		return getIncrement(TABLE_MASTER);
+		return getIncrement(table_masters);
 	}
 
 	public void delete(Integer groupId) {
-		delete(TABLE_MASTER, "groupId", groupId);
+		execute("DELETE FROM %s WHERE (groupId=%d)".formatted(table_masters, groupId));
 	}
 
 	public void deleteAll(String guildId) {
-		delete(TABLE_MASTER, "masterId", guildId);
+		execute("DELETE FROM %s WHERE (masterId=%s)".formatted(table_masters, guildId));
 	}
 
 	public void rename(Integer groupId, String name) {
-		update(TABLE_MASTER, "name", name, "groupId", groupId);
+		execute("UPDATE %s SET name=%s WHERE (groupId=%d)".formatted(table_masters, quote(name), groupId));
 	}
 
 	public String getMaster(Integer groupId) {
-		Object data = selectOne(TABLE_MASTER, "masterId", "groupId", groupId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT masterId FROM %s WHERE (groupId=%d)".formatted(table_masters, groupId), "masterId", String.class);
 	}
 
 	public List<Integer> getOwnedGroups(String guildId) {
-		List<Object> data = select(TABLE_MASTER, "groupId", "masterId", guildId);
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> (Integer) obj).toList();
+		return select("SELECT groupId FROM %s WHERE (masterId=%s)".formatted(table_masters, guildId), "groupId", Integer.class);
 	}
 
 	public String getName(Integer groupId) {
-		Object data = selectOne(TABLE_MASTER, "name", "groupId", groupId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT name FROM %s WHERE (groupId=%d)".formatted(table_masters, groupId), "name", String.class);
 	}
 
 	public Boolean isShared(Integer groupId) {
-		Object data = selectOne(TABLE_MASTER, "isShared", "groupId", groupId);
-		if (data == null) return false;
-		return (Integer) data == 1;
+		Integer data = selectOne("SELECT isShared FROM %s WHERE (groupId=%d)".formatted(table_masters, groupId), "isShared", Integer.class);
+		return data==null ? false : data==1;
 	}
 
 	// groupMembers table
 	public void add(Integer groupId, String guildId, Boolean canManage) {
-		insert(TABLE_MEMBERS, List.of("groupId", "guildId", "canManage"), List.of(groupId, guildId, (canManage ? 1 : 0)));
+		execute("INSERT INTO %s(groupId, guildId, canManage) VALUES (%d, %s, %d)".formatted(table_members, groupId, guildId, canManage ? 1 : 0));
 	}
 
 	public void remove(Integer groupId, String guildId) {
-		delete(TABLE_MEMBERS, List.of("groupId", "guildId"), List.of(groupId, guildId));
+		execute("DELETE FROM %s WHERE (groupId=%d AND guildId=%s)".formatted(table_members, groupId, guildId));
 	}
 
 	public void removeFromGroups(String guildId) {
-		delete(TABLE_MEMBERS, "guildId", guildId);
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table_members, guildId));
 	}
 	
 	public void clearGroup(Integer groupId) {
-		delete(TABLE_MEMBERS, "groupId", groupId);
+		execute("DELETE FROM %s WHERE (groupId=%d)".formatted(table_members, groupId));
 	}
 
 	public Boolean alreadyMember(Integer groupId, String guildId) {
-		Object data = selectOne(TABLE_MEMBERS, "groupId", List.of("groupId", "guildId"), List.of(groupId, guildId));
-		if (data == null) return false;
-		return true;
+		return selectOne("SELECT guildId FROM %s WHERE (groupId=%d AND guildId=%s)".formatted(table_members, groupId, guildId), "guildId", String.class) != null;
 	}
 
 	public List<String> getGroupGuildIds(Integer groupId) {
-		List<Object> data = select(TABLE_MEMBERS, "guildId", "groupId", groupId);
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).toList();
+		return select("SELECT guildId FROM %s WHERE (groupId=%d)".formatted(table_members, groupId), "guildId", String.class);
 	}
 
 	public List<String> getGroupGuildIds(Integer groupId, Boolean whitelisted) {
-		List<Object> data = select(TABLE_MEMBERS, "guildId", List.of("groupId", "whitelisted"), List.of(groupId, (whitelisted ? 1 : 0)));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).toList();
+		return select("SELECT guildId FROM %s WHERE (groupId=%d AND whitelisted=%d)".formatted(table_members, groupId, whitelisted ? 1 : 0),
+			"guildId", String.class);
 	}
 
 	public List<Integer> getGuildGroups(String guildId) {
-		List<Object> data = select(TABLE_MEMBERS, "groupId", "guildId", guildId);
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> (Integer) obj).toList();
+		return select("SELECT groupId FROM %s WHERE (guildId=%s)".formatted(table_members, guildId), "groupId", Integer.class);
 	}
 
 	public List<Integer> getManagedGroups(String guildId) {
-		List<Object> data = select(TABLE_MEMBERS, "groupId", List.of("guildId", "canManage"), List.of(guildId, 1));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> (Integer) obj).toList();
+		return select("SELECT groupId FROM %s WHERE (guildId=%s AND canManage=1)".formatted(table_members, guildId), "groupId", Integer.class);
 	}
 
 	public List<String> getGroupManagers(Integer groupId) {
-		List<Object> data = select(TABLE_MEMBERS, "guildId", List.of("groupId", "canManage"), List.of(groupId, 1));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(obj -> String.valueOf(obj)).toList();
+		return select("SELECT guildId FROM %s WHERE (groupId=%d AND canManage=1)".formatted(table_members, groupId), "guildId", String.class);
 	} 
 
 	public Boolean canManage(Integer groupId, String guildId) {
-		Object data = selectOne(TABLE_MEMBERS, "canManage", List.of("groupId", "guildId"), List.of(groupId, guildId));
-		if (data == null) return false;
-		return (Integer) data == 1 ? true : false;
+		Integer data = selectOne("SELECT canManage FROM %s WHERE (groupId=%d AND guildId=%s)".formatted(table_members, groupId, guildId), "canManage", Integer.class);
+		return data==null ? false : data==1;
 	}
 
 	public void setManage(Integer groupId, String guildId, Boolean canManage) {
-		update(TABLE_MEMBERS, "canManage", (canManage ? 1 : 0), List.of("groupId", "guildId"), List.of(groupId, guildId));
+		execute("UPDATE %s SET canManage=%d WHERE (groupId=%d AND guildId=%s)".formatted(table_members, canManage ? 1 : 0, groupId, guildId));
 	}
 
 	public void setWhitelisted(String guildId, Boolean whitelisted) {
-		update(TABLE_MEMBERS, "whitelisted", (whitelisted ? 1 : 0), "guildId", guildId);
+		execute("UPDATE %s SET whitelisted=%d WHERE (guildId=%s)".formatted(table_members, whitelisted ? 1 : 0, guildId));
 	}
 
 }

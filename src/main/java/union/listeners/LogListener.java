@@ -15,11 +15,10 @@ import union.objects.CmdModule;
 import union.objects.LogChannels;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Guild.Ban;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
@@ -66,16 +65,46 @@ public class LogListener {
 
 	// Moderation actions
 	public class Moderation {
-		public void onBan(SlashCommandEvent event, User target, Member moderator, BanData banData) {
+		public void onNewCase(SlashCommandEvent event, User target, CaseData caseData) {
+			onNewCase(event, target, caseData, null);
+		}
+		
+		public void onNewCase(SlashCommandEvent event, User target, CaseData caseData, Object data) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
 			if (channel == null) return;
 
-			if (banData == null) {
-				bot.getLogger().warn("Unknown ban provided with interaction ", event.getName());
+			if (caseData == null) {
+				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
 				return;
 			}
 
-			sendLog(channel, logUtil.banEmbed(event.getGuildLocale(), banData, target.getAvatarUrl()));
+			MessageEmbed embed = null;
+			switch (caseData.getCaseType()) {
+				case BAN:
+					embed = logUtil.banEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());
+					break;
+				case UNBAN:
+					embed = logUtil.unbanEmbed(event.getGuildLocale(), caseData, (String) data);
+					break;
+				case MUTE:
+					embed = null;
+					break;
+				case UNMUTE:
+					embed = null;
+					break;
+				case KICK:
+					embed = logUtil.kickEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());
+					break;
+				case WARN:
+					embed = null;
+					break;
+				case BLACKLIST:
+					embed = null;
+					break;
+				default:
+					break;
+			}
+			if (embed!=null) sendLog(channel, embed);
 		}
 
 		public void onSyncBan(SlashCommandEvent event, Guild guild, User target, String reason) {
@@ -85,13 +114,6 @@ public class LogListener {
 			sendLog(channel, logUtil.syncBanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, reason));
 		}
 
-		public void onUnban(SlashCommandEvent event, Member moderator, Ban banData, String reason) {
-			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
-			if (channel == null) return;
-
-			sendLog(channel, logUtil.unbanEmbed(event.getGuildLocale(), banData, moderator, reason));
-		}
-
 		public void onSyncUnban(SlashCommandEvent event, Guild guild, User target, String banReason, String reason) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
 			if (channel == null) return;
@@ -99,18 +121,11 @@ public class LogListener {
 			sendLog(channel, logUtil.syncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason));
 		}
 
-		public void onAutoUnban(BanData banData, Guild guild) {
+		public void onAutoUnban(CaseData caseData, Guild guild) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, guild);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.autoUnbanEmbed(guild.getLocale(), banData));
-		}
-
-		public void onKick(SlashCommandEvent event, User target, User moderator, String reason) {
-			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
-			if (channel == null) return;
-
-			sendLog(channel, logUtil.kickEmbed(event.getGuildLocale(), target.getName(), target.getId(), moderator.getName(), moderator.getId(), reason, target.getAvatarUrl(), true));
+			sendLog(channel, logUtil.autoUnbanEmbed(guild.getLocale(), caseData));
 		}
 
 		public void onSyncKick(SlashCommandEvent event, Guild guild, User target, String reason) {
@@ -120,28 +135,28 @@ public class LogListener {
 			sendLog(channel, logUtil.syncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason));
 		}
 
-		public void onChangeReason(SlashCommandEvent event, BanData banData, String newReason) {
+		public void onChangeReason(SlashCommandEvent event, CaseData caseData, Member moderator, String newReason) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
 			if (channel == null) return;
 
-			if (banData == null) {
-				bot.getLogger().warn("Unknown ban provided with interaction ", event.getName());
+			if (caseData == null) {
+				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
 				return;
 			}
 
-			sendLog(channel, logUtil.reasonChangedEmbed(event.getGuildLocale(), banData.getBanId(), banData.getUserTag(), banData.getUserId(), event.getUser().getId(), banData.getReason(), newReason));
+			sendLog(channel, logUtil.reasonChangedEmbed(event.getGuildLocale(), caseData, moderator.getIdLong(), newReason));
 		}
 
-		public void onChangeDuration(SlashCommandEvent event, BanData banData, String newTime) {
+		public void onChangeDuration(SlashCommandEvent event, CaseData caseData, Member moderator, String newTime) {
 			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
 			if (channel == null) return;
 
-			if (banData == null) {
-				bot.getLogger().warn("Unknown ban provided with interaction ", event.getName());
+			if (caseData == null) {
+				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
 				return;
 			}
 
-			sendLog(channel, logUtil.durationChangedEmbed(event.getGuildLocale(), banData.getBanId(), banData.getUserTag(), banData.getUserId(), event.getUser().getId(), banData.getTimeStart(), banData.getDuration(), newTime));
+			sendLog(channel, logUtil.durationChangedEmbed(event.getGuildLocale(), caseData, moderator.getIdLong(), newTime));
 		}
 
 		public void onHelperSyncBan(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {

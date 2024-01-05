@@ -78,7 +78,7 @@ public class TicketPanelManager extends LiteDBBase {
 	public Panel getPanel(Integer panelId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (panelId=%d)".formatted(table, panelId),
 			List.of("title", "description", "image", "footer"));
-		if (data.isEmpty()) return null;
+		if (data==null) return null;
 		return new Panel(data);
 	}
 

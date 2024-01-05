@@ -14,7 +14,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -64,8 +64,8 @@ public class SyncCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			BanData banData = bot.getDBUtil().ban.getInfo(event.optInteger("id", 0));
-			if (banData == null || event.getGuild().getId() != banData.getGuildId()) {
+			CaseData banData = bot.getDBUtil().cases.getInfo(event.optInteger("id"));
+			if (banData == null || event.getGuild().getIdLong() != banData.getGuildId()) {
 				editError(event, path+".not_found");
 				return;
 			}
@@ -82,7 +82,7 @@ public class SyncCmd extends CommandBase {
 			}
 
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event);
-			event.getGuild().retrieveBan(User.fromId(banData.getUserId())).queue(ban -> {
+			event.getGuild().retrieveBan(User.fromId(banData.getTargetId())).queue(ban -> {
 				MessageEmbed embed = builder.setDescription(lu.getText(event, path+".embed_title")).build();
 				ActionRow button = ActionRow.of(
 					Button.of(ButtonStyle.PRIMARY, "button:confirm", lu.getText(event, path+".button_confirm"))

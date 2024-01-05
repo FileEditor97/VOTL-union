@@ -14,11 +14,12 @@ import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -111,17 +112,17 @@ public class BanCmd extends CommandBase {
 		}
 
 		guild.retrieveBan(tu).queue(ban -> {
-			BanData oldBanData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
+			CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 			if (oldBanData != null) {
 				// Active expirable ban
 				if (duration.isZero()) {
 					// make current temporary ban inactive
-					bot.getDBUtil().ban.setInactive(oldBanData.getBanId());
+					bot.getDBUtil().cases.setInactive(oldBanData.getCaseIdInt());
 					// create new entry
 					Member mod = event.getMember();
-					bot.getDBUtil().ban.add(tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
-						guild.getId(), reason, Instant.now(), duration);
-					BanData newBanData = bot.getDBUtil().ban.getMemberLast(tu.getId(), guild.getId());
+					bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+						guild.getIdLong(), reason, Instant.now(), duration);
+					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 					// create embed
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_SUCCESS)
@@ -130,18 +131,18 @@ public class BanCmd extends CommandBase {
 							.replace("{duration}", lu.getText(event, "logger.permanently"))
 							.replace("{reason}", reason))
 						.build();
+					// log ban
+					bot.getLogListener().mod.onNewCase(event, tu, newBanData);
+
 					// ask for ban sync
 					event.getHook().editOriginalEmbeds(embed).queue(msg -> {
 						buttonSync(event, msg, tu, reason);
 					});
-
-					// log ban
-					bot.getLogListener().mod.onBan(event, tu, mod, newBanData);
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_WARNING)
-						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getBanId().toString()))
+						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getCaseId()))
 						.build();
 					event.getHook().editOriginalEmbeds(embed).queue();
 				}
@@ -185,14 +186,14 @@ public class BanCmd extends CommandBase {
 
 			guild.ban(tu, (delete ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
 				// fail-safe check if has expirable ban (to prevent auto unban)
-				BanData oldBanData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
+				CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 				if (oldBanData != null) {
-					bot.getDBUtil().ban.setInactive(oldBanData.getBanId());
+					bot.getDBUtil().cases.setInactive(oldBanData.getCaseIdInt());
 				}
 				// add info to db
-				bot.getDBUtil().ban.add(tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
-					guild.getId(), reason, Instant.now(), duration);
-				BanData newBanData = bot.getDBUtil().ban.getMemberLast(tu.getId(), guild.getId());
+				bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+					guild.getIdLong(), reason, Instant.now(), duration);
+				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_SUCCESS)
@@ -210,7 +211,7 @@ public class BanCmd extends CommandBase {
 				});
 				
 				// log ban
-				bot.getLogListener().mod.onBan(event, tu, mod, newBanData);
+				bot.getLogListener().mod.onNewCase(event, tu, newBanData);
 			},
 			failed -> {
 				editError(event, "errors.unknown", failed.getMessage());

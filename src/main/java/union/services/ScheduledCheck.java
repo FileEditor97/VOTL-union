@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 
 import union.App;
 import union.utils.database.DBUtil;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -216,16 +216,16 @@ public class ScheduledCheck {
 	}
 
 	private void checkUnbans() {
-		List<BanData> expired = db.ban.getExpired();
+		List<CaseData> expired = db.cases.getExpired();
 		if (expired.isEmpty()) return;
-		expired.forEach(banData -> {
-			Guild guild = bot.JDA.getGuildById(banData.getGuildId());
+		expired.forEach(caseData -> {
+			Guild guild = bot.JDA.getGuildById(caseData.getGuildId());
 			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
-			guild.unban(User.fromId(banData.getUserId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
-				s -> bot.getLogListener().mod.onAutoUnban(banData, guild),
+			guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
+				s -> bot.getLogListener().mod.onAutoUnban(caseData, guild),
 				f -> bot.getLogger().warn("Exception at unban attempt", f.getMessage())
 			);
-			db.ban.setInactive(banData.getBanId());
+			db.cases.setInactive(caseData.getCaseIdInt());
 		});
 	}
 

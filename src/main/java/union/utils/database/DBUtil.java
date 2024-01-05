@@ -15,7 +15,7 @@ import java.util.List;
 
 import union.App;
 import union.utils.database.managers.AccessManager;
-import union.utils.database.managers.BanManager;
+import union.utils.database.managers.CaseManager;
 import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
@@ -50,7 +50,6 @@ public class DBUtil {
 	public final WebhookManager webhook;
 	public final ModuleManager module;
 	public final AccessManager access;
-	public final BanManager ban;
 	public final GroupManager group;
 	public final VerifyManager verify;
 	public final VerifyCacheManager verifyCache;
@@ -63,6 +62,7 @@ public class DBUtil {
 	public final UserSettingsManager user;
 	public final VoiceChannelManager voice;
 	public final TempRoleManager tempRole;
+	public final CaseManager cases;
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
 
@@ -93,7 +93,6 @@ public class DBUtil {
 		webhook = new WebhookManager(connectionUtil);
 		module = new ModuleManager(connectionUtil);
 		access = new AccessManager(connectionUtil);
-		ban = new BanManager(connectionUtil);
 		group = new GroupManager(connectionUtil);
 		verify = new VerifyManager(connectionUtil);
 		verifyCache = new VerifyCacheManager(connectionUtil);
@@ -106,6 +105,7 @@ public class DBUtil {
 		user = new UserSettingsManager(connectionUtil);
 		voice = new VoiceChannelManager(connectionUtil);
 		tempRole = new TempRoleManager(connectionUtil);
+		cases = new CaseManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);

@@ -120,14 +120,14 @@ public class TicketTagManager extends LiteDBBase {
 	public Tag getTagFull(Integer tagId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (tagId=%s)".formatted(table, tagId),
 			List.of("buttonText", "buttonStyle", "emoji", "tagType", "location", "message", "supportRoles", "ticketName"));
-		if (data.isEmpty()) return null;
+		if (data==null) return null;
 		return new Tag(data);
 	}
 
 	public Tag getTagInfo(Integer tagId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (tagId=%s)".formatted(table, tagId),
 			List.of("tagType", "location", "message", "supportRoles", "ticketName"));
-		if (data.isEmpty()) return null;
+		if (data==null) return null;
 		return new Tag(data);
 	}
 

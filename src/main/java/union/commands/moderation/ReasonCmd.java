@@ -9,7 +9,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -34,14 +34,14 @@ public class ReasonCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 		Integer caseId = event.optInteger("id");
-		BanData banData = bot.getDBUtil().ban.getInfo(caseId);
-		if (banData == null || event.getGuild().getId() != banData.getGuildId()) {
+		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
+		if (caseData == null || event.getGuild().getIdLong() != caseData.getGuildId()) {
 			editError(event, path+".not_found");
 			return;
 		}
 
 		String newReason = event.optString("reason");
-		bot.getDBUtil().ban.updateReason(caseId, newReason);
+		bot.getDBUtil().cases.updateReason(caseId, newReason);
 
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
@@ -49,6 +49,6 @@ public class ReasonCmd extends CommandBase {
 			.build();
 		editHookEmbed(event, embed);
 
-		bot.getLogListener().mod.onChangeReason(event, banData, newReason);
+		bot.getLogListener().mod.onChangeReason(event, caseData, event.getMember(), newReason);
 	}
 }

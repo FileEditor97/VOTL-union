@@ -8,7 +8,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -30,12 +30,12 @@ public class CaseCmd extends CommandBase {
 	
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		BanData banData = bot.getDBUtil().ban.getInfo(event.optInteger("id"));
-		if (banData == null || event.getGuild().getId() != banData.getGuildId()) {
+		CaseData caseData = bot.getDBUtil().cases.getInfo(event.optInteger("id"));
+		if (caseData == null || event.getGuild().getIdLong() != caseData.getGuildId()) {
 			createError(event, path+".not_found");
 			return;
 		}
-		MessageEmbed embed = bot.getLogUtil().banEmbed(event.getUserLocale(), banData);
+		MessageEmbed embed = bot.getLogUtil().caseEmbed(event.getUserLocale(), caseData);
 
 		createReplyEmbed(event, embed);
 	}

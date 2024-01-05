@@ -7,8 +7,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import union.listeners.LogListener;
+import union.objects.CaseType;
 import union.utils.database.DBUtil;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -78,9 +79,9 @@ public class Helper {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 			// fail-safe check if has expirable ban (to prevent auto unban)
-			BanData banData = db.ban.getMemberExpirable(user.getId(), guild.getId());
+			CaseData banData = db.cases.getMemberActive(user.getIdLong(), Long.valueOf(guildId), CaseType.BAN);
 			if (banData != null) {
-				db.ban.setInactive(banData.getBanId());
+				db.cases.setInactive(banData.getCaseIdInt());
 			}
 			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason("Sync: "+reason).submit().exceptionally(ex -> null));
 		}

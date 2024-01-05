@@ -75,6 +75,15 @@
 		"toggle": "Toggleable",
 		"custom": "Custom"
 	},
+	"case_type": {
+		"ban": "Ban",
+		"unban": "Unban",
+		"mute": "Mute",
+		"unmute": "Unmute",
+		"kick": "Kick",
+		"warn": "Warn",
+		"blacklist": "Blacklist"
+	},
 	"ticket": {
 		"close": "Close",
 		"claim": "Claim",
@@ -97,37 +106,28 @@
 		"master": "Master server",
 		"enforcer": "Done by",
 		"duration": "Duration",
+		"permanently": "Permanently",
+		"temporary": "Until %s",
 		"success": "Success rate",
+		"case": "Case %s | %s | %s",
+		"reason": "Reason",
 		"ban": {
 			"short_title": "Ban info",
 			"short_info": "*Username:* `{username}`\n*Ban reason:* `{reason}`",
-			"title": "Case {case_id} | Ban | {user_tag}",
-			"reason": "Ban Reason",
-			"title_synced": "Synced Ban | {user_tag}"
+			"title_synced": "Synced Ban | %s"
 		},
 		"unban": {
-			"title": "Unban | {user_tag}",
 			"ban_reason": "Banned for",
-			"reason": "Unban Reason",
-			"title_synced": "Synced Unban | {user_tag}"
+			"title_synced": "Synced Unban | %s",
+			"title_expired": "Ban expired | %s"
 		},
 		"kick": {
-			"title": "Kick | {user_tag}",
-			"reason": "Kick reason",
-			"title_synced": "Synced Kick | {user_tag}"
+			"title_synced": "Synced Kick | %s"
 		},
 		"change": {
-			"reason": "Case {case_id} | Reason changed | {user_tag}",
-			"duration": "Case {case_id} | Duration changed | {user_tag}"
+			"reason": "Case %s | Reason changed | %s",
+			"duration": "Case %s | Duration changed | %s"
 		},
-		"expired": {
-			"unban": {
-				"title": "Ban expired | {user_tag}",
-				"ban_reason": "Banned for"
-			}
-		},
-		"permanently": "permanently",
-		"temporary": "until {time}",
 		"group": {
 			"admin": "Action by",
 			"title": "Group '{group_name}' (#{group_id})",

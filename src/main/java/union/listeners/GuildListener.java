@@ -5,10 +5,11 @@ import java.util.Objects;
 import jakarta.annotation.Nonnull;
 
 import union.App;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.LogChannels;
 import union.utils.database.DBUtil;
-import union.utils.database.managers.BanManager.BanData;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -104,9 +105,9 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildUnban(@Nonnull GuildUnbanEvent event) {
-		BanData banData = db.ban.getMemberExpirable(event.getUser().getId(), event.getGuild().getId());
+		CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.BAN);
 		if (banData != null) {
-			db.ban.setInactive(banData.getBanId());
+			db.cases.setInactive(banData.getCaseIdInt());
 		}
 	}
 

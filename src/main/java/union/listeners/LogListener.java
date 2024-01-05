@@ -87,10 +87,10 @@ public class LogListener {
 					embed = logUtil.unbanEmbed(event.getGuildLocale(), caseData, (String) data);
 					break;
 				case MUTE:
-					embed = null;
+					embed = logUtil.muteEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());
 					break;
 				case UNMUTE:
-					embed = null;
+					embed = logUtil.unmuteEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl(), (String) data);
 					break;
 				case KICK:
 					embed = logUtil.kickEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());

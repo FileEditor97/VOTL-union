@@ -124,6 +124,13 @@
 		"kick": {
 			"title_synced": "Synced Kick | %s"
 		},
+		"mute": {
+			"short_title": "Mute info",
+			"short_info": "*Username:* `{username}`\n*Is timed out until:* `{until}`"
+		},
+		"unmute": {
+			"mute_reason": "Muted for"
+		},
 		"change": {
 			"reason": "Case %s | Reason changed | %s",
 			"duration": "Case %s | Duration changed | %s"
@@ -177,6 +184,7 @@
 			"banned_temp": "You were banned from %s server for %s. | %s",
 			"banned": "You were permamently banned from %s server. | %s",
 			"kicked": "You were kicked from %s server. | %s",
+			"muted": "You were timed out in %s server. | %s",
 			"appeal": "\nAppeal this action by following this link:\n> %s"
 		},
 		"guild": {
@@ -789,6 +797,29 @@
 					"value": "Select group/-s",
 					"done": "Kick sync in progress! Result will be posted in log channel."
 				}
+			},
+			"mute": {
+				"help": "Time out member",
+				"usage": "mute <@User | Tag | ID> <duration> [reason]",
+				"user": {
+					"name": "user",
+					"help": "Mention user to be timed out"
+				},
+				"time": {
+					"name": "time",
+					"help": "Time out duration (Example: 2h, 2w5d (week, day, hour, minute))"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Mute reason (*none*)"
+				},
+				"no_reason": "*Not provided*",
+				"not_found": "User not found or input error",
+				"not_self": "You can't ban yourself or me... (for good)",
+				"already_muted": "Mentioned user is already timed out.\n** See `/case {id}`**\n\n*You can change duration using `/duration`*",
+				"higher_access": "Mentioned member has higher access than you do.",
+				"abort": "Could not time out mentioned member.",
+				"success": "**{user_tag} was timed out {duration}!** | {reason}"
 			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",

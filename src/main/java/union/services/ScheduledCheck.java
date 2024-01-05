@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import union.App;
+import union.objects.CaseType;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 
@@ -219,6 +220,10 @@ public class ScheduledCheck {
 		List<CaseData> expired = db.cases.getExpired();
 		if (expired.isEmpty()) return;
 		expired.forEach(caseData -> {
+			if (caseData.getCaseType().equals(CaseType.MUTE)) {
+				db.cases.setInactive(caseData.getCaseIdInt());
+				return;
+			}
 			Guild guild = bot.JDA.getGuildById(caseData.getGuildId());
 			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
 			guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(

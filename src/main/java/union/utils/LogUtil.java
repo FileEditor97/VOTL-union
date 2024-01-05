@@ -100,7 +100,7 @@ public class LogUtil {
 			.setColor(RED_DARK)
 			.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
 				localized(locale, "temporary").formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false)), true)
-			.addField(localized(locale, "ban.reason"), caseData.getReason(), true)
+			.addField(localized(locale, "reason"), caseData.getReason(), true)
 			.build();
 	}
 
@@ -204,6 +204,26 @@ public class LogUtil {
 			.build();
 	}
 
+	//  Mute
+	@Nonnull
+	public MessageEmbed muteEmbed(DiscordLocale locale, CaseData caseData, String userIcon) {
+		return moderationEmbedBuilder(locale, caseData, userIcon)
+			.setColor(RED_DARK)
+			.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
+				localized(locale, "temporary").formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false)), true)
+			.addField(localized(locale, "reason"), caseData.getReason(), true)
+			.build();
+	}
+
+	@Nonnull
+	public MessageEmbed unmuteEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String muteReason) {
+		return moderationEmbedBuilder(locale, caseData)
+			.setColor(AMBER_DARK)
+			.addField(localized(locale, "unmute.mute_reason"), Optional.ofNullable(muteReason).orElse("-"), true)
+			.addField(localized(locale, "reason"), Optional.ofNullable(caseData.getReason()).orElse("-"), true)
+			.build();
+	}
+
 	//  Reason
 	@Nonnull
 	public MessageEmbed reasonChangedEmbed(DiscordLocale locale, CaseData caseData, Long modId, String newReason) {
@@ -220,7 +240,7 @@ public class LogUtil {
 	@Nonnull
 	public MessageEmbed durationChangedEmbed(DiscordLocale locale, CaseData caseData, Long modId, String newTime) {
 		String oldTime = caseData.getDuration().isZero() ? localized(locale, "permanently") : localized(locale, "temporary")
-			.replace("{time}", bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false));
+			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false));
 		return getEmbed()
 			.setAuthor(localized(locale, "change.duration").formatted(caseData.getCaseId(), caseData.getTargetTag()))
 			.setDescription("> %s\n🔴 ~~%s~~\n\n🟢 %s".formatted(localized(locale, caseData.getCaseType().getPath()), oldTime, newTime))

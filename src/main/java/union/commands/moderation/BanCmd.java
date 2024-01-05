@@ -57,7 +57,7 @@ public class BanCmd extends CommandBase {
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.MOD;
-		this.cooldown = 10;
+		this.cooldown = 5;
 		this.cooldownScope = CooldownScope.GUILD;
 		this.waiter = waiter;
 	}
@@ -93,22 +93,6 @@ public class BanCmd extends CommandBase {
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
-		}
-
-		if (dm) {
-			tu.openPrivateChannel().queue(pm -> {
-				DiscordLocale locale = guild.getLocale();
-				String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
-				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-					.setDescription(duration.isZero() ? 
-						lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
-						:
-						lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, duration), reason)
-					)
-					.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
-					.build();
-				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-			});
 		}
 
 		guild.retrieveBan(tu).queue(ban -> {
@@ -184,7 +168,23 @@ public class BanCmd extends CommandBase {
 				}
 			}
 
-			guild.ban(tu, (delete ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
+			if (dm) {
+				tu.openPrivateChannel().queue(pm -> {
+					DiscordLocale locale = guild.getLocale();
+					String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
+					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+						.setDescription(duration.isZero() ? 
+							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
+							:
+							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, duration), reason)
+						)
+						.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
+						.build();
+					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+				});
+			}
+
+			guild.ban(tu, (delete ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
 				// fail-safe check if has expirable ban (to prevent auto unban)
 				CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 				if (oldBanData != null) {
@@ -201,17 +201,17 @@ public class BanCmd extends CommandBase {
 						.replace("{user_tag}", tu.getName())
 						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger.permanently") : 
 							lu.getText(event, "logger.temporary")
-								.replace("{time}", bot.getTimeUtil().formatTime(Instant.now().plus(duration), true))
+								.formatted( bot.getTimeUtil().formatTime(Instant.now().plus(duration), true))
 						)
 						.replace("{reason}", reason))
 					.build();
+				// log ban
+				bot.getLogListener().mod.onNewCase(event, tu, newBanData);
+
 				// ask for ban sync
 				event.getHook().editOriginalEmbeds(embed).queue(msg -> {
 					if (duration.isZero()) buttonSync(event, msg, tu, reason);
 				});
-				
-				// log ban
-				bot.getLogListener().mod.onNewCase(event, tu, newBanData);
 			},
 			failed -> {
 				editError(event, "errors.unknown", failed.getMessage());

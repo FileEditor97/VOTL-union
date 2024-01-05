@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateTimeOutEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -107,6 +108,15 @@ public class GuildListener extends ListenerAdapter {
 	public void onGuildUnban(@Nonnull GuildUnbanEvent event) {
 		CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.BAN);
 		if (banData != null) {
+			db.cases.setInactive(banData.getCaseIdInt());
+		}
+	}
+	
+	@Override
+	public void onGuildMemberUpdateTimeOut(@Nonnull GuildMemberUpdateTimeOutEvent event) {
+		if (event.getNewTimeOutEnd() == null) {
+			// timeout removed by moderator
+			CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.MUTE);
 			db.cases.setInactive(banData.getCaseIdInt());
 		}
 	}

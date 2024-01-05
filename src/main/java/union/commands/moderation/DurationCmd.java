@@ -1,11 +1,13 @@
 package union.commands.moderation;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
@@ -35,7 +37,7 @@ public class DurationCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-		Integer caseId = event.optInteger("id", 0);
+		Integer caseId = event.optInteger("id");
 		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
 		if (caseData == null || event.getGuild().getIdLong() != caseData.getGuildId()) {
 			editError(event, path+".not_found");
@@ -56,9 +58,21 @@ public class DurationCmd extends CommandBase {
 		}
 
 		bot.getDBUtil().cases.updateDuration(caseId, duration);
+		if (caseData.getCaseType().equals(CaseType.MUTE)) {
+			event.getGuild().retrieveMemberById(caseData.getTargetId()).queue(target -> {
+				if (caseData.getTimeStart().plus(duration).isAfter(Instant.now())) {
+					// time out member for new time
+					target.timeoutUntil(caseData.getTimeStart().plus(duration)).reason("Duration change by "+event.getUser().getName()).queue();
+				} else {
+					// time will be expired, remove time out
+					target.removeTimeout();
+					bot.getDBUtil().cases.setInactive(caseId);
+				}
+			});
+		}
 
 		String newTime = duration.isZero() ? lu.getText(event, "logger.permanently") : lu.getText(event, "logger.temporary")
-			.replace("{time}", bot.getTimeUtil().formatTime(caseData.getTimeStart().plus(duration), false));
+			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeStart().plus(duration), false));
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{duration}", newTime))

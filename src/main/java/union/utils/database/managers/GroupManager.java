@@ -15,8 +15,8 @@ public class GroupManager extends LiteDBBase {
 	}
 
 	// groupMaster table
-	public void create(String guildId, String name, Boolean isShared) {
-		execute("INSERT INTO %s(masterId, name, isShared) VALUES (%s, %s, %d)".formatted(table_masters, guildId, quote(name), isShared ? 1 : 0));
+	public void create(String guildId, String name) {
+		execute("INSERT INTO %s(masterId, name) VALUES (%s, %s)".formatted(table_masters, guildId, quote(name)));
 	}
 
 	public Integer getIncrement() {
@@ -45,11 +45,6 @@ public class GroupManager extends LiteDBBase {
 
 	public String getName(Integer groupId) {
 		return selectOne("SELECT name FROM %s WHERE (groupId=%d)".formatted(table_masters, groupId), "name", String.class);
-	}
-
-	public Boolean isShared(Integer groupId) {
-		Integer data = selectOne("SELECT isShared FROM %s WHERE (groupId=%d)".formatted(table_masters, groupId), "isShared", Integer.class);
-		return data==null ? false : data==1;
 	}
 
 	// groupMembers table

@@ -20,13 +20,10 @@ import union.objects.constants.Constants;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
@@ -38,7 +35,7 @@ public class GroupCmd extends CommandBase {
 		super(bot);
 		this.name = "group";
 		this.path = "bot.moderation.group";
-		this.children = new SlashCommand[]{new Create(bot), new Delete(bot), new Add(bot), new Join(bot), new Leave(bot), new Remove(bot), new Rename(bot), new Manage(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Create(bot), new Delete(bot), new Add(bot), new Remove(bot), new Rename(bot), new Manage(bot), new View(bot)};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -56,8 +53,7 @@ public class GroupCmd extends CommandBase {
 			this.name = "create";
 			this.path = "bot.moderation.group.create";
 			this.options = List.of(
-				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"), true).setMaxLength(120),
-				new OptionData(OptionType.BOOLEAN, "shared", lu.getText(path+".shared.help"), false)
+				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"), true).setMaxLength(120)
 			);
 			this.cooldown = 30;
 			this.cooldownScope = CooldownScope.GUILD;
@@ -72,9 +68,8 @@ public class GroupCmd extends CommandBase {
 			}
 
 			String groupName = event.optString("name");
-			Boolean isShared = event.optBoolean("shared", false);
 
-			bot.getDBUtil().group.create(guildId, groupName, isShared);
+			bot.getDBUtil().group.create(guildId, groupName);
 			Integer groupId = bot.getDBUtil().group.getIncrement();
 			bot.getLogListener().group.onCreation(event, groupId, groupName);
 
@@ -82,7 +77,7 @@ public class GroupCmd extends CommandBase {
 				.setColor(Constants.COLOR_SUCCESS)
 				.setDescription(
 					lu.getText(event, path+".done").replace("{group_name}", groupName).replace("{group_id}", groupId.toString())
-					.replace("{is_shared}", (isShared ? Emotes.CHECK_C.getEmote() : Emotes.CROSS_C.getEmote()))
+					.replace("{is_shared}", Emotes.CROSS_C.getEmote())
 				)
 				.build();
 			createReplyEmbed(event, embed);
@@ -171,11 +166,10 @@ public class GroupCmd extends CommandBase {
 				createError(event, path+".is_member", "Group ID: `%s`".formatted(groupId));
 				return;
 			}
-			Boolean canManage = event.optBoolean("manage", false);
-			if (bot.getDBUtil().group.isShared(groupId) && canManage) canManage = false;
-
+			
 			// Search for server in both bots
 			String groupName = bot.getDBUtil().group.getName(groupId);
+			Boolean canManage = event.optBoolean("manage", false);
 			Guild guild = null;
 			try {
 				guild = event.getJDA().getGuildById(targetId);
@@ -209,7 +203,7 @@ public class GroupCmd extends CommandBase {
 
 	}
 
-	private class Join extends SlashCommand {
+	/* private class Join extends SlashCommand {
 
 		public Join(App bot) {
 			this.bot = bot;
@@ -287,9 +281,9 @@ public class GroupCmd extends CommandBase {
 			});
 		}
 
-	}
+	} */
 
-	private class Leave extends SlashCommand {
+	/* private class Leave extends SlashCommand {
 
 		public Leave(App bot) {
 			this.bot = bot;
@@ -325,7 +319,7 @@ public class GroupCmd extends CommandBase {
 			event.replyEmbeds(embed).queue();
 		}
 
-	}
+	} */
 
 	private class Remove extends SlashCommand {
 
@@ -471,24 +465,19 @@ public class GroupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
 			Integer groupId = event.optInteger("group_owned");
 			String masterId = bot.getDBUtil().group.getMaster(groupId);
 			if (masterId == null) {
-				createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
+				editError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
 				return;
 			}
 			if (!event.getGuild().getId().equals(masterId)) {
-				createError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
+				editError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
 				return;
 			}
 
 			Boolean canManage = event.optBoolean("manage", false);
-			if (bot.getDBUtil().group.isShared(groupId) && canManage) {
-				createError(event, path+".is_shared");
-				return;
-			};
-
-			event.deferReply(true).queue();
 
 			List<Guild> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId).stream().map(id -> {
 				Guild guild = event.getJDA().getGuildById(id);
@@ -584,7 +573,7 @@ public class GroupCmd extends CommandBase {
 					.setDescription(
 						lu.getText(event, path+".embed_value").replace("{guild_name}", event.getGuild().getName())
 						.replace("{guild_id}", masterId).replace("{size}", groupSize.toString())
-						.replace("{is_shared}", (bot.getDBUtil().group.isShared(groupId) ? Emotes.CHECK_C.getEmote() : Emotes.CROSS_C.getEmote()))
+						.replace("{is_shared}", Emotes.CROSS_C.getEmote())
 					);
 				
 				if (groupSize > 0) {
@@ -628,7 +617,7 @@ public class GroupCmd extends CommandBase {
 					.setAuthor(lu.getText(event, "logger.group.title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
 					.setDescription(lu.getText(event, path+".embed_value").replace("{guild_name}", masterName)
 					.replace("{guild_id}", masterId).replace("{size}", groupSize.toString())
-					.replace("{is_shared}", (bot.getDBUtil().group.isShared(groupId) ? Emotes.CHECK_C.getEmote() : Emotes.CROSS_C.getEmote())));
+					.replace("{is_shared}", Emotes.CROSS_C.getEmote()));
 				createReplyEmbed(event, builder.build());
 			} else {
 				// No options provided - reply with all groups that this guild is connected

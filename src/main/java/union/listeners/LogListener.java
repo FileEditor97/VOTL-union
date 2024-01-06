@@ -95,7 +95,7 @@ public class LogListener {
 				case KICK:
 					embed = logUtil.kickEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());
 					break;
-				case WARN:
+				case STRIKE:
 					embed = null;
 					break;
 				case BLACKLIST:

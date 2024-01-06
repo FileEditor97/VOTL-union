@@ -81,7 +81,7 @@
 		"mute": "Mute",
 		"unmute": "Unmute",
 		"kick": "Kick",
-		"warn": "Warn",
+		"strike": "Strike",
 		"blacklist": "Blacklist"
 	},
 	"ticket": {
@@ -906,7 +906,7 @@
 				"not_found": "Could not find case by specified ID"
 			},
 			"reason": {
-				"help": "Change ban/mute reason",
+				"help": "Change moderation's reason",
 				"usage": "reason <case ID> <reason>",
 				"id": {
 					"name": "id",

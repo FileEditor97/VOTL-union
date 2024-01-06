@@ -67,6 +67,10 @@ public class MuteCmd extends CommandBase {
 			editError(event, ex.getPath());
 			return;
 		}
+		if (duration.isZero()) {
+			editError(event, path+".abort", "Duration must larger than 1 minute");
+			return;
+		}
 
 		Guild guild = Objects.requireNonNull(event.getGuild());
 		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));

@@ -57,8 +57,11 @@ public class DurationCmd extends CommandBase {
 			return;
 		}
 
-		bot.getDBUtil().cases.updateDuration(caseId, duration);
 		if (caseData.getCaseType().equals(CaseType.MUTE)) {
+			if (duration.isZero()) {
+				editError(event, "errors.unknown", "Duration must larger than 1 minute");
+				return;
+			}
 			event.getGuild().retrieveMemberById(caseData.getTargetId()).queue(target -> {
 				if (caseData.getTimeStart().plus(duration).isAfter(Instant.now())) {
 					// time out member for new time
@@ -70,7 +73,8 @@ public class DurationCmd extends CommandBase {
 				}
 			});
 		}
-
+		bot.getDBUtil().cases.updateDuration(caseId, duration);
+		
 		String newTime = duration.isZero() ? lu.getText(event, "logger.permanently") : lu.getText(event, "logger.temporary")
 			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeStart().plus(duration), false));
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)

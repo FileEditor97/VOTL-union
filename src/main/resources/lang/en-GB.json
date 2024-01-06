@@ -106,8 +106,8 @@
 		"master": "Master server",
 		"enforcer": "Done by",
 		"duration": "Duration",
-		"permanently": "Permanently",
-		"temporary": "Until %s",
+		"permanently": "permanently",
+		"temporary": "until %s",
 		"success": "Success rate",
 		"case": "Case %s | %s | %s",
 		"reason": "Reason",
@@ -742,7 +742,7 @@
 				"already_temp": "Mentioned user is already temporary banned on this server.\n** See `/case {id}`**\n\n*You can change that ban duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"ban_abort": "Could not ban mentioned member.",
-				"ban_success": "**{user_tag} was banned {duration}!** | {reason}",
+				"ban_success": "**{user_tag} was banned {duration}.** | {reason}",
 				"sync": {
 					"title": "**Sync this ban?**\nSelect groups bellow.",
 					"value": "Select group/-s",
@@ -764,7 +764,7 @@
 				"not_found": "User not found or input error",
 				"not_self": "You can't interact with yourself or me",
 				"no_ban": "Specified user is not banned in this server",
-				"unban_success": "**{user_tag} was unbanned!** | {reason}",
+				"unban_success": "**{user_tag} was unbanned.** | {reason}",
 				"sync": {
 					"title": "**Sync this unban?**\nSelect groups bellow.",
 					"value": "Select group/-s",
@@ -791,7 +791,7 @@
 				"not_self": "You can't kick yourself or me... (for good)",
 				"kick_abort": "Could not kick mentioned member.",
 				"higher_access": "Mentioned member has higher access than you do.",
-				"kick_success": "**{user_tag} was kicked!** | {reason}",
+				"kick_success": "**{user_tag} was kicked.** | {reason}",
 				"sync": {
 					"title": "**Sync this kick?**\nSelect groups bellow.",
 					"value": "Select group/-s",
@@ -815,11 +815,28 @@
 				},
 				"no_reason": "*Not provided*",
 				"not_found": "User not found or input error",
-				"not_self": "You can't ban yourself or me... (for good)",
+				"not_self": "You can't mute yourself or me... (for good)",
 				"already_muted": "Mentioned user is already timed out.\n** See `/case {id}`**\n\n*You can change duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
-				"abort": "Could not time out mentioned member.",
-				"success": "**{user_tag} was timed out {duration}!** | {reason}"
+				"abort": "Could not time out mentioned user.",
+				"success": "**{user_tag} was timed out {duration}.** | {reason}"
+			},
+			"unmute": {
+				"help": "Unmute a member",
+				"usage": "unmute <@User | Tag | ID> [reason]",
+				"user": {
+					"name": "user",
+					"help": "Mention user which to unmute"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Unmute reason (*none*)"
+				},
+				"no_reason": "*Not provided*",
+				"not_found": "User not found or input error",
+				"not_muted": "Mentioned user is not muted/timed out.",
+				"abort": "Could not unmute mentioned user.",
+				"success": "**{user_tag} was unmuted.** | {reason}"
 			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",
@@ -880,16 +897,16 @@
 				}
 			},
 			"case": {
-				"help": "View information about logged ban",
+				"help": "View information about user moderation",
 				"usage": "case <case ID>",
 				"id": {
 					"name": "id",
 					"help": "Enter case ID"
 				},
-				"not_found": "Could not find case(ban) by specified ID"
+				"not_found": "Could not find case by specified ID"
 			},
 			"reason": {
-				"help": "Change ban reason",
+				"help": "Change ban/mute reason",
 				"usage": "reason <case ID> <reason>",
 				"id": {
 					"name": "id",
@@ -899,11 +916,11 @@
 					"name": "reason",
 					"help": "Enter new reason"
 				},
-				"not_found": "Could not find case(ban) by specified ID",
-				"done": "Successfully changed ban (Case {id}) reason to:\n```{reason}```"
+				"not_found": "Could not find case by specified ID",
+				"done": "Successfully changed cases (Case {id}) reason to:\n```{reason}```"
 			},
 			"duration": {
-				"help": "Change ban duration",
+				"help": "Change ban/mute duration",
 				"usage": "duration <case ID> <duration>",
 				"id": {
 					"name": "id",
@@ -913,9 +930,9 @@
 					"name": "time",
 					"help": "Enter new duration (Example: 2h, 2w5d (week, day, hour, minute) | 0)"
 				},
-				"not_found": "Could not find case(ban) by specified ID",
+				"not_found": "Could not find case by specified ID",
 				"is_expired": "Specified case has expired.",
-				"done": "Successfully changed ban (Case {id}) duration to: {duration}"
+				"done": "Successfully changed cases (Case {id}) duration to: {duration}"
 			},
 			"group": {
 				"help": "Server Groups managment",

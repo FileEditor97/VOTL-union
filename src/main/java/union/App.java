@@ -167,6 +167,8 @@ public class App {
 				new ReasonCmd(this),
 				new DurationCmd(this),
 				new GroupCmd(this, WAITER),
+				new MuteCmd(this),
+				new UnmuteCmd(this),
 				// other
 				new PingCmd(this),
 				new AboutCmd(this),

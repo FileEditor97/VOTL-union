@@ -25,12 +25,12 @@ import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
-public class TicketRolesCmd extends CommandBase {
+public class RolesSetupCmd extends CommandBase {
 	
-	public TicketRolesCmd(App bot) {
+	public RolesSetupCmd(App bot) {
 		super(bot);
-		this.name = "troles";
-		this.path = "bot.ticketing.troles";
+		this.name = "rolesetup";
+		this.path = "bot.ticketing.rolesetup";
 		this.children = new SlashCommand[]{new Add(bot), new Update(bot), new Remove(bot), new View(bot)};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
@@ -46,7 +46,7 @@ public class TicketRolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "add";
-			this.path = "bot.ticketing.troles.add";
+			this.path = "bot.ticketing.rolesetup.add";
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
 				new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), true)
@@ -158,7 +158,7 @@ public class TicketRolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "update";
-			this.path = "bot.ticketing.troles.update";
+			this.path = "bot.ticketing.rolesetup.update";
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
 				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"))
@@ -264,7 +264,7 @@ public class TicketRolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "remove";
-			this.path = "bot.ticketing.troles.remove";
+			this.path = "bot.ticketing.rolesetup.remove";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)
 			);
@@ -292,7 +292,7 @@ public class TicketRolesCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "view";
-			this.path = "bot.ticketing.troles.view";
+			this.path = "bot.ticketing.rolesetup.view";
 		}
 
 		@Override

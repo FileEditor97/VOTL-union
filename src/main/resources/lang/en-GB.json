@@ -1503,11 +1503,11 @@
 					"title": "Invites for server %s"
 				}
 			},
-			"rpanel": {
-				"help": "Manage the panels of the ticketing module",
-				"usage": "rpanel",
+			"rolespanel": {
+				"help": "Manage the roles request panel",
+				"usage": "rolespanel",
 				"create": {
-					"help": "Send panel to selected channel",
+					"help": "Create role requests panel in selected channel",
 					"usage": "create <#Channel>",
 					"channel": {
 						"name": "channel",
@@ -1518,7 +1518,7 @@
 					"done": "Panel created in {channel}!"
 				},
 				"update": {
-					"help": "Update existing panel",
+					"help": "Update existing role requests panel",
 					"usage": "update <#Channel>",
 					"channel": {
 						"name": "channel",
@@ -1530,7 +1530,7 @@
 					"done": "Panel updated in {channel}!"
 				},
 				"row": {
-					"help": "Update assignable role rows text placeholder",
+					"help": "Update assignable roles row's text placeholder",
 					"usage": "row <row number> <text>",
 					"row": {
 						"name": "row",
@@ -1562,15 +1562,15 @@
 				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`\nClaimed tickets: `{other}`"
 			},
-			"troles": {
+			"rolesetup": {
 				"help": "Manage assignable roles via ticket system",
-				"usage": "troles",
+				"usage": "rolesetup",
 				"add": {
 					"help": "Add role",
 					"usage": "add <@Role> <type> [description] [row]",
 					"role": {
 						"name": "role",
-						"help": "Select role which will be used added to the list"
+						"help": "Select role which will be added to the list"
 					},
 					"type": {
 						"name": "type",
@@ -1590,7 +1590,7 @@
 					},
 					"no_role": "Role not found or is incorrect.",
 					"cant_interact": "I can't interact with selected role.",
-					"exists": "Role is already managed. Check `/troles view`",
+					"exists": "Role is already managed. Check `/rolesetup view`",
 					"invalid_invite": "Provided invite is invalid. Check that it's correct and is not expirable.",
 					"no_type": "Role type not found.",
 					"rows_max": "All assignable roles rows are full (3x25). Clear any row, to add new roles.",

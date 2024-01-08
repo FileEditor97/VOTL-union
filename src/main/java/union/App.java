@@ -1,6 +1,5 @@
 package union;
 
-import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
@@ -186,9 +185,9 @@ public class App {
 				new AccountCmd(this),
 				new VerifyCheckCmd(this),
 				// ticketing
-				new RolePanelCmd(this),
+				new RolesPanelCmd(this),
 				new TicketCountCmd(this),
-				new TicketRolesCmd(this),
+				new RolesSetupCmd(this),
 				new TicketPanelCmd(this),
 				new CloseCmd(this),
 				new RcloseCmd(this),
@@ -319,10 +318,6 @@ public class App {
 
 	public LogListener getLogListener() {
 		return logListener;
-	}
-
-	public String lastAccountCheck() {
-		return Timestamp.from(scheduledCheck.lastAccountCheck).toString();
 	}
 
 	public Helper getHelper() {

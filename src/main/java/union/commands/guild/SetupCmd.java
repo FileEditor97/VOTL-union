@@ -36,7 +36,7 @@ public class SetupCmd extends CommandBase {
 		this.name = "setup";
 		this.path = "bot.guild.setup";
 		this.children = new SlashCommand[]{new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), 
-			new Voice(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot)
+			new Voice(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot), new Strikes(bot)
 		};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -45,42 +45,7 @@ public class SetupCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {}
 
-	/* private class Main extends SlashCommand {
-		
-		public Main(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
-			this.name = "main";
-			this.path = "bot.guild.setup.main";
-		}
-
-		@Override
-		protected void execute(SlashCommandEvent event) {
-			Guild guild = Objects.requireNonNull(event.getGuild());
-			String guildId = guild.getId();
-
-			if (bot.getDBUtil().guild.add(guildId)) {
-				createReplyEmbed(event, 
-					bot.getEmbedUtil().getEmbed(event)
-						.setDescription(lu.getText(event, path+".done"))
-						.setColor(Constants.COLOR_SUCCESS)
-						.build()
-				);
-				bot.getLogger().info(String.format("Added server through setup '%s' (%s) to DB.", guild.getName(), guildId));
-			} else {
-				createReplyEmbed(event, 
-					bot.getEmbedUtil().getEmbed(event)
-						.setDescription(lu.getText(event, path+".exists"))
-						.setColor(Constants.COLOR_WARNING)
-						.build()
-				);
-			}
-		}
-
-	} */
-
 	private class PanelColor extends SlashCommand {
-
 		public PanelColor(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -108,11 +73,9 @@ public class SetupCmd extends CommandBase {
 				.setColor(color)
 				.build());
 		}
-
 	}
 
 	private class AppealLink extends SlashCommand {
-
 		public AppealLink(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -149,11 +112,9 @@ public class SetupCmd extends CommandBase {
 				return false;
 			}
 		}
-
 	}
 
 	private class ReportChannel extends SlashCommand {
-
 		public ReportChannel(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -180,11 +141,9 @@ public class SetupCmd extends CommandBase {
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
 				.build());
 		}
-
 	}
 
 	private class Voice extends SlashCommand {
-
 		public Voice(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -234,7 +193,6 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class VoicePanel extends SlashCommand {
-
 		public VoicePanel(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -285,7 +243,6 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class VoiceName extends SlashCommand {
-
 		public VoiceName(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -316,11 +273,9 @@ public class SetupCmd extends CommandBase {
 					.build()
 			);
 		}
-
 	}
 
 	private class VoiceLimit extends SlashCommand {
-
 		public VoiceLimit(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -343,6 +298,34 @@ public class SetupCmd extends CommandBase {
 			createReplyEmbed(event,
 				bot.getEmbedUtil().getEmbed(event)
 					.setDescription(lu.getText(event, path+".done").replace("{value}", filLimit.toString()))
+					.build()
+			);
+		}
+	}
+
+	private class Strikes extends SlashCommand {
+
+		public Strikes(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "strikes";
+			this.path = "bot.guild.setup.strikes";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "time", lu.getText(path+".time.help"), true)
+					.setRequiredRange(1, 30)
+			);
+			this.module = CmdModule.STRIKES;
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			Integer hours = event.optInteger("time");
+
+			bot.getDBUtil().guild.setStrikeExpiresAfter(event.getGuild().getId(), hours);
+
+			createReplyEmbed(event,
+				bot.getEmbedUtil().getEmbed(event)
+					.setDescription(lu.getText(event, path+".done").formatted(hours))
 					.build()
 			);
 		}

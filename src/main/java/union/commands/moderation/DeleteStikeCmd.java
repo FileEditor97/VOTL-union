@@ -36,7 +36,6 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class DeleteStikeCmd extends CommandBase {
 
-	private final Integer expireDays = 7;
 	private EventWaiter waiter;
 	
 	public DeleteStikeCmd(App bot, EventWaiter waiter) {
@@ -125,7 +124,10 @@ public class DeleteStikeCmd extends CommandBase {
 			if (cases.isEmpty())
 				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tm.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(), Instant.now().plus(expireDays, ChronoUnit.DAYS), String.join(";", cases));
+				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(),
+					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+					String.join(";", cases)
+				);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done_one").formatted(caseData.getReason(), tm.getUser().getName()))
@@ -178,11 +180,17 @@ public class DeleteStikeCmd extends CommandBase {
 			if (cases.isEmpty())
 				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tm.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(), Instant.now().plus(expireDays, ChronoUnit.DAYS), String.join(";", cases));
+				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(),
+					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+					String.join(";", cases)
+				);
 		} else {
 			// Delete selected amount of strikes (not all)
 			Collections.replaceAll(cases, event.getComponentId(), caseId+"-"+(activeAmount-removeAmount));
-			bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(), Instant.now().plus(expireDays, ChronoUnit.DAYS), removeAmount, String.join(";", cases));
+			bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(),
+				Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+				removeAmount, String.join(";", cases)
+			);
 		}
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)

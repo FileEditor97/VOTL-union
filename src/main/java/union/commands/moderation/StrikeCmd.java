@@ -34,8 +34,6 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class StrikeCmd extends CommandBase {
-
-	private final Integer expireDays = 7;
 	
 	public StrikeCmd(App bot) {
 		super(bot);
@@ -107,7 +105,9 @@ public class StrikeCmd extends CommandBase {
 
 	private Field executeStrike(DiscordLocale locale, Guild guild, Member target, Integer addAmount, Integer caseId) {
 		// Add strike(-s) to DB
-		bot.getDBUtil().strike.addStrikes(guild.getIdLong(), target.getIdLong(), Instant.now().plus(expireDays, ChronoUnit.DAYS), addAmount, caseId+"-"+addAmount);
+		bot.getDBUtil().strike.addStrikes(guild.getIdLong(), target.getIdLong(),
+			Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guild.getId()), ChronoUnit.DAYS),
+			addAmount, caseId+"-"+addAmount);
 		// Get strike new strike amount
 		Integer strikes = bot.getDBUtil().strike.getStrikeCount(guild.getIdLong(), target.getIdLong());
 		// Get actions for strike amount

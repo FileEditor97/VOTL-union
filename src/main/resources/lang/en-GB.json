@@ -356,6 +356,15 @@
 						},
 						"done": "Successfully changed default VoiceChannels limit to `{value}`!"
 					}
+				},
+				"strikes": {
+					"help": "Set time (days), after which strikes expires",
+					"usage": "strikes <days>",
+					"time": {
+						"name": "time",
+						"help": "Enter time in days, after which strikes expires"
+					},
+					"done": "Experation time set to %d days."
 				}
 			},
 			"module": {

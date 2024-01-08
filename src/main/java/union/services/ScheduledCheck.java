@@ -36,14 +36,12 @@ public class ScheduledCheck {
 
 	private final App bot;
 	private final DBUtil db;
-	public Instant lastAccountCheck;
 
 	private final Integer CLOSE_AFTER_DELAY = 16; // hours
 
 	public ScheduledCheck(App bot) {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
-		this.lastAccountCheck = Instant.now();
 	}
 
 	// each 10-15 minutes
@@ -141,8 +139,6 @@ public class ScheduledCheck {
 		}
 	}
 
-	private final Integer expireDays = 7;
-
 	private void checkWarnsExpired() {
 		try {
 			List<Map<String, Object>> expired = db.strike.getExpired(Instant.now());
@@ -182,7 +178,10 @@ public class ScheduledCheck {
 							newData.append(String.join(";", list));
 						}
 						// Remove one strike and reset time
-						db.strike.removeStrike(guildId, userId, Instant.now().plus(expireDays, ChronoUnit.DAYS), newData.toString());
+						db.strike.removeStrike(guildId, userId,
+							Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guildId.toString()), ChronoUnit.DAYS),
+							newData.toString()
+						);
 					} else {
 						throw new Exception("Strike data is empty");
 					}
@@ -204,7 +203,6 @@ public class ScheduledCheck {
 
 	private void checkAccountUpdates() {
 		try {
-			lastAccountCheck = Instant.now();
 			List<Map<String, String>> data = db.unionVerify.updatedAccounts();
 			if (data.isEmpty()) return;
 
@@ -273,6 +271,7 @@ public class ScheduledCheck {
 	private void checkUnbans() {
 		List<CaseData> expired = db.cases.getExpired();
 		if (expired.isEmpty()) return;
+		
 		expired.forEach(caseData -> {
 			if (caseData.getCaseType().equals(CaseType.MUTE)) {
 				db.cases.setInactive(caseData.getCaseIdInt());

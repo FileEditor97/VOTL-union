@@ -89,7 +89,7 @@ public class UnbanCmd extends CommandBase {
 					.replace("{reason}", reason))
 				.build();
 			// log unban
-			bot.getLogListener().mod.onNewCase(event, tu, unbanData, banData != null ? banData.getReason() : ban.getReason());
+			bot.getLogListener().mod.onNewCase(guild, tu, unbanData, banData != null ? banData.getReason() : ban.getReason());
 
 			// ask for unban sync
 			event.getHook().editOriginalEmbeds(embed).queue(msg -> {

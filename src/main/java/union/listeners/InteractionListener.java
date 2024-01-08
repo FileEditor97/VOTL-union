@@ -363,14 +363,14 @@ public class InteractionListener extends ListenerAdapter {
 		List<Map<String, Object>> assignRoles = bot.getDBUtil().role.getAssignableByRow(guild.getId(), row);
 		if (assignRoles.isEmpty()) return null;
 		List<SelectOption> options = new ArrayList<SelectOption>();
-		assignRoles.forEach(data -> {
-			if (options.size() >= 25) return;
-			String roleId = data.get("roleId").toString();
+		for (Map<String, Object> data : assignRoles) {
+			if (options.size() >= 25) break;
+			String roleId = (String) data.getOrDefault("roleId", "0");
 			Role role = guild.getRoleById(roleId);
-			if (role == null) return;
-			String description = Objects.requireNonNullElse(data.get("description").toString(), "");
+			if (role == null) continue;
+			String description = (String) data.getOrDefault("description", "-");
 			options.add(SelectOption.of(role.getName(), roleId).withDescription(description));
-		});
+		}
 		StringSelectMenu menu = StringSelectMenu.create("menu:role_row:"+row)
 			.setPlaceholder(db.ticketSettings.getRowText(guild.getId(), row))
 			.setMaxValues(25)
@@ -1102,7 +1102,7 @@ public class InteractionListener extends ListenerAdapter {
 				
 				List<Member> members = mentions.getMembers();
 				List<Role> roles = mentions.getRoles();
-				if (members.isEmpty() & roles.isEmpty()) {
+				if (members.isEmpty() && roles.isEmpty()) {
 					return;
 				}
 				if (members.contains(author) || members.contains(guild.getSelfMember())) {

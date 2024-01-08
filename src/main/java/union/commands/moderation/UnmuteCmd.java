@@ -64,7 +64,7 @@ public class UnmuteCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), null);
 				CaseData unmuteData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
 				// log unban
-				bot.getLogListener().mod.onNewCase(event, tm.getUser(), unmuteData, muteData != null ? muteData.getReason() : null);
+				bot.getLogListener().mod.onNewCase(guild, tm.getUser(), unmuteData, muteData != null ? muteData.getReason() : null);
 				// reply
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_SUCCESS)

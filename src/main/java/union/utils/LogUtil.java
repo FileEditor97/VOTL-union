@@ -217,7 +217,7 @@ public class LogUtil {
 
 	@Nonnull
 	public MessageEmbed unmuteEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String muteReason) {
-		return moderationEmbedBuilder(locale, caseData)
+		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(AMBER_DARK)
 			.addField(localized(locale, "unmute.mute_reason"), Optional.ofNullable(muteReason).orElse("-"), true)
 			.addField(localized(locale, "reason"), Optional.ofNullable(caseData.getReason()).orElse("-"), true)

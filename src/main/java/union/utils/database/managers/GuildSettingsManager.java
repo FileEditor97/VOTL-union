@@ -80,4 +80,13 @@ public class GuildSettingsManager extends LiteDBBase {
 		return selectOne("SELECT reportChannelId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "reportChannelId", String.class);
 	}
 
+	public void setStrikeExpiresAfter(String guildId, Integer expiresAfter) {
+		execute("INSERT INTO %s(guildId, strikeExpires) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET strikeExpires=%d".formatted(table, guildId, expiresAfter, expiresAfter));
+	}
+
+	public Integer getStrikeExpiresAfter(String guildId) {
+		Integer data = selectOne("SELECT strikeExpires FROM %s WHERE (guildId=%s)".formatted(table, guildId), "strikeExpires", Integer.class);
+		return data != null ? data : 7;
+	}
+
 }

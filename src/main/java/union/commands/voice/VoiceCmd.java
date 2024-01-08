@@ -438,7 +438,7 @@ public class VoiceCmd extends CommandBase {
 
 			List<Member> members = mentions.getMembers();
 			List<Role> roles = mentions.getRoles();
-			if (members.isEmpty() & roles.isEmpty()) {
+			if (members.isEmpty() && roles.isEmpty()) {
 				editError(event, path+".invalid_args");
 				return;
 			}
@@ -511,7 +511,7 @@ public class VoiceCmd extends CommandBase {
 
 			List<Member> members = mentions.getMembers();
 			List<Role> roles = mentions.getRoles();
-			if (members.isEmpty() & roles.isEmpty()) {
+			if (members.isEmpty() && roles.isEmpty()) {
 				editError(event, path+".invalid_args");
 				return;
 			}

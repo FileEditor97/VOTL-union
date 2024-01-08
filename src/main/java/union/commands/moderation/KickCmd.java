@@ -59,18 +59,10 @@ public class KickCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(false).queue();
-		
-		Member targetMember = event.optMember("member");
-		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
-		Boolean dm = event.optBoolean("dm", false);
-
-		buildReply(event, targetMember, reason, dm);
-	}
-
-	private void buildReply(SlashCommandEvent event, Member tm, String reason, Boolean dm) {
+		event.deferReply().queue();
 		Guild guild = Objects.requireNonNull(event.getGuild());
 
+		Member tm = event.optMember("member");
 		if (tm == null) {
 			editError(event, path+".not_found");
 			return;
@@ -80,7 +72,8 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
-		if (dm) {
+		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
+		if (event.optBoolean("dm", true)) {
 			tm.getUser().openPrivateChannel().queue(pm -> {
 				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 					.setDescription(lu.getLocalized(guild.getLocale(), "logger.pm.kicked").formatted(guild.getName(), reason))
@@ -112,7 +105,7 @@ public class KickCmd extends CommandBase {
 					.replace("{reason}", reason))
 				.build();
 			// log ban
-			bot.getLogListener().mod.onNewCase(event, tm.getUser(), kickData);
+			bot.getLogListener().mod.onNewCase(guild, tm.getUser(), kickData);
 
 			// ask for kick sync
 			event.getHook().editOriginalEmbeds(embed).queue(msg -> {

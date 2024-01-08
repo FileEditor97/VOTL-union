@@ -126,7 +126,7 @@ public class MuteCmd extends CommandBase {
 						.replace("{reason}", reason))
 					.build();
 				// log mute
-				bot.getLogListener().mod.onNewCase(event, tm.getUser(), muteDate);
+				bot.getLogListener().mod.onNewCase(guild, tm.getUser(), muteDate);
 				
 				// send embed
 				editHookEmbed(event, embed);

@@ -53,7 +53,6 @@ public class RcloseCmd extends CommandBase {
 		}
 		if (bot.getDBUtil().ticket.getTimeClosing(channelId) > 0) {
 			// If request already exists (if there is no cancel button - GG)
-			// TODO: create cancel command, to cancel close request
 			createError(event, path+".already_requested");
 			return;
 		}

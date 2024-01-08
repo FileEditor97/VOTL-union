@@ -65,19 +65,9 @@ public class BanCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-		
-		User targetUser = event.optUser("user");
-		String time = event.optString("time");
-		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
-		Boolean delete = event.optBoolean("delete", true);
-		Boolean dm = event.optBoolean("dm", true);
-
-		buildReply(event, targetUser, time, reason, delete, dm);
-	}
-
-	private void buildReply(SlashCommandEvent event, User tu, String time, String reason, Boolean delete, Boolean dm) {
 		Guild guild = Objects.requireNonNull(event.getGuild());
 
+		User tu = event.optUser("user");
 		if (tu == null) {
 			editError(event, path+".not_found");
 			return;
@@ -89,12 +79,13 @@ public class BanCmd extends CommandBase {
 
 		final Duration duration;
 		try {
-			duration = bot.getTimeUtil().stringToDuration(time, false);
+			duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
 		}
 
+		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
 		guild.retrieveBan(tu).queue(ban -> {
 			CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 			if (oldBanData != null) {
@@ -116,7 +107,7 @@ public class BanCmd extends CommandBase {
 							.replace("{reason}", reason))
 						.build();
 					// log ban
-					bot.getLogListener().mod.onNewCase(event, tu, newBanData);
+					bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 
 					// ask for ban sync
 					event.getHook().editOriginalEmbeds(embed).queue(msg -> {
@@ -168,7 +159,7 @@ public class BanCmd extends CommandBase {
 				}
 			}
 
-			if (dm) {
+			if (event.optBoolean("dm", true)) {
 				tu.openPrivateChannel().queue(pm -> {
 					DiscordLocale locale = guild.getLocale();
 					String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
@@ -184,7 +175,7 @@ public class BanCmd extends CommandBase {
 				});
 			}
 
-			guild.ban(tu, (delete ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
+			guild.ban(tu, (event.optBoolean("delete", true) ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
 				// fail-safe check if has expirable ban (to prevent auto unban)
 				CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 				if (oldBanData != null) {
@@ -206,7 +197,7 @@ public class BanCmd extends CommandBase {
 						.replace("{reason}", reason))
 					.build();
 				// log ban
-				bot.getLogListener().mod.onNewCase(event, tu, newBanData);
+				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 
 				// ask for ban sync
 				event.getHook().editOriginalEmbeds(embed).queue(msg -> {

@@ -5,11 +5,10 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import union.utils.database.LiteDBBase;
 import union.objects.CaseType;
 import union.utils.database.ConnectionUtil;
+import union.utils.database.LiteDBBase;
 
 public class CaseManager extends LiteDBBase {
 
@@ -87,13 +86,19 @@ public class CaseManager extends LiteDBBase {
 		return new CaseData(data);
 	}
 
-	// get user active temporary cases data
-	/* public CaseData getMemberExpirable(long userId, long guildId, CaseType type) {
-		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d AND type=%d AND active=1 AND duration>0)"
-			.formatted(table, guildId, userId, type.getType()), fullCaseKeys);
-		if (data == null) return null;
-		return new CaseData(data);
-	} */
+	// get user active strikes
+	public List<CaseData> getMemberStrikes(long userId, long guildId) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d AND type>20 AND active=1)"
+			.formatted(table, guildId, userId), fullCaseKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(map -> new CaseData(map)).toList();
+	}
+
+	// set all strike cases for user inactive
+	// Better way for this is harder...
+	public void setInactiveStrikeCases(Long userId, Long guildId) {
+		execute("UPDATE %s SET active=0 WHERE (userId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
+	}
 
 	// get user's last case
 	public CaseData getMemberLast(long userId, long guildId) {
@@ -136,8 +141,8 @@ public class CaseManager extends LiteDBBase {
 			this.modTag = (String) map.get("modTag");
 			this.guildId = Long.parseLong((String) map.get("guildId"));
 			this.reason = (String) map.get("reason");
-			this.timeStart = Instant.ofEpochSecond((Integer) map.get("timeStart"));
-			this.duration = Duration.ofSeconds(Optional.ofNullable((Integer) map.get("duration")).orElse(0));
+			this.timeStart = Instant.ofEpochSecond(Long.parseLong((String) map.getOrDefault("timeStart", "0")));
+			this.duration = Duration.ofSeconds(Long.parseLong((String) map.getOrDefault("duration", "0")));
 			this.active = ((Integer) map.get("active")) == 1;
 		}
 

@@ -15,12 +15,14 @@ import java.util.List;
 
 import union.App;
 import union.utils.database.managers.AccessManager;
+import union.utils.database.managers.AutopunishManager;
 import union.utils.database.managers.CaseManager;
 import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
 import union.utils.database.managers.ModuleManager;
 import union.utils.database.managers.RoleManager;
+import union.utils.database.managers.StrikeManager;
 import union.utils.database.managers.TempRoleManager;
 import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
@@ -63,6 +65,8 @@ public class DBUtil {
 	public final VoiceChannelManager voice;
 	public final TempRoleManager tempRole;
 	public final CaseManager cases;
+	public final StrikeManager strike;
+	public final AutopunishManager autopunish;
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
 
@@ -106,6 +110,8 @@ public class DBUtil {
 		voice = new VoiceChannelManager(connectionUtil);
 		tempRole = new TempRoleManager(connectionUtil);
 		cases = new CaseManager(connectionUtil);
+		strike = new StrikeManager(connectionUtil);
+		autopunish = new AutopunishManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);

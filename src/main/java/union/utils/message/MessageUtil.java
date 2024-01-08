@@ -117,4 +117,11 @@ public class MessageUtil {
 			.replace("~", "\\~");
 	}
 
+	public String limitString(String text, int limit) {
+		if (text == null) return "";
+		if (text.length() > limit)
+			return text.substring(0, limit-3) + "...";
+		return text;
+	}
+
 }

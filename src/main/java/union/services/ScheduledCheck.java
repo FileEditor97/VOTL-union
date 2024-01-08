@@ -52,6 +52,8 @@ public class ScheduledCheck {
 			checkTicketStatus();
 		}).thenRunAsync(() -> {
 			checkExpiredTempRoles();
+		}).thenRunAsync(() -> {
+			checkWarnsExpired();
 		});
 	}
 
@@ -136,6 +138,58 @@ public class ScheduledCheck {
 			});
 		} catch (Throwable t) {
 			bot.getLogger().error("Exception caught during expired roles check.", t);
+		}
+	}
+
+	private final Integer expireDays = 7;
+
+	private void checkWarnsExpired() {
+		try {
+			List<Map<String, Object>> expired = db.strike.getExpired(Instant.now());
+			if (expired.isEmpty()) return;
+
+			for (Map<String, Object> data : expired) {
+				Long guildId = Long.parseLong((String) data.get("guildId"));
+				Long userId = Long.parseLong((String) data.get("userId"));
+				Integer strikes = (Integer) data.get("count");
+
+				if (strikes <= 0) {
+					// Should not happen...
+					db.strike.removeGuildUser(guildId, userId);
+				} else if (strikes == 1) {
+					// One strike left, remove user
+					db.strike.removeGuildUser(guildId, userId);
+					// set case inactive
+					db.cases.setInactiveStrikeCases(userId, guildId);
+				} else {
+					String[] cases = ((String) data.getOrDefault("data", "")).split(";");
+					// Update data
+					if (!cases[0].isEmpty()) {
+						String[] caseInfo = cases[0].split("-");
+						String caseId = caseInfo[0];
+						Integer newCount = Integer.valueOf(caseInfo[1]) - 1;
+
+						StringBuffer newData = new StringBuffer();
+						if (newCount > 0) {
+							newData.append(caseId+"-"+newCount);
+						} else {
+							// Set case inactive
+							db.cases.setInactive(Integer.parseInt(caseId));
+						}
+						if (cases.length > 1) {
+							List<String> list = List.of(cases);
+							list.remove(0);
+							newData.append(String.join(";", list));
+						}
+						// Remove one strike and reset time
+						db.strike.removeStrike(guildId, userId, Instant.now().plus(expireDays, ChronoUnit.DAYS), newData.toString());
+					} else {
+						throw new Exception("Strike data is empty");
+					}
+				}
+			};
+		} catch (Throwable t) {
+			bot.getLogger().error("Exception caught during expired warns check.", t);
 		}
 	}
 

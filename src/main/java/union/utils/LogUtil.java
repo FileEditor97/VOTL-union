@@ -224,6 +224,14 @@ public class LogUtil {
 			.build();
 	}
 
+	//  Strike
+	public MessageEmbed strikeEmbed(DiscordLocale locale, CaseData caseData, String userIcon) {
+		return moderationEmbedBuilder(locale, caseData, userIcon)
+			.setColor(AMBER_LIGHT)
+			.addField(localized(locale, "reason"), Optional.ofNullable(caseData.getReason()).orElse("-"), true)
+			.build();
+	}
+
 	//  Reason
 	@Nonnull
 	public MessageEmbed reasonChangedEmbed(DiscordLocale locale, CaseData caseData, Long modId, String newReason) {

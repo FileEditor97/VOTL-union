@@ -65,38 +65,40 @@ public class LogListener {
 
 	// Moderation actions
 	public class Moderation {
-		public void onNewCase(SlashCommandEvent event, User target, CaseData caseData) {
-			onNewCase(event, target, caseData, null);
+		public void onNewCase(Guild guild, User target, CaseData caseData) {
+			onNewCase(guild, target, caseData, null);
 		}
 		
-		public void onNewCase(SlashCommandEvent event, User target, CaseData caseData, Object data) {
-			TextChannel channel = getLogChannel(LogChannels.MODERATION, event.getGuild());
+		public void onNewCase(Guild guild, User target, CaseData caseData, String oldReason) {
+			TextChannel channel = getLogChannel(LogChannels.MODERATION, guild);
 			if (channel == null) return;
 
 			if (caseData == null) {
-				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
+				bot.getLogger().warn("Unknown case provided with interaction");
 				return;
 			}
 
 			MessageEmbed embed = null;
 			switch (caseData.getCaseType()) {
 				case BAN:
-					embed = logUtil.banEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());
+					embed = logUtil.banEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
 					break;
 				case UNBAN:
-					embed = logUtil.unbanEmbed(event.getGuildLocale(), caseData, (String) data);
+					embed = logUtil.unbanEmbed(guild.getLocale(), caseData, oldReason);
 					break;
 				case MUTE:
-					embed = logUtil.muteEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());
+					embed = logUtil.muteEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
 					break;
 				case UNMUTE:
-					embed = logUtil.unmuteEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl(), (String) data);
+					embed = logUtil.unmuteEmbed(guild.getLocale(), caseData, target.getAvatarUrl(), oldReason);
 					break;
 				case KICK:
-					embed = logUtil.kickEmbed(event.getGuildLocale(), caseData, target.getAvatarUrl());
+					embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
 					break;
-				case STRIKE:
-					embed = null;
+				case STRIKE_1:
+				case STRIKE_2:
+				case STRIKE_3:
+					embed = logUtil.strikeEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
 					break;
 				case BLACKLIST:
 					embed = null;

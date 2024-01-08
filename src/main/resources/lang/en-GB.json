@@ -68,6 +68,7 @@
 		"voice": "Custom voicechannels",
 		"report": "Report function",
 		"roles": "Role management",
+		"strikes": "Strike punishments",
 		"module_disabled": "This command(module) is disabled."
 	},
 	"role_type": {
@@ -81,8 +82,17 @@
 		"mute": "Mute",
 		"unmute": "Unmute",
 		"kick": "Kick",
-		"strike": "Strike",
+		"strike1": "Strike [1]",
+		"strike2": "Strike [2]",
+		"strike3": "Strike [3]",
 		"blacklist": "Blacklist"
+	},
+	"punish_action": {
+		"mute": "Time out",
+		"kick": "Kick",
+		"ban": "Ban",
+		"remove_role": "Remove role",
+		"add_role": "Add role"
 	},
 	"ticket": {
 		"close": "Close",
@@ -185,6 +195,10 @@
 			"banned": "You were permamently banned from %s server. | %s",
 			"kicked": "You were kicked from %s server. | %s",
 			"muted": "You were timed out in %s server. | %s",
+			"strike": "You received %s in %s server. | %s",
+			"strike1": "one warning",
+			"strike2": "two warnings",
+			"strike3": "three warnings",
 			"appeal": "\nAppeal this action by following this link:\n> %s"
 		},
 		"guild": {
@@ -485,6 +499,71 @@
 					"tickets": "Ticket actions",
 					"roles": "Roles",
 					"server": "Bot's management"
+				}
+			},
+			"autopunish": {
+				"help": "Manage auto-punishments for stikes",
+				"usage": "autopunish",
+				"add": {
+					"help": "Add new action",
+					"usage": "add <Strike count> [Kick?] [Mute duration] [Ban duration] [Add @Role] [Remove @Role]",
+					"strike-count": {
+						"name": "strike-count",
+						"help": "At which amount of strikes to perform this action"
+					},
+					"kick": {
+						"name": "kick",
+						"help": "Kick user?"
+					},
+					"mute": {
+						"name": "mute",
+						"help": "Enter mute duration"
+					},
+					"ban": {
+						"name": "ban",
+						"help": "Enter ban duration (0 - permament)"
+					},
+					"remove-role": {
+						"name": "remove-role",
+						"help": "Remove role from the user"
+					},
+					"add-role": {
+						"name": "add-role",
+						"help": "Add role to the user"
+					},
+					"one_option": "Only one of this options can be used: Kick, Mute or Ban.",
+					"ban_kick_role": "Can't give or remove role if options Mute or Ban are used.",
+					"same_role": "Can't give or remove same roles.",
+					"not_zero": "Mute duration can't be zero.",
+					"incorrect_role": "I can't interact with provided role.",
+					"exists": "Action already exists. Remove it and re-add.",
+					"empty": "No options selected.",
+					"title": "Created action for %d strikes:\n\n",
+					"vkick": "User will be kicked.\n",
+					"vmute": "User will be muted for %s.\n",
+					"vban": "User will be banned %s.\n",
+					"for": "for ",
+					"vremove": "Role %s will be removed.\n",
+					"vadd": "Role %s will be added.\n"
+				},
+				"remove": {
+					"help": "Remove actions",
+					"usage": "remove <Strike count>",
+					"strike-count": {
+						"name": "strike-count",
+						"help": "At which amount of strikes to perform this action"
+					},
+					"not_found": "There is no action set for this count.",
+					"done": "Removed action for strike count %d."
+				},
+				"update": {
+					"help": "Update existing action",
+					"usage": "update <Strike count> <Type> [duration/role]"
+				},
+				"view": {
+					"help": "View all actions",
+					"usage": "view",
+					"empty": "There are no actions."
 				}
 			}
 		},
@@ -814,7 +893,7 @@
 					"help": "Mute reason (*none*)"
 				},
 				"no_reason": "*Not provided*",
-				"not_found": "User not found or input error",
+				"not_found": "Member not found or input error",
 				"not_self": "You can't mute yourself or me... (for good)",
 				"already_muted": "Mentioned user is already timed out.\n** See `/case {id}`**\n\n*You can change duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
@@ -833,10 +912,64 @@
 					"help": "Unmute reason (*none*)"
 				},
 				"no_reason": "*Not provided*",
-				"not_found": "User not found or input error",
+				"not_found": "Member not found or input error",
 				"not_muted": "Mentioned user is not muted/timed out.",
 				"abort": "Could not unmute mentioned user.",
 				"success": "**{user_tag} was unmuted.** | {reason}"
+			},
+			"strike": {
+				"help": "Strike a member",
+				"usage": "strike <@User> <severity> <reason>",
+				"user": {
+					"name": "user",
+					"help": "Mention user which to strike"
+				},
+				"severity": {
+					"name": "severity",
+					"help": "Select strike's severity",
+					"minor": "1] Minor",
+					"severe": "2] Severe",
+					"extreme": "3] Extreme"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Strike reason"
+				},
+				"not_found": "Member not found or input error",
+				"not_self": "You can't select yourself or the bot.",
+				"success": "**{user_tag} received {type}.** | {reason}",
+				"autopunish_title": "Applying punishment for %d strikes",
+				"autopunish_reason": "Autopunish: user has %d active strikes",
+				"for": "for"
+			},
+			"delstrike": {
+				"help": "Remove active strike from the user",
+				"usage": "delstrike <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select member"
+				},
+				"not_found": "Could not find specified member.",
+				"is_bot": "Can't select bot.",
+				"no_strikes": "User has no active strikes.",
+				"select_title": "%s has %d active strikes. Select one to delete.",
+				"select_strike": "Select a strike to delete",
+				"done_one": "Deleted strike `%s` for %s.",
+				"button_all": "(All)",
+				"button_title": "Select how many strikes to remove.",
+				"done": "Deleted strike (%d/%d) `%s` for %s."
+			},
+			"clearstrikes": {
+				"help": "Remove all active strikes from the user",
+				"usage": "clearstrikes <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select member"
+				},
+				"not_found": "Could not find specified member.",
+				"is_bot": "Can't select bot.",
+				"no_strikes": "User has no active strikes.",
+				"done": "Deleted %d strikes for %s."
 			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",

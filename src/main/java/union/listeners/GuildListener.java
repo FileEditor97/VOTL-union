@@ -97,6 +97,9 @@ public class GuildListener extends ListenerAdapter {
 		db.panels.deleteAll(guildId);
 		db.tags.deleteAll(guildId);
 		db.tempRole.removeAll(guildId);
+		Long guildIdLong = event.getGuild().getIdLong();
+		db.autopunish.removeGuild(guildIdLong);
+		db.strike.removeGuild(guildIdLong);
 		
 		db.guild.remove(guildId);
 

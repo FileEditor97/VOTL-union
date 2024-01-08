@@ -3,6 +3,7 @@ package union.objects;
 public enum CmdModule {
 	WEBHOOK("modules.webhook"),
 	MODERATION("modules.moderation"),
+	STRIKES("modules.strikes"),
 	VERIFICATION("modules.verification"),
 	TICKETING("modules.ticketing"),
 	VOICE("modules.voice"),

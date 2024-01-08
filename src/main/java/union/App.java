@@ -150,6 +150,7 @@ public class App {
 				new ModuleCmd(this, WAITER),
 				new AccessCmd(this),
 				new LogCmd(this, WAITER),
+				new AutopunishCmd(this),
 				// owner
 				new ShutdownCmd(this),
 				new EvalCmd(this),
@@ -169,6 +170,9 @@ public class App {
 				new GroupCmd(this, WAITER),
 				new MuteCmd(this),
 				new UnmuteCmd(this),
+				new StrikeCmd(this),
+				new DeleteStikeCmd(this, WAITER),
+				new ClearStrikesCmd(this),
 				// other
 				new PingCmd(this),
 				new AboutCmd(this),

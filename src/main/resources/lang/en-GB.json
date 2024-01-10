@@ -980,6 +980,17 @@
 				"no_strikes": "User has no active strikes.",
 				"done": "Deleted %d strikes for %s."
 			},
+			"strikes": {
+				"help": "View active user's strikes",
+				"usage": "strikes [@User]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
+				"no_perms": "You can't view others strikes",
+				"no_active": "User has no active strikes",
+				"title": "%d strikes for %s (%s)"
+			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",
 				"ban": {
@@ -1221,6 +1232,39 @@
 					"embed_member": "Joined Groups",
 					"none": "*None*"
 				}
+			},
+			"modlogs": {
+				"help": "View moderation logs for a user",
+				"usage": "modlogs [@User] [page]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
+				"page": {
+					"name": "page",
+					"help": "Page number to view"
+				},
+				"no_perms": "You can't view others logs",
+				"empty": "No logs found for that user.",
+				"title": "Modlogs for %s (Page %d of %d)",
+				"case": "**Case %d**",
+				"type": "**Type:** %s",
+				"target": "**User:** %s (%d)",
+				"mod": "**Moderator:** %s",
+				"duration": "**Duration:** %s",
+				"reason": "**Reason:** %s",
+				"permament": "permament"
+			},
+			"modstats": {
+				"help": "View moderation statistics for mod/admin",
+				"usage": "modstats [@User]",
+				"title": "Moderation statistics",
+				"last": " 7 days: %d\n30 days: %d",
+				"mutes": "Mutes",
+				"kicks": "Kicks",
+				"bans": "Bans",
+				"strikes": "Strikes",
+				"total": "Total"
 			}
 		},
 		"other": {

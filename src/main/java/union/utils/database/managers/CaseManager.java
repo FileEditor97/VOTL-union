@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import union.objects.CaseType;
 import union.utils.database.ConnectionUtil;
@@ -63,7 +64,7 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// get 10 cases for guild's user sorted in pages
-	public List<CaseData> getGuildTarget(long guildId, long userId, Integer page) {
+	public List<CaseData> getGuildUser(long guildId, long userId, Integer page) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, userId, (page-1)*10), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
@@ -106,6 +107,26 @@ public class CaseManager extends LiteDBBase {
 			.formatted(table, guildId, userId), fullCaseKeys);
 		if (data == null) return null;
 		return new CaseData(data);
+	}
+
+	// get case pages
+	public Integer countPages(long guildId, long userId) {
+		return count("SELECT CEIL(COUNT(*)/10) FROM %s WHERE (guildId=%d AND targetId=%d)".formatted(table, guildId, userId));
+	}
+
+	// count cases by moderator
+	public Map<Integer, Integer> countCasesByMod(long guildId, long modId, Instant afterTime) {
+		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d AND timeStart>%d) GROUP BY type"
+			.formatted(table, guildId, modId, afterTime.getEpochSecond()), List.of("type", "cc"));
+		if (data.isEmpty()) return null;
+		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
+	}
+	
+	public Map<Integer, Integer> countCasesByMod(long guildId, long modId) {
+		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d) GROUP BY type"
+			.formatted(table, guildId, modId), List.of("type", "cc"));
+		if (data.isEmpty()) return null;
+		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
 	}
 
 	//  BANS

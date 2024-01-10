@@ -63,7 +63,7 @@ public class LogUtil {
 	@Nonnull
 	private EmbedBuilder moderationEmbedBuilder(DiscordLocale locale, CaseData caseData) {
 		return new EmbedBuilder()
-			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), localized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()))
+			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), lu.getLocalized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()))
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
 			.addField(localized(locale, "mod"), "<@"+caseData.getModId()+">", true)
 			.setFooter("ID: "+caseData.getTargetId())
@@ -73,7 +73,7 @@ public class LogUtil {
 	@Nonnull
 	private EmbedBuilder moderationEmbedBuilder(DiscordLocale locale, CaseData caseData, String userIcon) {
 		return new EmbedBuilder()
-			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), localized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()),
+			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), lu.getLocalized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()),
 				null, userIcon)
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
 			.addField(localized(locale, "mod"), "<@"+caseData.getModId()+">", true)
@@ -85,7 +85,7 @@ public class LogUtil {
 	public MessageEmbed caseEmbed(DiscordLocale locale, CaseData caseData) {
 		EmbedBuilder builder = moderationEmbedBuilder(locale, caseData)
 			.setColor(DEFAULT)
-			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), localized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()))
+			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), lu.getLocalized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()))
 			.addField(localized(locale, "reason"), caseData.getReason(), true);
 		if (caseData.isActive())
 			builder.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
@@ -237,7 +237,7 @@ public class LogUtil {
 	public MessageEmbed reasonChangedEmbed(DiscordLocale locale, CaseData caseData, Long modId, String newReason) {
 		return getEmbed()
 			.setAuthor(localized(locale, "change.reason").formatted(caseData.getCaseId(), caseData.getTargetTag()))
-			.setDescription("> %s\n🔴 ~~%s~~\n\n🟢 %s".formatted(localized(locale, caseData.getCaseType().getPath()), Optional.ofNullable(caseData.getReason()).orElse("None"), newReason))
+			.setDescription("> %s\n\n🔴 ~~%s~~\n🟢 %s".formatted(lu.getLocalized(locale, caseData.getCaseType().getPath()), Optional.ofNullable(caseData.getReason()).orElse("None"), newReason))
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
 			.addField(localized(locale, "mod"), "<@"+modId+">", true)
 			.setFooter("ID: "+caseData.getTargetId())
@@ -251,7 +251,7 @@ public class LogUtil {
 			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false));
 		return getEmbed()
 			.setAuthor(localized(locale, "change.duration").formatted(caseData.getCaseId(), caseData.getTargetTag()))
-			.setDescription("> %s\n🔴 ~~%s~~\n\n🟢 %s".formatted(localized(locale, caseData.getCaseType().getPath()), oldTime, newTime))
+			.setDescription("> %s\n\n🔴 ~~%s~~\n🟢 %s".formatted(lu.getLocalized(locale, caseData.getCaseType().getPath()), oldTime, newTime))
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
 			.addField(localized(locale, "mod"), "<@"+modId+">", true)
 			.setFooter("ID: "+caseData.getTargetId())

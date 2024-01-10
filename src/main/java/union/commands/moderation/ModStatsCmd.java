@@ -59,12 +59,12 @@ public class ModStatsCmd extends CommandBase {
 			.setFooter("ID: "+mod.getId())
 			.setTimestamp(Instant.now());
 
-		int strikes7 = count7.getOrDefault(CaseType.STRIKE_1, 0)+count7.getOrDefault(CaseType.STRIKE_2, 0)+count7.getOrDefault(CaseType.STRIKE_3, 0);
-		int strikes30 = count30.getOrDefault(CaseType.STRIKE_1, 0)+count30.getOrDefault(CaseType.STRIKE_2, 0)+count30.getOrDefault(CaseType.STRIKE_3, 0);
+		int strikes7 = count7.getOrDefault(CaseType.STRIKE_1.getType(), 0)+count7.getOrDefault(CaseType.STRIKE_2.getType(), 0)+count7.getOrDefault(CaseType.STRIKE_3.getType(), 0);
+		int strikes30 = count30.getOrDefault(CaseType.STRIKE_1.getType(), 0)+count30.getOrDefault(CaseType.STRIKE_2.getType(), 0)+count30.getOrDefault(CaseType.STRIKE_3.getType(), 0);
 		builder.addField(lu.getText(event, path+".strikes"), lu.getText(event, path+".last").formatted(strikes7, strikes30), false)
-			.addField(lu.getText(event, path+".mutes"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.MUTE, 0), count30.getOrDefault(CaseType.MUTE, 0)), false)
-			.addField(lu.getText(event, path+".kicks"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.KICK, 0), count30.getOrDefault(CaseType.KICK, 0)), false)
-			.addField(lu.getText(event, path+".bans"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.BAN, 0), count30.getOrDefault(CaseType.BAN, 0)), false)
+			.addField(lu.getText(event, path+".mutes"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.MUTE.getType(), 0), count30.getOrDefault(CaseType.MUTE.getType(), 0)), false)
+			.addField(lu.getText(event, path+".kicks"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.KICK.getType(), 0), count30.getOrDefault(CaseType.KICK.getType(), 0)), false)
+			.addField(lu.getText(event, path+".bans"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.BAN.getType(), 0), count30.getOrDefault(CaseType.BAN.getType(), 0)), false)
 			.addField(lu.getText(event, path+".total"), lu.getText(event, path+".last").formatted(count7.values().stream().reduce(0, Integer::sum), count30.values().stream().reduce(0, Integer::sum)), false);
 		
 		editHookEmbed(event, builder.build());

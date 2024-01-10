@@ -16,11 +16,11 @@ public class TicketSettingsManager extends LiteDBBase {
 	}
 
 	public void setRowText(String guildId, Integer row, String text) {
-		execute("INSERT INTO %s(guildId, rowName) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET rowName=%s".formatted(table, guildId, quote(text), quote(text)));
+		execute("INSERT INTO %s(guildId, rowName%d) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET rowName%d=%s".formatted(row, table, guildId, quote(text), row, quote(text)));
 	}
 
 	public String getRowText(String guildId, Integer row) {
-		String data = selectOne("SELECT rowName FROM %s WHERE (guildId=%s)".formatted(table, guildId), "rowName", String.class);
+		String data = selectOne("SELECT rowName%d FROM %s WHERE (guildId=%s)".formatted(row, table, guildId), "rowName"+row, String.class);
 		return data==null ? "Select roles" : data;
 	}
 

@@ -121,7 +121,7 @@ public class InteractionListener extends ListenerAdapter {
 	@Override
 	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
 		// Acknowledge interaction 
-		event.deferEdit().queue();
+		event.deferEdit().queue(null, new ErrorHandler().ignore(IllegalStateException.class));
 		String buttonId = event.getComponentId();
 
 		if (buttonId.startsWith("verify")) {
@@ -980,7 +980,7 @@ public class InteractionListener extends ListenerAdapter {
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setAuthor(lu.getLocalized(event.getUserLocale(), "bot.ticketing.listener.invites.title").formatted(guild.getName()), null, guild.getIconUrl());
 		invites.forEach((k, v) -> builder.appendDescription("%s\n> %s\n".formatted(k, v)));
-		event.getHook().editOriginalEmbeds(builder.build()).queue();
+		event.getHook().sendMessageEmbeds(builder.build()).setEphemeral(true).queue();
 	}
 
 	@Override

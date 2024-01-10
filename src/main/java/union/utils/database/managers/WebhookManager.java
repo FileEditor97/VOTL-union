@@ -34,7 +34,7 @@ public class WebhookManager extends LiteDBBase {
 	}
 
 	public List<String> getWebhookIds(String guildId) {
-		return select("SELECT webhookId FROM %s WHERE (guildId=%s)", "webhookId", String.class);
+		return select("SELECT webhookId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "webhookId", String.class);
 	}
 
 }

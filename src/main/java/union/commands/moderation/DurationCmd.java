@@ -79,7 +79,7 @@ public class DurationCmd extends CommandBase {
 			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeStart().plus(duration), false));
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".done").replace("{duration}", newTime))
+			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{duration}", newTime))
 			.build();
 		editHookEmbed(event, embed);
 

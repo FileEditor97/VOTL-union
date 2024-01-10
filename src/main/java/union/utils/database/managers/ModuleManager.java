@@ -28,7 +28,7 @@ public class ModuleManager extends LiteDBBase {
 	}
 
 	public List<CmdModule> getDisabled(String guildId) {
-		List<String> data = select("SELECT module FROM %s WHERE (guildId=%s)", "module", String.class);
+		List<String> data = select("SELECT module FROM %s WHERE (guildId=%s)".formatted(table, guildId), "module", String.class);
 		if (data.isEmpty()) return Collections.emptyList();
 		return data.stream().map(v -> CmdModule.valueOf(v)).toList();
 	}

@@ -547,13 +547,13 @@
 					"incorrect_role": "I can't interact with provided role.",
 					"exists": "Action already exists. Remove it and re-add.",
 					"empty": "No options selected.",
-					"title": "Created action for %d strikes:\n\n",
+					"title": "Created action for receiving `%d` strikes:\n\n",
 					"vkick": "User will be kicked.\n",
 					"vmute": "User will be muted for %s.\n",
 					"vban": "User will be banned %s.\n",
-					"for": "for ",
-					"vremove": "Role %s will be removed.\n",
-					"vadd": "Role %s will be added.\n"
+					"for": "for",
+					"vremove": "Role `%s` will be removed.\n",
+					"vadd": "Role `%s` will be added.\n"
 				},
 				"remove": {
 					"help": "Remove actions",
@@ -1248,16 +1248,20 @@
 				"empty": "No logs found for that user.",
 				"title": "Modlogs for %s (Page %d of %d)",
 				"case": "**Case %d**",
-				"type": "**Type:** %s",
-				"target": "**User:** %s (%d)",
-				"mod": "**Moderator:** %s",
-				"duration": "**Duration:** %s",
-				"reason": "**Reason:** %s",
+				"type": "**Type:** %s\n",
+				"target": "**User:** %s (%d)\n",
+				"mod": "**Moderator:** %s\n",
+				"duration": "**Duration:** %s\n",
+				"reason": "**Reason:** %s\n",
 				"permament": "permament"
 			},
 			"modstats": {
 				"help": "View moderation statistics for mod/admin",
 				"usage": "modstats [@User]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
 				"title": "Moderation statistics",
 				"last": " 7 days: %d\n30 days: %d",
 				"mutes": "Mutes",
@@ -1547,9 +1551,9 @@
 					"title": "Invites for server %s"
 				}
 			},
-			"rolespanel": {
+			"rolepanel": {
 				"help": "Manage the roles request panel",
-				"usage": "rolespanel",
+				"usage": "rolepanel",
 				"create": {
 					"help": "Create role requests panel in selected channel",
 					"usage": "create <#Channel>",

@@ -36,7 +36,7 @@ public class AutopunishManager extends LiteDBBase {
 	}
 
 	public List<Map<String, Object>> getAllActions(Long guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%d)", List.of("strike", "actions", "data"));
+		return select("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), List.of("strike", "actions", "data"));
 	}
 	
 }

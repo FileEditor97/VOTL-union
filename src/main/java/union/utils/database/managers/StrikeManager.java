@@ -18,7 +18,7 @@ public class StrikeManager extends LiteDBBase {
 	}
 
 	public void addStrikes(Long guildId, Long userId, Instant expireAfter, Integer count, String caseInfo) {
-		execute("INSERT INTO %s(guildId, userId, expireAfter, count, data) VALUES (%d, %d, %d, %d, %s) ON CONFLICT(guildId, userId) DO UPDATE SET count=count+%d, data=data || '-' || %s"
+		execute("INSERT INTO %s(guildId, userId, expireAfter, count, data) VALUES (%d, %d, %d, %d, %s) ON CONFLICT(guildId, userId) DO UPDATE SET count=count+%d, data=data || ';' || %s"
 			.formatted(table, guildId, userId, expireAfter.getEpochSecond(), count, quote(caseInfo), count, quote(caseInfo)));
 	}
 

@@ -25,7 +25,7 @@ public class CaseManager extends LiteDBBase {
 	public void add(CaseType type, long userId, String userName, long modId, String modName, long guildId, String reason, Instant timeStart, Duration duration) {
 		execute("INSERT INTO %s(type, targetId, targetTag, modId, modTag, guildId, reason, timeStart, duration, active) VALUES (%d, %d, %s, %d, %s, %d, %s, %d, %d, %d)"
 			.formatted(table, type.getType(), userId, quote(userName), modId, quote(modName), guildId, quote(reason),
-			timeStart.getEpochSecond(), duration.getSeconds(), type.isActiveInt()));
+			timeStart.getEpochSecond(), duration == null ? -1 : duration.getSeconds() , type.isActiveInt()));
 	}
 
 	// get last case's ID
@@ -111,7 +111,7 @@ public class CaseManager extends LiteDBBase {
 
 	// get case pages
 	public Integer countPages(long guildId, long userId) {
-		return count("SELECT CEIL(COUNT(*)/10) FROM %s WHERE (guildId=%d AND targetId=%d)".formatted(table, guildId, userId));
+		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%d AND targetId=%d)".formatted(table, guildId, userId));
 	}
 
 	// count cases by moderator
@@ -132,7 +132,7 @@ public class CaseManager extends LiteDBBase {
 	//  BANS
 	// get all active expired bans
 	public List<CaseData> getExpired() {
-		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND timeStart+duration<%d) ORDER BY caseId DESC LIMIT 10"
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND type<20 AND timeStart+duration<%d) ORDER BY caseId DESC LIMIT 10"
 			.formatted(table, Instant.now().getEpochSecond()), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
 		return data.stream().map(map -> new CaseData(map)).toList();
@@ -156,14 +156,14 @@ public class CaseManager extends LiteDBBase {
 		public CaseData(Map<String, Object> map) {
 			this.caseId = (Integer) map.get("caseId");
 			this.type = CaseType.byType((Integer) map.get("type"));
-			this.targetId = Long.parseLong((String) map.get("targetId"));
+			this.targetId = (Long) map.get("targetId");
 			this.targetTag = (String) map.get("targetTag");
-			this.modId = Long.parseLong((String) map.get("modId"));
+			this.modId = Long.parseLong(String.valueOf(map.getOrDefault("modId", "0")));
 			this.modTag = (String) map.get("modTag");
-			this.guildId = Long.parseLong((String) map.get("guildId"));
+			this.guildId = (Long) map.get("guildId");
 			this.reason = (String) map.get("reason");
-			this.timeStart = Instant.ofEpochSecond(Long.parseLong((String) map.getOrDefault("timeStart", "0")));
-			this.duration = Duration.ofSeconds(Long.parseLong((String) map.getOrDefault("duration", "0")));
+			this.timeStart = Instant.ofEpochSecond(Long.parseLong(String.valueOf(map.getOrDefault("timeStart", "0"))));
+			this.duration = Duration.ofSeconds(Long.parseLong(String.valueOf(map.getOrDefault("duration", "0"))));
 			this.active = ((Integer) map.get("active")) == 1;
 		}
 

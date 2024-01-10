@@ -145,8 +145,8 @@ public class ScheduledCheck {
 			if (expired.isEmpty()) return;
 
 			for (Map<String, Object> data : expired) {
-				Long guildId = Long.parseLong((String) data.get("guildId"));
-				Long userId = Long.parseLong((String) data.get("userId"));
+				Long guildId = (Long) data.get("guildId");
+				Long userId =  (Long) data.get("userId");
 				Integer strikes = (Integer) data.get("count");
 
 				if (strikes <= 0) {

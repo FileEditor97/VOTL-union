@@ -75,9 +75,10 @@ public class LiteDBBase {
 		try (PreparedStatement st = util.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 
-			for (String key : selectKeys) {
-				result.put(key, rs.getObject(key));
-			}
+			if (rs.next())
+				for (String key : selectKeys) {
+					result.put(key, rs.getObject(key));
+				}
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at SELECT\nRequest: {}", sql, ex);
 		}

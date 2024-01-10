@@ -13,7 +13,7 @@ import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -38,41 +38,43 @@ public class ModLogsCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 
-		Member tm;
+		User tu;
 		if (event.hasOption("user")) {
-			tm = event.optMember("user", event.getMember());
-			if (!tm.equals(event.getMember()) && !bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
+			tu = event.optUser("user", event.getUser());
+			if (!tu.equals(event.getUser()) && !bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
 				editError(event, path+".no_perms");
 				return;
 			}
 		} else {
-			tm = event.getMember();
+			tu = event.getUser();
 		}
 
 		long guildId = event.getGuild().getIdLong();
-		long userId = tm.getIdLong();
+		long userId = tu.getIdLong();
 		Integer page = event.optInteger("page", 1);
 		List<CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, event.optInteger("page", 1));
 		if (cases.isEmpty()) {
 			editError(event, path+".empty");
 			return;
 		}
-		Integer pages = bot.getDBUtil().cases.countPages(guildId, userId);
+		int pages = (int) Math.ceil(bot.getDBUtil().cases.countPages(guildId, userId)/10.0);
 
 		DiscordLocale locale = event.getUserLocale();
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setTitle(lu.getLocalized(locale, path+".title").formatted(tm.getUser().getName(), page, pages));
+			.setTitle(lu.getLocalized(locale, path+".title").formatted(tu.getName(), page, pages));
 		cases.forEach(c -> {
 			StringBuffer buffer = new StringBuffer()
 				.append(lu.getLocalized(locale, path+".type").formatted(lu.getLocalized(locale, c.getCaseType().getPath())))
 				.append(lu.getLocalized(locale, path+".target").formatted(c.getTargetTag(), c.getTargetId()))
-				.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()))
-				.append(lu.getLocalized(locale, path+".duration").formatted(c.getDuration().isZero() ?
+				.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()));
+			if (!c.getDuration().isNegative())
+				buffer.append(lu.getLocalized(locale, path+".duration").formatted(c.getDuration().isZero() ?
 					lu.getLocalized(locale, path+".permament") :
 					bot.getTimeUtil().durationToLocalizedString(locale, c.getDuration())
-				))
-				.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
-			builder.addField((c.isActive() ? "🟥" : "⬜" ) + lu.getLocalized(locale, path+".case").formatted(c.getCaseId()), buffer.toString(), false);
+				));
+			buffer.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
+
+			builder.addField((c.isActive() ? "🟥" : "⬜" ) + " " + lu.getLocalized(locale, path+".case").formatted(c.getCaseIdInt()), buffer.toString(), false);
 		});
 
 		editHookEmbed(event, builder.build());

@@ -11,7 +11,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
@@ -36,31 +36,31 @@ public class ClearStrikesCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 
-		Member tm = event.optMember("user");
-		if (tm == null) {
+		User tu = event.optUser("user");
+		if (tu == null) {
 			editError(event, path+".not_found");
 			return;
 		}
-		if (tm.getUser().isBot()) {
+		if (tu.isBot()) {
 			editError(event, path+".is_bot");
 			return;
 		}
 
 		long guildId = event.getGuild().getIdLong();
-		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(guildId, tm.getIdLong());
+		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(guildId, tu.getIdLong());
 		if (strikeData == null) {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_strikes")).build());
 			return;
 		}
 		int activeCount = strikeData.getLeft();
 		// Clear strike DB
-		bot.getDBUtil().strike.removeGuildUser(guildId, tm.getIdLong());
+		bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
 		// Set all strikes cases inactive
-		bot.getDBUtil().cases.setInactiveStrikeCases(guildId, tm.getIdLong());
+		bot.getDBUtil().cases.setInactiveStrikeCases(guildId, tu.getIdLong());
 		// Reply
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setColor(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".done").formatted(activeCount, tm.getUser().getName()))
+			.setDescription(lu.getText(event, path+".done").formatted(activeCount, tu.getName()))
 			.build()
 		);
 	}

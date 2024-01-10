@@ -45,7 +45,7 @@ public class ReasonCmd extends CommandBase {
 
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".done").replace("{reason}", newReason))
+			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{reason}", newReason))
 			.build();
 		editHookEmbed(event, embed);
 

@@ -12,7 +12,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.utils.database.managers.CaseManager.CaseData;
 
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.TimeFormat;
@@ -23,6 +23,7 @@ public class StrikesCmd extends CommandBase {
 	public StrikesCmd(App bot) {
 		super(bot);
 		this.name = "strikes";
+		this.path = "bot.moderation.strikes";
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"))
 		);
@@ -37,18 +38,18 @@ public class StrikesCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply(true).queue();
 		
-		Member tm;
+		User tu;
 		if (event.hasOption("user")) {
-			tm = event.optMember("user", event.getMember());
-			if (!tm.equals(event.getMember()) && !bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
+			tu = event.optUser("user", event.getUser());
+			if (!tu.equals(event.getUser()) && !bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
 				editError(event, path+".no_perms");
 				return;
 			}
 		} else {
-			tm = event.getMember();
+			tu = event.getUser();
 		}
 
-		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(event.getGuild().getIdLong(), tm.getIdLong());
+		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(event.getGuild().getIdLong(), tu.getIdLong());
 		if (strikeData == null) {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_active")).build());
 			return;
@@ -65,17 +66,17 @@ public class StrikesCmd extends CommandBase {
 			Integer caseId = Integer.valueOf(args[0]);
 			Integer strikeAmount = Integer.valueOf(args[1]);
 			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
-			buffer.append("`%4d` %s | %s - %s\nBy: %s".formatted(
+			buffer.append("`%4d` %s | %s - %s\nBy: %s\n".formatted(
 				caseId,
 				getSquares(strikeAmount, caseData.getCaseType().getType()-20),
-				bot.getMessageUtil().limitString(caseData.getReason(), 120),
+				bot.getMessageUtil().limitString(caseData.getReason(), 50),
 				TimeFormat.DATE_SHORT.format(caseData.getTimeStart()),
 				caseData.getModTag()
 			));
 		});
 		
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
-			.setTitle(lu.getText(event, path+".title").formatted(strikeData.getLeft(), tm.getUser().getName(), tm.getId()))
+			.setTitle(lu.getText(event, path+".title").formatted(strikeData.getLeft(), tu.getName(), tu.getId()))
 			.setDescription(buffer.toString())
 			.build()
 		);

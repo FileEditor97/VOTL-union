@@ -88,7 +88,7 @@ public class StrikeCmd extends CommandBase {
 			guild.getIdLong(), reason, Instant.now(), null);
 		CaseData caseData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
 		// add strikes
-		Field action = executeStrike(event.getUserLocale(), guild, mod, strikeAmount, caseData.getCaseIdInt());
+		Field action = executeStrike(event.getUserLocale(), guild, tm, strikeAmount, caseData.getCaseIdInt());
 		// log
 		bot.getLogListener().mod.onNewCase(guild, tm.getUser(), caseData);
 		// send reply
@@ -182,7 +182,7 @@ public class StrikeCmd extends CommandBase {
 					bot.getLogger().error("Strike punishment execution, Ban member", failure);
 				});
 				buffer.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
-					.append(" "+lu.getLocalized(locale, path+".for")+bot.getTimeUtil().durationToLocalizedString(locale, duration)+"\n");
+					.append(" "+lu.getLocalized(locale, path+".for")+" "+bot.getTimeUtil().durationToLocalizedString(locale, duration)+"\n");
 			}
 		}
 		if (actions.contains(PunishActions.MUTE)) {
@@ -213,7 +213,7 @@ public class StrikeCmd extends CommandBase {
 					bot.getLogger().error("Strike punishment execution, Mute member", failure);
 				});
 				buffer.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
-					.append(" "+lu.getLocalized(locale, path+".for")+bot.getTimeUtil().durationToLocalizedString(locale, duration)+"\n");
+					.append(" "+lu.getLocalized(locale, path+".for")+" "+bot.getTimeUtil().durationToLocalizedString(locale, duration)+"\n");
 			}
 		}
 		if (actions.contains(PunishActions.REMOVE_ROLE)) {

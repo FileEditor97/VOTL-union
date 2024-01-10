@@ -29,7 +29,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	}
 
 	public Integer getColor(String guildId) {
-		String data = selectOne("SELECT color FROM %s WHERE (guildId=%s)", "color", String.class);
+		String data = selectOne("SELECT color FROM %s WHERE (guildId=%s)".formatted(table, guildId), "color", String.class);
 		if (data == null) return Constants.COLOR_DEFAULT;
 		return Integer.decode(data);
 	}

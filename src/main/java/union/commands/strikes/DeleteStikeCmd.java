@@ -20,9 +20,9 @@ import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -57,17 +57,17 @@ public class DeleteStikeCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 
-		Member tm = event.optMember("user");
-		if (tm == null) {
+		User tu = event.optUser("user");
+		if (tu == null) {
 			editError(event, path+".not_found");
 			return;
 		}
-		if (tm.getUser().isBot()) {
+		if (tu.isBot()) {
 			editError(event, path+".is_bot");
 			return;
 		}
 
-		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(event.getGuild().getIdLong(), tm.getIdLong());
+		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(event.getGuild().getIdLong(), tu.getIdLong());
 		if (strikeData == null) {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_strikes")).build());
 			return;
@@ -87,14 +87,14 @@ public class DeleteStikeCmd extends CommandBase {
 			.addOptions(options)
 			.build();
 		event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
-			.setTitle(lu.getText(event, path+".select_title").formatted(tm.getUser().getName(), strikeData.getLeft()))
-			.setFooter("User ID: "+tm.getId())
+			.setTitle(lu.getText(event, path+".select_title").formatted(tu.getName(), strikeData.getLeft()))
+			.setFooter("User ID: "+tu.getId())
 			.build()
 		).setActionRow(caseSelectMenu).queue(msg -> {
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
 				e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
-				selectAction -> strikeSelected(selectAction, msg, cases, tm),
+				selectAction -> strikeSelected(selectAction, msg, cases, tu),
 				60,
 				TimeUnit.SECONDS,
 				() -> msg.editMessageComponents(ActionRow.of(
@@ -104,9 +104,9 @@ public class DeleteStikeCmd extends CommandBase {
 		});
 	}
 
-	private void strikeSelected(StringSelectInteractionEvent event, Message msg, List<String> cases, Member tm) {
+	private void strikeSelected(StringSelectInteractionEvent event, Message msg, List<String> cases, User tu) {
 		event.deferEdit().queue();
-		String[] selected = event.getValues().get(0).split(":");
+		String[] selected = event.getValues().get(0).split("-");
 		Integer caseId = Integer.valueOf(selected[0]);
 		
 		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
@@ -119,18 +119,20 @@ public class DeleteStikeCmd extends CommandBase {
 		Integer activeAmount = Integer.valueOf(selected[1]);
 		if (activeAmount == 1) {
 			// As only one strike remains - delete case from strikes data and set case inactive
-			cases.remove(event.getValues().get(0));
+			List<String> newCases = new ArrayList<>(cases);
+			newCases.remove(event.getValues().get(0));
+
 			bot.getDBUtil().cases.setInactive(caseId);
-			if (cases.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tm.getIdLong());
+			if (newCases.isEmpty())
+				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tu.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(),
+				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
 					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
-					String.join(";", cases)
+					String.join(";", newCases)
 				);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done_one").formatted(caseData.getReason(), tm.getUser().getName()))
+				.setDescription(lu.getText(event, path+".done_one").formatted(caseData.getReason(), tu.getName()))
 				.build();
 			msg.editMessageEmbeds(embed).setComponents().queue();
 		} else {
@@ -138,9 +140,9 @@ public class DeleteStikeCmd extends CommandBase {
 			int max = caseData.getCaseType().getType()-20;
 			List<Button> buttons = new ArrayList<>();
 			for (int i=1; i<activeAmount; i++) {
-				buttons.add(Button.primary(caseId+"-"+i, getSquares(activeAmount, i, max)));
+				buttons.add(Button.secondary(caseId+"-"+i, getSquares(activeAmount, i, max)));
 			}
-			buttons.add(Button.primary(caseId+"-"+activeAmount,
+			buttons.add(Button.secondary(caseId+"-"+activeAmount,
 				lu.getText(event, path+".button_all")+" "+getSquares(activeAmount, activeAmount, max)));
 			
 			msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed()
@@ -150,7 +152,7 @@ public class DeleteStikeCmd extends CommandBase {
 				waiter.waitForEvent(
 					ButtonInteractionEvent.class,
 					e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
-					buttonAction -> buttonPressed(buttonAction, msgN, cases, tm, activeAmount),
+					buttonAction -> buttonPressed(buttonAction, msgN, cases, tu, activeAmount),
 					30,
 					TimeUnit.SECONDS,
 					() -> msg.editMessageEmbeds(new EmbedBuilder(msgN.getEmbeds().get(0)).appendDescription("\n\n"+lu.getText(event, "errors.timed_out")).build())
@@ -160,7 +162,7 @@ public class DeleteStikeCmd extends CommandBase {
 		}
 	}
 
-	private void buttonPressed(ButtonInteractionEvent event, Message msg, List<String> cases, Member tm, int activeAmount) {
+	private void buttonPressed(ButtonInteractionEvent event, Message msg, List<String> cases, User tu, int activeAmount) {
 		event.deferEdit().queue();
 		String[] value = event.getComponentId().split("-");
 		Integer caseId = Integer.valueOf(value[0]);
@@ -178,23 +180,23 @@ public class DeleteStikeCmd extends CommandBase {
 			cases.remove(event.getComponentId());
 			bot.getDBUtil().cases.setInactive(caseId);
 			if (cases.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tm.getIdLong());
+				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tu.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(),
+				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
 					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
 					String.join(";", cases)
 				);
 		} else {
 			// Delete selected amount of strikes (not all)
-			Collections.replaceAll(cases, event.getComponentId(), caseId+"-"+(activeAmount-removeAmount));
-			bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tm.getIdLong(),
+			Collections.replaceAll(cases, caseId+"-"+activeAmount, caseId+"-"+(activeAmount-removeAmount));
+			bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
 				Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
 				removeAmount, String.join(";", cases)
 			);
 		}
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".done").formatted(removeAmount, activeAmount, caseData.getReason(), tm.getUser().getName()))
+			.setDescription(lu.getText(event, path+".done").formatted(removeAmount, activeAmount, caseData.getReason(), tu.getName()))
 			.build();
 		msg.editMessageEmbeds(embed).setComponents().queue();
 	}

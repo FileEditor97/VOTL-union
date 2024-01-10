@@ -31,7 +31,7 @@ public class RolesPanelCmd extends CommandBase {
 	
 	public RolesPanelCmd(App bot) {
 		super(bot);
-		this.name = "rolespanel";
+		this.name = "rolepanel";
 		this.path = "bot.ticketing.rolespanel";
 		this.children = new SlashCommand[]{new Create(bot), new Update(bot), new RowText(bot)};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};

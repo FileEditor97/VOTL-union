@@ -1551,7 +1551,7 @@
 					"title": "Invites for server %s"
 				}
 			},
-			"rolepanel": {
+			"rolespanel": {
 				"help": "Manage the roles request panel",
 				"usage": "rolepanel",
 				"create": {

@@ -1551,7 +1551,7 @@
 					"title": "Приглашения для сервера %s"
 				}
 			},
-			"rolepanel": {
+			"rolespanel": {
 				"help": "Управление панелью запроса ролей",
 				"usage": "rolepanel",
 				"create": {

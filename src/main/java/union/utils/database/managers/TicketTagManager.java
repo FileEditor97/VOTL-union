@@ -65,7 +65,7 @@ public class TicketTagManager extends LiteDBBase {
 	public void updateTag(Integer tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
 		List<String> values = new ArrayList<String>();
 		if (tagType != null) 
-			values.add("tagType="+tagType.toString());
+			values.add("tagType="+tagType);
 		if (buttonText != null) 
 			values.add("buttonText="+quote(buttonText));
 		if (emoji != null) 
@@ -79,7 +79,7 @@ public class TicketTagManager extends LiteDBBase {
 		if (ticketName != null) 
 			values.add("ticketName="+quote(ticketName));
 		if (buttonStyle != -1) 
-			values.add("buttonStyle="+buttonStyle.toString());
+			values.add("buttonStyle="+buttonStyle);
 		
 		if (values.size() > 0) execute("UPDATE %s SET %s WHERE (tagId=%d)".formatted(table, String.join(", ", values), tagId));
 	}
@@ -149,7 +149,7 @@ public class TicketTagManager extends LiteDBBase {
 			this.tagType = (Integer) map.get("tagType");
 			this.buttonText = (String) map.get("buttonText");
 			this.ticketName = (String) map.get("ticketName");
-			this.buttonStyle = ButtonStyle.fromKey((Integer) map.get("buttonStyle"));
+			this.buttonStyle = ButtonStyle.fromKey((Integer) map.getOrDefault("buttonStyle", 0));
 			this.emoji = Optional.ofNullable((String) map.get("emoji")).map(Emoji::fromFormatted).orElse(null);
 			this.location = (String) map.get("location");
 			this.message = setNewline((String) map.get("message"));

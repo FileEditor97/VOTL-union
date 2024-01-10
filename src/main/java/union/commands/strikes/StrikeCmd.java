@@ -1,4 +1,4 @@
-package union.commands.moderation;
+package union.commands.strikes;
 
 import java.time.Duration;
 import java.time.Instant;

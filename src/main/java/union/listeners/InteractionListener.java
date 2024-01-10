@@ -120,8 +120,14 @@ public class InteractionListener extends ListenerAdapter {
 
 	@Override
 	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
-		// Acknowledge interaction 
-		event.deferEdit().queue(null, new ErrorHandler().ignore(IllegalStateException.class));
+		// Acknowledge interaction
+		try {
+			event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+		} catch(Exception ex) {
+			bot.getLogger().warn("Exception at button interaction acknowledge", ex);
+			return;
+		}
+		
 		String buttonId = event.getComponentId();
 
 		if (buttonId.startsWith("verify")) {
@@ -317,7 +323,7 @@ public class InteractionListener extends ListenerAdapter {
 				.setDescription(lu.getText(event, "bot.verification.embed.description"))
 				.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
 
-			event.getHook().editOriginalEmbeds(builder.build()).setActionRow(verify, refresh).queue();
+			event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();
 		}
 	}
 

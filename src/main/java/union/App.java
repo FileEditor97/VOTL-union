@@ -1,6 +1,5 @@
 package union;
 
-import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
@@ -11,6 +10,10 @@ import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
 import union.commands.roles.*;
+import union.commands.strikes.ClearStrikesCmd;
+import union.commands.strikes.DeleteStikeCmd;
+import union.commands.strikes.StrikeCmd;
+import union.commands.strikes.StrikesCmd;
 import union.base.command.CommandClient;
 import union.base.command.CommandClientBuilder;
 import union.base.waiter.EventWaiter;
@@ -150,6 +153,7 @@ public class App {
 				new ModuleCmd(this, WAITER),
 				new AccessCmd(this),
 				new LogCmd(this, WAITER),
+				new AutopunishCmd(this),
 				// owner
 				new ShutdownCmd(this),
 				new EvalCmd(this),
@@ -167,6 +171,15 @@ public class App {
 				new ReasonCmd(this),
 				new DurationCmd(this),
 				new GroupCmd(this, WAITER),
+				new MuteCmd(this),
+				new UnmuteCmd(this),
+				new ModLogsCmd(this),
+				new ModStatsCmd(this),
+				// strikes
+				new StrikeCmd(this),
+				new DeleteStikeCmd(this, WAITER),
+				new ClearStrikesCmd(this),
+				new StrikesCmd(this),
 				// other
 				new PingCmd(this),
 				new AboutCmd(this),
@@ -180,9 +193,9 @@ public class App {
 				new AccountCmd(this),
 				new VerifyCheckCmd(this),
 				// ticketing
-				new RolePanelCmd(this),
+				new RolesPanelCmd(this),
 				new TicketCountCmd(this),
-				new TicketRolesCmd(this),
+				new RolesSetupCmd(this),
 				new TicketPanelCmd(this),
 				new CloseCmd(this),
 				new RcloseCmd(this),
@@ -313,10 +326,6 @@ public class App {
 
 	public LogListener getLogListener() {
 		return logListener;
-	}
-
-	public String lastAccountCheck() {
-		return Timestamp.from(scheduledCheck.lastAccountCheck).toString();
 	}
 
 	public Helper getHelper() {

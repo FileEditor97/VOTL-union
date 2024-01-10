@@ -1,80 +1,68 @@
 package union.utils.database.managers;
 
-import java.util.Collections;
 import java.util.List;
 
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class VerifyCacheManager extends LiteDBBase {
 	
-	private final String TABLE = "verified";
+	private final String table = "verified";
 
-	public VerifyCacheManager(DBUtil util) {
-		super(util);
+	public VerifyCacheManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void addUser(String discordId, String steam64) {
-		insert(TABLE, List.of("discordId", "steam64"), List.of(discordId, steam64));
+		execute("INSERT INTO %s(discordId, steam64) VALUES (%s, %s)".formatted(table, discordId, steam64));
 	}
 
 	public void addForcedUser(String discordId) {
-		insert(TABLE, List.of("discordId", "forced"), List.of(discordId, 1));
-	}
-
-	public void setForced(String discordId) {
-		update(TABLE, "forced", 1, "discordId", discordId);
+		execute("INSERT INTO %s(discordId, forced) VALUES (%s, 1) ON CONFLICT(discordId) DO UPDATE SET forced=1".formatted(table, discordId));
 	}
 
 	public void removeByDiscord(String discordId) {
-		delete(TABLE, "discordId", discordId);
+		execute("DELETE FROM %s WHERE (discordId=%s)".formatted(table, discordId));
 	}
 
 	public void removeBySteam(String steam64) {
-		delete(TABLE, "steam64", steam64);
+		execute("DELETE FROM %s WHERE (steam64=%s)".formatted(table, steam64));
 	}
 
 	public List<String> getForcedUsers() {
-		List<Object> objs = select(TABLE, "discordId", "forced", 1);
-		if (objs.isEmpty()) return Collections.emptyList();
-		return objs.stream().map(obj -> (String) obj).toList();
+		return select("SELECT discordId FROM %s WHERE (forced=1)".formatted(table), "discordId", String.class);
 	}
 
 	public boolean isVerified(String discordId) {
-		if (selectOne(TABLE, "discordId", "discordId", discordId) == null) return false;
-		return true;
+		return selectOne("SELECT discordId FROM %s WHERE (discordId=%s)".formatted(table, discordId), "discordId", String.class) != null;
 	}
 
 	public boolean isForced(String discordId) {
-		if (selectOne(TABLE, "discordId", List.of("discordId", "forced"), List.of(discordId, 1)) == null) return false;
-		return true;
+		return selectOne("SELECT discordId FROM %s WHERE (discordId=%s AND forced=1)".formatted(table, discordId), "discordId", String.class) != null;
 	}
 
 	public void setSteam64(String discordId, String steam64) {
-		update(TABLE, "steam64", steam64, "discordId", discordId);
+		execute("UPDATE %s SET steam64=%s WHERE (discordId=%s)".formatted(table, steam64, discordId));
 	}
 
 	public void removeSteam64(String discordId) {
-		update(TABLE, "steam64", "NULL", "discordId", discordId);
+		execute("UPDATE %s SET steam64=NULL WHERE (discordId=%s)".formatted(table, discordId));
 	}
 
 	public String getSteam64(String discordId) {
-		Object data = selectOne(TABLE, "steam64", "discordId", discordId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT steam64 FROM %s WHERE (discordId=%s)".formatted(table, discordId), "steam64", String.class);
 	}
 
 	public String getDiscordId(String steam64) {
-		Object data = selectOne(TABLE, "discordId", "steam64", steam64);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT discordId FROM %s WHERE (steam64=%s)".formatted(table, steam64), "discordId", String.class);
 	}
 
 	public void purgeVerified() {
-		deleteAll(TABLE, "forced", 0);
+		execute("DELETE FROM %s WHERE (forced=0)".formatted(table));
 	}
 
 	public Integer count() {
-		return countAll(TABLE);
+		return selectOne("SELECT COUNT(*) FROM %s".formatted(table), "COUNT(*)", Integer.class);
 	}
+	
 }

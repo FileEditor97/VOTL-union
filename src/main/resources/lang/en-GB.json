@@ -56,7 +56,8 @@
 			"hours": "hours",
 			"days": "days",
 			"weeks": "weeks"
-		}
+		},
+		"ban_expired": "Temporary ban expired"
 	},
 	"modules": {
 		"webhook": "Webhook commands",
@@ -67,12 +68,31 @@
 		"voice": "Custom voicechannels",
 		"report": "Report function",
 		"roles": "Role management",
+		"strikes": "Strike punishments",
 		"module_disabled": "This command(module) is disabled."
 	},
 	"role_type": {
 		"assign": "Assignable",
 		"toggle": "Toggleable",
 		"custom": "Custom"
+	},
+	"case_type": {
+		"ban": "Ban",
+		"unban": "Unban",
+		"mute": "Mute",
+		"unmute": "Unmute",
+		"kick": "Kick",
+		"strike1": "Strike [1]",
+		"strike2": "Strike [2]",
+		"strike3": "Strike [3]",
+		"blacklist": "Blacklist"
+	},
+	"punish_action": {
+		"mute": "Time out",
+		"kick": "Kick",
+		"ban": "Ban",
+		"remove_role": "Remove role",
+		"add_role": "Add role"
 	},
 	"ticket": {
 		"close": "Close",
@@ -96,37 +116,35 @@
 		"master": "Master server",
 		"enforcer": "Done by",
 		"duration": "Duration",
+		"permanently": "permanently",
+		"temporary": "until %s",
 		"success": "Success rate",
+		"case": "Case %s | %s | %s",
+		"reason": "Reason",
 		"ban": {
 			"short_title": "Ban info",
 			"short_info": "*Username:* `{username}`\n*Ban reason:* `{reason}`",
-			"title": "Case {case_id} | Ban | {user_tag}",
-			"reason": "Ban Reason",
-			"title_synced": "Synced Ban | {user_tag}"
+			"title_synced": "Synced Ban | %s"
 		},
 		"unban": {
-			"title": "Unban | {user_tag}",
 			"ban_reason": "Banned for",
-			"reason": "Unban Reason",
-			"title_synced": "Synced Unban | {user_tag}"
+			"title_synced": "Synced Unban | %s",
+			"title_expired": "Ban expired | %s"
 		},
 		"kick": {
-			"title": "Kick | {user_tag}",
-			"reason": "Kick reason",
-			"title_synced": "Synced Kick | {user_tag}"
+			"title_synced": "Synced Kick | %s"
+		},
+		"mute": {
+			"short_title": "Mute info",
+			"short_info": "*Username:* `{username}`\n*Is timed out until:* `{until}`"
+		},
+		"unmute": {
+			"mute_reason": "Muted for"
 		},
 		"change": {
-			"reason": "Case {case_id} | Reason changed | {user_tag}",
-			"duration": "Case {case_id} | Duration changed | {user_tag}"
+			"reason": "Case %s | Reason changed | %s",
+			"duration": "Case %s | Duration changed | %s"
 		},
-		"expired": {
-			"unban": {
-				"title": "Ban expired | {user_tag}",
-				"ban_reason": "Banned for"
-			}
-		},
-		"permanently": "permanently",
-		"temporary": "until {time}",
 		"group": {
 			"admin": "Action by",
 			"title": "Group '{group_name}' (#{group_id})",
@@ -176,6 +194,11 @@
 			"banned_temp": "You were banned from %s server for %s. | %s",
 			"banned": "You were permamently banned from %s server. | %s",
 			"kicked": "You were kicked from %s server. | %s",
+			"muted": "You were timed out in %s server. | %s",
+			"strike": "You received %s in %s server. | %s",
+			"strike1": "one warning",
+			"strike2": "two warnings",
+			"strike3": "three warnings",
 			"appeal": "\nAppeal this action by following this link:\n> %s"
 		},
 		"guild": {
@@ -333,6 +356,15 @@
 						},
 						"done": "Successfully changed default VoiceChannels limit to `{value}`!"
 					}
+				},
+				"strikes": {
+					"help": "Set time (days), after which strikes expires",
+					"usage": "strikes <days>",
+					"time": {
+						"name": "time",
+						"help": "Enter time in days, after which strikes expires"
+					},
+					"done": "Experation time set to %d days."
 				}
 			},
 			"module": {
@@ -476,6 +508,71 @@
 					"tickets": "Ticket actions",
 					"roles": "Roles",
 					"server": "Bot's management"
+				}
+			},
+			"autopunish": {
+				"help": "Manage auto-punishments for stikes",
+				"usage": "autopunish",
+				"add": {
+					"help": "Add new action",
+					"usage": "add <Strike count> [Kick?] [Mute duration] [Ban duration] [Add @Role] [Remove @Role]",
+					"strike-count": {
+						"name": "strike-count",
+						"help": "At which amount of strikes to perform this action"
+					},
+					"kick": {
+						"name": "kick",
+						"help": "Kick user?"
+					},
+					"mute": {
+						"name": "mute",
+						"help": "Enter mute duration"
+					},
+					"ban": {
+						"name": "ban",
+						"help": "Enter ban duration (0 - permament)"
+					},
+					"remove-role": {
+						"name": "remove-role",
+						"help": "Remove role from the user"
+					},
+					"add-role": {
+						"name": "add-role",
+						"help": "Add role to the user"
+					},
+					"one_option": "Only one of this options can be used: Kick, Mute or Ban.",
+					"ban_kick_role": "Can't give or remove role if options Mute or Ban are used.",
+					"same_role": "Can't give or remove same roles.",
+					"not_zero": "Mute duration can't be zero.",
+					"incorrect_role": "I can't interact with provided role.",
+					"exists": "Action already exists. Remove it and re-add.",
+					"empty": "No options selected.",
+					"title": "Created action for receiving `%d` strikes:\n\n",
+					"vkick": "User will be kicked.\n",
+					"vmute": "User will be muted for %s.\n",
+					"vban": "User will be banned %s.\n",
+					"for": "for",
+					"vremove": "Role `%s` will be removed.\n",
+					"vadd": "Role `%s` will be added.\n"
+				},
+				"remove": {
+					"help": "Remove actions",
+					"usage": "remove <Strike count>",
+					"strike-count": {
+						"name": "strike-count",
+						"help": "At which amount of strikes to perform this action"
+					},
+					"not_found": "There is no action set for this count.",
+					"done": "Removed action for strike count %d."
+				},
+				"update": {
+					"help": "Update existing action",
+					"usage": "update <Strike count> <Type> [duration/role]"
+				},
+				"view": {
+					"help": "View all actions",
+					"usage": "view",
+					"empty": "There are no actions."
 				}
 			}
 		},
@@ -733,7 +830,7 @@
 				"already_temp": "Mentioned user is already temporary banned on this server.\n** See `/case {id}`**\n\n*You can change that ban duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"ban_abort": "Could not ban mentioned member.",
-				"ban_success": "**{user_tag} was banned {duration}!** | {reason}",
+				"ban_success": "**{user_tag} was banned {duration}.** | {reason}",
 				"sync": {
 					"title": "**Sync this ban?**\nSelect groups bellow.",
 					"value": "Select group/-s",
@@ -755,7 +852,7 @@
 				"not_found": "User not found or input error",
 				"not_self": "You can't interact with yourself or me",
 				"no_ban": "Specified user is not banned in this server",
-				"unban_success": "**{user_tag} was unbanned!** | {reason}",
+				"unban_success": "**{user_tag} was unbanned.** | {reason}",
 				"sync": {
 					"title": "**Sync this unban?**\nSelect groups bellow.",
 					"value": "Select group/-s",
@@ -782,12 +879,117 @@
 				"not_self": "You can't kick yourself or me... (for good)",
 				"kick_abort": "Could not kick mentioned member.",
 				"higher_access": "Mentioned member has higher access than you do.",
-				"kick_success": "**{user_tag} was kicked!** | {reason}",
+				"kick_success": "**{user_tag} was kicked.** | {reason}",
 				"sync": {
 					"title": "**Sync this kick?**\nSelect groups bellow.",
 					"value": "Select group/-s",
 					"done": "Kick sync in progress! Result will be posted in log channel."
 				}
+			},
+			"mute": {
+				"help": "Time out member",
+				"usage": "mute <@User | Tag | ID> <duration> [reason]",
+				"user": {
+					"name": "user",
+					"help": "Mention user to be timed out"
+				},
+				"time": {
+					"name": "time",
+					"help": "Time out duration (Example: 2h, 2w5d (week, day, hour, minute))"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Mute reason (*none*)"
+				},
+				"no_reason": "*Not provided*",
+				"not_found": "Member not found or input error",
+				"not_self": "You can't mute yourself or me... (for good)",
+				"already_muted": "Mentioned user is already timed out.\n** See `/case {id}`**\n\n*You can change duration using `/duration`*",
+				"higher_access": "Mentioned member has higher access than you do.",
+				"abort": "Could not time out mentioned user.",
+				"success": "**{user_tag} was timed out {duration}.** | {reason}"
+			},
+			"unmute": {
+				"help": "Unmute a member",
+				"usage": "unmute <@User | Tag | ID> [reason]",
+				"user": {
+					"name": "user",
+					"help": "Mention user which to unmute"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Unmute reason (*none*)"
+				},
+				"no_reason": "*Not provided*",
+				"not_found": "Member not found or input error",
+				"not_muted": "Mentioned user is not muted/timed out.",
+				"abort": "Could not unmute mentioned user.",
+				"success": "**{user_tag} was unmuted.** | {reason}"
+			},
+			"strike": {
+				"help": "Strike a member",
+				"usage": "strike <@User> <severity> <reason>",
+				"user": {
+					"name": "user",
+					"help": "Mention user which to strike"
+				},
+				"severity": {
+					"name": "severity",
+					"help": "Select strike's severity",
+					"minor": "1] Minor",
+					"severe": "2] Severe",
+					"extreme": "3] Extreme"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Strike reason"
+				},
+				"not_found": "Member not found or input error",
+				"not_self": "You can't select yourself or the bot.",
+				"success": "**{user_tag} received {type}.** | {reason}",
+				"autopunish_title": "Applying punishment for %d strikes",
+				"autopunish_reason": "Autopunish: user has %d active strikes",
+				"for": "for"
+			},
+			"delstrike": {
+				"help": "Remove active strike from the user",
+				"usage": "delstrike <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select member"
+				},
+				"not_found": "Could not find specified member.",
+				"is_bot": "Can't select bot.",
+				"no_strikes": "User has no active strikes.",
+				"select_title": "%s has %d active strikes. Select one to delete.",
+				"select_strike": "Select a strike to delete",
+				"done_one": "Deleted strike `%s` for %s.",
+				"button_all": "(All)",
+				"button_title": "Select how many strikes to remove.",
+				"done": "Deleted strike (%d/%d) `%s` for %s."
+			},
+			"clearstrikes": {
+				"help": "Remove all active strikes from the user",
+				"usage": "clearstrikes <@User>",
+				"user": {
+					"name": "user",
+					"help": "Select member"
+				},
+				"not_found": "Could not find specified member.",
+				"is_bot": "Can't select bot.",
+				"no_strikes": "User has no active strikes.",
+				"done": "Deleted %d strikes for %s."
+			},
+			"strikes": {
+				"help": "View active user's strikes",
+				"usage": "strikes [@User]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
+				"no_perms": "You can't view others strikes",
+				"no_active": "User has no active strikes",
+				"title": "%d strikes for %s (%s)"
 			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",
@@ -848,16 +1050,16 @@
 				}
 			},
 			"case": {
-				"help": "View information about logged ban",
+				"help": "View information about user moderation",
 				"usage": "case <case ID>",
 				"id": {
 					"name": "id",
 					"help": "Enter case ID"
 				},
-				"not_found": "Could not find case(ban) by specified ID"
+				"not_found": "Could not find case by specified ID"
 			},
 			"reason": {
-				"help": "Change ban reason",
+				"help": "Change moderation's reason",
 				"usage": "reason <case ID> <reason>",
 				"id": {
 					"name": "id",
@@ -867,11 +1069,11 @@
 					"name": "reason",
 					"help": "Enter new reason"
 				},
-				"not_found": "Could not find case(ban) by specified ID",
-				"done": "Successfully changed ban (Case {id}) reason to:\n```{reason}```"
+				"not_found": "Could not find case by specified ID",
+				"done": "Successfully changed Case `{id}` reason to:\n`{reason}`"
 			},
 			"duration": {
-				"help": "Change ban duration",
+				"help": "Change ban/mute duration",
 				"usage": "duration <case ID> <duration>",
 				"id": {
 					"name": "id",
@@ -881,9 +1083,9 @@
 					"name": "time",
 					"help": "Enter new duration (Example: 2h, 2w5d (week, day, hour, minute) | 0)"
 				},
-				"not_found": "Could not find case(ban) by specified ID",
-				"is_expired": "Specified case has expired.",
-				"done": "Successfully changed ban (Case {id}) duration to: {duration}"
+				"not_found": "Could not find case by specified ID",
+				"is_expired": "Specified case has expired or can't be edited.",
+				"done": "Successfully changed cases Case `{id}` duration to: {duration}"
 			},
 			"group": {
 				"help": "Server Groups managment",
@@ -1030,6 +1232,43 @@
 					"embed_member": "Joined Groups",
 					"none": "*None*"
 				}
+			},
+			"modlogs": {
+				"help": "View moderation logs for a user",
+				"usage": "modlogs [@User] [page]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
+				"page": {
+					"name": "page",
+					"help": "Page number to view"
+				},
+				"no_perms": "You can't view others logs",
+				"empty": "No logs found for that user.",
+				"title": "Modlogs for %s (Page %d of %d)",
+				"case": "**Case %d**",
+				"type": "**Type:** %s\n",
+				"target": "**User:** %s (%d)\n",
+				"mod": "**Moderator:** %s\n",
+				"duration": "**Duration:** %s\n",
+				"reason": "**Reason:** %s\n",
+				"permament": "permament"
+			},
+			"modstats": {
+				"help": "View moderation statistics for mod/admin",
+				"usage": "modstats [@User]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
+				"title": "Moderation statistics",
+				"last": " 7 days: %d\n30 days: %d",
+				"mutes": "Mutes",
+				"kicks": "Kicks",
+				"bans": "Bans",
+				"strikes": "Strikes",
+				"total": "Total"
 			}
 		},
 		"other": {
@@ -1312,11 +1551,11 @@
 					"title": "Invites for server %s"
 				}
 			},
-			"rpanel": {
-				"help": "Manage the panels of the ticketing module",
-				"usage": "rpanel",
+			"rolepanel": {
+				"help": "Manage the roles request panel",
+				"usage": "rolepanel",
 				"create": {
-					"help": "Send panel to selected channel",
+					"help": "Create role requests panel in selected channel",
 					"usage": "create <#Channel>",
 					"channel": {
 						"name": "channel",
@@ -1327,7 +1566,7 @@
 					"done": "Panel created in {channel}!"
 				},
 				"update": {
-					"help": "Update existing panel",
+					"help": "Update existing role requests panel",
 					"usage": "update <#Channel>",
 					"channel": {
 						"name": "channel",
@@ -1339,7 +1578,7 @@
 					"done": "Panel updated in {channel}!"
 				},
 				"row": {
-					"help": "Update assignable role rows text placeholder",
+					"help": "Update assignable roles row's text placeholder",
 					"usage": "row <row number> <text>",
 					"row": {
 						"name": "row",
@@ -1371,15 +1610,15 @@
 				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`\nClaimed tickets: `{other}`"
 			},
-			"troles": {
+			"rolesetup": {
 				"help": "Manage assignable roles via ticket system",
-				"usage": "troles",
+				"usage": "rolesetup",
 				"add": {
 					"help": "Add role",
 					"usage": "add <@Role> <type> [description] [row]",
 					"role": {
 						"name": "role",
-						"help": "Select role which will be used added to the list"
+						"help": "Select role which will be added to the list"
 					},
 					"type": {
 						"name": "type",
@@ -1399,7 +1638,7 @@
 					},
 					"no_role": "Role not found or is incorrect.",
 					"cant_interact": "I can't interact with selected role.",
-					"exists": "Role is already managed. Check `/troles view`",
+					"exists": "Role is already managed. Check `/rolesetup view`",
 					"invalid_invite": "Provided invite is invalid. Check that it's correct and is not expirable.",
 					"no_type": "Role type not found.",
 					"rows_max": "All assignable roles rows are full (3x25). Clear any row, to add new roles.",

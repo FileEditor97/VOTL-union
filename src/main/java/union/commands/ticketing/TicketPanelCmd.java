@@ -1,10 +1,8 @@
 package union.commands.ticketing;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,7 +15,6 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -25,7 +22,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
-import net.dv8tion.jda.internal.interactions.component.ButtonImpl;
 
 import union.App;
 import union.base.command.SlashCommand;
@@ -34,6 +30,8 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.TicketPanelManager.Panel;
+import union.utils.database.managers.TicketTagManager.Tag;
 
 public class TicketPanelCmd extends CommandBase {
 	
@@ -182,7 +180,7 @@ public class TicketPanelCmd extends CommandBase {
 			}
 			event.deferReply(true).queue();
 
-			List<Button> buttons = buildTicketTags(panelId);
+			List<Button> buttons = bot.getDBUtil().tags.getPanelTags(panelId);
 			if (buttons.isEmpty())
 				event.getHook().editOriginalEmbeds(buildPanelEmbed(event.getGuild(), panelId)).queue();
 			else
@@ -223,7 +221,7 @@ public class TicketPanelCmd extends CommandBase {
 			}
 			event.deferReply(true).queue();
 
-			List<Button> buttons = buildTicketTags(panelId);
+			List<Button> buttons = bot.getDBUtil().tags.getPanelTags(panelId);
 			if (buttons.isEmpty()) {
 				channel.sendMessageEmbeds(buildPanelEmbed(event.getGuild(), panelId)).queue(done -> {
 					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
@@ -453,47 +451,33 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
 			Integer tagId = event.optInteger("tag_id");
 			String guildId = bot.getDBUtil().tags.getGuildId(tagId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
-				createError(event, path+".not_found", "Received ID: %s".formatted(tagId));
+				editError(event, path+".not_found", "Received ID: %s".formatted(tagId));
 				return;
 			}
 
-			Map<String, Object> tag = bot.getDBUtil().tags.getTag(tagId);
+			Tag tag = bot.getDBUtil().tags.getTagFull(tagId);
 			if (tag == null) {
-				createError(event, path+".not_found", "No record found");
+				editError(event, path+".not_found", "No record found");
 				return;
 			}
-			event.deferReply(true).queue();
 
-			String buttonText = (String) tag.get("buttonText");
-			ButtonStyle style = ButtonStyle.fromKey((int) tag.get("buttonStyle"));
-			Emoji emoji = Optional.ofNullable(tag.get("emoji")).map(data -> Emoji.fromFormatted((String) data)).orElse(null);
-			
-			Integer tagType = (Integer) tag.get("tagType");
-			String ticketName = (String) tag.get("ticketName");
+			EmbedBuilder builder = tag.getPreviewEmbed((str) -> lu.getText(event, path+str), tagId);
 
-			String message = Optional.ofNullable((String) tag.get("message")).map(s -> setNewline(s)).orElse(lu.getText(event, path+".none"));
-			String category = Optional.ofNullable((String) tag.get("location")).map(id -> event.getGuild().getCategoryById(id).getAsMention()).orElse(lu.getText(event, path+".none"));
+			String message = Optional.ofNullable(tag.getMessage()).orElse(lu.getText(event, path+".none"));
+			String category = Optional.ofNullable(tag.getLocation()).map(id -> event.getGuild().getCategoryById(id).getAsMention()).orElse(lu.getText(event, path+".none"));
+			String roles = Optional.ofNullable(tag.getSupportRoles())
+				.map(ids -> Stream.of(ids.split(";")).map(id -> "<@&%s>".formatted(id)).collect(Collectors.joining(", ")))
+				.orElse(lu.getText(event, path+".none"));
 			
-			String supportRoleIds = (String) tag.get("supportRoles");
-			String roles = Optional.ofNullable(supportRoleIds).map(ids -> Stream.of(ids.split(";")).map(id -> "<@&%s>".formatted(id)).collect(Collectors.joining(", "))).orElse(null);
+			builder.addField(lu.getText(event, path+".location"), category, true)
+				.addField(lu.getText(event, path+".roles"), roles, false)
+				.addField(lu.getText(event, path+".message"), message, false);
 			
-			Button button = new ButtonImpl("tag_preview", buttonText, style, null, true, emoji);
-			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
-				.setTitle("Tag ID: %s".formatted(tagId))
-				.addField(lu.getText(event, path+".type"), (tagType > 1 ? "Channel" : "Thread"), true)
-				.addField(lu.getText(event, path+".name"), "`%s`".formatted(ticketName), true)
-				.addField(lu.getText(event, path+".location"), category, true)
-				.addField(lu.getText(event, path+".roles"), Optional.ofNullable(roles).orElse(lu.getText(event, path+".none")), false)
-				.addField(lu.getText(event, path+".message"), message, false)
-				.build()
-			).setActionRow(button).queue();
-		}
-
-		private String setNewline(String text) {
-			return text.replaceAll("<br>", "\n");
+			event.getHook().editOriginalEmbeds(builder.build()).setActionRow(tag.previewButton()).queue();
 		}
 
 	}
@@ -521,7 +505,7 @@ public class TicketPanelCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().tags.delete(tagId);
+			bot.getDBUtil().tags.deleteTag(tagId);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, path+".done").formatted(tagId))
@@ -551,9 +535,6 @@ public class TicketPanelCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			String guildId = event.getGuild().getId();
-			if (!bot.getDBUtil().ticketSettings.exists(guildId)) {
-				bot.getDBUtil().ticketSettings.add(guildId);
-			}
 			
 			StringBuffer response = new StringBuffer();
 			if (event.hasOption("autoclose")) {
@@ -592,29 +573,8 @@ public class TicketPanelCmd extends CommandBase {
 	}
 
 	private MessageEmbed buildPanelEmbed(Guild guild, Integer panelId) {
-		Map<String, String> panel = bot.getDBUtil().panels.getPanel(panelId);
-		EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guild.getId()));
-		Optional.of(panel.get("title")).ifPresent(builder::setTitle);
-		Optional.ofNullable(panel.get("description")).ifPresent(s -> builder.setDescription(setNewline(s)));
-		Optional.ofNullable(panel.get("image")).ifPresent(builder::setImage);
-		Optional.ofNullable(panel.get("footer")).ifPresent(s -> builder.setFooter(setNewline(s)));
-		return builder.build();
-	}
-
-	private String setNewline(String text) {
-		return text.replaceAll("<br>", "\n");
-	}
-
-	private List<Button> buildTicketTags(Integer panelId) {
-		List<Button> buttons = new ArrayList<Button>(5);
-		bot.getDBUtil().tags.getPanelTags(panelId).forEach(tag -> {
-			Integer tagId = (Integer) tag.get("tagId");
-			String buttonText = (String) tag.get("buttonText");
-			ButtonStyle style = ButtonStyle.fromKey((int) tag.get("buttonStyle"));
-			Emoji emoji = Optional.ofNullable(tag.get("emoji")).map(data -> Emoji.fromFormatted((String) data)).orElse(null);
-			buttons.add(new ButtonImpl("tag:"+tagId, buttonText, style, null, false, emoji));
-		});
-		return buttons;
+		Panel panel = bot.getDBUtil().panels.getPanel(panelId);
+		return panel.getPrefiledEmbed(bot.getDBUtil().guild.getColor(guild.getId())).build();
 	}
 	
 }

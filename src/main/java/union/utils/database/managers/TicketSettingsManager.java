@@ -1,57 +1,46 @@
 package union.utils.database.managers;
 
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TicketSettingsManager extends LiteDBBase {
 	
-	private final String TABLE = "ticketSettings";
+	private final String table = "ticketSettings";
 
-	public TicketSettingsManager(DBUtil util) {
-		super(util);
-	}
-
-	public void add(String guildId) {
-		insert(TABLE, "guildId", guildId);
+	public TicketSettingsManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void remove(String guildId) {
-		delete(TABLE, "guildId", guildId);
-	}
-
-	public boolean exists(String guildId) {
-		if (selectOne(TABLE, "guildId", "guildId", guildId) == null) return false;
-		return true;
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public void setRowText(String guildId, Integer row, String text) {
-		update(TABLE, "rowName"+row, text, "guildId", guildId);
+		execute("INSERT INTO %s(guildId, rowName%d) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET rowName%d=%s".formatted(row, table, guildId, quote(text), row, quote(text)));
 	}
 
 	public String getRowText(String guildId, Integer row) {
-		Object data = selectOne(TABLE, "rowName"+row, "guildId", guildId);
-		if (data == null) return "Select roles";
-		return (String) data;
+		String data = selectOne("SELECT rowName%d FROM %s WHERE (guildId=%s)".formatted(row, table, guildId), "rowName"+row, String.class);
+		return data==null ? "Select roles" : data;
 	}
 
 	public void setAutocloseTime(String guildId, Integer hours) {
-		update(TABLE, "autocloseTime", hours, "guildId", guildId);
+		execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%d".formatted(table, guildId, hours, hours));
 	}
 
 	public Integer getAutocloseTime(String guildId) {
-		Object data = selectOne(TABLE, "autocloseTime", "guildId", guildId);
-		if (data == null) return 0;
-		return (Integer) data;
+		Integer data = selectOne("SELECT autocloseTime FROM %s WHERE (guildId=%s)".formatted(table, guildId), "autocloseTime", Integer.class);
+		return data==null ? 0 : data;
 	}
 
 	public void setAutocloseLeft(String guildId, Boolean close) {
-		update(TABLE, "autocloseLeft", close, "guildId", guildId);
+		Integer value = close==true ? 1 : 0;
+		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%d".formatted(table, guildId, value, value));
 	}
 
 	public Boolean getAutocloseLeft(String guildId) {
-		Object data = selectOne(TABLE, "autocloseLeft", "guildId", guildId);
-		if (data == null) return false;
-		return (Integer) data == 1;
+		Integer data = selectOne("SELECT autocloseLeft FROM %s WHERE (guildId=%s)".formatted(table, guildId), "autocloseLeft", Integer.class);
+		return data==null ? false : data==1;
 	}
 
 }

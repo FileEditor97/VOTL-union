@@ -9,13 +9,13 @@ import java.util.Map;
  * 0 - lowest (public access)
  */
 public enum CmdAccessLevel {
-	ALL     (0, "everyone"),
-	HELPER	(1, "helper"),
-	MOD     (2, "moderator"),
-	ADMIN   (5, "administrator"),
-	OPERATOR(7, "group operator"),
-	OWNER   (8, "server owner"),
-	DEV     (10, "bot developer");
+	ALL     (0, "everyone"),			// Default
+	HELPER	(1, "helper"),			// Role
+	MOD     (2, "moderator"),		// Role
+	ADMIN   (5, "administrator"),	// by Permission (Administrator)
+	OPERATOR(7, "group operator"),	// User
+	OWNER   (8, "server owner"),		// by Guild info
+	DEV     (10, "bot developer");	// by config
 
 	private final Integer level;
 	private final String name;

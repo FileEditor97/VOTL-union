@@ -1,11 +1,9 @@
 package union.commands.moderation;
 
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -16,10 +14,12 @@ import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -57,27 +57,17 @@ public class BanCmd extends CommandBase {
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.MOD;
-		this.cooldown = 10;
+		this.cooldown = 5;
 		this.cooldownScope = CooldownScope.GUILD;
 		this.waiter = waiter;
 	}
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(false).queue();
-		
-		User targetUser = event.optUser("user");
-		String time = event.optString("time");
-		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
-		Boolean delete = event.optBoolean("delete", true);
-		Boolean dm = event.optBoolean("dm", true);
-
-		buildReply(event, targetUser, time, reason, delete, dm);
-	}
-
-	private void buildReply(SlashCommandEvent event, User tu, String time, String reason, Boolean delete, Boolean dm) {
+		event.deferReply().queue();
 		Guild guild = Objects.requireNonNull(event.getGuild());
 
+		User tu = event.optUser("user");
 		if (tu == null) {
 			editError(event, path+".not_found");
 			return;
@@ -89,40 +79,25 @@ public class BanCmd extends CommandBase {
 
 		final Duration duration;
 		try {
-			duration = bot.getTimeUtil().stringToDuration(time, false);
+			duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
 		}
 
-		if (dm) {
-			tu.openPrivateChannel().queue(pm -> {
-				DiscordLocale locale = guild.getLocale();
-				String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
-				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-					.setDescription(duration.isZero() ? 
-						lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
-						:
-						lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, duration), reason)
-					)
-					.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
-					.build();
-				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-			});
-		}
-
-		guild.retrieveBan(tu).queueAfter(2, TimeUnit.SECONDS, ban -> {
-			Map<String, Object> banData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
-			if (!banData.isEmpty()) {
-				Integer caseId = Integer.valueOf(banData.get("banId").toString());
+		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
+		guild.retrieveBan(tu).queue(ban -> {
+			CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
+			if (oldBanData != null) {
+				// Active expirable ban
 				if (duration.isZero()) {
 					// make current temporary ban inactive
-					bot.getDBUtil().ban.setInactive(caseId);
+					bot.getDBUtil().cases.setInactive(oldBanData.getCaseIdInt());
 					// create new entry
-					Integer banId = 1 + bot.getDBUtil().ban.lastId();
 					Member mod = event.getMember();
-					bot.getDBUtil().ban.add(banId, tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
-						guild.getId(), reason, Timestamp.from(Instant.now()), duration);
+					bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+						guild.getIdLong(), reason, Instant.now(), duration);
+					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 					// create embed
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_SUCCESS)
@@ -131,18 +106,18 @@ public class BanCmd extends CommandBase {
 							.replace("{duration}", lu.getText(event, "logger.permanently"))
 							.replace("{reason}", reason))
 						.build();
+					// log ban
+					bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
+
 					// ask for ban sync
 					event.getHook().editOriginalEmbeds(embed).queue(msg -> {
 						buttonSync(event, msg, tu, reason);
 					});
-
-					// log ban
-					bot.getLogListener().mod.onBan(event, tu, mod, banId);
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_WARNING)
-						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", caseId.toString()))
+						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getCaseId()))
 						.build();
 					event.getHook().editOriginalEmbeds(embed).queue();
 				}
@@ -184,17 +159,32 @@ public class BanCmd extends CommandBase {
 				}
 			}
 
-			guild.ban(tu, (delete ? 10 : 0), TimeUnit.HOURS).reason(reason).queue(done -> {
-				// get new caseId/banId
-				Integer banId = 1 + bot.getDBUtil().ban.lastId();
+			if (event.optBoolean("dm", true)) {
+				tu.openPrivateChannel().queue(pm -> {
+					DiscordLocale locale = guild.getLocale();
+					String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
+					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+						.setDescription(duration.isZero() ? 
+							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
+							:
+							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, duration), reason)
+						)
+						.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
+						.build();
+					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+				});
+			}
+
+			guild.ban(tu, (event.optBoolean("delete", true) ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
 				// fail-safe check if has expirable ban (to prevent auto unban)
-				Map<String, Object> banData = bot.getDBUtil().ban.getMemberExpirable(tu.getId(), guild.getId());
-				if (!banData.isEmpty()) {
-					bot.getDBUtil().ban.setInactive(Integer.valueOf(banData.get("banId").toString()));
+				CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
+				if (oldBanData != null) {
+					bot.getDBUtil().cases.setInactive(oldBanData.getCaseIdInt());
 				}
 				// add info to db
-				bot.getDBUtil().ban.add(banId, tu.getId(), tu.getName(), mod.getId(), mod.getUser().getName(),
-					guild.getId(), reason, Timestamp.from(Instant.now()), duration);
+				bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+					guild.getIdLong(), reason, Instant.now(), duration);
+				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_SUCCESS)
@@ -202,17 +192,17 @@ public class BanCmd extends CommandBase {
 						.replace("{user_tag}", tu.getName())
 						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger.permanently") : 
 							lu.getText(event, "logger.temporary")
-								.replace("{time}", bot.getTimeUtil().formatTime(Instant.now().plus(duration), true))
+								.formatted( bot.getTimeUtil().formatTime(Instant.now().plus(duration), true))
 						)
 						.replace("{reason}", reason))
 					.build();
+				// log ban
+				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
+
 				// ask for ban sync
 				event.getHook().editOriginalEmbeds(embed).queue(msg -> {
 					if (duration.isZero()) buttonSync(event, msg, tu, reason);
 				});
-				
-				// log ban
-				bot.getLogListener().mod.onBan(event, tu, mod, banId);
 			},
 			failed -> {
 				editError(event, "errors.unknown", failed.getMessage());

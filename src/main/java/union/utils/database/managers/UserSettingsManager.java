@@ -1,47 +1,34 @@
 package union.utils.database.managers;
 
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class UserSettingsManager extends LiteDBBase {
 	
-	private final String TABLE = "user";
+	private final String table = "user";
 
-	public UserSettingsManager(DBUtil util) {
-		super(util);
-	}
-
-	public void add(String userId) {
-		insert(TABLE, "userId", userId);
+	public UserSettingsManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void remove(String userId) {
-		delete(TABLE, "userId", userId);
-	}
-
-	public boolean exists(String userId) {
-		if (selectOne(TABLE, "userId", "userId", userId) == null) return false;
-		return true;
+		execute("DELETE FROM %s WHERE (userId=%s)".formatted(table, userId));
 	}
 
 	public void setName(String userId, String channelName) {
-		update(TABLE, "voiceName", channelName, "userId", userId);
+		execute("INSERT INTO %s(userId, voiceName) VALUES (%s, %s) ON CONFLICT(userId) DO UPDATE SET voiceName=%s".formatted(table, userId, quote(channelName), quote(channelName)));
 	}
 
 	public void setLimit(String userId, Integer channelLimit) {
-		update(TABLE, "voiceLimit", channelLimit, "userId", userId);
+		execute("INSERT INTO %s(userId, voiceLimit) VALUES (%s, %d) ON CONFLICT(userId) DO UPDATE SET voiceLimit=%d".formatted(table, userId, channelLimit, channelLimit));
 	}
 
 	public String getName(String userId) {
-		Object data = selectOne(TABLE, "voiceName", "userId", userId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT voiceName FROM %s WHERE (userId=%s)".formatted(table, userId), "voiceName", String.class);
 	}
 
 	public Integer getLimit(String userId) {
-		Object data = selectOne(TABLE, "voiceLimit", "userId", userId);
-		if (data == null) return null;
-		return (Integer) data;
+		return selectOne("SELECT voiceLimit FROM %s WHERE (userId=%s)".formatted(table, userId), "voiceLimit", Integer.class);
 	}
 
 }

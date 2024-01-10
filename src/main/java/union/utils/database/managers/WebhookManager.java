@@ -1,46 +1,40 @@
 package union.utils.database.managers;
 
-import java.util.Collections;
 import java.util.List;
 
 import union.utils.database.LiteDBBase;
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 
 public class WebhookManager extends LiteDBBase {
 
-	private final String TABLE = "webhook";
+	private final String table = "webhook";
 	
-	public WebhookManager(DBUtil util) {
-		super(util);
+	public WebhookManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void add(String webhookId, String guildId, String token) {
-		insert(TABLE, List.of("webhookId", "guildId", "token"), List.of(webhookId, guildId, token));
+		execute("INSERT INTO %s(webhookId, guildId, token) VALUES (%s, %s, %s) ON CONFLICT(webhookId) DO NOTHING".formatted(table, webhookId, guildId, quote(token)));
 	}
 
 	public void remove(String webhookId) {
-		delete(TABLE, "webhookId", webhookId);
+		execute("DELETE FROM %s WHERE (webhookId=%s)".formatted(table, webhookId));
 	}
 
 	public void removeAll(String guildId) {
-		delete(TABLE, "guildId", guildId);
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public boolean exists(String webhookId) {
-		if (selectOne(TABLE, "webhookId", "webhookId", webhookId) == null) return false;
-		return true;
+		return selectOne("SELECT webhookId FROM %s WHERE (webhookId=%s)".formatted(table, webhookId), "webhookId", String.class) != null;
 	}
 
 	public String getToken(String webhookId) {
-		Object data = selectOne(TABLE, "token", "webhookId", webhookId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT token FROM %s WHERE (webhookId=%s)".formatted(table, webhookId), "token", String.class);
 	}
 
-	public List<String> getIds(String guildId) {
-		List<Object> objs = select(TABLE, "webhookId", "guildId", guildId);
-		if (objs.isEmpty()) return Collections.emptyList();
-		return objs.stream().map(obj -> (String) obj).toList();
+	public List<String> getWebhookIds(String guildId) {
+		return select("SELECT webhookId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "webhookId", String.class);
 	}
 
 }

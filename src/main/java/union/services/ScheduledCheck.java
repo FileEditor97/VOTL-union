@@ -1,6 +1,5 @@
 package union.services;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -11,7 +10,9 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import union.App;
+import union.objects.CaseType;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -35,14 +36,12 @@ public class ScheduledCheck {
 
 	private final App bot;
 	private final DBUtil db;
-	public Instant lastAccountCheck;
 
 	private final Integer CLOSE_AFTER_DELAY = 16; // hours
 
 	public ScheduledCheck(App bot) {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
-		this.lastAccountCheck = Instant.now();
 	}
 
 	// each 10-15 minutes
@@ -51,6 +50,8 @@ public class ScheduledCheck {
 			checkTicketStatus();
 		}).thenRunAsync(() -> {
 			checkExpiredTempRoles();
+		}).thenRunAsync(() -> {
+			checkWarnsExpired();
 		});
 	}
 
@@ -105,11 +106,11 @@ public class ScheduledCheck {
 
 	private void checkExpiredTempRoles() {
 		try {
-			List<Map<String, String>> expired = db.tempRole.expiredRoles(Instant.now());
+			List<Map<String, Object>> expired = db.tempRole.expiredRoles(Instant.now());
 			if (expired.isEmpty()) return;
 
 			expired.forEach(data -> {
-				String roleId = data.get("roleId");
+				String roleId = (String) data.get("roleId");
 				Role role = bot.JDA.getRoleById(roleId);
 				if (role == null) {
 					db.tempRole.removeRole(roleId);
@@ -124,7 +125,7 @@ public class ScheduledCheck {
 					}
 					db.tempRole.removeRole(roleId);
 				} else {
-					String userId = data.get("userId");
+					String userId = (String) data.get("userId");
 					role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
 						bot.getLogger().warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
 					});
@@ -135,6 +136,59 @@ public class ScheduledCheck {
 			});
 		} catch (Throwable t) {
 			bot.getLogger().error("Exception caught during expired roles check.", t);
+		}
+	}
+
+	private void checkWarnsExpired() {
+		try {
+			List<Map<String, Object>> expired = db.strike.getExpired(Instant.now());
+			if (expired.isEmpty()) return;
+
+			for (Map<String, Object> data : expired) {
+				Long guildId = (Long) data.get("guildId");
+				Long userId =  (Long) data.get("userId");
+				Integer strikes = (Integer) data.get("count");
+
+				if (strikes <= 0) {
+					// Should not happen...
+					db.strike.removeGuildUser(guildId, userId);
+				} else if (strikes == 1) {
+					// One strike left, remove user
+					db.strike.removeGuildUser(guildId, userId);
+					// set case inactive
+					db.cases.setInactiveStrikeCases(userId, guildId);
+				} else {
+					String[] cases = ((String) data.getOrDefault("data", "")).split(";");
+					// Update data
+					if (!cases[0].isEmpty()) {
+						String[] caseInfo = cases[0].split("-");
+						String caseId = caseInfo[0];
+						Integer newCount = Integer.valueOf(caseInfo[1]) - 1;
+
+						StringBuffer newData = new StringBuffer();
+						if (newCount > 0) {
+							newData.append(caseId+"-"+newCount);
+						} else {
+							// Set case inactive
+							db.cases.setInactive(Integer.parseInt(caseId));
+						}
+						if (cases.length > 1) {
+							List<String> list = List.of(cases);
+							list.remove(0);
+							newData.append(String.join(";", list));
+						}
+						// Remove one strike and reset time
+						db.strike.removeStrike(guildId, userId,
+							Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guildId.toString()), ChronoUnit.DAYS),
+							newData.toString()
+						);
+					} else {
+						throw new Exception("Strike data is empty");
+					}
+				}
+			};
+		} catch (Throwable t) {
+			bot.getLogger().error("Exception caught during expired warns check.", t);
 		}
 	}
 
@@ -149,7 +203,6 @@ public class ScheduledCheck {
 
 	private void checkAccountUpdates() {
 		try {
-			lastAccountCheck = Instant.now();
 			List<Map<String, String>> data = db.unionVerify.updatedAccounts();
 			if (data.isEmpty()) return;
 
@@ -216,19 +269,21 @@ public class ScheduledCheck {
 	}
 
 	private void checkUnbans() {
-		List<Map<String, Object>> bans = db.ban.getExpirable();
-		if (bans.isEmpty()) return;
-		bans.stream().filter(ban ->
-			Duration.between(Instant.parse(ban.get("timeStart").toString()), Instant.now()).compareTo(Duration.parse(ban.get("duration").toString())) >= 0
-		).forEach(ban -> {
-			Integer banId = Integer.parseInt(ban.get("banId").toString());
-			Guild guild = bot.JDA.getGuildById(ban.get("guildId").toString());
+		List<CaseData> expired = db.cases.getExpired();
+		if (expired.isEmpty()) return;
+		
+		expired.forEach(caseData -> {
+			if (caseData.getCaseType().equals(CaseType.MUTE)) {
+				db.cases.setInactive(caseData.getCaseIdInt());
+				return;
+			}
+			Guild guild = bot.JDA.getGuildById(caseData.getGuildId());
 			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
-			guild.unban(User.fromId(ban.get("userId").toString())).reason("Temporary ban expired").queue(
-				s -> bot.getLogListener().mod.onAutoUnban(ban, banId, guild),
+			guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
+				s -> bot.getLogListener().mod.onAutoUnban(caseData, guild),
 				f -> bot.getLogger().warn("Exception at unban attempt", f.getMessage())
 			);
-			db.ban.setInactive(banId);
+			db.cases.setInactive(caseData.getCaseIdInt());
 		});
 	}
 

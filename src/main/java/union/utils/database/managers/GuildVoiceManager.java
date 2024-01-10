@@ -1,64 +1,48 @@
 package union.utils.database.managers;
 
-import java.util.List;
-
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class GuildVoiceManager extends LiteDBBase {
 	
-	private final String TABLE = "guildVoice";
+	private final String table = "guildVoice";
 
-	public GuildVoiceManager(DBUtil util) {
-		super(util);
-	}
-
-	public boolean exists(String guildId) {
-		if (selectOne(TABLE, "guildId", "guildId", guildId) == null) return false;
-		return true;
+	public GuildVoiceManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void setup(String guildId, String categoryId, String channelId) {
-		if (exists(guildId)) {
-			update(TABLE, List.of("categoryId", "channelId"), List.of(categoryId, channelId), "guildId", guildId);
-		} else {
-			insert(TABLE, List.of("guildId", "categoryId", "channelId"), List.of(guildId, categoryId, channelId));
-		}
+		execute("INSERT INTO %s(guildId, categoryId, channelId) VALUES (%s, %s, %s) ON CONFLICT(guildId) DO UPDATE SET categoryId=%s, channelId=%s"
+			.formatted(table, guildId, categoryId, channelId, categoryId, channelId));
 	}
 
 	public void remove(String guildId) {
-		delete(TABLE, "guildId", guildId);
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public void setName(String guildId, String defaultName) {
-		update(TABLE, "defaultName", defaultName, "guildId", guildId);
+		execute("INSERT INTO %s(guildId, defaultName) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET defaultName=%s"
+			.formatted(table, guildId, quote(defaultName), quote(defaultName)));
 	}
 
 	public void setLimit(String guildId, Integer defaultLimit) {
-		update(TABLE, "defaultLimit", defaultLimit, "guildId", guildId);
+		execute("INSERT INTO %s(guildId, defaultLimit) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET defaultLimit=%d"
+			.formatted(table, guildId, defaultLimit, defaultLimit));
 	}
 
 	public String getCategory(String guildId) {
-		Object data = selectOne(TABLE, "categoryId", "guildId", guildId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT categoryId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "categoryId", String.class);
 	}
 
 	public String getChannel(String guildId) {
-		Object data = selectOne(TABLE, "channelId", "guildId", guildId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT channelId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "channelId", String.class);
 	}
 
 	public String getName(String guildId) {
-		Object data = selectOne(TABLE, "defaultName", "guildId", guildId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT defaultName FROM %s WHERE (guildId=%s)".formatted(table, guildId), "defaultName", String.class);
 	}
 
 	public Integer getLimit(String guildId) {
-		Object data = selectOne(TABLE, "defaultLimit", "guildId", guildId);
-		if (data == null) return 0;
-		return (Integer) data;
+		return selectOne("SELECT defaultLimit FROM %s WHERE (guildId=%s)".formatted(table, guildId), "defaultLimit", Integer.class);
 	}
 }

@@ -82,11 +82,11 @@ public class CheckUtil {
 		return this;
 	}
 
-	public CheckUtil guildExists(IReplyCallback replyCallback, Guild guild) throws CheckException {
+	/* public CheckUtil guildExists(IReplyCallback replyCallback, Guild guild) throws CheckException {
 		if (!bot.getDBUtil().guild.exists(guild.getId()))
 			throw new CheckException(bot.getEmbedUtil().getError(replyCallback, "errors.guild_not_setup"));
 		return this;
-	}
+	} */
 
 	public CheckUtil moduleEnabled(IReplyCallback replyCallback, Guild guild, CmdModule module) throws CheckException {
 		if (module == null)

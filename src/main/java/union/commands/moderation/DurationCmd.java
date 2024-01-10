@@ -3,15 +3,16 @@ package union.commands.moderation;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -25,7 +26,7 @@ public class DurationCmd extends CommandBase {
 		this.name = "duration";
 		this.path = "bot.moderation.duration";
 		this.options = List.of(
-			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"), true).setMinValue(0),
+			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"), true).setMinValue(1),
 			new OptionData(OptionType.STRING, "time", lu.getText(path+".time.help"), true).setMaxLength(20)
 		);
 		this.category = CmdCategory.MODERATION;
@@ -35,10 +36,11 @@ public class DurationCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		Integer caseId = event.optInteger("id", 0);
-		Map<String, Object> banData = bot.getDBUtil().ban.getInfo(caseId);
-		if (banData.isEmpty() || !event.getGuild().getId().equals(banData.get("guildId").toString())) {
-			createError(event, path+".not_found");
+		event.deferReply().queue();
+		Integer caseId = event.optInteger("id");
+		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
+		if (caseData == null || event.getGuild().getIdLong() != caseData.getGuildId()) {
+			editError(event, path+".not_found");
 			return;
 		}
 
@@ -46,31 +48,41 @@ public class DurationCmd extends CommandBase {
 		try {
 			duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
-			createError(event, ex.getPath());
+			editError(event, ex.getPath());
 			return;
 		}
 
-		if (bot.getDBUtil().ban.utils.isPermament(banData)) {
-			bot.getDBUtil().ban.updateDuration(caseId, duration);
-			bot.getDBUtil().ban.setExpirable(caseId);
-		} else {
-			if (bot.getDBUtil().ban.utils.isExpirable(banData)) {
-				bot.getDBUtil().ban.updateDuration(caseId, duration);
-			} else {
-				createError(event, path+".is_expired");
-				return;
-			}
+		if (!( caseData.isActive() && (caseData.getCaseType().equals(CaseType.MUTE) || caseData.getCaseType().equals(CaseType.BAN)) )) {
+			editError(event, path+".is_expired");
+			return;
 		}
 
-		Instant timeStart = Instant.parse(banData.get("timeStart").toString());
+		if (caseData.getCaseType().equals(CaseType.MUTE)) {
+			if (duration.isZero()) {
+				editError(event, "errors.unknown", "Duration must be larger than 1 minute");
+				return;
+			}
+			event.getGuild().retrieveMemberById(caseData.getTargetId()).queue(target -> {
+				if (caseData.getTimeStart().plus(duration).isAfter(Instant.now())) {
+					// time out member for new time
+					target.timeoutUntil(caseData.getTimeStart().plus(duration)).reason("Duration change by "+event.getUser().getName()).queue();
+				} else {
+					// time will be expired, remove time out
+					target.removeTimeout();
+					bot.getDBUtil().cases.setInactive(caseId);
+				}
+			});
+		}
+		bot.getDBUtil().cases.updateDuration(caseId, duration);
+		
 		String newTime = duration.isZero() ? lu.getText(event, "logger.permanently") : lu.getText(event, "logger.temporary")
-			.replace("{time}", bot.getTimeUtil().formatTime(timeStart.plus(duration), false));
+			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeStart().plus(duration), false));
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".done").replace("{duration}", newTime))
+			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{duration}", newTime))
 			.build();
-		createReplyEmbed(event, embed);
+		editHookEmbed(event, embed);
 
-		bot.getLogListener().mod.onChangeDuration(event, caseId, timeStart, Duration.parse(banData.get("duration").toString()), newTime);
+		bot.getLogListener().mod.onChangeDuration(event, caseData, event.getMember(), newTime);
 	}
 }

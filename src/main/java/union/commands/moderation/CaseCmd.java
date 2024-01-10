@@ -1,7 +1,6 @@
 package union.commands.moderation;
 
 import java.util.List;
-import java.util.Map;
 
 import union.App;
 import union.base.command.SlashCommandEvent;
@@ -9,6 +8,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -21,7 +21,7 @@ public class CaseCmd extends CommandBase {
 		this.name = "case";
 		this.path = "bot.moderation.case";
 		this.options = List.of(
-			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"), true).setMinValue(0)
+			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"), true).setMinValue(1)
 		);
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
@@ -30,14 +30,15 @@ public class CaseCmd extends CommandBase {
 	
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		Map<String, Object> banData = bot.getDBUtil().ban.getInfo(event.optInteger("id", 0));
-		if (banData.isEmpty() || !event.getGuild().getId().equals(banData.get("guildId").toString())) {
-			createError(event, path+".not_found");
+		event.deferReply(true).queue();
+		CaseData caseData = bot.getDBUtil().cases.getInfo(event.optInteger("id"));
+		if (caseData == null || event.getGuild().getIdLong() != caseData.getGuildId()) {
+			editError(event, path+".not_found");
 			return;
 		}
-		MessageEmbed embed = bot.getLogUtil().banEmbed(event.getUserLocale(), banData);
+		MessageEmbed embed = bot.getLogUtil().caseEmbed(event.getUserLocale(), caseData);
 
-		createReplyEmbed(event, embed);
+		editHookEmbed(event, embed);
 	}
 
 }

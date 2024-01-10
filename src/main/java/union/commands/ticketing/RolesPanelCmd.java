@@ -27,12 +27,12 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
-public class RolePanelCmd extends CommandBase {
+public class RolesPanelCmd extends CommandBase {
 	
-	public RolePanelCmd(App bot) {
+	public RolesPanelCmd(App bot) {
 		super(bot);
-		this.name = "rpanel";
-		this.path = "bot.ticketing.rpanel";
+		this.name = "rolepanel";
+		this.path = "bot.ticketing.rolespanel";
 		this.children = new SlashCommand[]{new Create(bot), new Update(bot), new RowText(bot)};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
 		this.module = CmdModule.TICKETING;
@@ -49,7 +49,7 @@ public class RolePanelCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "create";
-			this.path = "bot.ticketing.rpanel.create";
+			this.path = "bot.ticketing.rolespanel.create";
 			this.options = List.of(
 				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
 					.setChannelTypes(ChannelType.TEXT)
@@ -117,7 +117,7 @@ public class RolePanelCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "update";
-			this.path = "bot.ticketing.rpanel.update";
+			this.path = "bot.ticketing.rolespanel.update";
 			this.options = List.of(
 				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
 					.setChannelTypes(ChannelType.TEXT)
@@ -189,7 +189,7 @@ public class RolePanelCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "row";
-			this.path = "bot.ticketing.rpanel.row";
+			this.path = "bot.ticketing.rolespanel.row";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"), true)
 					.setRequiredRange(1, 3),
@@ -203,10 +203,6 @@ public class RolePanelCmd extends CommandBase {
 			String guildId = event.getGuild().getId();
 			Integer row = event.optInteger("row");
 			String text = event.optString("text");
-
-			if (!bot.getDBUtil().ticketSettings.exists(guildId)) {
-				bot.getDBUtil().ticketSettings.add(guildId);
-			}
 
 			bot.getDBUtil().ticketSettings.setRowText(guildId, row, text);
 

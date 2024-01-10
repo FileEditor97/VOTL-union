@@ -209,7 +209,7 @@ public abstract class SlashCommand extends Command
 			Member author = event.getMember();
 			try {
 				// check setup
-				if (!event.getFullCommandName().equals("setup main")) bot.getCheckUtil().guildExists(event, guild);
+				//if (!event.getFullCommandName().equals("setup main")) bot.getCheckUtil().guildExists(event, guild);
 				
 				bot.getCheckUtil()
 				// check module enabled

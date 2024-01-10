@@ -125,9 +125,6 @@ public class VerifyPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
-			if (!bot.getDBUtil().verify.exists(guildId)) bot.getDBUtil().verify.add(guildId);
-
 			TextInput main = TextInput.create("main", lu.getText(event, path+".main"), TextInputStyle.PARAGRAPH)
 				.setPlaceholder("Verify here")
 				.setRequired(false)

@@ -34,25 +34,27 @@ public class UnverifyCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply(true).queue();
+
 		Member member = event.optMember("user");
-		Guild guild = event.getGuild();
 		if (member == null) {
-			createError(event, path+".no_user");
+			editError(event, path+".no_user");
 		}
 
+		Guild guild = event.getGuild();
 		String roleId = bot.getDBUtil().verify.getVerifyRole(guild.getId());
 		if (roleId == null) {
-			createError(event, path+".not_setup");
+			editError(event, path+".not_setup");
 			return;
 		}
 		Role role = guild.getRoleById(roleId);
 		if (role == null) {
-			createError(event, "errors.unknown", "Role not found by ID: "+roleId);
+			editError(event, "errors.unknown", "Role not found by ID: "+roleId);
 			return;
 		}
 
 		if (!member.getRoles().contains(role)) {
-			createError(event, "bot.verification.user_not_verified");
+			editError(event, "bot.verification.user_not_verified");
 			return;
 		}
 
@@ -62,10 +64,10 @@ public class UnverifyCmd extends CommandBase {
 			success -> {
 				bot.getLogListener().verify.onUnverified(member.getUser(), null, guild, reason);
 				bot.getDBUtil().verifyCache.removeByDiscord(member.getId());
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".done")).build());
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".done")).build());
 			},
 			failure -> {
-				createError(event, "bot.verification.failed_role");
+				editError(event, "bot.verification.failed_role");
 				bot.getLogger().info(String.format("Was unable to remove verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
 			});
 	}

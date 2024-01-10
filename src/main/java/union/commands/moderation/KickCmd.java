@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,10 +13,12 @@ import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -56,18 +59,10 @@ public class KickCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(false).queue();
-		
-		Member targetMember = event.optMember("member");
-		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
-		Boolean dm = event.optBoolean("dm", false);
-
-		buildReply(event, targetMember, reason, dm);
-	}
-
-	private void buildReply(SlashCommandEvent event, Member tm, String reason, Boolean dm) {
+		event.deferReply().queue();
 		Guild guild = Objects.requireNonNull(event.getGuild());
 
+		Member tm = event.optMember("member");
 		if (tm == null) {
 			editError(event, path+".not_found");
 			return;
@@ -77,7 +72,8 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
-		if (dm) {
+		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
+		if (event.optBoolean("dm", true)) {
 			tm.getUser().openPrivateChannel().queue(pm -> {
 				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 					.setDescription(lu.getLocalized(guild.getLocale(), "logger.pm.kicked").formatted(guild.getName(), reason))
@@ -95,22 +91,26 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
-		tm.kick().reason(reason).queueAfter(1, TimeUnit.SECONDS, done -> {
+		tm.kick().reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
+			Member mod = event.getMember();
+			// add info to db
+			bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+				guild.getIdLong(), reason, Instant.now(), null);
+			CaseData kickData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
 			// create embed
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-			.setColor(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".kick_success")
-				.replace("{user_tag}", tm.getUser().getName())
-				.replace("{reason}", reason))
-			.build();
+				.setColor(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".kick_success")
+					.replace("{user_tag}", tm.getUser().getName())
+					.replace("{reason}", reason))
+				.build();
+			// log ban
+			bot.getLogListener().mod.onNewCase(guild, tm.getUser(), kickData);
+
 			// ask for kick sync
 			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
 				buttonSync(event, msg, tm.getUser(), reason);
 			});
-			
-			// log kick
-			bot.getLogListener().mod.onKick(event, tm.getUser(), event.getUser(), reason);
-			
 		},
 		failure -> {
 			editError(event, "errors.unknown", failure.getMessage());

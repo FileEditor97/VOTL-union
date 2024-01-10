@@ -76,7 +76,7 @@ public class WebhookCmd extends CommandBase {
 				// If there is any webhook and only saved in DB are to be shown
 				if (!listAll) {
 					// Keeps only saved in DB type Webhook objects
-					List<String> regWebhookIDs = bot.getDBUtil().webhook.getIds(guildId);
+					List<String> regWebhookIDs = bot.getDBUtil().webhook.getWebhookIds(guildId);
 						
 					webhooks = webhooks.stream().filter(wh -> regWebhookIDs.contains(wh.getId())).collect(Collectors.toList());
 				}

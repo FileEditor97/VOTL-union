@@ -4,123 +4,110 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import union.objects.RoleType;
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class RoleManager extends LiteDBBase {
 	
-	private final String TABLE = "requestRole";
+	private final String table = "requestRole";
 
-	public RoleManager(DBUtil util) {
-		super(util);
+	public RoleManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void add(String guildId, String roleId, String description, Integer row, RoleType roleType, String discordInvite) {
-		insert(TABLE, List.of("guildId", "roleId", "description", "type", "row", "discordInvite"), List.of(guildId, roleId, description, roleType.getType(), Optional.ofNullable(row).orElse(0), discordInvite));
+		execute("INSERT INTO %s(guildId, roleId, description, type, row, discordInvite) VALUES (%s, %s, %s, %d, %d, %s)"
+			.formatted(table, guildId, roleId, quote(description), roleType.getType(), Optional.ofNullable(row).orElse(0), quote(discordInvite)));
 	}
 
 	public void remove(String roleId) {
-		delete(TABLE, "roleId", roleId);
+		execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
 	}
 
 	public void removeAll(String guildId) {
-		delete(TABLE, "guildId", guildId);
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public List<Map<String, Object>> getAll(String guildId) {
-		List<Map<String, Object>> data = select(TABLE, List.of("roleId", "description", "type"), "guildId", guildId);
-		if (data.isEmpty()) return Collections.emptyList();
-		return data;
+		return select("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), List.of("roleId", "description", "type"));
 	}
 
 	public List<Map<String, Object>> getRolesByType(String guildId, RoleType type) {
-		List<Map<String, Object>> data = select(TABLE, List.of("roleId", "description"), List.of("guildId", "type"), List.of(guildId, type.getType()));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data;
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, type.getType()), List.of("roleId", "description"));
 	}
 
 	public List<Map<String, Object>> getAssignable(String guildId) {
-		List<Map<String, Object>> data = select(TABLE, List.of("roleId", "description", "row"), List.of("guildId", "type"), List.of(guildId, RoleType.ASSIGN.getType()));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data;
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.ASSIGN.getType()), List.of("roleId", "description", "row"));
 	}
 
 	public List<Map<String, Object>> getAssignableByRow(String guildId, Integer row) {
-		List<Map<String, Object>> data = select(TABLE, List.of("roleId", "description", "discordInvite"), List.of("guildId", "type", "row"), List.of(guildId, RoleType.ASSIGN.getType(), row));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data;
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d AND row=%d)".formatted(table, guildId, RoleType.ASSIGN.getType(), row),
+			List.of("roleId", "description", "discordInvite"));
 	}
 
 	public List<Map<String, Object>> getToggleable(String guildId) {
-		List<Map<String, Object>> data = select(TABLE, List.of("roleId", "description"), List.of("guildId", "type"), List.of(guildId, RoleType.TOGGLE.getType()));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data;
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.TOGGLE.getType()), List.of("roleId", "description"));
 	}
 
 	public List<Map<String, Object>> getCustom(String guildId) {
-		List<Map<String, Object>> data = select(TABLE, List.of("roleId", "description"), List.of("guildId", "type"), List.of(guildId, RoleType.CUSTOM.getType()));
-		if (data.isEmpty()) return Collections.emptyList();
-		return data;
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.CUSTOM.getType()), List.of("roleId", "description"));
 	}
 
 	public Map<String, String> getRolesWithInvites(String guildId) {
-		return selectRoleInvites(TABLE, guildId);
+		List<Map<String, Object>> data = select("SELECT roleId, discordInvite FROM %s WHERE (guildId=%s AND discordInvite IS NOT NULL)".formatted(table, guildId),
+			List.of("roleId", "discordInvite"));
+		if (data.isEmpty()) return Collections.emptyMap();
+		return data.stream().collect(Collectors.toMap(s -> (String) s.get("roleId"), s -> (String) s.get("discordInvite")));
 	}
 
 	public Integer getRowSize(String guildId, Integer row) {
-		return countSelect(TABLE, List.of("guildId", "row"), List.of(guildId, row));
+		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND row=%d)".formatted(table, guildId, row));
 	}
 
 	public Integer countRoles(String guildId, RoleType type) {
-		return countSelect(TABLE, List.of("guildId", "type"), List.of(guildId, type.getType()));
+		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, type.getType()));
 	}
 
 	public String getDescription(String roleId) {
-		Object data = selectOne(TABLE, "description", "roleId", roleId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT description FROM %s WHERE (roleId=%s)".formatted(table, roleId), "description", String.class);
 	}
 
 	public Integer getType(String roleId) {
-		Object data = selectOne(TABLE, "type", "roleId", roleId);
-		if (data == null) return null;
-		return (Integer) data;
+		return selectOne("SELECT type FROM %s WHERE (roleId=%s)".formatted(table, roleId), "type", Integer.class);
 	}
 
 	public Integer getRow(String roleId) {
-		Object data = selectOne(TABLE, "row", "roleId", roleId);
+		Integer data = selectOne("SELECT row FROM %s WHERE (roleId=%s)".formatted(table, roleId), "row", Integer.class);
 		if (data == null) return 0;
-		return (Integer) data;
+		return data;
 	}
 
 	public String getInvite(String roleId) {
-		Object data = selectOne(TABLE, "discordInvite", "roleId", roleId);
-		if (data == null) return null;
-		return (String) data;
+		return selectOne("SELECT discordInvite FROM %s WHERE (roleId=%s)".formatted(table, roleId), "discordInvite", String.class);
 	}
 
 	public void setDescription(String roleId, String description) {
-		update(TABLE, "description", description, "roleId", roleId);
+		execute("UPDATE %s SET description=%s WHERE (roleId=%s)".formatted(table, quote(description), roleId));
 	}
 
 	public void setRow(String roleId, Integer row) {
-		update(TABLE, "type", Optional.ofNullable(row).orElse(0), "roleId", roleId);
+		execute("UPDATE %s SET row=%d WHERE (roleId=%s)".formatted(table, Optional.ofNullable(row).orElse(0), roleId));
 	}
 
 	public void setInvite(String roleId, String discordInvite) {
-		update(TABLE, "discordInvite", discordInvite, "roleId", roleId);
+		execute("UPDATE %s SET discordInvite=%s WHERE (roleId=%s)".formatted(table, quote(discordInvite), roleId));
 	}
 
 	public boolean isToggleable(String roleId) {
-		if (selectOne(TABLE, "roleId", List.of("roleId", "type"), List.of(roleId, RoleType.TOGGLE.getType())) == null) return false;
-		return true;
+		Integer type = getType(roleId);
+		return type==null ? false : type==RoleType.TOGGLE.getType();
 	}
 
 	public boolean existsRole(String roleId) {
-		if (selectOne(TABLE, "roleId", "roleId", roleId) == null) return false;
-		return true;
+		return selectOne("SELECT roleId FROM %s WHERE (roleId=%s)".formatted(table, roleId), "roleId", String.class) != null;
 	}
 
 }

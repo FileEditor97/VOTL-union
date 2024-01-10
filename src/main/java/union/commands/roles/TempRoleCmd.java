@@ -145,22 +145,23 @@ public class TempRoleCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			// Check role
 			Role role = event.optRole("role");
 			if (role == null) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 			// Check member
 			Member member = event.optMember("user");
 			if (member == null) {
-				createError(event, path+".no_member");
+				editError(event, path+".no_member");
 				return;
 			}
 			// Check time
 			Instant time = bot.getDBUtil().tempRole.expireAt(role.getId(), member.getId());
 			if (time == null) {
-				createError(event, path+".not_found");
+				editError(event, path+".not_found");
 				return;
 			}
 
@@ -170,11 +171,11 @@ public class TempRoleCmd extends CommandBase {
 			// Log
 			bot.getLogListener().role.onTempRoleRemoved(event.getGuild(), event.getUser(), member.getUser(), role);
 			// Send reply
-			event.replyEmbeds(bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build()
-			).setEphemeral(true).queue();
+			);
 		}
 
 	}
@@ -195,22 +196,23 @@ public class TempRoleCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			// Check role
 			Role role = event.optRole("role");
 			if (role == null) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 			// Check member
 			Member member = event.optMember("user");
 			if (member == null) {
-				createError(event, path+".no_member");
+				editError(event, path+".no_member");
 				return;
 			}
 			// Check time
 			Instant previousTime = bot.getDBUtil().tempRole.expireAt(role.getId(), member.getId());
 			if (previousTime == null) {
-				createError(event, path+".not_found");
+				editError(event, path+".not_found");
 				return;
 			}
 

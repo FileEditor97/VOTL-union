@@ -15,12 +15,14 @@ import java.util.List;
 
 import union.App;
 import union.utils.database.managers.AccessManager;
-import union.utils.database.managers.BanManager;
+import union.utils.database.managers.AutopunishManager;
+import union.utils.database.managers.CaseManager;
 import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
 import union.utils.database.managers.ModuleManager;
 import union.utils.database.managers.RoleManager;
+import union.utils.database.managers.StrikeManager;
 import union.utils.database.managers.TempRoleManager;
 import union.utils.database.managers.TicketManager;
 import union.utils.database.managers.TicketPanelManager;
@@ -42,12 +44,14 @@ import ch.qos.logback.classic.Logger;
 public class DBUtil {
 
 	private final FileManager fileManager;
+	private final ConnectionUtil connectionUtil;
+	
+	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
 
 	public final GuildSettingsManager guild;
 	public final WebhookManager webhook;
 	public final ModuleManager module;
 	public final AccessManager access;
-	public final BanManager ban;
 	public final GroupManager group;
 	public final VerifyManager verify;
 	public final VerifyCacheManager verifyCache;
@@ -60,82 +64,61 @@ public class DBUtil {
 	public final UserSettingsManager user;
 	public final VoiceChannelManager voice;
 	public final TempRoleManager tempRole;
+	public final CaseManager cases;
+	public final StrikeManager strike;
+	public final AutopunishManager autopunish;
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
 
-	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
-
-	private final String urlSQLite;
-	private final String urlWebsite;
-	private final String userWebsite;
-	private final String passWebsite;
-	private final String urlCentralTemp;
-	private final String userCentral;
-	private final String passCentral;
-
 	public DBUtil(FileManager fileManager) {
 		this.fileManager = fileManager;
-		this.urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("database"));
 
-		this.urlWebsite = "jdbc:mysql://%s:3306/union".formatted(fileManager.getNullableString("config", "website-ip"));
-		this.userWebsite = fileManager.getNullableString("config", "website-user");
-		this.passWebsite = fileManager.getNullableString("config", "website-pass");
-
-		this.urlCentralTemp = "jdbc:mysql://%s:3306/".formatted(fileManager.getNullableString("config", "central-ip"));
-		this.userCentral = fileManager.getNullableString("config", "central-user");
-		this.passCentral = fileManager.getNullableString("config", "central-pass");
-		
-		guild = new GuildSettingsManager(this);
-		webhook = new WebhookManager(this);
-		module = new ModuleManager(this);
-		access = new AccessManager(this);
-		ban = new BanManager(this);
-		group = new GroupManager(this);
-		verify = new VerifyManager(this);
-		verifyCache = new VerifyCacheManager(this);
-		ticketSettings = new TicketSettingsManager(this);
-		panels = new TicketPanelManager(this);
-		tags = new TicketTagManager(this);
-		role = new RoleManager(this);
-		ticket = new TicketManager(this);
-		guildVoice = new GuildVoiceManager(this);
-		user = new UserSettingsManager(this);
-		voice = new VoiceChannelManager(this);
-		tempRole = new TempRoleManager(this);
-		
+		// Check if MySQL driver is initiated
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
 		} catch (Exception ex) {
 			logger.error("MySQL: Exiting!\nMySQL-J driver not found initiated.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
 			System.exit(666);
 		}
-		unionVerify = new UnionVerifyManager(this, urlWebsite, userWebsite, passWebsite);
-		unionPlayers = new UnionPlayerManager(this, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
+
+		String urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("database"));
+		
+		String urlWebsite = "jdbc:mysql://%s:3306/union".formatted(fileManager.getNullableString("config", "website-ip"));
+		String userWebsite = fileManager.getNullableString("config", "website-user");
+		String passWebsite = fileManager.getNullableString("config", "website-pass");
+		
+		String urlCentralTemp = "jdbc:mysql://%s:3306/".formatted(fileManager.getNullableString("config", "central-ip"));
+		String userCentral = fileManager.getNullableString("config", "central-user");
+		String passCentral = fileManager.getNullableString("config", "central-pass");
+		
+		this.connectionUtil = new ConnectionUtil(urlSQLite, logger);
+		
+		guild = new GuildSettingsManager(connectionUtil);
+		webhook = new WebhookManager(connectionUtil);
+		module = new ModuleManager(connectionUtil);
+		access = new AccessManager(connectionUtil);
+		group = new GroupManager(connectionUtil);
+		verify = new VerifyManager(connectionUtil);
+		verifyCache = new VerifyCacheManager(connectionUtil);
+		ticketSettings = new TicketSettingsManager(connectionUtil);
+		panels = new TicketPanelManager(connectionUtil);
+		tags = new TicketTagManager(connectionUtil);
+		role = new RoleManager(connectionUtil);
+		ticket = new TicketManager(connectionUtil);
+		guildVoice = new GuildVoiceManager(connectionUtil);
+		user = new UserSettingsManager(connectionUtil);
+		voice = new VoiceChannelManager(connectionUtil);
+		tempRole = new TempRoleManager(connectionUtil);
+		cases = new CaseManager(connectionUtil);
+		strike = new StrikeManager(connectionUtil);
+		autopunish = new AutopunishManager(connectionUtil);
+		
+		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
+		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
 	}
 
-	protected Connection connectSQLite() {
-		Connection conn = null;
-		try {
-			conn = DriverManager.getConnection(urlSQLite);
-		} catch (SQLException ex) {
-			logger.error("SQLite: Connection error to database", ex);
-			return null;
-		}
-		return conn;
-	}
-
-	protected Connection connectMySql(final String url) {
-		Connection conn = null;
-		try {
-			conn = DriverManager.getConnection(url);
-		} catch (SQLException ex) {
-			logger.error("MySQL: Connection error to database", ex);
-			return null;
-		}
-		return conn;
-	}
 
 	// 0 - no version or error
 	// 1> - compare active db version with resources
@@ -143,8 +126,7 @@ public class DBUtil {
 	// in the end set active db version to resources
 	public Integer getActiveDBVersion() {
 		Integer version = 0;
-		try (Connection conn = DriverManager.getConnection(urlSQLite);
-		PreparedStatement st = conn.prepareStatement("PRAGMA user_version")) {
+		try (PreparedStatement st = connectionUtil.prepareStatement("PRAGMA user_version")) {
 			version = st.executeQuery().getInt(1);
 		} catch(SQLException ex) {
 			logger.warn("SQLite: Failed to get active database version", ex);
@@ -204,8 +186,7 @@ public class DBUtil {
 		if (activeVersion == 0) return;
 
 		if (newVersion > activeVersion) {
-			try (Connection conn = DriverManager.getConnection(urlSQLite);
-				Statement st = conn.createStatement()) {
+			try (Statement st = connectionUtil.createStatement()) {
 				if (activeVersion < newVersion) {
 					for (List<String> version : loadInstructions(activeVersion)) {
 						for (String sql : version) {
@@ -220,8 +201,7 @@ public class DBUtil {
 			}
 			
 			// Update version
-			try (Connection conn = DriverManager.getConnection(urlSQLite);
-			Statement st = conn.createStatement()) {
+			try (Statement st = connectionUtil.createStatement()) {
 				st.execute("PRAGMA user_version = "+newVersion.toString());
 				logger.info("SQLite: Database version updated to {}", newVersion);
 			} catch(SQLException ex) {

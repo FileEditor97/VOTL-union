@@ -20,6 +20,7 @@ import union.objects.Emotes;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.TicketTagManager.Tag;
 import union.utils.message.LocaleUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -120,7 +121,7 @@ public class InteractionListener extends ListenerAdapter {
 	@Override
 	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
 		// Acknowledge interaction 
-		event.deferEdit().queue();
+		event.deferEdit().queue(null, new ErrorHandler().ignore(IllegalStateException.class));
 		String buttonId = event.getComponentId();
 
 		if (buttonId.startsWith("verify")) {
@@ -362,14 +363,14 @@ public class InteractionListener extends ListenerAdapter {
 		List<Map<String, Object>> assignRoles = bot.getDBUtil().role.getAssignableByRow(guild.getId(), row);
 		if (assignRoles.isEmpty()) return null;
 		List<SelectOption> options = new ArrayList<SelectOption>();
-		assignRoles.forEach(data -> {
-			if (options.size() >= 25) return;
-			String roleId = data.get("roleId").toString();
+		for (Map<String, Object> data : assignRoles) {
+			if (options.size() >= 25) break;
+			String roleId = (String) data.getOrDefault("roleId", "0");
 			Role role = guild.getRoleById(roleId);
-			if (role == null) return;
-			String description = Objects.requireNonNullElse(data.get("description").toString(), "");
+			if (role == null) continue;
+			String description = (String) data.getOrDefault("description", "-");
 			options.add(SelectOption.of(role.getName(), roleId).withDescription(description));
-		});
+		}
 		StringSelectMenu menu = StringSelectMenu.create("menu:role_row:"+row)
 			.setPlaceholder(db.ticketSettings.getRowText(guild.getId(), row))
 			.setMaxValues(25)
@@ -499,7 +500,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, 0);
-		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).queue(
+		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).setInvitable(false).queue(
 			channel -> {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
 				
@@ -688,9 +689,8 @@ public class InteractionListener extends ListenerAdapter {
 			db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
 		}
 
-		Map<String, Object> tagInfo = db.tags.getTagInfo(tagId);
-		Integer type = (Integer) tagInfo.get("tagType");
-		if (type == null || type.equals(0)) {
+		Tag tag = db.tags.getTagInfo(tagId);
+		if (tag == null) {
 			sendTicketError(event, "Unknown tag with ID: "+tagId);
 			return;
 		}
@@ -698,18 +698,18 @@ public class InteractionListener extends ListenerAdapter {
 		User user = event.getUser();
 
 		StringBuffer mentions = new StringBuffer(user.getAsMention());
-		List<String> supportRoles = Optional.ofNullable((String) tagInfo.get("supportRoles")).map(text -> Arrays.asList(text.split(";"))).orElse(Collections.emptyList());
+		List<String> supportRoles = Optional.ofNullable(tag.getSupportRoles()).map(text -> Arrays.asList(text.split(";"))).orElse(Collections.emptyList());
 		supportRoles.forEach(roleId -> mentions.append(" <@&%s>".formatted(roleId)));
 
-		String message = Optional.ofNullable((String) tagInfo.get("message"))
-			.map(text -> setNewline(text).replace("{username}", user.getName()).replace("{tag_username}", user.getAsMention()))
+		String message = Optional.ofNullable(tag.getMessage())
+			.map(text -> text.replace("{username}", user.getName()).replace("{tag_username}", user.getAsMention()))
 			.orElse("Ticket's controls");
 		
 		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, tagId);
-		String ticketName = (((String) tagInfo.get("ticketName"))+ticketId).replace("{username}", user.getName());
-		if (type.equals(1)) {
+		String ticketName = (tag.getTicketName()+ticketId).replace("{username}", user.getName());
+		if (tag.getTagType() == 1) {
 			// Thread ticket
-			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).queue(channel -> {
+			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).setInvitable(false).queue(channel -> {
 				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);
 				
 				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
@@ -719,10 +719,9 @@ public class InteractionListener extends ListenerAdapter {
 			});
 		} else {
 			// Channel ticket
-			String categoryId = (String) tagInfo.get("location");
-			Category category = Optional.ofNullable(categoryId).map(id -> event.getGuild().getCategoryById(id)).orElse(event.getChannel().asTextChannel().getParentCategory());
+			Category category = Optional.ofNullable(tag.getLocation()).map(id -> event.getGuild().getCategoryById(id)).orElse(event.getChannel().asTextChannel().getParentCategory());
 			if (category == null) {
-				sendTicketError(event, "Target category not found, with ID: "+categoryId);
+				sendTicketError(event, "Target category not found, with ID: "+tag.getLocation());
 				return;
 			}
 
@@ -736,13 +735,9 @@ public class InteractionListener extends ListenerAdapter {
 				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
 			}, 
 			failure -> {
-				sendTicketError(event, "Unable to create new channel in target category, with ID: "+categoryId);
+				sendTicketError(event, "Unable to create new channel in target category, with ID: "+tag.getLocation());
 			});
 		}
-	}
-
-	private String setNewline(String text) {
-		return text.replaceAll("<br>", "\n");
 	}
 
 	private void sendTicketError(ButtonInteractionEvent event, String reason) {
@@ -985,7 +980,7 @@ public class InteractionListener extends ListenerAdapter {
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setAuthor(lu.getLocalized(event.getUserLocale(), "bot.ticketing.listener.invites.title").formatted(guild.getName()), null, guild.getIconUrl());
 		invites.forEach((k, v) -> builder.appendDescription("%s\n> %s\n".formatted(k, v)));
-		event.getHook().editOriginalEmbeds(builder.build()).queue();
+		event.getHook().sendMessageEmbeds(builder.build()).setEphemeral(true).queue();
 	}
 
 	@Override
@@ -1107,7 +1102,7 @@ public class InteractionListener extends ListenerAdapter {
 				
 				List<Member> members = mentions.getMembers();
 				List<Role> roles = mentions.getRoles();
-				if (members.isEmpty() & roles.isEmpty()) {
+				if (members.isEmpty() && roles.isEmpty()) {
 					return;
 				}
 				if (members.contains(author) || members.contains(guild.getSelfMember())) {

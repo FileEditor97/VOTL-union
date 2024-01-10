@@ -99,8 +99,6 @@ public abstract class UserContextMenu extends ContextMenu {
 			Member author = event.getMember();
 			try {
 				bot.getCheckUtil()
-				// check setup
-					.guildExists(event, guild)
 				// check module enabled
 					.moduleEnabled(event, guild, getModule())
 				// check access

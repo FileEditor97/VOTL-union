@@ -2,13 +2,14 @@ package union.helper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import union.listeners.LogListener;
+import union.objects.CaseType;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -37,7 +38,7 @@ public class Helper {
 
 		guildListener = new GuildListener(this);
 		
-		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=nqQ0KkP0idc"))
+		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=GMMLgHC8wVE"))
 			.addEventListeners(guildListener);
 		this.JDA = helperBuilder.build();
 	}
@@ -78,9 +79,9 @@ public class Helper {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 			// fail-safe check if has expirable ban (to prevent auto unban)
-			Map<String, Object> banData = db.ban.getMemberExpirable(user.getId(), guild.getId());
-			if (!banData.isEmpty()) {
-				db.ban.setInactive((Integer) banData.get("banId"));
+			CaseData banData = db.cases.getMemberActive(user.getIdLong(), Long.valueOf(guildId), CaseType.BAN);
+			if (banData != null) {
+				db.cases.setInactive(banData.getCaseIdInt());
 			}
 			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason("Sync: "+reason).submit().exceptionally(ex -> null));
 		}

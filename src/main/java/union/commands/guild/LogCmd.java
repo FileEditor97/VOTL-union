@@ -158,7 +158,7 @@ public class LogCmd extends CommandBase {
 				StringSelectMenu menu = StringSelectMenu.create("menu:log_type")
 					.setPlaceholder(lu.getText(event, path+".menu_type"))
 					.addOptions(
-						Arrays.stream(LogChannels.values()).map(lc -> SelectOption.of(lu.getText(event, lc.getPath()), lc.getDBName())).toList()
+						Arrays.stream(LogChannels.values()).map(lc -> SelectOption.of(lu.getText(event, lc.getPath()), lc.getName())).toList()
 					)
 					.build();
 					event.getHook().editOriginalComponents(ActionRow.of(menu)).queue();

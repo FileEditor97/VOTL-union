@@ -1,8 +1,8 @@
 package union.commands.moderation;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -11,14 +11,17 @@ import union.App;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
@@ -49,9 +52,9 @@ public class UnbanCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(false).queue();
-		Guild guild = Objects.requireNonNull(event.getGuild());
+		event.deferReply().queue();
 
+		Guild guild = event.getGuild();
 		User tu = event.optUser("user");
 		String reason = event.optString("reason", lu.getText(event, path+".no_reason"));
 
@@ -64,7 +67,18 @@ public class UnbanCmd extends CommandBase {
 			return;
 		}
 
+		// Remove active ban log
+		CaseData banData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
+		if (banData != null) {
+			bot.getDBUtil().cases.setInactive(banData.getCaseIdInt());
+		}
+
 		guild.retrieveBan(tu).queue(ban -> {
+			Member mod = event.getMember();
+			// add info to db
+			bot.getDBUtil().cases.add(CaseType.UNBAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+				guild.getIdLong(), reason, Instant.now(), null);
+			CaseData unbanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 			// perform unban
 			guild.unban(tu).reason(reason).queue();
 			// create embed
@@ -74,16 +88,25 @@ public class UnbanCmd extends CommandBase {
 					.replace("{user_tag}", tu.getName())
 					.replace("{reason}", reason))
 				.build();
-			// ask for ban sync
-			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
-				buttonSync(event, msg, ban.getUser(), reason);
-			});
-
 			// log unban
-			bot.getLogListener().mod.onUnban(event, event.getMember(), ban, reason);
+			bot.getLogListener().mod.onNewCase(guild, tu, unbanData, banData != null ? banData.getReason() : ban.getReason());
+
+			// ask for unban sync
+			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
+				buttonSync(event, msg, tu, reason);
+			});
 		},
 		failure -> {
-			editError(event, path+".no_ban");
+			// create embed
+			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
+				.setColor(Constants.COLOR_FAILURE)
+				.setDescription(lu.getText(event, path+".no_ban")
+					.replace("{user_tag}", tu.getName()))
+				.build();
+			// ask for unban sync
+			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
+				buttonSync(event, msg, tu, reason);
+			});
 		});
 	}
 

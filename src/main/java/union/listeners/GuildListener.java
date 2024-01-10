@@ -1,14 +1,15 @@
 package union.listeners;
 
-import java.util.Map;
 import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
 
 import union.App;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.LogChannels;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -19,6 +20,7 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateTimeOutEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -35,10 +37,6 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildJoin(@Nonnull GuildJoinEvent event) {
 		String guildId = event.getGuild().getId();
-		// check if not exists in DB and adds it
-		if (db.guild.add(guildId)) {
-			bot.getLogger().info("Automatically added guild '"+event.getGuild().getName()+"'("+guildId+") to db");
-		}
 		bot.getLogger().info("Joined guild '"+event.getGuild().getName()+"'("+guildId+")");
 	}
 
@@ -99,6 +97,9 @@ public class GuildListener extends ListenerAdapter {
 		db.panels.deleteAll(guildId);
 		db.tags.deleteAll(guildId);
 		db.tempRole.removeAll(guildId);
+		Long guildIdLong = event.getGuild().getIdLong();
+		db.autopunish.removeGuild(guildIdLong);
+		db.strike.removeGuild(guildIdLong);
 		
 		db.guild.remove(guildId);
 
@@ -108,9 +109,18 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildUnban(@Nonnull GuildUnbanEvent event) {
-		Map<String, Object> banData = db.ban.getMemberExpirable(event.getUser().getId(), event.getGuild().getId());
-		if (!banData.isEmpty()) {
-			db.ban.setInactive(Integer.valueOf(banData.get("badId").toString()));
+		CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.BAN);
+		if (banData != null) {
+			db.cases.setInactive(banData.getCaseIdInt());
+		}
+	}
+	
+	@Override
+	public void onGuildMemberUpdateTimeOut(@Nonnull GuildMemberUpdateTimeOutEvent event) {
+		if (event.getNewTimeOutEnd() == null) {
+			// timeout removed by moderator
+			CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.MUTE);
+			db.cases.setInactive(banData.getCaseIdInt());
 		}
 	}
 

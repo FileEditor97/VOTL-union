@@ -4,57 +4,55 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import union.utils.database.DBUtil;
+import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TempRoleManager extends LiteDBBase {
 
-	private final String TABLE = "tempRoles";
+	private final String table = "tempRoles";
 	
-	public TempRoleManager(DBUtil util) {
-		super(util);
+	public TempRoleManager(ConnectionUtil cu) {
+		super(cu);
 	}
 
 	public void add(String guildId, String roleId, String userId, Boolean deleteAfter, Instant expireAfter) {
-		insert(TABLE, List.of("guildId", "roleId", "userId", "deleteAfter", "expireAfter"), List.of(guildId, roleId, userId, (deleteAfter ? 1 : 0), expireAfter.getEpochSecond()));
+		execute("INSERT INTO %s(guildId, roleId, userId, deleteAfter, expireAfter) VALUES (%s, %s, %s, %d, %d)"
+			.formatted(table, guildId, roleId, userId, (deleteAfter ? 1 : 0), expireAfter.getEpochSecond()));
 	}
 
 	public void remove(String roleId, String userId) {
-		delete(TABLE, List.of("roleId", "userId"), List.of(roleId, userId));
+		execute("DELETE FROM %s WHERE (roleId=%s AND userId=%s)".formatted(table, roleId, userId));
 	}
 
 	public void removeRole(String roleId) {
-		deleteAll(TABLE, "roleId", roleId);
+		execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
 	}
 
 	public void removeAll(String guildId) {
-		deleteAll(TABLE, "guildId", guildId);
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public void updateTime(String roleId, String userId, Instant expireAfter) {
-		update(TABLE, "expireAfter", expireAfter.getEpochSecond(), List.of("roleId", "userId"), List.of(roleId, userId));
+		execute("UPDATE %s SET expireAfter=%s WHERE (roleId=%s AND userId=%s)".formatted(table, expireAfter.getEpochSecond(), roleId, userId));
 	}
 
 	public Instant expireAt(String roleId, String userId) {
-		Object data = selectOne(TABLE, "expireAfter", List.of("roleId", "userId"), List.of(roleId, userId));
+		Integer data = selectOne("SELECT expireAfter FROM %s WHERE (roleId=%s AND userId=%s)".formatted(table, roleId, userId), "expireAfter", Integer.class);
 		if (data == null) return null;
-		return Instant.ofEpochSecond((Integer) data);
+		return Instant.ofEpochSecond(data);
 	}
 
-	public List<Map<String, String>> expiredRoles(Instant now) {
-		List<Map<String, String>> data = selectExpiredTempRoles(TABLE, now.getEpochSecond());
-		if (data.isEmpty()) return List.of();
-		return data;
+	public List<Map<String, Object>> expiredRoles(Instant now) {
+		return select("SELECT roleId, userId FROM %s WHERE (expireAfter<=%d)".formatted(table, now.getEpochSecond()), List.of("roleId", "userId"));
 	}
 
 	public List<Map<String, Object>> getAll(String guildId) {
-		List<Map<String, Object>> data = select(TABLE, List.of("roleId", "userId", "expireAfter"), "guildId", guildId);
-		return data;
+		return select("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), List.of("roleId", "userId", "expireAfter"));
 	}
 
 	public Boolean shouldDelete(String roleId) {
-		Object data = selectOne(TABLE, "deleteAfter", "roleId", roleId);
-		if (data == null) return false;
-		return (Integer) data == 1;
+		Integer data = selectOne("SELECT deleteAfter FROM %s WHERE (roleId=%s)".formatted(table, roleId), "deleteAfter", Integer.class);
+		return data==null ? false : data==1;
 	}
+
 }

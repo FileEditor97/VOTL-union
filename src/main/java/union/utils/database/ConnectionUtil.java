@@ -19,13 +19,13 @@ public class ConnectionUtil {
 		this.logger = logger;
 	}
 
-	protected Connection connectSQLite() {
+	protected Connection connectSQLite() throws SQLException {
 		Connection conn = null;
 		try {
 			conn = DriverManager.getConnection(urlSQLite);
 		} catch (SQLException ex) {
-			logger.error("SQLite: Connection error to database", ex);
-			return null;
+			logger.error("SQLite: Connection error to database\n{}", ex.getMessage());
+			throw ex;
 		}
 		return conn;
 	}
@@ -38,13 +38,13 @@ public class ConnectionUtil {
 		return connectSQLite().createStatement();
 	}
 
-	protected Connection connectMySQL(final String url) {
+	protected Connection connectMySQL(final String url) throws SQLException {
 		Connection conn = null;
 		try {
 			conn = DriverManager.getConnection(url);
 		} catch (SQLException ex) {
-			logger.error("MySQL: Connection error to database", ex);
-			return null;
+			logger.error("MySQL: Connection error to database\n{}", ex.getMessage());
+			throw ex;
 		}
 		return conn;
 	}

@@ -1262,6 +1262,7 @@
 					"name": "user",
 					"help": "Select user"
 				},
+				"empty": "No statistics for 30 days.",
 				"title": "Moderation statistics",
 				"last": " 7 days: %d\n30 days: %d",
 				"mutes": "Mutes",

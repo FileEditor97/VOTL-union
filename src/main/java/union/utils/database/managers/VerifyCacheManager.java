@@ -14,7 +14,7 @@ public class VerifyCacheManager extends LiteDBBase {
 	}
 
 	public void addUser(String discordId, String steam64) {
-		execute("INSERT INTO %s(discordId, steam64) VALUES (%s, %s)".formatted(table, discordId, steam64));
+		execute("INSERT INTO %s(discordId, steam64) VALUES (%s, %s)".formatted(table, discordId, quote(steam64)));
 	}
 
 	public void addForcedUser(String discordId) {
@@ -26,7 +26,7 @@ public class VerifyCacheManager extends LiteDBBase {
 	}
 
 	public void removeBySteam(String steam64) {
-		execute("DELETE FROM %s WHERE (steam64=%s)".formatted(table, steam64));
+		execute("DELETE FROM %s WHERE (steam64=%s)".formatted(table, quote(steam64)));
 	}
 
 	public List<String> getForcedUsers() {
@@ -54,7 +54,7 @@ public class VerifyCacheManager extends LiteDBBase {
 	}
 
 	public String getDiscordId(String steam64) {
-		return selectOne("SELECT discordId FROM %s WHERE (steam64=%s)".formatted(table, steam64), "discordId", String.class);
+		return selectOne("SELECT discordId FROM %s WHERE (steam64=%s)".formatted(table, quote(steam64)), "discordId", String.class);
 	}
 
 	public void purgeVerified() {
@@ -62,7 +62,7 @@ public class VerifyCacheManager extends LiteDBBase {
 	}
 
 	public Integer count() {
-		return selectOne("SELECT COUNT(*) FROM %s".formatted(table), "COUNT(*)", Integer.class);
+		return count("SELECT COUNT(*) FROM %s".formatted(table));
 	}
 	
 }

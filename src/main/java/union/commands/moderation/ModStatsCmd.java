@@ -44,12 +44,12 @@ public class ModStatsCmd extends CommandBase {
 		long guildId = event.getGuild().getIdLong();
 		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(7, ChronoUnit.DAYS));
 		if (count7 == null) {
-			editError(event, "errors.unknown", "Received null map");
+			editError(event, path+".empty");
 			return;
 		}
 		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(30, ChronoUnit.DAYS));
 		if (count30 == null) {
-			editError(event, "errors.unknown", "Received null map");
+			editError(event, path+".empty");
 			return;
 		}
 

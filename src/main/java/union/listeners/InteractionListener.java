@@ -116,19 +116,27 @@ public class InteractionListener extends ListenerAdapter {
 		}
 		function.run();
 	}
+
+	private final List<String> matches = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice");
+
+	private boolean isAcceptedId(final String id) {
+		for (String match : matches) {
+			if (id.startsWith(match)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 
 	@Override
 	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
-		// Acknowledge interaction
-		try {
-			event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
-		} catch(Exception ex) {
-			bot.getLogger().warn("Exception at button interaction acknowledge", ex);
-			return;
-		}
-		
 		String buttonId = event.getComponentId();
+
+		if (!isAcceptedId(buttonId)) return;
+
+		// Acknowledge interaction
+		event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 
 		if (buttonId.startsWith("verify")) {
 			runButtonInteraction(event, Cooldown.BUTTON_VERIFY, () -> buttonVerify(event));

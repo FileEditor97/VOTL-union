@@ -1,6 +1,7 @@
 package union.utils;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,11 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 		client.newCall(request).enqueue(new Callback() {
 			@Override
 			public void onFailure(Call call, IOException ex) {
-				logger.warn("Webhook call failed. Payload:\n"+payload, ex);
+				if (ex instanceof UnknownHostException) {
+					logger.warn("Webhook call failed. Can't resolve URL.");
+				} else {
+					logger.warn("Webhook call failed. Payload:\n"+payload, ex);
+				}
 			}
 
 			@Override

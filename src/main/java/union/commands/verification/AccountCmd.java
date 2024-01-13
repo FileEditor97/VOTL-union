@@ -24,7 +24,7 @@ public class AccountCmd extends CommandBase {
 		this.name = "account";
 		this.path = "bot.verification.account";
 		this.options = List.of(
-			new OptionData(OptionType.STRING, "steamid", lu.getText(path+".steamid.help")),
+			new OptionData(OptionType.STRING, "steamid", lu.getText(path+".steamid.help")).setMaxLength(30),
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"))
 		);
 		this.category = CmdCategory.VERIFICATION;
@@ -34,44 +34,44 @@ public class AccountCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		User optUser = event.optUser("user");
-		if (optUser != null) {
+		event.deferReply().queue();
+
+		if (event.hasOption("user")) {
+			User optUser = event.optUser("user");
 			String userId = optUser.getId();
+			
 			String steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
 			if (steam64 == null) {
-				createError(event, path+".not_found_steam", "Received: "+userId);
+				editError(event, path+".not_found_steam", "Received: "+userId);
 				return;
 			}
 
 			replyAccountFull(event, steam64, optUser);
-			return;
-		}
+		} else if (event.hasOption("steamid")) {
+			String id = event.optString("steamid");
 
-		String id = event.optString("steamid");
-		if (id != null) {
-			boolean matches = Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", id);
-			if (matches) {
+			if (Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", id)) {
 				id = bot.getSteamUtil().convertSteamIDtoSteam64(id);
 			}
+
 			String discordId = bot.getDBUtil().verifyCache.getDiscordId(id);
 			if (discordId == null) {
 				replyAccountSteam(event, id);
-				return;
+			} else {
+				String steam64 = id;
+				event.getJDA().retrieveUserById(discordId).queue(
+					user -> {
+						// create embed
+						replyAccountFull(event, steam64, user);
+					},
+					failed -> {
+						editError(event, path+".not_found_user", "User ID: "+discordId);
+					}
+				);
 			}
-
-			String steam64 = id;
-			event.getJDA().retrieveUserById(discordId).queue(
-				user -> {
-					// create embed
-					replyAccountFull(event, steam64, user);
-				},
-				failed -> {
-					createError(event, path+".not_found_user", "User ID: "+discordId);
-				});
-			return;
+		} else {
+			editError(event, path+".no_options");
 		}
-
-		createError(event, path+".no_options");
 	}
 
 	private void replyAccountFull(SlashCommandEvent event, final String steam64, User user) {
@@ -79,7 +79,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			event.replyEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Incorrect SteamID provided\n`%s`".formatted(steam64)));
+			editError(event, "errors.unknown", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
@@ -95,7 +95,7 @@ public class AccountCmd extends CommandBase {
 			.addField(lu.getUserText(event, path+".field_playtime"), "%s %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
 			.addField(lu.getUserText(event, path+".field_discord"), user.getAsMention(), false);
 		
-		event.replyEmbeds(builder.build()).queue();
+		editHookEmbed(event, builder.build());
 	}
 
 	private void replyAccountSteam(SlashCommandEvent event, final String steam64) {
@@ -103,7 +103,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			event.replyEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Incorrect SteamID provided\n`%s`".formatted(steam64)));
+			editError(event, "errors.unknown", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
@@ -116,7 +116,7 @@ public class AccountCmd extends CommandBase {
 			.addField(lu.getUserText(event, path+".field_playtime"), "%s %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
 			.addField(lu.getUserText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), false);
 		
-		event.replyEmbeds(builder.build()).queue();
+		editHookEmbed(event, builder.build());
 	}
 
 }

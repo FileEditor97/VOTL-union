@@ -1,5 +1,7 @@
 package union.utils.database;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,7 +40,8 @@ public class SqlDBBase {
 
 		List<String> results = new ArrayList<String>();
 		cu.logger.debug(sql);
-		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
+		try (Connection conn = DriverManager.getConnection(url);
+		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
 				results.add(rs.getString(selectKey));
@@ -75,7 +78,8 @@ public class SqlDBBase {
 		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
 
 		cu.logger.debug(sql.toString());
-		try (PreparedStatement st = cu.prepareStatement(url, sql.toString())) {
+		try (Connection conn = DriverManager.getConnection(url);
+		PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
 			List<String> keys = new ArrayList<>();
 			
@@ -95,7 +99,7 @@ public class SqlDBBase {
 				results.add(data);
 			}
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql.toString(), ex);
 		}
 		return results;
 	}
@@ -105,7 +109,8 @@ public class SqlDBBase {
 
 		String result = null;
 		cu.logger.debug(sql);
-		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
+		try (Connection conn = DriverManager.getConnection(url);
+		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
@@ -120,7 +125,8 @@ public class SqlDBBase {
 
 		String result = null;
 		cu.logger.debug(sql);
-		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
+		try (Connection conn = DriverManager.getConnection(url);
+		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
@@ -134,7 +140,8 @@ public class SqlDBBase {
 		String sql = "UPDATE "+table+" SET "+updateKey+"="+quote(updateValueObj)+" WHERE "+condKey+"="+quote(condValueObj);
 
 		cu.logger.debug(sql);
-		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
+		try (Connection conn = DriverManager.getConnection(url);
+		PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MySQL: Error at UPDATE\nrequest: {}", sql, ex);
@@ -157,7 +164,8 @@ public class SqlDBBase {
 
 		PlayerInfo result = new PlayerInfo(steamId);
 		cu.logger.debug(sql);
-		try (PreparedStatement st = cu.prepareStatement(url, sql)) {
+		try (Connection conn = DriverManager.getConnection(url);
+		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result.setInfo(rs.getString("rank"), rs.getLong("play_time"));
 		} catch (SQLException ex) {

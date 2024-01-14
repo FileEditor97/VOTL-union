@@ -1,5 +1,7 @@
 package union.utils.database;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +23,8 @@ public class LiteDBBase {
 	// Execute statement
 	protected void execute(final String sql) {
 		util.logger.debug(sql);
-		try (PreparedStatement st = util.prepareStatement(sql)) {
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at statement execution\nRequest: {}", sql, ex);
@@ -33,7 +36,8 @@ public class LiteDBBase {
 		T result = null;
 
 		util.logger.debug(sql);
-		try (PreparedStatement st = util.prepareStatement(sql)) {
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 
 			try {
@@ -51,7 +55,8 @@ public class LiteDBBase {
 		List<T> results = new ArrayList<T>();
 
 		util.logger.debug(sql);
-		try (PreparedStatement st = util.prepareStatement(sql)) {
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 
 			while (rs.next()) {
@@ -72,7 +77,8 @@ public class LiteDBBase {
 		Map<String, Object> result = new HashMap<>();
 
 		util.logger.debug(sql);
-		try (PreparedStatement st = util.prepareStatement(sql)) {
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 
 			if (rs.next())
@@ -89,7 +95,8 @@ public class LiteDBBase {
 		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
 		util.logger.debug(sql);
-		try (PreparedStatement st = util.prepareStatement(sql)) {
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 
 			while (rs.next()) {
@@ -109,7 +116,8 @@ public class LiteDBBase {
 		Integer result = 0;
 
 		util.logger.debug(sql);
-		try (PreparedStatement st = util.prepareStatement(sql)) {
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 
 			try {

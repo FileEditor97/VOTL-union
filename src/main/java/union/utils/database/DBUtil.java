@@ -126,7 +126,8 @@ public class DBUtil {
 	// in the end set active db version to resources
 	public Integer getActiveDBVersion() {
 		Integer version = 0;
-		try (PreparedStatement st = connectionUtil.prepareStatement("PRAGMA user_version")) {
+		try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
+			PreparedStatement st = conn.prepareStatement("PRAGMA user_version")) {
 			version = st.executeQuery().getInt(1);
 		} catch(SQLException ex) {
 			logger.warn("SQLite: Failed to get active database version", ex);
@@ -186,7 +187,8 @@ public class DBUtil {
 		if (activeVersion == 0) return;
 
 		if (newVersion > activeVersion) {
-			try (Statement st = connectionUtil.createStatement()) {
+			try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
+			Statement st = conn.createStatement()) {
 				if (activeVersion < newVersion) {
 					for (List<String> version : loadInstructions(activeVersion)) {
 						for (String sql : version) {
@@ -201,7 +203,8 @@ public class DBUtil {
 			}
 			
 			// Update version
-			try (Statement st = connectionUtil.createStatement()) {
+			try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
+			Statement st = conn.createStatement()) {
 				st.execute("PRAGMA user_version = "+newVersion.toString());
 				logger.info("SQLite: Database version updated to {}", newVersion);
 			} catch(SQLException ex) {

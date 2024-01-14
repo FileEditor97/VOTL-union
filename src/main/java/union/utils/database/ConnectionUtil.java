@@ -2,12 +2,6 @@ package union.utils.database;
 
 import ch.qos.logback.classic.Logger;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 public class ConnectionUtil {
 
 	private final String urlSQLite;
@@ -19,42 +13,8 @@ public class ConnectionUtil {
 		this.logger = logger;
 	}
 
-	protected Connection connectSQLite() throws SQLException {
-		Connection conn = null;
-		try {
-			conn = DriverManager.getConnection(urlSQLite);
-		} catch (SQLException ex) {
-			logger.error("SQLite: Connection error to database\n{}", ex.getMessage());
-			throw ex;
-		}
-		return conn;
-	}
-
-	protected PreparedStatement prepareStatement(final String sql) throws SQLException {
-		return connectSQLite().prepareStatement(sql);
-	}
-
-	protected Statement createStatement() throws SQLException {
-		return connectSQLite().createStatement();
-	}
-
-	protected Connection connectMySQL(final String url) throws SQLException {
-		Connection conn = null;
-		try {
-			conn = DriverManager.getConnection(url);
-		} catch (SQLException ex) {
-			logger.error("MySQL: Connection error to database\n{}", ex.getMessage());
-			throw ex;
-		}
-		return conn;
-	}
-
-	protected PreparedStatement prepareStatement(final String url, final String sql) throws SQLException {
-		return connectMySQL(url).prepareStatement(sql);
-	}
-
-	protected Statement createStatement(final String url) throws SQLException {
-		return connectMySQL(url).createStatement();
+	protected String getUrlSQLite() {
+		return urlSQLite;
 	}
 	
 }

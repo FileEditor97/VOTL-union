@@ -1310,9 +1310,10 @@
 				},
 				"expired": "This user is not banned permamently or the ban has already expired.\nTry banning this user `/ban`",
 				"no_groups": "This server can't manage any group.",
-				"title": "**Blacklist this user in group?**\n{EMOTE_warning} *If the user is unbanned manually or through other bot, user will be banned again until blacklist is removed.*",
+				"title": "**Blacklist this user in group?**\n{EMOTE_WARNING} *If the user is unbanned manually or through other bot, user will be banned again until blacklist is removed.*",
 				"value": "Select group/-s",
-				"no_user": "Unknown user."
+				"no_user": "Unknown user.",
+				"done": "User blacklisted and banned in group's servers. Results will be posted in logs channel."
 			}
 		},
 		"other": {

@@ -17,11 +17,6 @@ import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 public class AutoCompleteListener extends ListenerAdapter {
 
 	private final List<SlashCommand> cmds;
-	//private final List<String> groupOwnerCmds = List.of("group delete", "group add", "group remove", "group rename", "group manage", "group view");
-	//private final List<String> groupManageCmds = List.of("sync ban", "sync unban", "sync kick");
-	//private final List<String> groupJoinedCmds = List.of("group leave", "group view");
-	//private final List<String> panelCmds = List.of("ticket panels modify", "ticket panels view", "ticket panels send", "ticket panels delete", "ticket tags create");
-	//private final List<String> tagCmds = List.of("ticket tags modify", "ticket tags view", "ticket tags delete");
 
 	private DBUtil db;
 

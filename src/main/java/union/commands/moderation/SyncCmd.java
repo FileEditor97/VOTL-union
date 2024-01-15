@@ -167,6 +167,7 @@ public class SyncCmd extends CommandBase {
 					ButtonInteractionEvent.class,
 					e -> msg.getId().equals(e.getMessageId()) && e.getComponentId().equals("button:confirm"),
 					action -> {
+						bot.getDBUtil().blacklist.removeUser(groupId, target.getIdLong());
 						List<String> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId);
 						if (guilds.isEmpty()) {
 							editError(event, path+".no_guilds");

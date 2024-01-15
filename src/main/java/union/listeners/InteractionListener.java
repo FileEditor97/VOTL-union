@@ -1069,7 +1069,7 @@ public class InteractionListener extends ListenerAdapter {
 						selected.forEach(id -> {
 							Integer groupId = Integer.parseInt(id);
 							if (!db.blacklist.inGroupUser(groupId, caseData.getTargetId()))
-								db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, guildId, selectEvent.getUser().getIdLong());
+								db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, caseData.getReason(), selectEvent.getUser().getIdLong());
 	
 							bot.getHelper().runBan(groupId, event.getGuild(), user, caseData.getReason());
 						});

@@ -70,10 +70,10 @@ public class BlacklistCmd extends CommandBase {
 			EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 				.setTitle(lu.getText(event, path+".title").formatted(groupId, page, pages));
 			list.forEach(map -> 
-				builder.addField("<@%s> (%<s)".formatted((String) map.get("userId")), lu.getText(event, path+".value").formatted(
+				builder.addField("ID: %s".formatted((Long) map.get("userId")), lu.getText(event, path+".value").formatted(
 					Optional.ofNullable((Long) map.get("steam64")).map(bot.getSteamUtil()::convertSteam64toSteamID).orElse("-"),
-					Optional.ofNullable((String) map.get("guild")).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
-					Optional.ofNullable((String) map.get("modId")).map(v -> "<@%s> (%>s)".formatted(v)).orElse("-"),
+					Optional.ofNullable((Long) map.get("guildId")).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
+					Optional.ofNullable((Long) map.get("modId")).map(v -> "<@%s> (%<s)".formatted(v)).orElse("-"),
 					Optional.ofNullable((String) map.get("reason")).map(v -> bot.getMessageUtil().limitString(v, 100)).orElse("-")
 				), true)
 			);

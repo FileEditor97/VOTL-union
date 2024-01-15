@@ -175,6 +175,7 @@ public class App {
 				new UnmuteCmd(this),
 				new ModLogsCmd(this),
 				new ModStatsCmd(this),
+				new BlacklistCmd(this),
 				// strikes
 				new StrikeCmd(this),
 				new DeleteStikeCmd(this, WAITER),

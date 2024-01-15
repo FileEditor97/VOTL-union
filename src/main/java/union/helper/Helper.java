@@ -83,20 +83,16 @@ public class Helper {
 			if (banData != null) {
 				db.cases.setInactive(banData.getCaseIdInt());
 			}
-			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason("Sync: "+reason).submit().exceptionally(ex -> null));
+			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason("Sync: "+reason).submit());
 		}
 
 		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 			.whenComplete((done, exception) -> {
-				if (exception != null) {
-					logger.error("Bad thing at Helper ban logic", exception);
-				} else {
-					Integer banned = 0;
-					for (CompletableFuture<Void> future : completableFutures) {
-						if (!future.isCompletedExceptionally()) banned++;
-					}
-					logListener.mod.onHelperSyncBan(groupId, master, user, reason, banned, maxCount);
+				Integer banned = 0;
+				for (CompletableFuture<Void> future : completableFutures) {
+					if (!future.isCompletedExceptionally()) banned++;
 				}
+				logListener.mod.onHelperSyncBan(groupId, master, user, reason, banned, maxCount);
 			});
 	}
 
@@ -116,20 +112,16 @@ public class Helper {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 
-			completableFutures.add(guild.unban(user).reason("Sync: "+reason).submit().exceptionally(ex -> null));
+			completableFutures.add(guild.unban(user).reason("Sync: "+reason).submit());
 		}
 
 		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 			.whenComplete((done, exception) -> {
-				if (exception != null) {
-					logger.error("Bad thing at Helper unban logic", exception);
-				} else {
-					Integer unbanned = 0;
-					for (CompletableFuture<Void> future : completableFutures) {
-						if (!future.isCompletedExceptionally()) unbanned++;
-					}
-					logListener.mod.onHelperSyncUnban(groupId, master, user, reason, unbanned, maxCount);
+				Integer unbanned = 0;
+				for (CompletableFuture<Void> future : completableFutures) {
+					if (!future.isCompletedExceptionally()) unbanned++;
 				}
+				logListener.mod.onHelperSyncUnban(groupId, master, user, reason, unbanned, maxCount);
 			});
 	}
 
@@ -149,20 +141,16 @@ public class Helper {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 
-			completableFutures.add(guild.kick(user).reason("Sync: "+reason).submit().exceptionally(ex -> null));
+			completableFutures.add(guild.kick(user).reason("Sync: "+reason).submit());
 		}
 
 		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 			.whenComplete((done, exception) -> {
-				if (exception != null) {
-					logger.error("Bad thing at Helper unban logic", exception);
-				} else {
-					Integer kicked = 0;
-					for (CompletableFuture<Void> future : completableFutures) {
-						if (!future.isCompletedExceptionally()) kicked++;
-					}
-					logListener.mod.onHelperSyncKick(groupId, master, user, reason, kicked, maxCount);
+				Integer kicked = 0;
+				for (CompletableFuture<Void> future : completableFutures) {
+					if (!future.isCompletedExceptionally()) kicked++;
 				}
+				logListener.mod.onHelperSyncKick(groupId, master, user, reason, kicked, maxCount);
 			});
 	}
 

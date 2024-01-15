@@ -48,7 +48,8 @@ public class GroupManager extends LiteDBBase {
 	}
 
 	public boolean isMaster(int groupId, String guildId) {
-		return selectOne("SELECT masterId FROM %s WHERE (groupId=%d AND masterId=%s)", "masterId", String.class) != null;
+		return selectOne("SELECT masterId FROM %s WHERE (groupId=%d AND masterId=%s)"
+			.formatted(table_masters, groupId, guildId), "masterId", String.class) != null;
 	}
 
 	// groupMembers table

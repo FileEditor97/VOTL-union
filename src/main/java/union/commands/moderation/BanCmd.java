@@ -103,7 +103,7 @@ public class BanCmd extends CommandBase {
 
 					// ask for ban sync
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
-						Button.danger("blacklist:"+ban.getUser().getId(), lu.getText(event, "Blacklist")).withEmoji(Emoji.fromUnicode("🔨"))
+						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
 					).queue();
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
@@ -125,7 +125,7 @@ public class BanCmd extends CommandBase {
 						, false)
 					.build();
 				event.getHook().editOriginalEmbeds(embed).setActionRow(
-					Button.danger("blacklist:"+ban.getUser().getId(), lu.getText(event, "Blacklist")).withEmoji(Emoji.fromUnicode("🔨"))
+					Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
 				).queue();
 			}
 		},
@@ -193,7 +193,7 @@ public class BanCmd extends CommandBase {
 				// if permament - add button to sync ban/blacklist target
 				if (duration.isZero())
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
-						Button.danger("blacklist:"+tu.getId(), lu.getText(event, "Blacklist")).withEmoji(Emoji.fromUnicode("🔨"))
+						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
 					).queue();
 				else
 					event.getHook().editOriginalEmbeds(embed).queue();

@@ -39,7 +39,8 @@ public class GuildListener extends ListenerAdapter {
 		// Check if users is in group's blacklist
 		helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> {
 			if (helper.getDBUtil().blacklist.inGroupUser(groupId, event.getUser().getIdLong())) {
-				event.getGuild().ban(event.getUser(), 0, TimeUnit.SECONDS).reason("~ BLACKLIST! Unban is not permitted ~ groupID:"+groupId).queue(null,
+				event.getGuild().ban(event.getUser(), 0, TimeUnit.SECONDS).reason("~ BLACKLIST! Unban forbidden ~ group ID: "+groupId).queueAfter(10, TimeUnit.SECONDS,
+					null,
 					failure -> new ErrorHandler().ignore(ErrorResponse.MISSING_PERMISSIONS)
 				);
 			}

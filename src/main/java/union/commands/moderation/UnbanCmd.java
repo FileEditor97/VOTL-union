@@ -138,6 +138,9 @@ public class UnbanCmd extends CommandBase {
 
 					for (SelectOption option : selected) {
 						Integer groupId = Integer.parseInt(option.getValue());
+						// Remove from blacklist
+						bot.getDBUtil().blacklist.removeUser(groupId, tu.getIdLong());
+						// Run unban on group's servers
 						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runUnban(groupId, event.getGuild(), tu, reason));
 					}
 

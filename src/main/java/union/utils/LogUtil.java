@@ -513,7 +513,7 @@ public class LogUtil {
 
 	// Verification
 	@Nonnull
-	public MessageEmbed verifiedEmbed(DiscordLocale locale, String memberTag, String memberId, String memberIcon, String steamName, String steam64) {
+	public MessageEmbed verifiedEmbed(DiscordLocale locale, String memberTag, String memberId, String memberIcon, String steamName, Long steam64) {
 		return getEmbed(GREEN_DARK)
 			.setAuthor(localized(locale, "verify.added").replace("{user_tag}", memberTag), null, memberIcon)
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
@@ -525,7 +525,7 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed unverifiedEmbed(DiscordLocale locale, String memberTag, String memberId, String memberIcon, String steamName, String steam64, String reason) {
+	public MessageEmbed unverifiedEmbed(DiscordLocale locale, String memberTag, String memberId, String memberIcon, String steamName, Long steam64, String reason) {
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "verify.removed").replace("{user_tag}", memberTag), null, memberIcon)
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :

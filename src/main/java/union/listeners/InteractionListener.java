@@ -15,11 +15,13 @@ import java.util.stream.Collectors;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
+import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.database.managers.TicketTagManager.Tag;
 import union.utils.message.LocaleUtil;
 
@@ -117,7 +119,7 @@ public class InteractionListener extends ListenerAdapter {
 		function.run();
 	}
 
-	private final List<String> matches = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice");
+	private final List<String> matches = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice", "blacklist");
 
 	private boolean isAcceptedId(final String id) {
 		for (String match : matches) {
@@ -244,6 +246,8 @@ public class InteractionListener extends ListenerAdapter {
 				default:
 					break;
 			}
+		} else if (buttonId.startsWith("blacklist")) {
+			runButtonInteraction(event, null, () -> buttonBlacklist(event));
 		}
 	}
 
@@ -253,12 +257,12 @@ public class InteractionListener extends ListenerAdapter {
 		if (!bot.getDBUtil().verify.isCheckEnabled(guild.getId())) return true;
 
 		User user = event.getUser();
-		if (bot.getDBUtil().verifyCache.isVerified(user.getId())) return true;
+		if (bot.getDBUtil().verifyCache.isVerified(user.getIdLong())) return true;
 
 		Role role = Objects.requireNonNull(guild.getRoleById(bot.getDBUtil().verify.getVerifyRole(guild.getId())));
 		
 		// check if still has account connected
-		String steam64 = bot.getDBUtil().unionVerify.getSteam64(user.getId());
+		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(user.getId())).map(Long::valueOf).orElse(null);
 		if (steam64 == null) {
 			// remove verification role from user
 			try {
@@ -274,7 +278,7 @@ public class InteractionListener extends ListenerAdapter {
 			return false;
 		} else {
 			// add user to local database
-			bot.getDBUtil().verifyCache.addUser(user.getId(), steam64);
+			bot.getDBUtil().verifyCache.addUser(user.getIdLong(), steam64);
 			return true;
 		}
 	}
@@ -299,15 +303,30 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		String steam64 = db.unionVerify.getSteam64(member.getId());
+		// Check if user is blacklisted
+		List<Integer> groupIds = new ArrayList<Integer>();
+		groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getId()));
+		groupIds.addAll(db.group.getGuildGroups(event.getGuild().getId()));
+		for (int groupId : groupIds) {
+			if (db.blacklist.inGroupUser(groupId, member.getIdLong())) {
+				sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
+				return;
+			}
+		}
+
+		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
 		if (steam64 != null) {
+			for (int groupId : groupIds) {
+				if (db.blacklist.inGroupSteam64(groupId, steam64)) {
+					sendError(event, "bot.verification.blacklisted", "SteamID: "+bot.getSteamUtil().convertSteam64toSteamID(steam64));
+					return;
+				}
+			}
 			// Give verify role to user
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
 				success -> {
 					bot.getLogListener().verify.onVerified(member.getUser(), steam64, guild);
-					if (!bot.getDBUtil().verifyCache.isVerified(member.getId())) {
-						bot.getDBUtil().verifyCache.addUser(member.getId(), steam64);
-					}
+					bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
 				},
 				failure -> {
 					sendError(event, "bot.verification.failed_role");
@@ -522,7 +541,7 @@ public class InteractionListener extends ListenerAdapter {
 				db.access.getRoles(guildId, CmdAccessLevel.MOD).forEach(roleId -> mentions.append(" <@&"+roleId+">"));
 				channel.sendMessage(mentions.toString()).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
 				
-				String steam64 = db.verifyCache.getSteam64(event.getMember().getId());
+				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
 				String rolesString = String.join(" ", add.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), (otherRole ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other") : ""));
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(str -> str != null).distinct().collect(Collectors.joining("\n- ", "- ", ""));
 				MessageEmbed embed = new EmbedBuilder().setColor(db.guild.getColor(guildId))
@@ -995,6 +1014,83 @@ public class InteractionListener extends ListenerAdapter {
 			.setAuthor(lu.getLocalized(event.getUserLocale(), "bot.ticketing.listener.invites.title").formatted(guild.getName()), null, guild.getIconUrl());
 		invites.forEach((k, v) -> builder.appendDescription("%s\n> %s\n".formatted(k, v)));
 		event.getHook().sendMessageEmbeds(builder.build()).setEphemeral(true).queue();
+	}
+
+	// Blacklist
+	private void buttonBlacklist(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
+			sendError(event, lu.getText(event, "errors.interaction.no_access"));
+			return;
+		}
+
+		String userId = event.getComponentId().split(":")[1];
+		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
+		if (caseData == null || !caseData.getDuration().isZero()) {
+			sendError(event, lu.getText(event, "bot.moderation.blacklist.expired"));
+			return;
+		}
+
+		String guildId = event.getGuild().getId();
+		List<Integer> groupIds = new ArrayList<Integer>();
+		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
+		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
+		if (groupIds.isEmpty()) {
+			sendError(event, lu.getText(event, "bot.moderation.blacklist.no_groups"));
+			return;
+		}
+
+		if (bot.getHelper() == null) {
+			sendError(event, lu.getText(event, "errors.no_helper"));
+			return;
+		}
+
+		MessageEmbed embed = bot.getEmbedUtil().getEmbed()
+			.setColor(Constants.COLOR_WARNING)
+			.setDescription(lu.getText(event, "bot.moderation.blacklist.title"))
+			.build();
+		StringSelectMenu menu = StringSelectMenu.create("groupId")
+			.setPlaceholder(lu.getText(event, "bot.moderation.blacklist.value"))
+			.addOptions(groupIds.stream().map(groupId ->
+				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
+			).collect(Collectors.toList()))
+			.setMaxValues(5)
+			.build();
+
+		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
+			waiter.waitForEvent(
+				StringSelectInteractionEvent.class,
+				e -> e.getMessageId().equals(msg.getId()),
+				selectEvent -> {
+					selectEvent.deferEdit().queue();
+					List<String> selected = selectEvent.getValues();
+
+					event.getJDA().retrieveUserById(userId).queue(user -> {
+						Long steam64 = db.verifyCache.getSteam64(user.getIdLong());
+						selected.forEach(id -> {
+							Integer groupId = Integer.parseInt(id);
+							if (!db.blacklist.inGroupUser(groupId, caseData.getTargetId()))
+								db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, caseData.getReason(), selectEvent.getUser().getIdLong());
+	
+							bot.getHelper().runBan(groupId, event.getGuild(), user, caseData.getReason());
+						});
+
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.blacklist.done"))
+							.build())
+						.setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.blacklist.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
+				},
+				20,
+				TimeUnit.SECONDS,
+				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
+			);
+		});
 	}
 
 	@Override

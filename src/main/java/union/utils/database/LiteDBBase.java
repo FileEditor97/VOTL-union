@@ -132,7 +132,7 @@ public class LiteDBBase {
 	}
 
 	protected Integer getIncrement(final String table) {
-		Integer data = selectOne("SELECT seq FROM sqlite_sequence WHERE (name=%s)".formatted(table), "seq", Integer.class);
+		Integer data = selectOne("SELECT seq FROM sqlite_sequence WHERE (name=%s)".formatted(quote(table)), "seq", Integer.class);
 		if (data == null) return 0;
 		return data;
 	}

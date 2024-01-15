@@ -27,8 +27,8 @@ public class AccountContext extends UserContextMenu {
 		event.deferReply(true).queue();
 		User user = event.getTarget();
 
-		String userId = user.getId();
-		String steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
+		long userId = user.getIdLong();
+		Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
 		if (steam64 == null) {
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.verification.account.not_found_steam", "Received: "+userId)).queue();
 			return;
@@ -37,10 +37,10 @@ public class AccountContext extends UserContextMenu {
 		String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64) + "_full.jpg";
+		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64.toString()) + "_full.jpg";
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
-			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64), profileUrl)
+			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)

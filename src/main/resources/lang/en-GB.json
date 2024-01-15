@@ -40,7 +40,8 @@
 			"no_values": "None of the values has been selected.",
 			"no_access": "You cannot perform this action because you do not have the required access level."
 		},
-		"timed_out": "Timed out"
+		"timed_out": "Timed out",
+		"no_helper": "Helper bot is disabled. Unable to perform this action"
 	},
 	"misc": {
 		"and": "and",
@@ -830,12 +831,7 @@
 				"already_temp": "Mentioned user is already temporary banned on this server.\n** See `/case {id}`**\n\n*You can change that ban duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"ban_abort": "Could not ban mentioned member.",
-				"ban_success": "**{user_tag} was banned {duration}.** | {reason}",
-				"sync": {
-					"title": "**Sync this ban?**\nSelect groups bellow.",
-					"value": "Select group/-s",
-					"done": "Ban sync in progress! Result will be posted in log channel."
-				}
+				"ban_success": "**{user_tag} was banned {duration}.** | {reason}"
 			},
 			"unban": {
 				"help": "Unban banned user on this server",
@@ -1270,6 +1266,54 @@
 				"bans": "Bans",
 				"strikes": "Strikes",
 				"total": "Total"
+			},
+			"blacklist": {
+				"help": "Manage group's blacklist",
+				"usage": "blacklist",
+				"view": {
+					"help": "View group's blacklist",
+					"usage": "view <Group> [page]",
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"page": {
+						"name": "page",
+						"help": "Page number to view"
+					},
+					"cant_view": "Can't view selected group. (Not group's owner or manager)",
+					"empty": "No blacklist entries\nPage: `%d`",
+					"title": "Group's `%d` blacklist (Page %d of %d)",
+					"value": "SteamID: %s\nGuild: `%s`\nModerator: %s\nReason: %s"
+				},
+				"remove": {
+					"help": "Remove user from blacklist",
+					"usage": "remove <Group> <User/SteamID>",
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user or enter ID"
+					},
+					"steamid": {
+						"name": "steamid",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"cant_view": "Can't view selected group. (Not group's owner or manager)",
+					"no_options": "No options provided, see `/help`",
+					"no_user": "Provided user is not blacklisted.",
+					"done_user": "Blacklist removed from user %s (%s) in group `%s`.",
+					"no_steam": "Entry not found with provided Steam ID.",
+					"done_steam": "Blacklist removed from Steam ID `%s` in group `%s`."
+				},
+				"expired": "This user is not banned permamently or the ban has already expired.\nTry banning this user `/ban`",
+				"no_groups": "This server can't manage any group.",
+				"title": "**Blacklist this user in group?**\n{EMOTE_WARNING} *If the user is unbanned manually or through other bot, user will be banned again until blacklist is removed.*",
+				"value": "Select group/-s",
+				"no_user": "Unknown user.",
+				"done": "User blacklisted and banned in group's servers. Results will be posted in logs channel."
 			}
 		},
 		"other": {
@@ -1385,6 +1429,7 @@
 			"you_verified": "You are already verified (has role)",
 			"user_verified": "User is already verified (has role)",
 			"user_not_verified": "User is not verified",
+			"blacklisted": "You are blacklisted from completing verification.",
 			"role_removed": "You are unverified in __{server}__ server, as you don't have linked Steam account.\nComplete verification by following instructions in verification channel.",
 			"embed": {
 				"title": "Link your account to complete verification",

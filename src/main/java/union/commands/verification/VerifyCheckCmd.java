@@ -85,7 +85,7 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			List<String> list = bot.getDBUtil().verifyCache.getForcedUsers();
+			List<Long> list = bot.getDBUtil().verifyCache.getForcedUsers();
 			if (list.isEmpty()) {
 				createReply(event, lu.getText(event, path+".empty"));
 				return;

@@ -79,7 +79,7 @@ public class CheckRankCmd extends CommandBase {
 
 			List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
-				String steam64 = bot.getDBUtil().verifyCache.getSteam64(member.getId());
+				Long steam64 = bot.getDBUtil().verifyCache.getSteam64(member.getIdLong());
 				if (steam64 == null) {
 					completableFutures.add(guild.removeRoleFromMember(member, role).reason("Not verified").submit().exceptionally(ex -> null));
 					continue;

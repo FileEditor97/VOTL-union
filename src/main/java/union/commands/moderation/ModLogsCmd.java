@@ -54,10 +54,10 @@ public class ModLogsCmd extends CommandBase {
 		Integer page = event.optInteger("page", 1);
 		List<CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, event.optInteger("page", 1));
 		if (cases.isEmpty()) {
-			editError(event, path+".empty");
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty")).build());
 			return;
 		}
-		int pages = (int) Math.ceil(bot.getDBUtil().cases.countPages(guildId, userId)/10.0);
+		int pages = (int) Math.ceil(bot.getDBUtil().cases.countCases(guildId, userId)/10.0);
 
 		DiscordLocale locale = event.getUserLocale();
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)

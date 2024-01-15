@@ -25,15 +25,15 @@ public class MessageListener extends ListenerAdapter {
 		final Guild guild = event.getGuild();
 		if (!bot.getDBUtil().verify.isCheckEnabled(guild.getId())) return;
 
-		final String userId = event.getAuthor().getId();
+		final long userId = event.getAuthor().getIdLong();
 		if (bot.getDBUtil().verifyCache.isVerified(userId)) return;
 
 		final Role role = guild.getRoleById(bot.getDBUtil().verify.getVerifyRole(guild.getId()));
 		if (!event.getMember().getRoles().contains(role)) return;
 		
 		// check if still has account connected
-		final String steam64 = bot.getDBUtil().unionVerify.getSteam64(userId);
-		if (steam64 == null) {
+		final String steam64Str = bot.getDBUtil().unionVerify.getSteam64(String.valueOf(userId));
+		if (steam64Str == null) {
 			// remove verification role from user
 			try {
 				final User user = event.getAuthor();
@@ -49,7 +49,7 @@ public class MessageListener extends ListenerAdapter {
 			} catch (Exception ex) {}
 		} else {
 			// add user to local database
-			bot.getDBUtil().verifyCache.addUser(userId, steam64);
+			bot.getDBUtil().verifyCache.addUser(userId, Long.valueOf(steam64Str));
 		}
 	}
 	

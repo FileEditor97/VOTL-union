@@ -1,7 +1,5 @@
 package union.listeners;
 
-import java.util.Objects;
-
 import jakarta.annotation.Nonnull;
 
 import union.App;
@@ -128,15 +126,16 @@ public class GuildListener extends ListenerAdapter {
 	public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
 		// Checks cache on local DB, if user is verified, gives out the role
 		Guild guild = event.getGuild();
-		String discordId = event.getUser().getId();
+		long userId = event.getUser().getIdLong();
 		
-		if (db.verifyCache.isVerified(discordId)) {
-			String cachedSteam64 = db.verifyCache.getSteam64(event.getUser().getId());
+		if (db.verifyCache.isVerified(userId)) {
 			String roleId = db.verify.getVerifyRole(guild.getId());
-			if (Objects.isNull(roleId)) return;
+			if (roleId == null) return;
 			Role role = guild.getRoleById(roleId);
-			if (Objects.isNull(role)) return;
-			guild.addRoleToMember(event.getUser(), role).reason((Objects.isNull(cachedSteam64) ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64)).queue(success -> {
+			if (role == null) return;
+
+			Long cachedSteam64 = db.verifyCache.getSteam64(userId);
+			guild.addRoleToMember(event.getUser(), role).reason(cachedSteam64 == null ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64).queue(success -> {
 				bot.getLogListener().verify.onVerified(event.getUser(), cachedSteam64, guild);
 			});
 		}

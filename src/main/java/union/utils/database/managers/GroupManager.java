@@ -47,6 +47,10 @@ public class GroupManager extends LiteDBBase {
 		return selectOne("SELECT name FROM %s WHERE (groupId=%d)".formatted(table_masters, groupId), "name", String.class);
 	}
 
+	public boolean isMaster(int groupId, String guildId) {
+		return selectOne("SELECT masterId FROM %s WHERE (groupId=%d AND masterId=%s)", "masterId", String.class) != null;
+	}
+
 	// groupMembers table
 	public void add(Integer groupId, String guildId, Boolean canManage) {
 		execute("INSERT INTO %s(groupId, guildId, canManage) VALUES (%d, %s, %d)".formatted(table_members, groupId, guildId, canManage ? 1 : 0));
@@ -89,7 +93,7 @@ public class GroupManager extends LiteDBBase {
 		return select("SELECT guildId FROM %s WHERE (groupId=%d AND canManage=1)".formatted(table_members, groupId), "guildId", String.class);
 	} 
 
-	public Boolean canManage(Integer groupId, String guildId) {
+	public boolean canManage(Integer groupId, String guildId) {
 		Integer data = selectOne("SELECT canManage FROM %s WHERE (groupId=%d AND guildId=%s)".formatted(table_members, groupId, guildId), "canManage", Integer.class);
 		return data==null ? false : data==1;
 	}

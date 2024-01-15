@@ -1,11 +1,16 @@
 package union.helper;
 
+import java.util.concurrent.TimeUnit;
+
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.events.guild.GuildAuditLogEntryCreateEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
+import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
 import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class GuildListener extends ListenerAdapter {
 
@@ -27,6 +32,18 @@ public class GuildListener extends ListenerAdapter {
 				helper.getLogListener().group.helperInformAction(groupId, event.getGuild(), event.getEntry())
 			);
 		}
+	}
+
+	@Override
+	public void onGuildUnban(GuildUnbanEvent event) {
+		// Check if users is in group's blacklist
+		helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> {
+			if (helper.getDBUtil().blacklist.inGroupUser(groupId, event.getUser().getIdLong())) {
+				event.getGuild().ban(event.getUser(), 0, TimeUnit.SECONDS).reason("~ BLACKLIST! Unban is not permitted ~ groupID:"+groupId).queue(null,
+					failure -> new ErrorHandler().ignore(ErrorResponse.MISSING_PERMISSIONS)
+				);
+			}
+		});
 	}
 
 	@Override

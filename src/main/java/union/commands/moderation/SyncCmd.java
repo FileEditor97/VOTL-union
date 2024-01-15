@@ -14,7 +14,6 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
-import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -35,7 +34,7 @@ public class SyncCmd extends CommandBase {
 		super(bot);
 		this.name = "sync";
 		this.path = "bot.moderation.sync";
-		this.children = new SlashCommand[]{new Ban(bot), new Unban(bot), new Kick(bot)};
+		this.children = new SlashCommand[]{new Unban(bot), new Kick(bot)};
 		this.botPermissions = new Permission[]{Permission.KICK_MEMBERS, Permission.BAN_MEMBERS};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
@@ -46,7 +45,7 @@ public class SyncCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {}
 
-	private class Ban extends SlashCommand {
+	/* private class Ban extends SlashCommand {
 
 		public Ban(App bot) {
 			this.bot = bot;
@@ -119,7 +118,7 @@ public class SyncCmd extends CommandBase {
 			});
 		}
 
-	}
+	} */
 
 	private class Unban extends SlashCommand {
 
@@ -151,8 +150,8 @@ public class SyncCmd extends CommandBase {
 			}
 
 			Integer groupId = event.optInteger("group");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null || !masterId.equals(event.getGuild().getId())) {
+			String guildId = event.getGuild().getId();
+			if ( !(bot.getDBUtil().group.isMaster(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
 				editError(event, path+".no_group", "Group ID: `"+groupId.toString()+"`");
 				return;
 			}
@@ -224,8 +223,8 @@ public class SyncCmd extends CommandBase {
 			}
 
 			Integer groupId = event.optInteger("group");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null || !masterId.equals(event.getGuild().getId())) {
+			String guildId = event.getGuild().getId();
+			if ( !(bot.getDBUtil().group.isMaster(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
 				editError(event, path+".no_group", "Group ID: `"+groupId.toString()+"`");
 				return;
 			}

@@ -2,17 +2,14 @@ package union.commands.moderation;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
-import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
@@ -25,24 +22,20 @@ import union.utils.exception.FormatterException;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class BanCmd extends CommandBase {
-
-	private EventWaiter waiter;
 	
-	public BanCmd(App bot, EventWaiter waiter) {
+	public BanCmd(App bot) {
 		super(bot);
 		this.name = "ban";
 		this.path = "bot.moderation.ban";
@@ -59,7 +52,6 @@ public class BanCmd extends CommandBase {
 		this.accessLevel = CmdAccessLevel.MOD;
 		this.cooldown = 5;
 		this.cooldownScope = CooldownScope.GUILD;
-		this.waiter = waiter;
 	}
 
 	@Override
@@ -110,9 +102,9 @@ public class BanCmd extends CommandBase {
 					bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 
 					// ask for ban sync
-					event.getHook().editOriginalEmbeds(embed).queue(msg -> {
-						buttonSync(event, msg, tu, reason);
-					});
+					event.getHook().editOriginalEmbeds(embed).setActionRow(
+						Button.danger("blacklist:"+ban.getUser().getId(), lu.getText(event, "Blacklist")).withEmoji(Emoji.fromUnicode("🔨"))
+					).queue();
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
@@ -121,22 +113,21 @@ public class BanCmd extends CommandBase {
 						.build();
 					event.getHook().editOriginalEmbeds(embed).queue();
 				}
-				return;
+			} else {
+				// user has permament ban
+				String br = ban.getReason();
+				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
+					.setColor(Constants.COLOR_WARNING)
+					.setDescription(lu.getText(event, path+".already_banned"))
+					.addField(lu.getText(event, "logger.ban.short_title"), lu.getText(event, "logger.ban.short_info")
+						.replace("{username}", ban.getUser().getEffectiveName())
+						.replace("{reason}", Optional.ofNullable(br).orElse("*none*"))
+						, false)
+					.build();
+				event.getHook().editOriginalEmbeds(embed).setActionRow(
+					Button.danger("blacklist:"+ban.getUser().getId(), lu.getText(event, "Blacklist")).withEmoji(Emoji.fromUnicode("🔨"))
+				).queue();
 			}
-
-			// user has permament ban
-			String br = ban.getReason();
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_WARNING)
-				.setDescription(lu.getText(event, path+".already_banned"))
-				.addField(lu.getText(event, "logger.ban.short_title"), lu.getText(event, "logger.ban.short_info")
-					.replace("{username}", ban.getUser().getEffectiveName())
-					.replace("{reason}", Optional.ofNullable(br).orElse("*none*"))
-					, false)
-				.build();
-			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
-				buttonSync(event, msg, ban.getUser(), ban.getReason());
-			});
 		},
 		failure -> {
 			// checks if thrown something except from "ban not found"
@@ -199,55 +190,17 @@ public class BanCmd extends CommandBase {
 				// log ban
 				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 
-				// ask for ban sync
-				event.getHook().editOriginalEmbeds(embed).queue(msg -> {
-					if (duration.isZero()) buttonSync(event, msg, tu, reason);
-				});
+				// if permament - add button to sync ban/blacklist target
+				if (duration.isZero())
+					event.getHook().editOriginalEmbeds(embed).setActionRow(
+						Button.danger("blacklist:"+tu.getId(), lu.getText(event, "Blacklist")).withEmoji(Emoji.fromUnicode("🔨"))
+					).queue();
+				else
+					event.getHook().editOriginalEmbeds(embed).queue();
 			},
 			failed -> {
 				editError(event, "errors.unknown", failed.getMessage());
 			});
-		});
-	}
-
-	private void buttonSync(SlashCommandEvent event, final Message message, User tu, String reason) {
-		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) return;
-		String guildId = event.getGuild().getId();
-
-		List<Integer> groupIds = new ArrayList<Integer>();
-		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
-		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
-		if (groupIds.isEmpty()) return;
-
-		EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
-			.setDescription(lu.getText(event, path+".sync.title"));
-		StringSelectMenu menu = StringSelectMenu.create("groupId")
-			.setPlaceholder(lu.getText(event, path+".sync.value"))
-			.addOptions(groupIds.stream().map(groupId ->
-				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
-			).collect(Collectors.toList()))
-			.setMaxValues(5)
-			.build();
-
-		message.replyEmbeds(builder.build()).setActionRow(menu).queue(msg -> {
-			waiter.waitForEvent(
-				StringSelectInteractionEvent.class,
-				e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
-				selectEvent -> {
-					List<SelectOption> selected = selectEvent.getSelectedOptions();
-					
-					for (SelectOption option : selected) {
-						Integer groupId = Integer.parseInt(option.getValue());
-						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runBan(groupId, event.getGuild(), tu, reason));
-					}
-
-					selectEvent.editMessageEmbeds(builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".sync.done")).build())
-						.setComponents().queue();
-				},
-				15,
-				TimeUnit.SECONDS,
-				() -> msg.delete().queue()
-			);
 		});
 	}
 	

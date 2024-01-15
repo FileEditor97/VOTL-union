@@ -163,7 +163,7 @@ public class App {
 				// webhook
 				new WebhookCmd(this),
 				// moderation
-				new BanCmd(this, WAITER),
+				new BanCmd(this),
 				new UnbanCmd(this, WAITER),
 				new KickCmd(this, WAITER),
 				new SyncCmd(this, WAITER),

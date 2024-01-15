@@ -30,6 +30,7 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
@@ -75,11 +76,12 @@ public class StrikeCmd extends CommandBase {
 		CaseType type = CaseType.byType(20 + strikeAmount);
 
 		tm.getUser().openPrivateChannel().queue(pm -> {
+			Button button = Button.secondary("strikes:"+guild.getId(), lu.getLocalized(guild.getLocale(), "logger.pm.button_strikes"));
 			MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 				.setDescription(lu.getLocalized(guild.getLocale(), "logger.pm.strike")
 					.formatted(lu.getLocalized(guild.getLocale(), "logger.pm.strike"+strikeAmount), guild.getName(), reason))
 				.build();
-			pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			pm.sendMessageEmbeds(embed).addActionRow(button).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 		});
 
 		Member mod = event.getMember();

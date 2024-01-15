@@ -26,7 +26,7 @@ public class CaseManager extends LiteDBBase {
 	public void add(CaseType type, long userId, String userName, long modId, String modName, long guildId, String reason, Instant timeStart, Duration duration) {
 		execute("INSERT INTO %s(type, targetId, targetTag, modId, modTag, guildId, reason, timeStart, duration, active) VALUES (%d, %d, %s, %d, %s, %d, %s, %d, %d, %d)"
 			.formatted(table, type.getType(), userId, quote(userName), modId, quote(modName), guildId, quote(reason),
-			timeStart.getEpochSecond(), duration == null ? null : duration.getSeconds() , type.isActiveInt()));
+			timeStart.getEpochSecond(), duration == null ? -1 : duration.getSeconds(), type.isActiveInt()));
 	}
 
 	// get last case's ID
@@ -159,12 +159,12 @@ public class CaseManager extends LiteDBBase {
 			this.type = CaseType.byType((Integer) map.get("type"));
 			this.targetId = (Long) map.get("targetId");
 			this.targetTag = (String) map.get("targetTag");
-			this.modId = Optional.ofNullable(map.get("modId")).map(v -> (Long) v).orElse(0L);
+			this.modId = Optional.ofNullable(map.get("modId")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L);
 			this.modTag = (String) map.get("modTag");
 			this.guildId = (Long) map.get("guildId");
 			this.reason = (String) map.get("reason");
-			this.timeStart = Instant.ofEpochSecond(Optional.ofNullable(map.get("timeStart")).map(v -> (Long) v).orElse(0L));
-			this.duration = Duration.ofSeconds(Optional.ofNullable(map.get("duration")).map(v -> (Long) v).orElse(0L));
+			this.timeStart = Instant.ofEpochSecond(Optional.ofNullable(map.get("timeStart")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));
+			this.duration = Duration.ofSeconds(Optional.ofNullable(map.get("duration")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));
 			this.active = ((Integer) map.get("active")) == 1;
 		}
 

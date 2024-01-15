@@ -200,6 +200,7 @@
 			"strike1": "one warning",
 			"strike2": "two warnings",
 			"strike3": "three warnings",
+			"button_strikes": "View active strikes",
 			"appeal": "\nAppeal this action by following this link:\n> %s"
 		},
 		"guild": {
@@ -801,6 +802,8 @@
 			}
 		},
 		"moderation": {
+			"no_strikes": "You have no active strikes on server `%s`.",
+			"strikes_embed": "### Active strikes: %d\nNext strike removed in %s",
 			"ban": {
 				"help": "Ban member of this server",
 				"usage": "ban <@User | Tag | ID> [duration] [reason] [purge messages?] [dm user?]",

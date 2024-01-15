@@ -62,8 +62,10 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -119,7 +121,7 @@ public class InteractionListener extends ListenerAdapter {
 		function.run();
 	}
 
-	private final List<String> matches = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice", "blacklist");
+	private final List<String> matches = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice", "blacklist", "strikes");
 
 	private boolean isAcceptedId(final String id) {
 		for (String match : matches) {
@@ -248,6 +250,8 @@ public class InteractionListener extends ListenerAdapter {
 			}
 		} else if (buttonId.startsWith("blacklist")) {
 			runButtonInteraction(event, null, () -> buttonBlacklist(event));
+		} else if (buttonId.startsWith("strikes")) {
+			runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
 		}
 	}
 
@@ -1093,6 +1097,22 @@ public class InteractionListener extends ListenerAdapter {
 		});
 	}
 
+	// Strikes
+	private void buttonShowStrikes(ButtonInteractionEvent event) {
+		Long guildId = Long.valueOf(event.getComponentId().split(":")[1]);
+		Pair<Integer, Integer> strikeData = bot.getDBUtil().strike.getDataCountAndDate(guildId, event.getUser().getIdLong());
+		if (strikeData == null) {
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.no_strikes")).build()).queue();
+			return;
+		}
+		
+		Instant time = Instant.ofEpochSecond(strikeData.getRight());
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
+			.setDescription(lu.getText(event, "bot.moderation.strikes_embed").formatted(strikeData.getLeft(), TimeFormat.RELATIVE.atInstant(time)))
+			.build()
+		).queue();
+	}
+
 	@Override
 	public void onModalInteraction(@Nonnull ModalInteractionEvent event) {
 		event.deferReply(true).queue();
@@ -1304,7 +1324,8 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_TICKET_UNCLAIM(20, CooldownScope.USER_CHANNEL),
 		BUTTON_TICKET_CREATE(15, CooldownScope.USER),
 		BUTTON_INVITES(10, CooldownScope.USER),
-		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD);
+		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD),
+		BUTTON_SHOW_STRIKES(30, CooldownScope.USER);
 
 		private final int time;
 		private final CooldownScope scope;

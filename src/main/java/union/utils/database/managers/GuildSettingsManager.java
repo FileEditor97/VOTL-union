@@ -53,7 +53,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		if (data==null || data.values().stream().allMatch(Objects::isNull)) return null;
 		Map<LogChannels, String> result = new HashMap<>(data.size());
 		data.forEach((log, id) -> result.put(LogChannels.of(log), (String) id));
-		return data.entrySet().stream().collect(Collectors.toMap(e -> LogChannels.of(e.getKey()), e -> (String) e.getValue()));
+		return result;
 	}
 
 	public void setLastWebhookId(String guildId, String webhookId) {

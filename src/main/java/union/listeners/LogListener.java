@@ -400,18 +400,18 @@ public class LogListener {
 
 	// Verification actions
 	public class Verification {
-		public void onVerified(User user, String steam64, Guild guild) {
+		public void onVerified(User user, Long steam64, Guild guild) {
 			TextChannel channel = getLogChannel(LogChannels.VERIFICATION, guild);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64));
+			sendLog(channel, logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64));
 		}
 
-		public void onUnverified(User user, String steam64, Guild guild, String reason) {
+		public void onUnverified(User user, Long steam64, Guild guild, String reason) {
 			TextChannel channel = getLogChannel(LogChannels.VERIFICATION, guild);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64, reason));
+			sendLog(channel, logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64, reason));
 		}
 	}
 

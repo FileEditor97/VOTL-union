@@ -253,12 +253,12 @@ public class InteractionListener extends ListenerAdapter {
 		if (!bot.getDBUtil().verify.isCheckEnabled(guild.getId())) return true;
 
 		User user = event.getUser();
-		if (bot.getDBUtil().verifyCache.isVerified(user.getId())) return true;
+		if (bot.getDBUtil().verifyCache.isVerified(user.getIdLong())) return true;
 
 		Role role = Objects.requireNonNull(guild.getRoleById(bot.getDBUtil().verify.getVerifyRole(guild.getId())));
 		
 		// check if still has account connected
-		String steam64 = bot.getDBUtil().unionVerify.getSteam64(user.getId());
+		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(user.getId())).map(Long::valueOf).orElse(null);
 		if (steam64 == null) {
 			// remove verification role from user
 			try {
@@ -274,7 +274,7 @@ public class InteractionListener extends ListenerAdapter {
 			return false;
 		} else {
 			// add user to local database
-			bot.getDBUtil().verifyCache.addUser(user.getId(), steam64);
+			bot.getDBUtil().verifyCache.addUser(user.getIdLong(), steam64);
 			return true;
 		}
 	}
@@ -299,14 +299,14 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		String steam64 = db.unionVerify.getSteam64(member.getId());
+		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
 		if (steam64 != null) {
 			// Give verify role to user
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
 				success -> {
 					bot.getLogListener().verify.onVerified(member.getUser(), steam64, guild);
-					if (!bot.getDBUtil().verifyCache.isVerified(member.getId())) {
-						bot.getDBUtil().verifyCache.addUser(member.getId(), steam64);
+					if (!bot.getDBUtil().verifyCache.isVerified(member.getIdLong())) {
+						bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
 					}
 				},
 				failure -> {
@@ -522,7 +522,7 @@ public class InteractionListener extends ListenerAdapter {
 				db.access.getRoles(guildId, CmdAccessLevel.MOD).forEach(roleId -> mentions.append(" <@&"+roleId+">"));
 				channel.sendMessage(mentions.toString()).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
 				
-				String steam64 = db.verifyCache.getSteam64(event.getMember().getId());
+				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
 				String rolesString = String.join(" ", add.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), (otherRole ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other") : ""));
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(str -> str != null).distinct().collect(Collectors.joining("\n- ", "- ", ""));
 				MessageEmbed embed = new EmbedBuilder().setColor(db.guild.getColor(guildId))

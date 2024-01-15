@@ -6,7 +6,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import union.App;
@@ -30,6 +29,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.api.utils.TimeUtil;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 
 public class ScheduledCheck {
@@ -206,15 +206,16 @@ public class ScheduledCheck {
 			List<Map<String, String>> data = db.unionVerify.updatedAccounts();
 			if (data.isEmpty()) return;
 
-			List<Map<String, String>> removeRoles = new ArrayList<Map<String, String>>();
+			List<Pair<Long, Long>> removeRoles = new ArrayList<Pair<Long, Long>>(); // DiscordId, Steam64
 			for (Map<String, String> account : data) {
-				String steam64 = account.get("steam_id");
-				db.unionVerify.clearUpdated(steam64);
+				String steam64Str = account.get("steam_id");
+				db.unionVerify.clearUpdated(steam64Str);
 				
-				String cacheDiscordId = db.verifyCache.getDiscordId(steam64);
+				Long steam64 = Long.valueOf(steam64Str);
+				Long cacheDiscordId = db.verifyCache.getDiscordId(steam64);
 				
-				
-				if (Objects.isNull(account.get("discord_id"))) {
+				String discordIdStr = account.get("discord_id");
+				if (discordIdStr == null) {
 					// if not cached - cant track
 					if (cacheDiscordId == null) return;
 					// if forced - skip
@@ -224,20 +225,16 @@ public class ScheduledCheck {
 					};
 
 					db.verifyCache.removeByDiscord(cacheDiscordId);
-					removeRoles.add(Map.of("discord_id", cacheDiscordId, "steam_id", steam64));
+					removeRoles.add(Pair.of(cacheDiscordId, steam64));
 				} else {
-					String discordId = account.get("discord_id");
+					Long discordId = Long.valueOf(discordIdStr);
 					// if exists in cache
 					if (cacheDiscordId != null) {
 						// if same - skip
 						if (cacheDiscordId.equals(discordId)) return;
 						// duplicate, remove roles from previous discord account
-						removeRoles.add(account);
+						removeRoles.add(Pair.of(cacheDiscordId, steam64));
 						db.verifyCache.removeByDiscord(cacheDiscordId);
-					} else if (db.verifyCache.isVerified(discordId)) {
-						// exist discordId, but no steam64 (probably forced user)
-						db.verifyCache.setSteam64(discordId, steam64);
-						return;
 					}
 
 					// Add user to cache
@@ -253,12 +250,10 @@ public class ScheduledCheck {
 				if (role == null) return;
 
 				removeRoles.forEach(account -> {
-					String steam64 = account.get("steam_id");
-					String userId = account.get("discord_id");
-					guild.retrieveMemberById(userId).queue(member -> {
+					guild.retrieveMemberById(account.getLeft()).queue(member -> {
 						if (!member.getRoles().contains(role)) return;
 						guild.removeRoleFromMember(member, role).reason("Autocheck: Account unlinked").queue(success -> {
-							bot.getLogListener().verify.onUnverified(member.getUser(), steam64, guild, "Autocheck: Account unlinked");
+							bot.getLogListener().verify.onUnverified(member.getUser(), account.getRight(), guild, "Autocheck: Account unlinked");
 						});
 					}, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
 				});

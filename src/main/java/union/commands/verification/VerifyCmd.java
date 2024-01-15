@@ -54,13 +54,13 @@ public class VerifyCmd extends CommandBase {
 		}
 
 		if (member.getRoles().contains(role)) {
-			bot.getDBUtil().verifyCache.addForcedUser(member.getId());
+			bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
 			editError(event, "bot.verification.user_verified");
 		} else {
 			guild.addRoleToMember(member, role).reason(String.format("Manual verification by %s", event.getUser().getName())).queue(
 				success -> {
 					bot.getLogListener().verify.onVerified(member.getUser(), null, guild);
-					bot.getDBUtil().verifyCache.addForcedUser(member.getId());
+					bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
 
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".done")).build());
 				},

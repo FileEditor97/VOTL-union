@@ -72,7 +72,7 @@ public enum PunishActions {
 
 	public String getMatchedValue(String data) {
 		Matcher matcher = getPattern().matcher(data);
-		if (!matcher.matches()) return null;
+		if (!matcher.find()) return null;
 		return matcher.group(1);
 	}
 

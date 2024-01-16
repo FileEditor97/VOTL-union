@@ -69,7 +69,7 @@ public class AccessManager extends LiteDBBase {
 
 	public boolean isOperator(String guildId, String userId) {
 		return selectOne("SELECT userId FROM %s WHERE (guildId=%s AND userId=%s AND level=%d)"
-			.formatted(table_role, guildId, userId, CmdAccessLevel.OPERATOR), "userId", String.class) != null;
+			.formatted(table_role, guildId, userId, CmdAccessLevel.OPERATOR.getLevel()), "userId", String.class) != null;
 	}
 
 }

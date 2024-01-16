@@ -114,7 +114,7 @@ public class BanCmd extends CommandBase {
 					event.getHook().editOriginalEmbeds(embed).queue();
 				}
 			} else {
-				// user has permament ban
+				// user has permanent ban
 				String br = ban.getReason();
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_WARNING)
@@ -190,7 +190,7 @@ public class BanCmd extends CommandBase {
 				// log ban
 				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 
-				// if permament - add button to sync ban/blacklist target
+				// if permanent - add button to sync ban/blacklist target
 				if (duration.isZero())
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
 						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))

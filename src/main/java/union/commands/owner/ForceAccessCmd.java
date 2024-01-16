@@ -9,7 +9,6 @@ import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -23,7 +22,10 @@ public class ForceAccessCmd extends CommandBase {
 		this.ownerCommand = true;
 		this.options = List.of(
 			new OptionData(OptionType.STRING, "server", lu.getText(path+".server.help"), true),
-			new OptionData(OptionType.MENTIONABLE, "target", lu.getText(path+".target.help"), true),
+			new OptionData(OptionType.INTEGER, "type", lu.getText(path+".type.help"), true)
+				.addChoice("Role", 1)
+				.addChoice("user", 2),
+			new OptionData(OptionType.STRING, "target", lu.getText(path+".target.help"), true).setMaxLength(30),
 			new OptionData(OptionType.INTEGER, "access_level", lu.getText(path+".access_level.help"), true)
 				.addChoice("- Remove -", CmdAccessLevel.ALL.getLevel())
 				.addChoice("Helper", CmdAccessLevel.HELPER.getLevel())
@@ -41,9 +43,8 @@ public class ForceAccessCmd extends CommandBase {
 		}
 
 		CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
-		String targetId = event.optMentionable("target").getId();
-		Role role = guild.getRoleById(targetId);
-		if (role != null) {
+		String targetId = event.optString("target");
+		if (event.optInteger("type") == 1) {
 			// Target is role
 			if (level.equals(CmdAccessLevel.ALL)) {
 				bot.getDBUtil().access.removeRole(targetId);

@@ -258,6 +258,10 @@
 					"name": "server",
 					"help": "Enter server's ID"
 				},
+				"type": {
+					"name": "type",
+					"help": "Is target role or user?"
+				},
 				"target": {
 					"name": "target",
 					"help": "Enter target's ID"

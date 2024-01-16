@@ -69,7 +69,7 @@ public class ModLogsCmd extends CommandBase {
 				.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()));
 			if (!c.getDuration().isNegative())
 				buffer.append(lu.getLocalized(locale, path+".duration").formatted(c.getDuration().isZero() ?
-					lu.getLocalized(locale, path+".permament") :
+					lu.getLocalized(locale, path+".permanent") :
 					bot.getTimeUtil().durationToLocalizedString(locale, c.getDuration())
 				));
 			buffer.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));

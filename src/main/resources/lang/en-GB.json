@@ -193,7 +193,7 @@
 		},
 		"pm": {
 			"banned_temp": "You were banned from %s server for %s. | %s",
-			"banned": "You were permamently banned from %s server. | %s",
+			"banned": "You were permanently banned from %s server. | %s",
 			"kicked": "You were kicked from %s server. | %s",
 			"muted": "You were timed out in %s server. | %s",
 			"strike": "You received %s in %s server. | %s",
@@ -532,7 +532,7 @@
 					},
 					"ban": {
 						"name": "ban",
-						"help": "Enter ban duration (0 - permament)"
+						"help": "Enter ban duration (0 - permanent)"
 					},
 					"remove-role": {
 						"name": "remove-role",
@@ -993,7 +993,7 @@
 			"sync": {
 				"help": "Sync moderation action with Group servers",
 				"ban": {
-					"help": "Sync permament ban with Group servers",
+					"help": "Sync permanent ban with Group servers",
 					"usage": "ban <case ID> <Group>",
 					"id": {
 						"name": "id",
@@ -1004,7 +1004,7 @@
 						"help": "Select Group"
 					},
 					"not_found": "Could not find case(ban) by specified ID.",
-					"expirable_ban": "Specified ban is not permament or has expired.",
+					"expirable_ban": "Specified ban is not permanent or has expired.",
 					"no_group": "Couldn't find group by entered ID.",
 					"embed_title": "Are you sure you want to ban this user from all Group servers?",
 					"button_confirm": "YES",
@@ -1252,7 +1252,7 @@
 				"mod": "**Moderator:** %s\n",
 				"duration": "**Duration:** %s\n",
 				"reason": "**Reason:** %s\n",
-				"permament": "permament"
+				"permanent": "permanent"
 			},
 			"modstats": {
 				"help": "View moderation statistics for mod/admin",
@@ -1311,7 +1311,7 @@
 					"no_steam": "Entry not found with provided Steam ID.",
 					"done_steam": "Blacklist removed from Steam ID `%s` in group `%s`."
 				},
-				"expired": "This user is not banned permamently or the ban has already expired.\nTry banning this user `/ban`",
+				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
 				"no_groups": "This server can't manage any group.",
 				"title": "**Blacklist this user in group?**\n{EMOTE_WARNING} *If the user is unbanned manually or through other bot, user will be banned again until blacklist is removed.*",
 				"value": "Select group/-s",

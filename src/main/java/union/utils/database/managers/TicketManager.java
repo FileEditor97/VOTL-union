@@ -127,7 +127,7 @@ public class TicketManager extends LiteDBBase {
 	}
 
 	public Long getTimeClosing(String channelId) {
-		Long data = selectOne("SELECT closeRequested FROM %s WHERE (channelId=%d);".formatted(table, channelId), "closeRequested", Long.class);
+		Long data = selectOne("SELECT closeRequested FROM %s WHERE (channelId=%s);".formatted(table, channelId), "closeRequested", Long.class);
 		if (data == null) return 0L;
 		return data;
 	}

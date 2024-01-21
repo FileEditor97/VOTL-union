@@ -117,7 +117,7 @@ public class KickCmd extends CommandBase {
 			});
 		},
 		failure -> {
-			editError(event, "errors.unknown", failure.getMessage());
+			editError(event, "errors.error", failure.getMessage());
 		});
 	}
 

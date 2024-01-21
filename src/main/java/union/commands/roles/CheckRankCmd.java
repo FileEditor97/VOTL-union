@@ -55,7 +55,7 @@ public class CheckRankCmd extends CommandBase {
 
 		// Check if this guild has connected DB table
 		if (bot.getFileManager().getNullableString("config", "central-dbs."+guild.getId()) == null) {
-			createError(event, "errors.unknown", "This Discord server is not connected to the database. Will not run!");
+			createError(event, "errors.error", "This Discord server is not connected to the database. Will not run!");
 			return;
 		}
 
@@ -70,7 +70,7 @@ public class CheckRankCmd extends CommandBase {
 				return;
 			}
 			if (maxSize > 200) {
-				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
+				editError(event, "errors.error", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
 				return;
 			}
 			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());
@@ -110,7 +110,7 @@ public class CheckRankCmd extends CommandBase {
 					}
 				}).thenRun(guild::pruneMemberCache); // Prune member cache;
 		}).onError(failure -> {
-			editError(event, "errors.unknown", failure.getMessage());
+			editError(event, "errors.error", failure.getMessage());
 		});
 	}
 

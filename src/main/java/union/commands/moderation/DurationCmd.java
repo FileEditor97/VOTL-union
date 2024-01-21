@@ -59,7 +59,7 @@ public class DurationCmd extends CommandBase {
 
 		if (caseData.getCaseType().equals(CaseType.MUTE)) {
 			if (duration.isZero()) {
-				editError(event, "errors.unknown", "Duration must be larger than 1 minute");
+				editError(event, "errors.error", "Duration must be larger than 1 minute");
 				return;
 			}
 			event.getGuild().retrieveMemberById(caseData.getTargetId()).queue(target -> {

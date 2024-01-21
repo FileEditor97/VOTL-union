@@ -20,9 +20,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.*;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.ArrayList;
@@ -415,7 +417,7 @@ public abstract class SlashCommand extends Command
 
 	private void terminate(SlashCommandEvent event, MessageCreateData message, CommandClient client) {
 		if (message != null)
-			event.reply(message).setEphemeral(true).queue();
+			event.reply(message).setEphemeral(true).queue(null, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 		if (event.getClient().getListener() != null)
 			client.getListener().onTerminatedSlashCommand(event, this);
 	}

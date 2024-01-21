@@ -130,7 +130,7 @@ public class BlacklistCmd extends CommandBase {
 					try {
 						steam64 = Long.valueOf(input);
 					} catch (NumberFormatException ex) {
-						editError(event, "errors.unknown", ex.getMessage());
+						editError(event, "errors.error", ex.getMessage());
 						return;
 					}
 				}

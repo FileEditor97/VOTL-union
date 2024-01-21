@@ -75,7 +75,7 @@ public class CheckServerCmd extends CommandBase {
 				return;
 			}
 			if (maxSize > 400) {
-				editError(event, "errors.unknown", "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
+				editError(event, "errors.error", "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
 				return;
 			}
 			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.round(maxSize*0.7))).build());
@@ -130,7 +130,7 @@ public class CheckServerCmd extends CommandBase {
 					targetGuild.pruneMemberCache();
 				});
 		}).onError(failure -> {
-			editError(event, "errors.unknown", failure.getMessage());
+			editError(event, "errors.error", failure.getMessage());
 		});
 	}
 

@@ -65,14 +65,14 @@ public class TicketPanelManager extends LiteDBBase {
 		List<String> values = new ArrayList<String>();
 		if (title != null)
 			values.add("title="+quote(title));
-		if (title != null)
+		if (description != null)
 			values.add("description="+replaceNewline(description));
-		if (title != null)
+		if (image != null)
 			values.add("image="+quote(image));
-		if (title != null)
+		if (footer != null)
 			values.add("footer="+replaceNewline(footer));
 
-			if (values.size() > 0) execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
+		if (values.size() > 0) execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
 	}
 
 	public Panel getPanel(Integer panelId) {

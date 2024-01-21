@@ -134,7 +134,7 @@ public class MuteCmd extends CommandBase {
 				editHookEmbed(event, embed);
 			},
 			failed -> {
-				editError(event, "errors.unknown", failed.getMessage());
+				editError(event, "errors.error", failed.getMessage());
 			});
 		}
 	}

@@ -133,7 +133,7 @@ public class CaseManager extends LiteDBBase {
 	//  BANS
 	// get all active expired bans
 	public List<CaseData> getExpired() {
-		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND type<20 AND timeStart+duration<%d) ORDER BY caseId DESC LIMIT 10"
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND type<20 AND duration>0 AND timeStart+duration<%d) ORDER BY caseId DESC LIMIT 10"
 			.formatted(table, Instant.now().getEpochSecond()), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
 		return data.stream().map(map -> new CaseData(map)).toList();

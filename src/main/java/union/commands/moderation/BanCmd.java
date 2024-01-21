@@ -133,7 +133,7 @@ public class BanCmd extends CommandBase {
 			// checks if thrown something except from "ban not found"
 			if (!failure.getMessage().startsWith("10026")) {
 				bot.getLogger().warn(failure.getMessage());
-				editError(event, "errors.unknown", failure.getMessage());
+				editError(event, path+".ban_abort", failure.getMessage());
 				return;
 			}
 
@@ -203,7 +203,7 @@ public class BanCmd extends CommandBase {
 					event.getHook().editOriginalEmbeds(embed).queue();
 			},
 			failed -> {
-				editError(event, "errors.unknown", failed.getMessage());
+				editError(event, path+".ban_abort", failed.getMessage());
 			});
 		});
 	}

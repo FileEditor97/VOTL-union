@@ -60,7 +60,7 @@ public class AccountCmd extends CommandBase {
 				try {
 					steam64 = Long.valueOf(input);
 				} catch (NumberFormatException ex) {
-					editError(event, "errors.unknown", ex.getMessage());
+					editError(event, "errors.error", ex.getMessage());
 					return;
 				}
 			}
@@ -90,7 +90,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			editError(event, "errors.unknown", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
@@ -101,7 +101,7 @@ public class AccountCmd extends CommandBase {
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%s)".formatted(steam64, steam64), true)
+			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
 			.addField(lu.getUserText(event, path+".field_rank"), "`%s`".formatted(playerInfo.getRank()), true)
 			.addField(lu.getUserText(event, path+".field_playtime"), "%s %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
 			.addField(lu.getUserText(event, path+".field_discord"), user.getAsMention(), false);
@@ -114,7 +114,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			editError(event, "errors.unknown", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
@@ -122,7 +122,7 @@ public class AccountCmd extends CommandBase {
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
 			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
+			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
 			.addField(lu.getUserText(event, path+".field_rank"), "`%s`".formatted(playerInfo.getRank()), true)
 			.addField(lu.getUserText(event, path+".field_playtime"), "%s %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
 			.addField(lu.getUserText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), false);

@@ -185,7 +185,7 @@ public class TicketPanelCmd extends CommandBase {
 				event.getHook().editOriginalEmbeds(buildPanelEmbed(event.getGuild(), panelId)).queue();
 			else
 				event.getHook().editOriginalEmbeds(buildPanelEmbed(event.getGuild(), panelId)).setComponents(ActionRow.of(buttons).asDisabled()).queue(null, failure -> {
-					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", failure.getMessage())).queue();
+					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", failure.getMessage())).queue();
 				});
 		}
 
@@ -238,7 +238,7 @@ public class TicketPanelCmd extends CommandBase {
 						.build()
 					).queue();
 				}, failure -> {
-					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", failure.getMessage())).queue();
+					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", failure.getMessage())).queue();
 				});
 			}
 		}

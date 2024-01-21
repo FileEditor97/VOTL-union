@@ -218,8 +218,8 @@ public class SetupCmd extends CommandBase {
 			Button unlock = Button.success("voice:unlock", lu.getLocalized(event.getGuildLocale(), path+".unlock")).withEmoji(Emoji.fromUnicode("🔓"));
 			Button ghost = Button.danger("voice:ghost", lu.getLocalized(event.getGuildLocale(), path+".ghost")).withEmoji(Emoji.fromUnicode("👻"));
 			Button unghost = Button.success("voice:unghost", lu.getLocalized(event.getGuildLocale(), path+".unghost")).withEmoji(Emoji.fromUnicode("👁️"));
-			Button name = Button.secondary("voice:name", lu.getLocalized(event.getGuildLocale(), path+".name")).withEmoji(Emoji.fromUnicode("🔡"));
-			Button limit = Button.secondary("voice:limit", lu.getLocalized(event.getGuildLocale(), path+".limit")).withEmoji(Emoji.fromUnicode("🔢"));
+			//Button name = Button.secondary("voice:name", lu.getLocalized(event.getGuildLocale(), path+".name")).withEmoji(Emoji.fromUnicode("🔡"));
+			//Button limit = Button.secondary("voice:limit", lu.getLocalized(event.getGuildLocale(), path+".limit")).withEmoji(Emoji.fromUnicode("🔢"));
 			Button permit = Button.success("voice:permit", lu.getLocalized(event.getGuildLocale(), path+".permit")).withEmoji(Emotes.ADDUSER.getEmoji());
 			Button reject = Button.danger("voice:reject", lu.getLocalized(event.getGuildLocale(), path+".reject")).withEmoji(Emotes.REMOVEUSER.getEmoji());
 			Button perms = Button.secondary("voice:perms", lu.getLocalized(event.getGuildLocale(), path+".perms")).withEmoji(Emotes.SETTINGS_2.getEmoji());
@@ -227,13 +227,13 @@ public class SetupCmd extends CommandBase {
 
 			ActionRow row1 = ActionRow.of(unlock, lock);
 			ActionRow row2 = ActionRow.of(unghost, ghost);
-			ActionRow row3 = ActionRow.of(name, limit);
+			//ActionRow row3 = ActionRow.of(name, limit);
 			ActionRow row4 = ActionRow.of(permit, reject, perms);
 			ActionRow row5 = ActionRow.of(delete);
 			channel.sendMessageEmbeds(
 				new EmbedBuilder().setColor(Constants.COLOR_DEFAULT).setTitle(lu.getLocalized(event.getGuildLocale(), path+".embed_title"))
 					.setDescription(lu.getLocalized(event.getGuildLocale(), path+".embed_value").replace("{id}", bot.getDBUtil().guildVoice.getChannel(event.getGuild().getId()))).build()
-			).addComponents(row1, row2, row3, row4, row5).queue();
+			).addComponents(row1, row2, row4, row5).queue();
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))

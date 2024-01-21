@@ -1,6 +1,5 @@
 package union.commands.strikes;
 
-import java.util.Arrays;
 import java.util.List;
 
 import union.App;
@@ -11,6 +10,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -54,14 +54,14 @@ public class StrikesCmd extends CommandBase {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_active")).build());
 			return;
 		}
-		List<String> cases = Arrays.asList(strikeData.getRight().split(";"));
-		if (cases.get(0).isEmpty()) {
-			editError(event, "errors.unknown", "Strikes data is empty");
+		String[] strikesInfoArray = strikeData.getRight().split(";");
+		if (strikesInfoArray[0].isEmpty()) {
+			editError(event, "errors.error", "Strikes data is empty.");
 			return;
 		}
 
 		StringBuffer buffer = new StringBuffer();
-		cases.forEach(c -> {
+		for (String c : strikesInfoArray) {
 			String[] args = c.split("-");
 			Integer caseId = Integer.valueOf(args[0]);
 			Integer strikeAmount = Integer.valueOf(args[1]);
@@ -69,11 +69,11 @@ public class StrikesCmd extends CommandBase {
 			buffer.append("`%4d` %s | %s - %s\nBy: %s\n".formatted(
 				caseId,
 				getSquares(strikeAmount, caseData.getCaseType().getType()-20),
-				bot.getMessageUtil().limitString(caseData.getReason(), 50),
+				MessageUtil.limitString(caseData.getReason(), 50),
 				TimeFormat.DATE_SHORT.format(caseData.getTimeStart()),
 				caseData.getModTag()
 			));
-		});
+		};
 		
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle(lu.getText(event, path+".title").formatted(strikeData.getLeft(), tu.getName(), tu.getId()))

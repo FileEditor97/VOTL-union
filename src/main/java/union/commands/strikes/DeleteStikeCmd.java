@@ -18,6 +18,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -72,8 +73,8 @@ public class DeleteStikeCmd extends CommandBase {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_strikes")).build());
 			return;
 		}
-		List<String> cases = Arrays.asList(strikeData.getRight().split(";"));
-		if (cases.get(0).isEmpty()) {
+		String[] cases = strikeData.getRight().split(";");
+		if (cases[0].isEmpty()) {
 			editError(event, "errors.unknown", "Strikes data is empty");
 			return;
 		}
@@ -104,8 +105,10 @@ public class DeleteStikeCmd extends CommandBase {
 		});
 	}
 
-	private void strikeSelected(StringSelectInteractionEvent event, Message msg, List<String> cases, User tu) {
+	private void strikeSelected(StringSelectInteractionEvent event, Message msg, String[] strikesInfoArray, User tu) {
 		event.deferEdit().queue();
+
+		List<String> strikesInfo = Arrays.asList(strikesInfoArray);
 		String[] selected = event.getValues().get(0).split("-");
 		Integer caseId = Integer.valueOf(selected[0]);
 		
@@ -113,22 +116,23 @@ public class DeleteStikeCmd extends CommandBase {
 		if (!caseData.isActive()) {
 			msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Case is not active (strike can't be removed)"))
 				.setComponents().queue();
+			bot.getLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
 			return;
 		}
 
 		Integer activeAmount = Integer.valueOf(selected[1]);
 		if (activeAmount == 1) {
 			// As only one strike remains - delete case from strikes data and set case inactive
-			List<String> newCases = new ArrayList<>(cases);
-			newCases.remove(event.getValues().get(0));
+			
+			strikesInfo.remove(event.getValues().get(0));
 
 			bot.getDBUtil().cases.setInactive(caseId);
-			if (newCases.isEmpty())
+			if (strikesInfo.isEmpty())
 				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tu.getIdLong());
 			else
 				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
 					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
-					String.join(";", newCases)
+					String.join(";", strikesInfo)
 				);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
@@ -152,7 +156,7 @@ public class DeleteStikeCmd extends CommandBase {
 				waiter.waitForEvent(
 					ButtonInteractionEvent.class,
 					e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
-					buttonAction -> buttonPressed(buttonAction, msgN, cases, tu, activeAmount),
+					buttonAction -> buttonPressed(buttonAction, msgN, strikesInfo, tu, activeAmount),
 					30,
 					TimeUnit.SECONDS,
 					() -> msg.editMessageEmbeds(new EmbedBuilder(msgN.getEmbeds().get(0)).appendDescription("\n\n"+lu.getText(event, "errors.timed_out")).build())
@@ -171,6 +175,7 @@ public class DeleteStikeCmd extends CommandBase {
 		if (!caseData.isActive()) {
 			msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Case is not active (strike can't be removed)"))
 				.setComponents().queue();
+			bot.getLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
 			return;
 		}
 
@@ -201,19 +206,19 @@ public class DeleteStikeCmd extends CommandBase {
 		msg.editMessageEmbeds(embed).setComponents().queue();
 	}
 
-	private List<SelectOption> buildOptions(List<String> cases) {
+	private List<SelectOption> buildOptions(String[] cases) {
 		List<SelectOption> options = new ArrayList<>();
-		cases.forEach(c -> {
+		for (String c : cases) {
 			String[] args = c.split("-");
 			Integer caseId = Integer.valueOf(args[0]);
 			Integer strikeAmount = Integer.valueOf(args[1]);
 			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
 			options.add(SelectOption.of(
-				"%s | %s - %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), bot.getMessageUtil().limitString(caseData.getReason(), 50),
+				"%s | %s - %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), MessageUtil.limitString(caseData.getReason(), 50),
 					TimeFormat.DATE_SHORT.format(caseData.getTimeStart())),
 				caseId+"-"+strikeAmount
 			).withDescription("By: "+caseData.getModTag()));
-		});
+		};
 		return options;
 	}
 

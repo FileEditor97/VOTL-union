@@ -3,7 +3,6 @@ package union.utils.message;
 import java.time.ZonedDateTime;
 
 import jakarta.annotation.Nonnull;
-import union.base.command.CommandEvent;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -39,11 +38,6 @@ public class EmbedUtil {
 	@Nonnull
 	private EmbedBuilder getErrorEmbed(IReplyCallback replyCallback) {
 		return getEmbed(replyCallback).setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(replyCallback, "errors.title"));
-	}
-	
-	@Nonnull
-	private EmbedBuilder getErrorEmbedNotUser(CommandEvent commandEvent) {
-		return getEmbed().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(commandEvent, "errors.title"));
 	}
 
 	@Nonnull
@@ -86,26 +80,6 @@ public class EmbedUtil {
 		if (reason != null)
 			embedBuilder.addField(
 				lu.getText(replyCallback, "errors.additional"),
-				reason,
-				false
-			);
-
-		return embedBuilder.build();
-	}
-
-	@Nonnull
-	public MessageEmbed getError(CommandEvent commandEvent, @Nonnull String path) {
-		return getError(commandEvent, path, null);
-	}
-
-	@Nonnull
-	public MessageEmbed getError(CommandEvent commandEvent, @Nonnull String path, String reason) {
-		EmbedBuilder embedBuilder = getErrorEmbedNotUser(commandEvent)
-			.setDescription(lu.getText(commandEvent, path));
-
-		if (reason != null)
-			embedBuilder.addField(
-				lu.getText(commandEvent, "errors.additional"),
 				reason,
 				false
 			);

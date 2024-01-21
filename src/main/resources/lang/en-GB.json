@@ -5,8 +5,8 @@
 	"errors": {
 		"title": "Error",
 		"additional": "Additional info:",
-		"unknown": "Something went wrong! {EMOTE_WARNING}\nReport this error to bot's Owner/Developer!",
-		"request_error": "There was an error while handling the request. Make sure that my message wasn't deleted and that I have sufficient permissions!",
+		"unknown": "{EMOTE_WARNING} Something went wrong!\nReport this error to bot's Owner/Developer in support server!",
+		"error": "{EMOTE_WARNING} Something went wrong!\n*See message below.*",
 		"missing_perms": {
 			"self": "I lack the permission `{permission}` for this.",
 			"self_channel": "I lack the permission `{permission}` in the channel {channel} to do this.",

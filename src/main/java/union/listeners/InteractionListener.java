@@ -342,19 +342,19 @@ public class InteractionListener extends ListenerAdapter {
 			// Check if user pressed refresh button
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
-				event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(event, "bot.verification.listener.wait_title"))
+				event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(event, "bot.verification.listener.wait_title"))
 					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).queue();
 				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS));
-				return;
-			}
-			// Reply with instruction on how to verify, buttons - link and refresh
-			Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
-			EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId))
-				.setTitle(lu.getText(event, "bot.verification.embed.title"))
-				.setDescription(lu.getText(event, "bot.verification.embed.description"))
-				.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
+			} else {
+				// Reply with instruction on how to verify, buttons - link and refresh
+				Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
+				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId))
+					.setTitle(lu.getText(event, "bot.verification.embed.title"))
+					.setDescription(lu.getText(event, "bot.verification.embed.description"))
+					.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
 
-			event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();
+				event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();
+			}
 		}
 	}
 
@@ -663,7 +663,7 @@ public class InteractionListener extends ListenerAdapter {
 	// Ticket management
 	private void buttonTicketClaim(ButtonInteractionEvent event) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
-			// User has no Helper access (OR admin, server owner, dev) to approve role request
+			// User has no Helper's access or higher to approve role request
 			sendError(event, "errors.interaction.no_access");
 			return;
 		}
@@ -687,7 +687,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonTicketUnclaim(ButtonInteractionEvent event) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
-			// User has no Helper access (OR admin, server owner, dev) to approve role request
+			// User has no Helper's access or higher to approve role request
 			sendError(event, "errors.interaction.no_access");
 			return;
 		}
@@ -1316,13 +1316,13 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_ROLE_CLEAR(4, CooldownScope.USER),
 		BUTTON_ROLE_REMOVE(10, CooldownScope.USER),
 		BUTTON_ROLE_TOGGLE(2, CooldownScope.USER),
-		BUTTON_ROLE_TICKET(15, CooldownScope.USER),
+		BUTTON_ROLE_TICKET(30, CooldownScope.USER),
 		BUTTON_ROLE_APPROVE(10, CooldownScope.CHANNEL),
 		BUTTON_TICKET_CLOSE(10, CooldownScope.CHANNEL),
 		BUTTON_TICKET_CANCEL(4, CooldownScope.CHANNEL),
 		BUTTON_TICKET_CLAIM(20, CooldownScope.USER_CHANNEL),
 		BUTTON_TICKET_UNCLAIM(20, CooldownScope.USER_CHANNEL),
-		BUTTON_TICKET_CREATE(15, CooldownScope.USER),
+		BUTTON_TICKET_CREATE(30, CooldownScope.USER),
 		BUTTON_INVITES(10, CooldownScope.USER),
 		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD),
 		BUTTON_SHOW_STRIKES(30, CooldownScope.USER);

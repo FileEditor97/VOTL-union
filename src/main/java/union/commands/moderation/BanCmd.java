@@ -133,7 +133,7 @@ public class BanCmd extends CommandBase {
 			// checks if thrown something except from "ban not found"
 			if (!failure.getMessage().startsWith("10026")) {
 				bot.getLogger().warn(failure.getMessage());
-				editError(event, "errors.unknown", failure.getMessage());
+				editError(event, path+".ban_abort", failure.getMessage());
 				return;
 			}
 
@@ -141,11 +141,15 @@ public class BanCmd extends CommandBase {
 			Member mod = event.getMember();
 			if (tm != null) {
 				if (!guild.getSelfMember().canInteract(tm)) {
-					editError(event, path+".ban_abort");
+					editError(event, path+".ban_abort", "Bot can't interact with target member.");
 					return;
 				}
 				if (bot.getCheckUtil().hasHigherAccess(tm, mod)) {
 					editError(event, path+".higher_access");
+					return;
+				}
+				if (!mod.canInteract(tm)) {
+					editError(event, path+".ban_abort", "You can't interact with target member.");
 					return;
 				}
 			}
@@ -199,7 +203,7 @@ public class BanCmd extends CommandBase {
 					event.getHook().editOriginalEmbeds(embed).queue();
 			},
 			failed -> {
-				editError(event, "errors.unknown", failed.getMessage());
+				editError(event, path+".ban_abort", failed.getMessage());
 			});
 		});
 	}

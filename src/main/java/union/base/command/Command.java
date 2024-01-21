@@ -186,13 +186,14 @@ public abstract class Command extends Interaction
 
 		// check owner command
 		if (ownerCommand && !(event.isOwner())) {
-			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.not_owner"));
+			terminate(event, bot.getEmbedUtil().getError(null, "errors.command.not_owner"));
 			return;
 		}
 
 		// category check
 		if (category!=null && !category.test(event)) {
-			terminate(event, bot.getEmbedUtil().getError(event, "errors.unknown", category.getFailureResponse()));
+			//terminate(event, bot.getEmbedUtil().getError(event, "errors.unknown", category.getFailureResponse()));
+			terminate(event, bot.getEmbedUtil().getError(null, "errors.unknown", category.getFailureResponse()));
 			return;
 		}
 
@@ -226,11 +227,11 @@ public abstract class Command extends Interaction
 
 			// nsfw check
 			if (nsfwOnly && event.getChannelType() == ChannelType.TEXT && !event.getTextChannel().isNSFW()) {
-				terminate(event, bot.getEmbedUtil().getError(event, "errors.command.nsfw"));
+				terminate(event, bot.getEmbedUtil().getError(null, "errors.command.nsfw"));
 				return;
 			}
 		} else if (guildOnly) {
-			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.guild_only"));
+			terminate(event, bot.getEmbedUtil().getError(null, "errors.command.guild_only"));
 			return;
 		}
 
@@ -429,17 +430,17 @@ public abstract class Command extends Interaction
 		if (remaining <= 0)
 			return null;
 		
-		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_command")
+		StringBuilder front = new StringBuilder(lu.getText(null, "errors.cooldown.cooldown_command")
 			.replace("{time}", Integer.toString(remaining))
 		);
 		if(cooldownScope.equals(CooldownScope.USER))
 			{}
 		else if(cooldownScope.equals(CooldownScope.USER_GUILD) && event.getGuild()==null)
-			front.append(" " + lu.getText(event, CooldownScope.USER_CHANNEL.errorPath));
+			front.append(" " + lu.getText(null, CooldownScope.USER_CHANNEL.errorPath));
 		else if(cooldownScope.equals(CooldownScope.GUILD) && event.getGuild()==null)
-			front.append(" " + lu.getText(event, CooldownScope.CHANNEL.errorPath));
+			front.append(" " + lu.getText(null, CooldownScope.CHANNEL.errorPath));
 		else
-			front.append(" " + lu.getText(event, cooldownScope.errorPath));
+			front.append(" " + lu.getText(null, cooldownScope.errorPath));
 		
 		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));
 	}

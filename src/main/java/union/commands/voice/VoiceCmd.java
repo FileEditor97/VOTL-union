@@ -396,7 +396,7 @@ public class VoiceCmd extends CommandBase {
 							.build()
 					);
 				}, failure -> {
-					editError(event, "errors.unknown", failure.getMessage());
+					editError(event, "errors.error", failure.getMessage());
 				}
 			);
 		}

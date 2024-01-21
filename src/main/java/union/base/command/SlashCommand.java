@@ -20,9 +20,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.*;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import java.util.ArrayList;
@@ -204,13 +206,14 @@ public abstract class SlashCommand extends Command
 		}
 
 		// check db and permisisons
+		if (guildOnly && !event.isFromGuild()) {
+			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.guild_only"), client);
+			return;
+		}
 		if (event.isFromGuild() && !ownerCommand) {
 			Guild guild = event.getGuild();
 			Member author = event.getMember();
 			try {
-				// check setup
-				//if (!event.getFullCommandName().equals("setup main")) bot.getCheckUtil().guildExists(event, guild);
-				
 				bot.getCheckUtil()
 				// check module enabled
 					.moduleEnabled(event, guild, getModule())
@@ -230,9 +233,6 @@ public abstract class SlashCommand extends Command
 				terminate(event, bot.getEmbedUtil().getError(event, "errors.command.nsfw"), client);
 				return;
 			}
-		} else if (guildOnly) {
-			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.guild_only"), client);
-			return;
 		}
 
 		// execute
@@ -415,7 +415,7 @@ public abstract class SlashCommand extends Command
 
 	private void terminate(SlashCommandEvent event, MessageCreateData message, CommandClient client) {
 		if (message != null)
-			event.reply(message).setEphemeral(true).queue();
+			event.reply(message).setEphemeral(true).queue(null, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 		if (event.getClient().getListener() != null)
 			client.getListener().onTerminatedSlashCommand(event, this);
 	}

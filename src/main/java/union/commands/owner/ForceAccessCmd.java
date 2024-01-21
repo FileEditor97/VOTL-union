@@ -24,7 +24,7 @@ public class ForceAccessCmd extends CommandBase {
 			new OptionData(OptionType.STRING, "server", lu.getText(path+".server.help"), true),
 			new OptionData(OptionType.INTEGER, "type", lu.getText(path+".type.help"), true)
 				.addChoice("Role", 1)
-				.addChoice("user", 2),
+				.addChoice("User", 2),
 			new OptionData(OptionType.STRING, "target", lu.getText(path+".target.help"), true).setMaxLength(30),
 			new OptionData(OptionType.INTEGER, "access_level", lu.getText(path+".access_level.help"), true)
 				.addChoice("- Remove -", CmdAccessLevel.ALL.getLevel())

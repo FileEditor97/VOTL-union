@@ -65,7 +65,7 @@ public class LogUtil {
 		return new EmbedBuilder()
 			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), lu.getLocalized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()))
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
-			.addField(localized(locale, "mod"), "<@"+caseData.getModId()+">", true)
+			.addField(localized(locale, "mod"), caseData.getModId()>0 ? "<@"+caseData.getModId()+">" : "-", true)
 			.setFooter("ID: "+caseData.getTargetId())
 			.setTimestamp(caseData.getTimeStart());
 	}
@@ -76,7 +76,7 @@ public class LogUtil {
 			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), lu.getLocalized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()),
 				null, userIcon)
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
-			.addField(localized(locale, "mod"), "<@"+caseData.getModId()+">", true)
+			.addField(localized(locale, "mod"), caseData.getModId()>0 ? "<@"+caseData.getModId()+">" : "-", true)
 			.setFooter("ID: "+caseData.getTargetId())
 			.setTimestamp(caseData.getTimeStart());
 	}
@@ -582,7 +582,7 @@ public class LogUtil {
 	public MessageEmbed accessAdded(DiscordLocale locale, User mod, User userTarget, Role roleTarget, String levelName) {
 		return getEmbed(GREEN_DARK)
 			.setAuthor(localized(locale, "guild.access_added"), null, Optional.ofNullable(userTarget).map(User::getAvatarUrl).orElse(null))
-			.addField(localized(locale, "target"), Optional.ofNullable(userTarget).map(User::getAsMention).orElse(roleTarget.getAsMention()), true)
+			.addField(localized(locale, "target"), userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention(), true)
 			.addField(localized(locale, "guild.access_level"), levelName, true)
 			.addField(localized(locale, "enforcer"), mod.getAsMention(), false)
 			.setFooter("ID: "+Optional.ofNullable(userTarget).map(User::getId).orElse(roleTarget.getId()))
@@ -593,7 +593,7 @@ public class LogUtil {
 	public MessageEmbed accessRemoved(DiscordLocale locale, User mod, User userTarget, Role roleTarget, String levelName) {
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "guild.access_removed"), null, Optional.ofNullable(userTarget).map(User::getAvatarUrl).orElse(null))
-			.addField(localized(locale, "target"), Optional.ofNullable(userTarget).map(User::getAsMention).orElse(roleTarget.getAsMention()), true)
+			.addField(localized(locale, "target"), userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention(), true)
 			.addField(localized(locale, "guild.access_level"), levelName, true)
 			.addField(localized(locale, "enforcer"), mod.getAsMention(), false)
 			.setFooter("ID: "+Optional.ofNullable(userTarget).map(User::getId).orElse(roleTarget.getId()))

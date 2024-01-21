@@ -206,13 +206,14 @@ public abstract class SlashCommand extends Command
 		}
 
 		// check db and permisisons
+		if (guildOnly && !event.isFromGuild()) {
+			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.guild_only"), client);
+			return;
+		}
 		if (event.isFromGuild() && !ownerCommand) {
 			Guild guild = event.getGuild();
 			Member author = event.getMember();
 			try {
-				// check setup
-				//if (!event.getFullCommandName().equals("setup main")) bot.getCheckUtil().guildExists(event, guild);
-				
 				bot.getCheckUtil()
 				// check module enabled
 					.moduleEnabled(event, guild, getModule())
@@ -232,9 +233,6 @@ public abstract class SlashCommand extends Command
 				terminate(event, bot.getEmbedUtil().getError(event, "errors.command.nsfw"), client);
 				return;
 			}
-		} else if (guildOnly) {
-			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.guild_only"), client);
-			return;
 		}
 
 		// execute

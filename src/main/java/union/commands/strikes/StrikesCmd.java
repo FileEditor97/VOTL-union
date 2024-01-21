@@ -10,6 +10,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -68,7 +69,7 @@ public class StrikesCmd extends CommandBase {
 			buffer.append("`%4d` %s | %s - %s\nBy: %s\n".formatted(
 				caseId,
 				getSquares(strikeAmount, caseData.getCaseType().getType()-20),
-				bot.getMessageUtil().limitString(caseData.getReason(), 50),
+				MessageUtil.limitString(caseData.getReason(), 50),
 				TimeFormat.DATE_SHORT.format(caseData.getTimeStart()),
 				caseData.getModTag()
 			));

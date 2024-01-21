@@ -18,6 +18,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -213,7 +214,7 @@ public class DeleteStikeCmd extends CommandBase {
 			Integer strikeAmount = Integer.valueOf(args[1]);
 			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
 			options.add(SelectOption.of(
-				"%s | %s - %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), bot.getMessageUtil().limitString(caseData.getReason(), 50),
+				"%s | %s - %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), MessageUtil.limitString(caseData.getReason(), 50),
 					TimeFormat.DATE_SHORT.format(caseData.getTimeStart())),
 				caseId+"-"+strikeAmount
 			).withDescription("By: "+caseData.getModTag()));

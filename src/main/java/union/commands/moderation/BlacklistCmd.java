@@ -13,6 +13,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -74,7 +75,7 @@ public class BlacklistCmd extends CommandBase {
 					Optional.ofNullable((Long) map.get("steam64")).map(bot.getSteamUtil()::convertSteam64toSteamID).orElse("-"),
 					Optional.ofNullable((Long) map.get("guildId")).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
 					Optional.ofNullable((Long) map.get("modId")).map(v -> "<@%s> (%<s)".formatted(v)).orElse("-"),
-					Optional.ofNullable((String) map.get("reason")).map(v -> bot.getMessageUtil().limitString(v, 100)).orElse("-")
+					Optional.ofNullable((String) map.get("reason")).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
 				), true)
 			);
 

@@ -125,6 +125,11 @@ public class FileManager {
 		}
 	}
 	
+	/**
+	 * @param name - json file to be saerched
+	 * @param path - string's json path
+	 * @return Returns not-null string. If search returns null string, returns provided path. 
+	 */
 	@Nonnull
 	public String getString(String name, String path) {
 		String result = getNullableString(name, path);
@@ -133,6 +138,11 @@ public class FileManager {
 		return result;
 	}
 	
+	/**
+	 * @param name - json file to be saerched
+	 * @param path - string's json path
+	 * @return Returns null-able string. 
+	 */
 	@Nullable
 	public String getNullableString(String name, String path) {
 		File file = files.get(name);

@@ -131,7 +131,7 @@ public class App {
 		interactionListener	= new InteractionListener(this, WAITER);
 		voiceListener		= new VoiceListener(this);
 		messagesListener	= new MessageListener(this);
-		commandListener		= new CommandListener();
+		commandListener		= new CommandListener(localeUtil);
 
 		scheduledExecutor	= new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 		scheduledCheck		= new ScheduledCheck(this);

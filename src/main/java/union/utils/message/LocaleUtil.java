@@ -7,14 +7,11 @@ import java.util.Map;
 import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import union.App;
-import union.base.command.CommandEvent;
 import union.objects.Emotes;
 import union.utils.file.lang.LangUtil;
 
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 
@@ -35,11 +32,6 @@ public class LocaleUtil {
 	@Nonnull
 	public String getDefaultLanguage() {
 		return defaultLanguage;
-	}
-
-	@Nonnull
-	private DiscordLocale getGuildLocale(@Nullable Guild guild) {
-		return (guild == null ? defaultLocale : guild.getLocale());
 	}
 
 	@Nonnull
@@ -108,11 +100,6 @@ public class LocaleUtil {
 	@Nonnull
 	public String getText(IReplyCallback replyCallback, @Nonnull String path) {
 		return getLocalized(replyCallback.getUserLocale(), path);
-	}
-
-	@Nonnull
-	public String getText(CommandEvent event, @Nonnull String path) {
-		return getLocalized(getGuildLocale(event.getGuild()), path);
 	}
 
 	@Nonnull

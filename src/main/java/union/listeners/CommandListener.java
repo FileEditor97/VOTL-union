@@ -1,6 +1,10 @@
 package union.listeners;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -11,10 +15,18 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
+import union.objects.constants.Constants;
+import union.utils.message.LocaleUtil;
+import union.utils.message.MessageUtil;
 
 public class CommandListener implements union.base.command.CommandListener {
 
 	private final Logger LOGGER = (Logger) LoggerFactory.getLogger(CommandListener.class);
+	private final LocaleUtil lu;
+
+	public CommandListener(LocaleUtil lu) {
+		this.lu = lu;
+	}
 	
 	@Override
 	public void onSlashCommand(SlashCommandEvent event, SlashCommand command) {
@@ -62,6 +74,20 @@ public class CommandListener implements union.base.command.CommandListener {
 	@Override
 	public void onTerminatedUserContextMenu(UserContextMenuEvent event, UserContextMenu menu) {
 		LOGGER.debug("UserContextMenu Terminated @ {}", event.getResponseNumber());
+	}
+
+	@Override
+	public void onSlashCommandException(SlashCommandEvent event, SlashCommand command, Throwable t) {
+		LOGGER.error("SlashCommand Exception", t);
+		event.getHook().sendMessageEmbeds(getErrorEmbed(event, t)).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+	}
+
+	private MessageEmbed getErrorEmbed(SlashCommandEvent event, Throwable t) {
+		return new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+			.setTitle(lu.getLocalized(event.getUserLocale(), "errors.title"))
+			.setDescription(lu.getLocalized(event.getUserLocale(), "errors.unknown"))
+			.addField(lu.getLocalized(event.getUserLocale(), "errors.additional"), MessageUtil.limitString(t.getMessage(), 1024), false)
+			.build();
 	}
 
 }

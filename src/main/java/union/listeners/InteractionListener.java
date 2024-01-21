@@ -342,19 +342,19 @@ public class InteractionListener extends ListenerAdapter {
 			// Check if user pressed refresh button
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
-				event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(event, "bot.verification.listener.wait_title"))
+				event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(event, "bot.verification.listener.wait_title"))
 					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).queue();
 				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS));
-				return;
-			}
-			// Reply with instruction on how to verify, buttons - link and refresh
-			Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
-			EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId))
-				.setTitle(lu.getText(event, "bot.verification.embed.title"))
-				.setDescription(lu.getText(event, "bot.verification.embed.description"))
-				.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
+			} else {
+				// Reply with instruction on how to verify, buttons - link and refresh
+				Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
+				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId))
+					.setTitle(lu.getText(event, "bot.verification.embed.title"))
+					.setDescription(lu.getText(event, "bot.verification.embed.description"))
+					.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
 
-			event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();
+				event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();
+			}
 		}
 	}
 
@@ -663,7 +663,7 @@ public class InteractionListener extends ListenerAdapter {
 	// Ticket management
 	private void buttonTicketClaim(ButtonInteractionEvent event) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
-			// User has no Helper access (OR admin, server owner, dev) to approve role request
+			// User has no Helper's access or higher to approve role request
 			sendError(event, "errors.interaction.no_access");
 			return;
 		}
@@ -687,7 +687,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonTicketUnclaim(ButtonInteractionEvent event) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
-			// User has no Helper access (OR admin, server owner, dev) to approve role request
+			// User has no Helper's access or higher to approve role request
 			sendError(event, "errors.interaction.no_access");
 			return;
 		}

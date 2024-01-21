@@ -91,15 +91,17 @@ public class MuteCmd extends CommandBase {
 			// No case -> ovveride current timeout
 			// No case and not timed out -> timeout
 			Member mod = event.getMember();
-			if (tm != null) {
-				if (!guild.getSelfMember().canInteract(tm)) {
-					editError(event, path+".abort");
-					return;
-				}
-				if (bot.getCheckUtil().hasHigherAccess(tm, mod)) {
-					editError(event, path+".higher_access");
-					return;
-				}
+			if (!guild.getSelfMember().canInteract(tm)) {
+				editError(event, path+".abort", "Bot can't interact with target member.");
+				return;
+			}
+			if (bot.getCheckUtil().hasHigherAccess(tm, mod)) {
+				editError(event, path+".higher_access");
+				return;
+			}
+			if (!mod.canInteract(tm)) {
+				editError(event, path+".abort", "You can't interact with target member.");
+				return;
 			}
 			
 			tm.timeoutFor(duration).reason(reason).queue(done -> {

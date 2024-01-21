@@ -123,6 +123,7 @@ public class StrikeCmd extends CommandBase {
 		// Check if can interact and target is not server's moderator or higher
 		if (!guild.getSelfMember().canInteract(target)) return null;
 		if (bot.getCheckUtil().hasAccess(target, CmdAccessLevel.MOD)) return null;
+		if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.ALL)) return null;
 
 		// Execute
 		StringBuffer buffer = new StringBuffer();	// message

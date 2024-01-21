@@ -141,11 +141,15 @@ public class BanCmd extends CommandBase {
 			Member mod = event.getMember();
 			if (tm != null) {
 				if (!guild.getSelfMember().canInteract(tm)) {
-					editError(event, path+".ban_abort");
+					editError(event, path+".ban_abort", "Bot can't interact with target member.");
 					return;
 				}
 				if (bot.getCheckUtil().hasHigherAccess(tm, mod)) {
 					editError(event, path+".higher_access");
+					return;
+				}
+				if (!mod.canInteract(tm)) {
+					editError(event, path+".ban_abort", "You can't interact with target member.");
 					return;
 				}
 			}

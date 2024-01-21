@@ -82,17 +82,21 @@ public class KickCmd extends CommandBase {
 			});
 		}
 
+		Member mod = event.getMember();
 		if (!guild.getSelfMember().canInteract(tm)) {
-			editError(event, path+".kick_abort");
+			editError(event, path+".kick_abort", "Bot can't interact with target member.");
 			return;
 		}
-		if (bot.getCheckUtil().hasHigherAccess(tm, event.getMember())) {
+		if (bot.getCheckUtil().hasHigherAccess(tm, mod)) {
 			editError(event, path+".higher_access");
+			return;
+		}
+		if (!mod.canInteract(tm)) {
+			editError(event, path+".kick_abort", "You can't interact with target member.");
 			return;
 		}
 
 		tm.kick().reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
-			Member mod = event.getMember();
 			// add info to db
 			bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
 				guild.getIdLong(), reason, Instant.now(), null);

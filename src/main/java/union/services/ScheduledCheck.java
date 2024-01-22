@@ -173,7 +173,7 @@ public class ScheduledCheck {
 							db.cases.setInactive(Integer.parseInt(caseId));
 						}
 						if (cases.length > 1) {
-							List<String> list = List.of(cases);
+							List<String> list = new ArrayList<>(List.of(cases));
 							list.remove(0);
 							newData.append(String.join(";", list));
 						}

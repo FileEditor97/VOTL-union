@@ -17,12 +17,10 @@ package union.base.command;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Function;
 
 /**
  * A Bot Client interface implemented on objects used to hold bot data.
@@ -30,15 +28,15 @@ import java.util.function.Function;
  * <p>This is implemented in {@link union.base.command.impl.CommandClientImpl CommandClientImpl}
  * alongside implementation of {@link net.dv8tion.jda.api.hooks.EventListener EventListener} to create a
  * compounded "Client Listener" which catches specific kinds of events thrown by JDA and processes them
- * automatically to handle and execute {@link union.base.command.Command Command}s.
+ * automatically to handle and execute {@link union.base.command.SlashCommand SlashCommand}s.
  *
  * <p>Implementations also serve as a useful platforms, carrying reference info such as the bot's
- * {@linkplain #getOwnerId() Owner ID}, {@linkplain #getPrefix() prefix}, and a {@linkplain #getServerInvite()
+ * {@linkplain #getOwnerId() Owner ID} and a {@linkplain #getServerInvite()
  * support server invite}.
  *
  * <p>For the CommandClientImpl, once initialized, only the following can be modified:
  * <ul>
- *     <li>{@link union.base.command.Command Command}s may be added or removed.</li>
+ *     <li>{@link union.base.command.SlashCommand SlashCommand}s may be added or removed.</li>
  *     <li>The {@link union.base.command.CommandListener CommandListener} may be set.</li>
  * </ul>
  *
@@ -73,90 +71,7 @@ import java.util.function.Function;
 public interface CommandClient
 {
 	/**
-	 * Gets the Client's prefix.
-	 *
-	 * @return A possibly-null prefix
-	 */
-	String getPrefix();
-
-	/**
-	 * Gets the prefix BiConsumer
-	 *
-	 * @return A possibly-null prefix BiConsumer
-	 */
-	Function<MessageReceivedEvent, String> getPrefixFunction();
-
-	/**
-	 * Returns the visual representation of the bot's prefix.
-	 *
-	 * <p>This is the same as {@link union.base.command.CommandClient#getPrefix()} unless the prefix is the default,
-	 * in which case it appears as {@literal @Botname}.
-	 *
-	 * @return A never-null prefix
-	 */
-	String getTextualPrefix();
-
-	/**
-	 * Adds a single {@link union.base.command.Command Command} to this CommandClient's
-	 * registered Commands.
-	 *
-	 * <p>For CommandClient's containing 20 commands or less, command calls by users will have the bot iterate
-	 * through the entire {@link java.util.ArrayList ArrayList} to find the command called. As expected, this
-	 * can get fairly hefty if a bot has a lot of Commands registered to it.
-	 *
-	 * <p>To prevent delay a CommandClient that has more that 20 Commands registered to it will begin to use
-	 * <b>indexed calls</b>.
-	 * <br>Indexed calls use a {@link java.util.HashMap HashMap} which links their
-	 * {@link union.base.command.Command#name name} and their
-	 * {@link union.base.command.Command#aliases aliases} to the index that which they
-	 * are located at in the ArrayList they are stored.
-	 *
-	 * <p>This means that all insertion and removal of Commands must reorganize the index maintained by the HashMap.
-	 * <br>For this particular insertion, the Command provided is inserted at the end of the index, meaning it will
-	 * become the "rightmost" Command in the ArrayList.
-	 *
-	 * @param  command
-	 *         The Command to add
-	 *
-	 * @throws java.lang.IllegalArgumentException
-	 *         If the Command provided has a name or alias that has already been registered
-	 */
-	void addCommand(Command command);
-
-	/**
-	 * Adds a single {@link union.base.command.Command Command} to this CommandClient's
-	 * registered Commands at the specified index.
-	 *
-	 * <p>For CommandClient's containing 20 commands or less, command calls by users will have the bot iterate
-	 * through the entire {@link java.util.ArrayList ArrayList} to find the command called. As expected, this
-	 * can get fairly hefty if a bot has a lot of Commands registered to it.
-	 *
-	 * <p>To prevent delay a CommandClient that has more that 20 Commands registered to it will begin to use
-	 * <b>indexed calls</b>.
-	 * <br>Indexed calls use a {@link java.util.HashMap HashMap} which links their
-	 * {@link union.base.command.Command#name name} and their
-	 * {@link union.base.command.Command#aliases aliases} to the index that which they
-	 * are located at in the ArrayList they are stored.
-	 *
-	 * <p>This means that all insertion and removal of Commands must reorganize the index maintained by the HashMap.
-	 * <br>For this particular insertion, the Command provided is inserted at the index specified, meaning it will
-	 * become the Command located at that index in the ArrayList. This will shift the Command previously located at
-	 * that index as well as any located at greater indices, right one index ({@code size()+1}).
-	 *
-	 * @param  command
-	 *         The Command to add
-	 * @param  index
-	 *         The index to add the Command at (must follow the specifications {@code 0<=index<=size()})
-	 *
-	 * @throws java.lang.ArrayIndexOutOfBoundsException
-	 *         If {@code index < 0} or {@code index > size()}
-	 * @throws java.lang.IllegalArgumentException
-	 *         If the Command provided has a name or alias that has already been registered to an index
-	 */
-	void addCommand(Command command, int index);
-
-	/**
-	 * Adds a single {@link union.base.command.SlashCommand SlashCommand} to this CommandClient's
+	 * Adds a single {@link union.base.command.Interaction Interaction} to this CommandClient's
 	 * registered SlashCommand.
 	 *
 	 * <p>For CommandClient's containing 20 commands or less, command calls by users will have the bot iterate
@@ -237,33 +152,6 @@ public interface CommandClient
 	void addContextMenu(ContextMenu menu, int index);
 
 	/**
-	 * Removes a single {@link union.base.command.Command Command} from this CommandClient's
-	 * registered Commands at the index linked to the provided name/alias.
-	 *
-	 * <p>For CommandClient's containing 20 commands or less, command calls by users will have the bot iterate
-	 * through the entire {@link java.util.ArrayList ArrayList} to find the command called. As expected, this
-	 * can get fairly hefty if a bot has a lot of Commands registered to it.
-	 *
-	 * <p>To prevent delay a CommandClient that has more that 20 Commands registered to it will begin to use
-	 * <b>indexed calls</b>.
-	 * <br>Indexed calls use a {@link java.util.HashMap HashMap} which links their
-	 * {@link union.base.command.Command#name name} and their
-	 * {@link union.base.command.Command#aliases aliases} to the index that which they
-	 * are located at in the ArrayList they are stored.
-	 *
-	 * <p>This means that all insertion and removal of Commands must reorganize the index maintained by the HashMap.
-	 * <br>For this particular removal, the Command removed is that of the corresponding index retrieved by the name
-	 * provided. This will shift any Commands located at greater indices, left one index ({@code size()-1}).
-	 *
-	 * @param  name
-	 *         The name or an alias of the Command to remove
-	 *
-	 * @throws java.lang.IllegalArgumentException
-	 *         If the name provided was not registered to an index
-	 */
-	void removeCommand(String name);
-
-	/**
 	 * Sets the {@link union.base.command.CommandListener CommandListener} to catch
 	 * command-related events thrown by this {@link union.base.command.CommandClient CommandClient}.
 	 *
@@ -278,14 +166,6 @@ public interface CommandClient
 	 * @return A possibly-null CommandListener
 	 */
 	CommandListener getListener();
-
-	/**
-	 * Returns the list of registered {@link union.base.command.Command Command}s
-	 * during this session.
-	 *
-	 * @return A never-null List of Commands registered during this session
-	 */
-	List<Command> getCommands();
 
 	/**
 	 * Returns the list of registered {@link union.base.command.SlashCommand SlashCommand}s
@@ -367,7 +247,7 @@ public interface CommandClient
 	void cleanCooldowns();
 
 	/**
-	 * Gets the number of uses for the provide {@link union.base.command.Command Command}
+	 * Gets the number of uses for the provide {@link union.base.command.SlashCommand SlashCommand}
 	 * during this session, or {@code 0} if the command is not registered to this CommandClient.
 	 *
 	 * @param  command
@@ -375,16 +255,15 @@ public interface CommandClient
 	 *
 	 * @return The number of uses for the Command
 	 */
-	int getCommandUses(Command command);
+	int getCommandUses(SlashCommand command);
 
 	/**
-	 * Gets the number of uses for a {@link union.base.command.Command Command}
+	 * Gets the number of uses for a {@link union.base.command.SlashCommand SlashCommand}
 	 * during this session matching the provided String name, or {@code 0} if there is no Command
 	 * with the name.
 	 *
-	 * <p><b>NOTE:</b> this method <b>WILL NOT</b> get uses for a command if an
-	 * {@link union.base.command.Command#aliases alias} is provided! Also note that
-	 * {@link union.base.command.Command#children child commands} <b>ARE NOT</b>
+	 * <p><b>NOTE:</b> 
+	 * {@link union.base.command.SlashCommand#children child commands} <b>ARE NOT</b>
 	 * tracked and providing names or effective names of child commands will return {@code 0}.
 	 *
 	 * @param  name
@@ -410,9 +289,6 @@ public interface CommandClient
 
 	/**
 	 * Gets the {@link java.util.concurrent.ScheduledExecutorService ScheduledExecutorService} held by this client.
-	 *
-	 * <p>This is used for methods such as {@link union.base.command.CommandEvent#async(Runnable)
-	 * CommandEvent#async(Runnable)} run code asynchronously.
 	 *
 	 * @return The ScheduledExecutorService held by this client.
 	 */
@@ -441,10 +317,6 @@ public interface CommandClient
 	 * The number retrieved by Shard B will be that of the number retrieved by Shard A,
 	 * minus 10 guilds because Shard B hasn't updated and accounted for those 10 guilds
 	 * on Shard A.
-	 *
-	 * <p><b>This feature requires a Discord Bots API Key to be set!</b>
-	 * <br>To set your Discord Bots API Key, you'll have to retrieve it from the
-	 * <a href="http://bots.discord.pw/">Discord Bots</a> website.
 	 *
 	 * @return A recently updated count of all the Guilds the bot is connected to on
 	 *         all shards.

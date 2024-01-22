@@ -18,20 +18,11 @@ package union.base.command;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 /**
- * An implementable "Listener" that can be added to a {@link CommandClient}
- * and used to handle events relating to {@link Command}s.
+ * An implementable "Listener" that can be added to a {@link CommandClient}.
  *
  * @author John Grosh (jagrosh)
  */
 public interface CommandListener {
-	/**
-	 * Called when a {@link Command} is triggered by a {@link CommandEvent}.
-	 *
-	 * @param event   The CommandEvent that triggered the Command
-	 * @param command The Command that was triggered
-	 */
-	default void onCommand(CommandEvent event, Command command) {}
-
 	/**
 	 * Called when a {@link SlashCommand} is triggered by a {@link SlashCommandEvent SlashCommandEvent}.
 	 *
@@ -55,18 +46,6 @@ public interface CommandListener {
 	 * @param menu  The UserContextMenu that was triggered
 	 */
 	default void onUserContextMenu(UserContextMenuEvent event, UserContextMenu menu) {}
-
-	/**
-	 * Called when a {@link Command} is triggered by a {@link CommandEvent} after it's completed successfully.
-	 *
-	 * <p>Note that a <i>successfully</i> completed command is one that has not encountered
-	 * an error or exception. Calls that do face errors should be handled by
-	 * {@link CommandListener#onCommandException(CommandEvent, Command, Throwable) CommandListener#onCommandException}
-	 *
-	 * @param event   The CommandEvent that triggered the Command
-	 * @param command The Command that was triggered
-	 */
-	default void onCompletedCommand(CommandEvent event, Command command) {}
 
 	/**
 	 * Called when a {@link SlashCommand} is triggered by a {@link SlashCommandEvent} after it's completed successfully.
@@ -107,14 +86,6 @@ public interface CommandListener {
 	default void onCompletedUserContextMenu(UserContextMenuEvent event, UserContextMenu menu) {}
 
 	/**
-	 * Called when a {@link Command} is triggered by a {@link CommandEvent} but is terminated before completion.
-	 *
-	 * @param event   The CommandEvent that triggered the Command
-	 * @param command The Command that was triggered
-	 */
-	default void onTerminatedCommand(CommandEvent event, Command command) {}
-
-	/**
 	 * Called when a {@link SlashCommand} is triggered by a {@link SlashCommandEvent} but is terminated before completion.
 	 *
 	 * @param event   The SlashCommandEvent that triggered the Command
@@ -139,7 +110,7 @@ public interface CommandListener {
 	default void onTerminatedUserContextMenu(UserContextMenuEvent event, UserContextMenu menu) {}
 
 	/**
-	 * Called when a {@link MessageReceivedEvent} is caught by the Client Listener's but doesn't correspond to a {@link Command}.
+	 * Called when a {@link MessageReceivedEvent} is caught by the Client Listener's.
 	 *
 	 * <p>In other words, this catches all <b>non-command</b> MessageReceivedEvents allowing
 	 * you to handle them without implementation of another listener.
@@ -147,41 +118,6 @@ public interface CommandListener {
 	 * @param event A MessageReceivedEvent that wasn't used to call a Command
 	 */
 	default void onNonCommandMessage(MessageReceivedEvent event) {}
-
-	/**
-	 * Called when a {@link Command} catches a {@link Throwable} <b>during execution</b>.
-	 *
-	 * <p>This doesn't account for exceptions thrown during other pre-checks, and should not be treated as such!
-	 *
-	 * <p>An example of this misconception is via a {@link union.base.command.Command.Category} test:
-	 *
-	 * <pre><code> public class BadCommand extends Command {
-	 *
-	 *      public BadCommand() {
-	 *          this.name = "bad";
-	 *          this.category = new Category("bad category", event {@literal ->} {
-	 *              // This will throw a NullPointerException if it's not from a Guild!
-	 *              return event.getGuild().getIdLong() == 12345678910111213;
-	 *          });
-	 *      }
-	 *
-	 *      {@literal @Override}
-	 *      protected void execute(CommandEvent) {
-	 *          event.reply("This is a bad command!");
-	 *      }
-	 *
-	 * }</code></pre>
-	 * <p>
-	 * The {@link NullPointerException} thrown will not be caught by this method!
-	 *
-	 * @param event     The CommandEvent that triggered the Command
-	 * @param command   The Command that was triggered
-	 * @param throwable The Throwable thrown during Command execution
-	 */
-	default void onCommandException(CommandEvent event, Command command, Throwable throwable) {
-		// Default rethrow as a runtime exception.
-		throw throwable instanceof RuntimeException ? (RuntimeException) throwable : new RuntimeException(throwable);
-	}
 
 	/**
 	 * Called when a {@link union.base.command.SlashCommand SlashCommand}

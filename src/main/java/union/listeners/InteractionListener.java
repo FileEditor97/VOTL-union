@@ -343,7 +343,7 @@ public class InteractionListener extends ListenerAdapter {
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
 				event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(event, "bot.verification.listener.wait_title"))
-					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).queue();
+					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).setEphemeral(true).queue();
 				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS));
 			} else {
 				// Reply with instruction on how to verify, buttons - link and refresh

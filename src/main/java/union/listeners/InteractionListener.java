@@ -40,7 +40,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -788,7 +787,7 @@ public class InteractionListener extends ListenerAdapter {
 		String channelId = event.getComponentId().split(":")[1];
 		String messageId = event.getComponentId().split(":")[2];
 		
-		MessageChannel channel = event.getGuild().getChannelById(MessageChannel.class, channelId);
+		TextChannel channel = event.getGuild().getTextChannelById(channelId);
 		if (channel == null) {
 			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "misc.unknown", "Unknown channel")).queue();
 			return;

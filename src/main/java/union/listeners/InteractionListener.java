@@ -40,7 +40,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -343,7 +342,7 @@ public class InteractionListener extends ListenerAdapter {
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
 				event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(event, "bot.verification.listener.wait_title"))
-					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).queue();
+					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).setEphemeral(true).queue();
 				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS));
 			} else {
 				// Reply with instruction on how to verify, buttons - link and refresh
@@ -788,7 +787,7 @@ public class InteractionListener extends ListenerAdapter {
 		String channelId = event.getComponentId().split(":")[1];
 		String messageId = event.getComponentId().split(":")[2];
 		
-		MessageChannel channel = event.getGuild().getChannelById(MessageChannel.class, channelId);
+		TextChannel channel = event.getGuild().getTextChannelById(channelId);
 		if (channel == null) {
 			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "misc.unknown", "Unknown channel")).queue();
 			return;

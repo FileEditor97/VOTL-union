@@ -18,8 +18,6 @@ package union.base.command;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
@@ -42,23 +40,15 @@ public class CommandClientBuilder
 	private Activity activity = Activity.playing("default");
 	private OnlineStatus status = OnlineStatus.ONLINE;
 	private String ownerId;
-	private String prefix;
-	private String altprefix;
-	private String[] prefixes;
-	private Function<MessageReceivedEvent, String> prefixFunction;
 	private Function<MessageReceivedEvent, Boolean> commandPreProcessFunction;
-	private BiFunction<MessageReceivedEvent, Command, Boolean> commandPreProcessBiFunction;
 	private String serverInvite;
-	private final LinkedList<Command> commands = new LinkedList<>();
 	private final LinkedList<SlashCommand> slashCommands = new LinkedList<>();
 	private final LinkedList<ContextMenu> contextMenus = new LinkedList<>();
 	private String forcedGuildId = null;
 	private String[] devGuildIds;
 	private boolean manualUpsert = false;
 	private CommandListener listener;
-	private boolean useHelp = true;
 	private boolean shutdownAutomatically = true;
-	private Consumer<CommandEvent> helpConsumer;
 	private String helpWord;
 	private ScheduledExecutorService executor;
 	private int linkedCacheSize = 0;
@@ -66,16 +56,15 @@ public class CommandClientBuilder
 	/**
 	 * Builds a {@link union.base.command.impl.CommandClientImpl CommandClientImpl}
 	 * with the provided settings.
-	 * <br>Once built, only the {@link union.base.command.CommandListener CommandListener},
-	 * and {@link union.base.command.Command Command}s can be changed.
+	 * <br>Once built, only the {@link union.base.command.CommandListener CommandListener}.
 	 *
 	 * @return The CommandClient built.
 	 */
 	public CommandClient build()
 	{
-		CommandClient client = new CommandClientImpl(ownerId, prefix, altprefix, prefixes, prefixFunction, commandPreProcessFunction, commandPreProcessBiFunction, activity, status, serverInvite,
-													 new ArrayList<>(commands), new ArrayList<>(slashCommands), new ArrayList<>(contextMenus), forcedGuildId, devGuildIds, manualUpsert, useHelp,
-													 shutdownAutomatically, helpConsumer, helpWord, executor, linkedCacheSize);
+		CommandClient client = new CommandClientImpl(ownerId, commandPreProcessFunction, activity, status, serverInvite,
+													 new ArrayList<>(slashCommands), new ArrayList<>(contextMenus), forcedGuildId, devGuildIds, manualUpsert,
+													 shutdownAutomatically, helpWord, executor, linkedCacheSize);
 		if(listener!=null)
 			client.setListener(listener);
 		return client;
@@ -110,114 +99,6 @@ public class CommandClientBuilder
 	public CommandClientBuilder setOwnerId(long ownerId)
 	{
 		this.ownerId = String.valueOf(ownerId);
-		return this;
-	}
-
-	/**
-	 * Sets the bot's prefix.
-	 * <br>If set null, empty, or not set at all, the bot will use a mention {@literal @Botname} as a prefix.
-	 *
-	 * @param  prefix
-	 *         The prefix for the bot to use
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setPrefix(String prefix)
-	{
-		this.prefix = prefix;
-		return this;
-	}
-
-	/**
-	 * Sets the bot's alternative prefix.
-	 * <br>If set null, the bot will only use its primary prefix prefix.
-	 *
-	 * @param  prefix
-	 *         The alternative prefix for the bot to use
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setAlternativePrefix(String prefix)
-	{
-		this.altprefix = prefix;
-		return this;
-	}
-
-	/**
-	 * Sets an array of prefixes in case it's not enough. Be careful.
-	 *
-	 * @param prefixes
-	 *        The prefixes to use
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setPrefixes(String[] prefixes) {
-		this.prefixes = prefixes;
-		return this;
-	}
-
-	/**
-	 * Sets the Prefix Function. Used if you want custom prefixes per server.
-	 * <br>Be careful, this function should be quick,
-	 * as it's executed every time MessageReceivedEvent is called.
-	 * <br>If function returns null, it will be ignored.
-	 *
-	 * @param prefixFunction
-	 *        The prefix function to execute to use
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setPrefixFunction(Function<MessageReceivedEvent, String> prefixFunction) {
-		this.prefixFunction = prefixFunction;
-		return this;
-	}
-
-	/**
-	 * Sets the pre-process function. This code is executed before every command.<br>
-	 * Returning "true" will allow processing to proceed.<br>
-	 * Returning "false" or "null" will prevent the Command from executing.<br>
-	 * You can use Command to see which command will run.<br>
-	 *
-	 * @param commandPreProcessBiFunction
-	 *        The function to execute
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setCommandPreProcessBiFunction(BiFunction<MessageReceivedEvent, Command, Boolean> commandPreProcessBiFunction) {
-		this.commandPreProcessBiFunction = commandPreProcessBiFunction;
-		return this;
-	}
-
-	/**
-	 * Sets whether the {@link union.base.command.CommandClient CommandClient} will use
-	 * the builder to automatically create a help command or not.
-	 *
-	 * @param  useHelp
-	 *         {@code false} to disable the help command builder, otherwise the CommandClient
-	 *         will use either the default or one provided via {@link union.base.command.CommandClientBuilder#setHelpConsumer(Consumer)}}.
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder useHelpBuilder(boolean useHelp)
-	{
-		this.useHelp = useHelp;
-		return this;
-	}
-
-	/**
-	 * Sets the consumer to run as the bot's help command.
-	 * <br>Setting it to {@code null} or not setting this at all will cause the bot to use
-	 * the default help builder.
-	 *
-	 * @param  helpConsumer
-	 *         A consumer to accept a {@link union.base.command.CommandEvent CommandEvent}
-	 *         when a help command is called.
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setHelpConsumer(Consumer<CommandEvent> helpConsumer)
-	{
-		this.helpConsumer = helpConsumer;
 		return this;
 	}
 
@@ -290,38 +171,6 @@ public class CommandClientBuilder
 	public CommandClientBuilder setStatus(OnlineStatus status)
 	{
 		this.status = status;
-		return this;
-	}
-
-	/**
-	 * Adds a {@link union.base.command.Command Command} and registers it to the
-	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
-	 *
-	 * @param  command
-	 *         The command to add
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder addCommand(Command command)
-	{
-		commands.add(command);
-		return this;
-	}
-
-	/**
-	 * Adds and registers multiple {@link union.base.command.Command Command}s to the
-	 * {@link union.base.command.impl.CommandClientImpl CommandClientImpl} for this session.
-	 * <br>This is the same as calling {@link union.base.command.CommandClientBuilder#addCommand(Command)} multiple times.
-	 *
-	 * @param  commands
-	 *         The Commands to add
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder addCommands(Command... commands)
-	{
-		for(Command command: commands)
-			this.addCommand(command);
 		return this;
 	}
 

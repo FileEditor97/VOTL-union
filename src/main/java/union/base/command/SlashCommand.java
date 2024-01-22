@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -74,8 +75,36 @@ import union.utils.exception.CheckException;
  *
  * @author Olivia (Chew)
  */
-public abstract class SlashCommand extends Command
+public abstract class SlashCommand extends Interaction
 {
+	/**
+	 * The name of the command, allows the command to be called the formats: <br>
+	 * Slash Command: {@code /<command name>}
+	 */
+	@Nonnull
+	protected String name = "null";
+
+	/**
+	 * A small help String that summarizes the function of the command, used in the default help builder,
+	 * and shown in the client for Slash Commands.
+	 */
+	@Nonnull
+	protected String help = "no help available";
+
+	/**
+	 * The {@link union.base.command.Category Category} of the command.
+	 * <br>This can perform any other checks not completed by the default conditional fields.
+	 */
+	protected Category category = null;
+
+	/**
+	 * {@code true} if the command may only be used in an NSFW
+	 * {@link TextChannel} or DMs.
+	 * {@code false} if it may be used anywhere
+	 * <br>Default: {@code false}
+	 */
+	protected boolean nsfwOnly = false;
+
 	/**
 	 * Localization of slash command name. Allows discord to change the language of the name of slash commands in the client.<br>
 	 * Example:<br>
@@ -157,23 +186,6 @@ public abstract class SlashCommand extends Command
 	 * @see OptionData#setAutoComplete(boolean)
 	 */
 	public void onAutoComplete(CommandAutoCompleteInteractionEvent event) {}
-
-	/**
-	 * The main body method of a {@link union.base.command.Command Command}.
-	 * <br>This is the "response" for a successful
-	 * {@link union.base.command.Command#run(CommandEvent) #run(CommandEvent)}.
-	 * <b>
-	 *     Because this is a SlashCommand, this is called, but does nothing.
-	 *     You can still override this if you want to have a separate response for normal [prefix][name].
-	 *     Keep in mind you must add it as a Command via {@link CommandClientBuilder#addCommand(Command)} for it to work properly.
-	 * </b>
-	 *
-	 * @param  event
-	 *         The {@link union.base.command.CommandEvent CommandEvent} that
-	 *         triggered this Command
-	 */
-	@Override
-	protected void execute(CommandEvent event) {}
 
 	/**
 	 * Runs checks for the {@link SlashCommand SlashCommand} with the
@@ -263,6 +275,53 @@ public abstract class SlashCommand extends Command
 		if (client.getOwnerId().equals(event.getUser().getId()))
 			return true;
 		return false;
+	}
+
+	/**
+	 * Checks if the given input represents this Command
+	 *
+	 * @param  input
+	 *         The input to check
+	 *
+	 * @return {@code true} if the input is the name or an alias of the Command
+	 */
+	public boolean isCommandFor(String input)
+	{
+		if(name.equalsIgnoreCase(input))
+			return true;
+		return false;
+	}
+
+	/**
+	 * Gets the {@link union.base.command.SlashCommand#name SlashCommand.name} for the Command.
+	 *
+	 * @return The name for the Command
+	 */
+	@Nonnull
+	public String getName()
+	{
+		return name;
+	}
+
+	/**
+	 * Gets the {@link union.base.command.SlashCommand#help SlashCommand.help} for the Command.
+	 *
+	 * @return The help for the Command
+	 */
+	@Nonnull
+	public String getHelp()
+	{
+		return help;
+	}
+
+	/**
+	 * Gets the {@link union.base.command.SlashCommand#category SlashCommand.category} for the Command.
+	 *
+	 * @return The category for the Command
+	 */
+	public Category getCategory()
+	{
+		return category;
 	}
 
 	/**
@@ -498,5 +557,16 @@ public abstract class SlashCommand extends Command
 	@Nonnull
 	public Map<DiscordLocale, String> getDescriptionLocalization() {
 		return descriptionLocalization;
+	}
+
+	/**
+	 * Checks if this Command can only be used in a {@link net.dv8tion.jda.api.entities.Guild Guild}.
+	 *
+	 * @return {@code true} if this Command can only be used in a Guild, else {@code false} if it can
+	 *         be used outside of one
+	 */
+	public boolean isGuildOnly()
+	{
+		return guildOnly;
 	}
 }

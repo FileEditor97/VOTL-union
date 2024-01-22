@@ -143,7 +143,6 @@ public class App {
 		commandClient = new CommandClientBuilder()
 			.setOwnerId(fileManager.getString("config", "owner-id"))
 			.setServerInvite(Links.DISCORD)
-			.useHelpBuilder(false)
 			.setScheduleExecutor(scheduledExecutor)
 			.setStatus(OnlineStatus.ONLINE)
 			.setActivity(Activity.customStatus(">>>  /help  <<<"))

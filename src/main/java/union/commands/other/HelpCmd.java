@@ -132,7 +132,7 @@ public class HelpCmd extends CommandBase {
 			event.getClient().getSlashCommands().stream().filter(cmd -> cmd.getCategory().getName().contentEquals(filCat)).collect(Collectors.toList())
 		);
 		for (SlashCommand command : commands) {
-			if (!command.isHidden() && (!command.isOwnerCommand() || bot.getCheckUtil().isBotOwner(event.getUser()))) {
+			if (!command.isOwnerCommand() || bot.getCheckUtil().isBotOwner(event.getUser())) {
 				if (!Objects.equals(category, command.getCategory())) {
 					if (category != null) {
 						builder.addField(fieldTitle, fieldValue.toString(), false);
@@ -142,7 +142,6 @@ public class HelpCmd extends CommandBase {
 					fieldValue = new StringBuilder();
 				}
 				fieldValue.append("`").append(prefix==null?" ":prefix).append(command.getName())
-					.append(command.getArguments()==null ? "`" : " "+command.getArguments()+"`")
 					.append(" - ").append(command.getDescriptionLocalization().get(userLocale))
 					.append("\n");
 			}

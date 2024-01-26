@@ -93,12 +93,12 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
-	public void sendError(IReplyCallback event, String... text) {
-		if (text.length > 1) {
-			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, text[0], text[1])).setEphemeral(true).queue();
-		} else {
-			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, text[0])).setEphemeral(true).queue();
-		}
+	public void sendError(IReplyCallback event, String path) {
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, path)).setEphemeral(true).queue();
+	}
+
+	public void sendError(IReplyCallback event, String path, String info) {
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, path, info)).setEphemeral(true).queue();
 	}
 
 	public void sendSuccess(IReplyCallback event, String path) {
@@ -1022,14 +1022,14 @@ public class InteractionListener extends ListenerAdapter {
 	// Blacklist
 	private void buttonBlacklist(ButtonInteractionEvent event) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
-			sendError(event, lu.getText(event, "errors.interaction.no_access"));
+			sendError(event, "errors.interaction.no_access");
 			return;
 		}
 
 		String userId = event.getComponentId().split(":")[1];
 		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
 		if (caseData == null || !caseData.getDuration().isZero()) {
-			sendError(event, lu.getText(event, "bot.moderation.blacklist.expired"));
+			sendError(event, "bot.moderation.blacklist.expired");
 			return;
 		}
 
@@ -1038,12 +1038,12 @@ public class InteractionListener extends ListenerAdapter {
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) {
-			sendError(event, lu.getText(event, "bot.moderation.blacklist.no_groups"));
+			sendError(event, "bot.moderation.blacklist.no_groups");
 			return;
 		}
 
 		if (bot.getHelper() == null) {
-			sendError(event, lu.getText(event, "errors.no_helper"));
+			sendError(event, "errors.no_helper");
 			return;
 		}
 

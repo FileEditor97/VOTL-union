@@ -32,7 +32,7 @@ public class AccessManager extends LiteDBBase {
 	}
 
 	public void removeAll(String guildId) {
-		execute("DELETE FROM %s WHERE (guildId=%s); DELETE FROM %s WHERE (guildId=%s);".formatted(table_role, guildId, table_user, guildId));
+		execute("DELETE FROM %1$s WHERE (guildId=%3$s); DELETE FROM %2$s WHERE (guildId=%3$s);".formatted(table_role, table_user, guildId));
 	}
 
 	public CmdAccessLevel getRoleLevel(String roleId) {
@@ -69,7 +69,7 @@ public class AccessManager extends LiteDBBase {
 
 	public boolean isOperator(String guildId, String userId) {
 		return selectOne("SELECT userId FROM %s WHERE (guildId=%s AND userId=%s AND level=%d)"
-			.formatted(table_role, guildId, userId, CmdAccessLevel.OPERATOR.getLevel()), "userId", String.class) != null;
+			.formatted(table_user, guildId, userId, CmdAccessLevel.OPERATOR.getLevel()), "userId", String.class) != null;
 	}
 
 }

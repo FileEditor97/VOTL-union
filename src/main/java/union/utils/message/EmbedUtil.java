@@ -80,7 +80,7 @@ public class EmbedUtil {
 		if (reason != null)
 			embedBuilder.addField(
 				lu.getText(replyCallback, "errors.additional"),
-				reason,
+				MessageUtil.limitString(reason, 1024),
 				false
 			);
 

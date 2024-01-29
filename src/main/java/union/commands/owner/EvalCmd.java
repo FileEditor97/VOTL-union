@@ -8,6 +8,7 @@ import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -46,10 +47,10 @@ public class EvalCmd extends CommandBase {
 		}
 		args = args.trim();
 		if (args.startsWith("```") && args.endsWith("```")) {
-			if (args.startsWith("```java")) {
+			args = args.substring(3, args.length() - 3);
+			if (args.startsWith("java")) {
 				args = args.substring(4);
 			}
-			args = args.substring(3, args.length() - 3);
 		}
 
 		Map<String, Object> variables = Map.of(
@@ -84,18 +85,12 @@ public class EvalCmd extends CommandBase {
 	private MessageEmbed formatEvalEmbed(DiscordLocale locale, String input, String output, String footer, boolean success) {		
 		EmbedBuilder embed = bot.getEmbedUtil().getEmbed()
 			.setColor(success ? Constants.COLOR_SUCCESS : Constants.COLOR_FAILURE)
-			.addField(lu.getLocalized(locale, "bot.owner.eval.input"), String.format(
-				"```java\n"+
-					"%s\n"+
-					"```",
-				input.substring(0, Math.min(input.length(), 1000))
-				), false)
-			.addField(lu.getLocalized(locale, "bot.owner.eval.output"), String.format(
-				"```groovy\n"+
-					"%s\n"+
-					"```",
-				output.substring(0, Math.min(output.length(), 1000))
-				), false)
+			.addField(lu.getLocalized(locale, "bot.owner.eval.input"),
+				"```groovy\n"+MessageUtil.limitString(input, 1000)+"\n```",
+				false)
+			.addField(lu.getLocalized(locale, "bot.owner.eval.output"),
+				"```groovy\n"+MessageUtil.limitString(output, 1000)+"\n```",
+				false)
 			.setFooter(footer, null);
 
 		return embed.build();

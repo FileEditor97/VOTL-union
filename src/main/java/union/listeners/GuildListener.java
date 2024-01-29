@@ -2,6 +2,9 @@ package union.listeners;
 
 import jakarta.annotation.Nonnull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import union.App;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
@@ -129,6 +132,14 @@ public class GuildListener extends ListenerAdapter {
 		long userId = event.getUser().getIdLong();
 		
 		if (db.verifyCache.isVerified(userId)) {
+			// Check if user is blacklisted
+			List<Integer> groupIds = new ArrayList<Integer>();
+			groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getId()));
+			groupIds.addAll(db.group.getGuildGroups(event.getGuild().getId()));
+			for (int groupId : groupIds) {
+				if (db.blacklist.inGroupUser(groupId, userId)) return;
+			}
+
 			String roleId = db.verify.getVerifyRole(guild.getId());
 			if (roleId == null) return;
 			Role role = guild.getRoleById(roleId);

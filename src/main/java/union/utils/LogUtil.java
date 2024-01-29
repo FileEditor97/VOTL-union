@@ -580,23 +580,27 @@ public class LogUtil {
 	// Server
 	@Nonnull
 	public MessageEmbed accessAdded(DiscordLocale locale, User mod, User userTarget, Role roleTarget, String levelName) {
+		String targetMention = userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention();
+		String targetId = userTarget!=null ? userTarget.getId() : roleTarget.getId();
 		return getEmbed(GREEN_DARK)
 			.setAuthor(localized(locale, "guild.access_added"), null, Optional.ofNullable(userTarget).map(User::getAvatarUrl).orElse(null))
-			.addField(localized(locale, "target"), userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention(), true)
+			.addField(localized(locale, "target"), targetMention, true)
 			.addField(localized(locale, "guild.access_level"), levelName, true)
 			.addField(localized(locale, "enforcer"), mod.getAsMention(), false)
-			.setFooter("ID: "+Optional.ofNullable(userTarget).map(User::getId).orElse(roleTarget.getId()))
+			.setFooter("ID: "+targetId)
 			.build();
 	}
 
 	@Nonnull
 	public MessageEmbed accessRemoved(DiscordLocale locale, User mod, User userTarget, Role roleTarget, String levelName) {
+		String targetMention = userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention();
+		String targetId = userTarget!=null ? userTarget.getId() : roleTarget.getId();
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "guild.access_removed"), null, Optional.ofNullable(userTarget).map(User::getAvatarUrl).orElse(null))
-			.addField(localized(locale, "target"), userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention(), true)
+			.addField(localized(locale, "target"), targetMention, true)
 			.addField(localized(locale, "guild.access_level"), levelName, true)
 			.addField(localized(locale, "enforcer"), mod.getAsMention(), false)
-			.setFooter("ID: "+Optional.ofNullable(userTarget).map(User::getId).orElse(roleTarget.getId()))
+			.setFooter("ID: "+targetId)
 			.build();
 	}
 

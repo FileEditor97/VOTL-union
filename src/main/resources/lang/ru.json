@@ -231,7 +231,7 @@
 				"usage": "eval <код>",
 				"code": {
 					"name": "код",
-					"help": "Введите код для запуска"
+					"help": "Введите код для выполнения, арг - bot, event, jda, guild, client, helper"
 				},
 				"time": "Выполнено за {time} ms",
 				"input": "Вход:",

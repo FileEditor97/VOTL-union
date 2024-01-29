@@ -231,7 +231,7 @@
 				"usage": "eval <code>",
 				"code": {
 					"name": "code",
-					"help": "Enter your code to evaluate"
+					"help": "Enter your code to evaluate, args - bot, event, jda, guild, client, helper"
 				},
 				"time": "Evaluated in {time}ms",
 				"input": "Input:",
@@ -1291,7 +1291,7 @@
 					"cant_view": "Can't view selected group. (Not group's owner or manager)",
 					"empty": "No blacklist entries\nPage: `%d`",
 					"title": "Group's `%d` blacklist (Page %d of %d)",
-					"value": "SteamID: %s\nGuild: `%s`\nModerator: %s\nReason: %s"
+					"value": "SteamID: %s\nServer: `%s`\nModerator: %s\nReason: %s"
 				},
 				"remove": {
 					"help": "Remove user from blacklist",
@@ -1593,7 +1593,7 @@
 				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button.",
 				"close_request": "Hey! {user}, support have indicated that the ticket is now resolved. Would you like to close the ticket or do you have further questions? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
 				"close_auto": "Hi! {user}, this ticket has not received a response for some time. Do you want to close the ticket or is your request still unresolved? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
-				"user_left": "Sadly, the user that created this ticket has left the guild. If they rejoin, it will not automatically re-add them.",
+				"user_left": "Sadly, the user that created this ticket has left the server. If they rejoin, it will not automatically re-add them.",
 				"claimed": "The ticket has been successfully claimed by {user}.",
 				"unclaimed": "The ticket has been successfully un-claimed.",
 				"delete_countdown": "This ticket will be closed in 5 seconds.",

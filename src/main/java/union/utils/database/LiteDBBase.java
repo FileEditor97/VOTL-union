@@ -121,7 +121,7 @@ public class LiteDBBase {
 			ResultSet rs = st.executeQuery();
 
 			try {
-				if (rs.next()) result = rs.getInt("COUNT(*)");
+				if (rs.next()) result = rs.getInt(1);
 			} catch (SQLException ex) {
 				if (!rs.wasNull()) throw ex;
 			}
@@ -131,7 +131,7 @@ public class LiteDBBase {
 		return result;
 	}
 
-	protected Integer getIncrement(final String table) {
+	protected int getIncrement(final String table) {
 		Integer data = selectOne("SELECT seq FROM sqlite_sequence WHERE (name=%s)".formatted(quote(table)), "seq", Integer.class);
 		if (data == null) return 0;
 		return data;

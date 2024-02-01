@@ -28,7 +28,7 @@ public class GuildListener extends ListenerAdapter {
 			if (admin != null && (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser()))) return;
 
 			// Get master guilds IDs and send logs to them
-			helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> 
+			helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> 
 				helper.getLogListener().group.helperInformAction(groupId, event.getGuild(), event.getEntry())
 			);
 		}
@@ -37,7 +37,7 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildUnban(GuildUnbanEvent event) {
 		// Check if users is in group's blacklist
-		helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> {
+		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> {
 			if (helper.getDBUtil().blacklist.inGroupUser(groupId, event.getUser().getIdLong())) {
 				event.getGuild().ban(event.getUser(), 0, TimeUnit.SECONDS).reason("~ BLACKLIST! Unban forbidden ~ group ID: "+groupId).queueAfter(10, TimeUnit.SECONDS,
 					null,
@@ -49,14 +49,14 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildLeave(GuildLeaveEvent event) {
-		helper.getDBUtil().group.getGuildGroups(event.getGuild().getId()).forEach(groupId -> 
+		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> 
 			helper.getLogListener().group.helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
 		);
 	}
 
 	@Override
 	public void onUnavailableGuildLeave(UnavailableGuildLeaveEvent event) {
-		helper.getDBUtil().group.getGuildGroups(event.getGuildId()).forEach(groupId -> 
+		helper.getDBUtil().group.getGuildGroups(event.getGuildIdLong()).forEach(groupId -> 
 			helper.getLogListener().group.helperInformLeave(groupId, null, event.getGuildId())
 		);
 	}

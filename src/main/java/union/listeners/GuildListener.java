@@ -44,30 +44,31 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildLeave(@Nonnull GuildLeaveEvent event) {
 		String guildId = event.getGuild().getId();
+		long guildIdLong = event.getGuild().getIdLong();
 
 		// Deletes every information connected to this guild from bot's DB (except ban tables)
 		// May be dangerous, but provides privacy
-		for (Integer groupId : db.group.getGuildGroups(guildId)) {
+		for (Integer groupId : db.group.getGuildGroups(guildIdLong)) {
 			String groupName = db.group.getName(groupId);
 			String guildName = event.getGuild().getName();
-			String masterId = db.group.getMaster(groupId);
+			Long masterId = db.group.getOwner(groupId);
 			String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
 
-			String masterChannelId = db.guild.getLogChannel(LogChannels.GROUPS, masterId);
+			String masterChannelId = db.guild.getLogChannel(LogChannels.GROUPS, String.valueOf(masterId));
 			if (masterChannelId != null) {
 				TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
 				if (channel != null) {
 					try {
-						MessageEmbed masterEmbed = bot.getLogUtil().groupOwnerLeftEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildId, groupId, groupName);
+						MessageEmbed masterEmbed = bot.getLogUtil().groupOwnerLeftEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildIdLong, groupId, groupName);
 						channel.sendMessageEmbeds(masterEmbed).queue();
 					} catch (InsufficientPermissionException ex) {}
 				}
 			}
 		}
-		for (Integer groupId : db.group.getOwnedGroups(guildId)) {
+		for (Integer groupId : db.group.getOwnedGroups(guildIdLong)) {
 			String groupName = db.group.getName(groupId);
-			for (String gid : db.group.getGroupGuildIds(groupId)) {
-				String channelId = db.guild.getLogChannel(LogChannels.GROUPS, gid);
+			for (Long memberId : db.group.getGroupMembers(groupId)) {
+				String channelId = db.guild.getLogChannel(LogChannels.GROUPS, memberId.toString());
 				if (channelId == null) {
 					continue;
 				}
@@ -77,7 +78,7 @@ public class GuildListener extends ListenerAdapter {
 				}
 
 				try {
-					MessageEmbed embed = bot.getLogUtil().groupMemberDeletedEmbed(channel.getGuild().getLocale(), guildId, event.getGuild().getIconUrl(), groupId, groupName);
+					MessageEmbed embed = bot.getLogUtil().groupMemberDeletedEmbed(channel.getGuild().getLocale(), guildIdLong, event.getGuild().getIconUrl(), groupId, groupName);
 					channel.sendMessageEmbeds(embed).queue();
 				} catch (InsufficientPermissionException ex) {
 					continue;
@@ -85,8 +86,8 @@ public class GuildListener extends ListenerAdapter {
 			}
 			db.group.clearGroup(groupId);
 		}
-		db.group.removeFromGroups(guildId);
-		db.group.deleteAll(guildId);
+		db.group.removeGuildFromGroups(guildIdLong);
+		db.group.deleteGuildGroups(guildIdLong);
 
 		db.access.removeAll(guildId);
 		db.module.removeAll(guildId);
@@ -98,7 +99,6 @@ public class GuildListener extends ListenerAdapter {
 		db.panels.deleteAll(guildId);
 		db.tags.deleteAll(guildId);
 		db.tempRole.removeAll(guildId);
-		Long guildIdLong = event.getGuild().getIdLong();
 		db.autopunish.removeGuild(guildIdLong);
 		db.strike.removeGuild(guildIdLong);
 		
@@ -128,16 +128,20 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
 		// Checks cache on local DB, if user is verified, gives out the role
-		Guild guild = event.getGuild();
 		long userId = event.getUser().getIdLong();
 		
 		if (db.verifyCache.isVerified(userId)) {
+			Guild guild = event.getGuild();
 			// Check if user is blacklisted
 			List<Integer> groupIds = new ArrayList<Integer>();
-			groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getId()));
-			groupIds.addAll(db.group.getGuildGroups(event.getGuild().getId()));
+			groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
+			groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
+			Long cachedSteam64 = db.verifyCache.getSteam64(userId);
 			for (int groupId : groupIds) {
-				if (db.blacklist.inGroupUser(groupId, userId)) return;
+				// if user is blacklisted in group either by discordID or Steam64
+				// and joined server is not appeal server - do not add verify role
+				if (db.blacklist.inGroupUser(groupId, userId) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) return;
+				if (cachedSteam64!=null && db.blacklist.inGroupSteam64(groupId, cachedSteam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) return;
 			}
 
 			String roleId = db.verify.getVerifyRole(guild.getId());
@@ -145,7 +149,6 @@ public class GuildListener extends ListenerAdapter {
 			Role role = guild.getRoleById(roleId);
 			if (role == null) return;
 
-			Long cachedSteam64 = db.verifyCache.getSteam64(userId);
 			guild.addRoleToMember(event.getUser(), role).reason(cachedSteam64 == null ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64).queue(success -> {
 				bot.getLogListener().verify.onVerified(event.getUser(), cachedSteam64, guild);
 			});

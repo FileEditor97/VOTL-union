@@ -150,8 +150,8 @@ public class SyncCmd extends CommandBase {
 			}
 
 			Integer groupId = event.optInteger("group");
-			String guildId = event.getGuild().getId();
-			if ( !(bot.getDBUtil().group.isMaster(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
+			long guildId = event.getGuild().getIdLong();
+			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
 				editError(event, path+".no_group", "Group ID: `"+groupId.toString()+"`");
 				return;
 			}
@@ -168,8 +168,7 @@ public class SyncCmd extends CommandBase {
 					e -> msg.getId().equals(e.getMessageId()) && e.getComponentId().equals("button:confirm"),
 					action -> {
 						bot.getDBUtil().blacklist.removeUser(groupId, target.getIdLong());
-						List<String> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId);
-						if (guilds.isEmpty()) {
+						if (bot.getDBUtil().group.countMembers(groupId) < 1) {
 							editError(event, path+".no_guilds");
 							return;
 						};
@@ -224,8 +223,8 @@ public class SyncCmd extends CommandBase {
 			}
 
 			Integer groupId = event.optInteger("group");
-			String guildId = event.getGuild().getId();
-			if ( !(bot.getDBUtil().group.isMaster(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
+			long guildId = event.getGuild().getIdLong();
+			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
 				editError(event, path+".no_group", "Group ID: `"+groupId.toString()+"`");
 				return;
 			}
@@ -241,8 +240,7 @@ public class SyncCmd extends CommandBase {
 					ButtonInteractionEvent.class,
 					e -> msg.getId().equals(e.getMessageId()) && e.getComponentId().equals("button:confirm"),
 					action -> {
-						List<String> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId);
-						if (guilds.isEmpty()) {
+						if (bot.getDBUtil().group.countMembers(groupId) < 1) {
 							editError(event, path+".no_guilds");
 							return;
 						};

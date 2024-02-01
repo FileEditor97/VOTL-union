@@ -321,23 +321,24 @@ public class InteractionListener extends ListenerAdapter {
 
 		// Check if user is blacklisted
 		List<Integer> groupIds = new ArrayList<Integer>();
-		groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getId()));
-		groupIds.addAll(db.group.getGuildGroups(event.getGuild().getId()));
-		/* for (int groupId : groupIds) {
-			if (db.blacklist.inGroupUser(groupId, member.getIdLong())) {
+		groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
+		groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
+		for (int groupId : groupIds) {
+			if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 				sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
 				return;
 			}
-		} */
+		}
 
 		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
 		if (steam64 != null) {
-			/* for (int groupId : groupIds) {
-				if (db.blacklist.inGroupSteam64(groupId, steam64)) {
+			for (int groupId : groupIds) {
+				// Check if steam64 is not blacklisted
+				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 					sendError(event, "bot.verification.blacklisted", "SteamID: "+bot.getSteamUtil().convertSteam64toSteamID(steam64));
 					return;
 				}
-			} */
+			}
 			// Give verify role to user
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
 				success -> {
@@ -1046,7 +1047,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		String guildId = event.getGuild().getId();
+		long guildId = event.getGuild().getIdLong();
 		List<Integer> groupIds = new ArrayList<Integer>();
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));

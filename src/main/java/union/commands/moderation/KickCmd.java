@@ -123,7 +123,7 @@ public class KickCmd extends CommandBase {
 
 	private void buttonSync(SlashCommandEvent event, final Message message, User tu, String reason) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) return;
-		String guildId = event.getGuild().getId();
+		long guildId = event.getGuild().getIdLong();
 
 		List<Integer> groupIds = new ArrayList<Integer>();
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));

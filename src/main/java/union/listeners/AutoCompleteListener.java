@@ -41,7 +41,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 			event.replyChoices(choices).queue();
 		}
 		else if (focusedOption.equals("group_owned")) {
-			List<Integer> groupIds = db.group.getOwnedGroups(event.getGuild().getId());
+			List<Integer> groupIds = db.group.getOwnedGroups(event.getGuild().getIdLong());
 			if (groupIds.isEmpty()) {
 				event.replyChoices(Collections.emptyList()).queue();
 			} else {
@@ -55,7 +55,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 			}
 		}
 		else if (focusedOption.equals("group_joined")) {
-			List<Integer> groupIds = db.group.getGuildGroups(event.getGuild().getId());
+			List<Integer> groupIds = db.group.getGuildGroups(event.getGuild().getIdLong());
 			if (groupIds.isEmpty()) {
 				event.replyChoices(Collections.emptyList()).queue();
 			} else {
@@ -70,8 +70,8 @@ public class AutoCompleteListener extends ListenerAdapter {
 		}
 		else if (focusedOption.equals("group")) {
 			List<Integer> groupIds = new ArrayList<Integer>();
-			groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getId()));
-			groupIds.addAll(db.group.getManagedGroups(event.getGuild().getId()));
+			groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getIdLong()));
+			groupIds.addAll(db.group.getManagedGroups(event.getGuild().getIdLong()));
 			if (groupIds.isEmpty()) {
 				event.replyChoices(Collections.emptyList()).queue();
 			} else {

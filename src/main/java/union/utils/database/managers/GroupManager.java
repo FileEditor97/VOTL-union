@@ -36,7 +36,7 @@ public class GroupManager extends LiteDBBase {
 	}
 
 	public Long getOwner(int groupId) {
-		return selectOne("SELECT masterId FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "ownerId", Long.class);
+		return selectOne("SELECT ownerId FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "ownerId", Long.class);
 	}
 
 	public List<Integer> getOwnedGroups(long guildId) {

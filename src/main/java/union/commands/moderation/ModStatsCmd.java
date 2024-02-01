@@ -39,33 +39,35 @@ public class ModStatsCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-
 		Member mod = event.optMember("user", event.getMember());
 		long guildId = event.getGuild().getIdLong();
-		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(7, ChronoUnit.DAYS));
-		if (count7 == null) {
-			editError(event, path+".empty");
-			return;
-		}
+
 		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(30, ChronoUnit.DAYS));
-		if (count30 == null) {
+		int roles30 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(30, ChronoUnit.DAYS), true);
+		if (count30.isEmpty() && roles30==0) {
 			editError(event, path+".empty");
 			return;
 		}
 
+		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(7, ChronoUnit.DAYS));
+		int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(7, ChronoUnit.DAYS), true);
+
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setAuthor(mod.getUser().getName(), mod.getAvatarUrl())
+			.setAuthor(mod.getUser().getName(), null, mod.getEffectiveAvatarUrl())
 			.setTitle(lu.getText(event, path+".title"))
 			.setFooter("ID: "+mod.getId())
 			.setTimestamp(Instant.now());
 
 		int strikes7 = count7.getOrDefault(CaseType.STRIKE_1.getType(), 0)+count7.getOrDefault(CaseType.STRIKE_2.getType(), 0)+count7.getOrDefault(CaseType.STRIKE_3.getType(), 0);
 		int strikes30 = count30.getOrDefault(CaseType.STRIKE_1.getType(), 0)+count30.getOrDefault(CaseType.STRIKE_2.getType(), 0)+count30.getOrDefault(CaseType.STRIKE_3.getType(), 0);
-		builder.addField(lu.getText(event, path+".strikes"), lu.getText(event, path+".last").formatted(strikes7, strikes30), false)
-			.addField(lu.getText(event, path+".mutes"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.MUTE.getType(), 0), count30.getOrDefault(CaseType.MUTE.getType(), 0)), false)
-			.addField(lu.getText(event, path+".kicks"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.KICK.getType(), 0), count30.getOrDefault(CaseType.KICK.getType(), 0)), false)
-			.addField(lu.getText(event, path+".bans"), lu.getText(event, path+".last").formatted(count7.getOrDefault(CaseType.BAN.getType(), 0), count30.getOrDefault(CaseType.BAN.getType(), 0)), false)
-			.addField(lu.getText(event, path+".total"), lu.getText(event, path+".last").formatted(count7.values().stream().reduce(0, Integer::sum), count30.values().stream().reduce(0, Integer::sum)), false);
+
+		builder.addField(lu.getText(event, path+".strikes"), "%2d | %d".formatted(strikes7, strikes30), true)
+			.addField(lu.getText(event, path+".mutes"), "%2d | %d".formatted(count7.getOrDefault(CaseType.MUTE.getType(), 0), count30.getOrDefault(CaseType.MUTE.getType(), 0)), true)
+			.addField(lu.getText(event, path+".kicks"), "%2d | %d".formatted(count7.getOrDefault(CaseType.KICK.getType(), 0), count30.getOrDefault(CaseType.KICK.getType(), 0)), true)
+			.addField(lu.getText(event, path+".bans"), "%2d | %d".formatted(count7.getOrDefault(CaseType.BAN.getType(), 0), count30.getOrDefault(CaseType.BAN.getType(), 0)), true)
+			.addField(lu.getText(event, path+".roles"), "%2d | %d".formatted(roles7, roles30), true)
+			.addBlankField(true)
+			.addField(lu.getText(event, path+".total"), "%2d | %d".formatted(count7.values().stream().reduce(0, Integer::sum), count30.values().stream().reduce(0, Integer::sum)), false);
 		
 		editHookEmbed(event, builder.build());
 	}

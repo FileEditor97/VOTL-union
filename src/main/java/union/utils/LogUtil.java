@@ -87,7 +87,7 @@ public class LogUtil {
 			.setColor(DEFAULT)
 			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), lu.getLocalized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()))
 			.addField(localized(locale, "reason"), caseData.getReason(), true);
-		if (caseData.isActive())
+		if (caseData.isActive() && !caseData.getDuration().isNegative())
 			builder.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
 				localized(locale, "temporary").formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false)), true);
 		return builder.build();

@@ -35,7 +35,7 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
 	implementation 'com.jayway.jsonpath:json-path:2.9.0'			// json path-er
 	// https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-	implementation 'org.xerial:sqlite-jdbc:3.45.0.0'				// sqlite database
+	implementation 'org.xerial:sqlite-jdbc:3.45.1.0'				// sqlite database
 	// https://mvnrepository.com/artifact/com.mysql/mysql-connector-j
 	implementation 'com.mysql:mysql-connector-j:8.3.0'				// mysql database (Union)
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup

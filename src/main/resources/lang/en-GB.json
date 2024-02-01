@@ -5,17 +5,16 @@
 	"errors": {
 		"title": "Error",
 		"additional": "Additional info:",
-		"unknown": "{EMOTE_WARNING} Something went wrong!\nReport this error to bot's Owner/Developer in support server!",
-		"error": "{EMOTE_WARNING} Something went wrong!\n*See message below.*",
+		"unknown": "{EMOTE_WARNING_C} Something went wrong!\nReport this error to bot's Owner/Developer in support server!",
+		"error": "{EMOTE_WARNING_C} Something went wrong!",
 		"missing_perms": {
 			"self": "I lack the permission `{permission}` for this.",
 			"self_channel": "I lack the permission `{permission}` in the channel {channel} to do this.",
 			"other": "You lack the permission `{permission}` for this command.",
 			"other_channel": "You lack the permission `{permission}` in the channel {channel} to do this command."
 		},
-		"no_send_perm": "I have no permission to send messages in your channel. Pls fix!",
+		"no_send_perm": "I have no permission to send messages in your channel. Please, fix!",
 		"no_channel": "You don't own/has any voice channel.",
-		"guild_not_setup": "Server is not configured! Check `/help` for setup command.",
 		"command": {
 			"not_owner": "Only an owner may run this command.",
 			"nsfw": "This command may only be used in NSFW text channels!",
@@ -1099,9 +1098,9 @@
 						"name": "name",
 						"help": "Enter name for new Group"
 					},
-					"shared": {
-						"name": "shared",
-						"help": "Can other servers join this Group by ID? (false)"
+					"appeal_server": {
+						"name": "appeal_server",
+						"help": "(Optional) Enter appeal server's ID. This server will be excluded from sync bans."
 					},
 					"max_amount": "This server has reached maximum amount of groups which it can be master of (max - 3).",
 					"done": "Group `{group_name}` successfully created!\n\n*Group ID: `{group_id}`*\n*Others can join: {is_shared}*"
@@ -1137,34 +1136,6 @@
 					"is_member": "Selected server is already member of this Group.",
 					"no_guild": "Selected server not found.",
 					"done": "Added server __{server_name}__ (`{server_id}`) to Group `{group_name}`!"
-				},
-				"join": {
-					"help": "Join existing Group",
-					"usage": "join <Group ID>",
-					"id": {
-						"name": "id",
-						"help": "Enter Group ID"
-					},
-					"max_amount": "This server has reached maximum amount of Groups it can join (max - 5).",
-					"no_group": "Couldn't find Group by entered ID.",
-					"failed_join": "Failed to join Group.",
-					"is_member": "This server is already member of this Group.",
-					"embed_title": "Confirm joining",
-					"embed_value": "**Are you sure you want to join this sync group?**\nAny bans that are made by this group master will be synced with this server.\n\nGroup name: {group_name}\nGroup ID: `{group_id}`",
-					"button_confirm": "YES",
-					"button_abort": "NO (auto in 20 sec)",
-					"done": "Successfully joined Group `{group_name}`.",
-					"abort": "Aborted, this server will not join this Group."
-				},
-				"leave": {
-					"help": "Leave Group",
-					"usage": "leave <Group>",
-					"group_joined": {
-						"name": "group_joined",
-						"help": "Select Group"
-					},
-					"no_group": "Couldn't find requested server Group.",
-					"done": "Successfully left Group `{group_name}`!\n\n*Group ID: {group_id}*"
 				},
 				"remove": {
 					"help": "Remove server from Group",
@@ -1266,13 +1237,13 @@
 					"help": "Select user"
 				},
 				"empty": "No statistics for 30 days.",
-				"title": "Moderation statistics",
-				"last": " 7 days: %d\n30 days: %d",
+				"title": "Moderation statistics\n7 days | 30 days",
 				"mutes": "Mutes",
 				"kicks": "Kicks",
 				"bans": "Bans",
 				"strikes": "Strikes",
-				"total": "Total"
+				"roles": "Roles",
+				"total": "**Total**"
 			},
 			"blacklist": {
 				"help": "Manage group's blacklist",

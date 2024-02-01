@@ -51,7 +51,7 @@ public class ScheduledCheck {
 		}).thenRunAsync(() -> {
 			checkExpiredTempRoles();
 		}).thenRunAsync(() -> {
-			checkWarnsExpired();
+			checkExpiredStrikes();
 		});
 	}
 
@@ -139,7 +139,7 @@ public class ScheduledCheck {
 		}
 	}
 
-	private void checkWarnsExpired() {
+	private void checkExpiredStrikes() {
 		try {
 			List<Map<String, Object>> expired = db.strike.getExpired(Instant.now());
 			if (expired.isEmpty()) return;

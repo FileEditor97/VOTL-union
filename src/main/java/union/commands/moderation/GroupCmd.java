@@ -53,7 +53,8 @@ public class GroupCmd extends CommandBase {
 			this.name = "create";
 			this.path = "bot.moderation.group.create";
 			this.options = List.of(
-				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"), true).setMaxLength(120)
+				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"), true).setMaxLength(120),
+				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help")).setRequiredLength(12, 20)
 			);
 			this.cooldown = 30;
 			this.cooldownScope = CooldownScope.GUILD;
@@ -61,15 +62,30 @@ public class GroupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
+			event.deferReply().queue();
+			long guildId = event.getGuild().getIdLong();
 			if (bot.getDBUtil().group.getOwnedGroups(guildId).size() >= 3) {
-				createError(event, path+".max_amount");
+				editError(event, path+".max_amount");
 				return;
 			}
 
 			String groupName = event.optString("name");
 
-			bot.getDBUtil().group.create(guildId, groupName);
+			long appealGuildId = 0L;
+			if (event.hasOption("appeal_server")) {
+				try {
+					appealGuildId = Long.parseLong(event.optString("appeal_server"));
+				} catch (NumberFormatException ex) {
+					editError(event, "errors.error", ex.getMessage());
+					return;
+				}
+				if (appealGuildId != 0L && event.getJDA().getGuildById(appealGuildId) == null) {
+					editError(event, "errors.error", "Unknown appeal server ID.\nReceived: "+appealGuildId);
+					return;
+				}
+			}
+			
+			bot.getDBUtil().group.create(guildId, groupName, appealGuildId);
 			Integer groupId = bot.getDBUtil().group.getIncrement();
 			bot.getLogListener().group.onCreation(event, groupId, groupName);
 
@@ -80,7 +96,7 @@ public class GroupCmd extends CommandBase {
 					.replace("{is_shared}", Emotes.CROSS_C.getEmote())
 				)
 				.build();
-			createReplyEmbed(event, embed);
+			editHookEmbed(event, embed);
 		}
 
 	}
@@ -93,7 +109,7 @@ public class GroupCmd extends CommandBase {
 			this.name = "delete";
 			this.path = "bot.moderation.group.delete";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0)
+				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(1)
 			);
 			this.cooldown = 30;
 			this.cooldownScope = CooldownScope.GUILD;
@@ -101,20 +117,21 @@ public class GroupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			Integer groupId = event.optInteger("group_owned");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null) {
-				createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
+			Long ownerId = bot.getDBUtil().group.getOwner(groupId);
+			if (ownerId == null) {
+				editError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
-			if (!event.getGuild().getId().equals(masterId)) {
-				createError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
+			if (event.getGuild().getIdLong() != ownerId) {
+				editError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
 
 			String groupName = bot.getDBUtil().group.getName(groupId);
 
-			bot.getDBUtil().group.delete(groupId);
+			bot.getDBUtil().group.deleteGroup(groupId);
 			bot.getLogListener().group.onDeletion(event, groupId, groupName);
 
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
@@ -123,7 +140,7 @@ public class GroupCmd extends CommandBase {
 					lu.getText(event, path+".done").replace("{group_name}", groupName).replace("{group_id}", groupId.toString())
 				)
 				.build();
-			createReplyEmbed(event, embed);
+			editHookEmbed(event, embed);
 		}
 
 	}
@@ -138,32 +155,39 @@ public class GroupCmd extends CommandBase {
 			this.name = "add";
 			this.path = "bot.moderation.group.add";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
-				new OptionData(OptionType.STRING, "server", lu.getText(path+".server.help"), true).setRequiredLength(16, 20),
-				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help"), false)
+				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(1),
+				new OptionData(OptionType.STRING, "server", lu.getText(path+".server.help"), true).setRequiredLength(12, 20),
+				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help"))
 			);
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
 			Integer groupId = event.optInteger("group_owned");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null) {
-				createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
+			Long ownerId = bot.getDBUtil().group.getOwner(groupId);
+			if (ownerId == null) {
+				editError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
-			if (!event.getGuild().getId().equals(masterId)) {
-				createError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
+			if (event.getGuild().getIdLong() != ownerId) {
+				editError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
 
-			String targetId = event.optString("server");
-			if (event.getGuild().getId().equals(targetId)) {
-				createError(event, path+".failed_join", "This server is this Group's owner.\nGroup ID: `%s`".formatted(groupId));
+			long targetId;
+			try {
+				targetId = Long.parseLong(event.optString("server"));
+			} catch (NumberFormatException ex) {
+				editError(event, "errors.error", ex.getMessage());
 				return;
 			}
-			if (bot.getDBUtil().group.alreadyMember(groupId, targetId)) {
-				createError(event, path+".is_member", "Group ID: `%s`".formatted(groupId));
+			if (event.getGuild().getIdLong() == targetId) {
+				editError(event, path+".failed_join", "This server is this Group's owner.\nGroup ID: `%s`".formatted(groupId));
+				return;
+			}
+			if (bot.getDBUtil().group.isMember(groupId, targetId)) {
+				editError(event, path+".is_member", "Group ID: `%s`".formatted(groupId));
 				return;
 			}
 			
@@ -174,13 +198,13 @@ public class GroupCmd extends CommandBase {
 			try {
 				guild = event.getJDA().getGuildById(targetId);
 			} catch (NumberFormatException ex) {
-				createError(event, path+".no_guild", "Server ID: `%s`".formatted(targetId));
+				editError(event, path+".no_guild", "Server ID: `%d`".formatted(targetId));
 				return;
 			} 
 			if (guild == null) {
 				guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
 				if (guild == null) {
-					createError(event, path+".no_guild", "Server ID: `%s`".formatted(targetId));
+					editError(event, path+".no_guild", "Server ID: `%d`".formatted(targetId));
 					return;
 				} else {
 					bot.getDBUtil().group.add(groupId, targetId, canManage);
@@ -194,132 +218,14 @@ public class GroupCmd extends CommandBase {
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
 				.setDescription(
-					lu.getText(event, path+".done").replace("{server_id}", targetId).replace("{server_name}", guild.getName())
+					lu.getText(event, path+".done").replace("{server_id}", String.valueOf(targetId)).replace("{server_name}", guild.getName())
 						.replace("{group_name}", groupName)
 				)
 				.build();
-			createReplyEmbed(event, embed);
+			editHookEmbed(event, embed);
 		}
 
 	}
-
-	/* private class Join extends SlashCommand {
-
-		public Join(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
-			this.name = "join";
-			this.path = "bot.moderation.group.join";
-			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"), true).setMinValue(0)
-			);
-			this.cooldown = 30;
-			this.cooldownScope = CooldownScope.GUILD;
-		}
-
-		@Override
-		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
-			if (bot.getDBUtil().group.getGuildGroups(guildId).size() >= 5) {
-				createError(event, path+".max_amount");
-				return;
-			}
-
-			Integer groupId = event.optInteger("id");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null) {
-				createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
-				return;
-			}
-			if (event.getGuild().getId().equals(masterId)) {
-				createError(event, path+".failed_join", "This server is this Group's owner.\nGroup ID: `%s`".formatted(groupId));
-				return;
-			}
-			if (!bot.getDBUtil().group.isShared(groupId)) {
-				createError(event, path+".failed_join", "Can't join this Group.\nGroup ID: `%s`".formatted(groupId));
-				return;
-			}
-			if (bot.getDBUtil().group.alreadyMember(groupId, guildId)) {
-				createError(event, path+".is_member", "Group ID: `%s`".formatted(groupId));
-				return;
-			}
-
-			event.deferReply(true).queue();
-			String groupName = bot.getDBUtil().group.getName(groupId);
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setTitle(lu.getText(event, path+".embed_title"))
-				.setDescription(lu.getText(event, path+".embed_value").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
-				.build();
-			ActionRow buttons = ActionRow.of(
-				Button.of(ButtonStyle.PRIMARY, "button:confirm", lu.getText(event, path+".button_confirm")),
-				Button.of(ButtonStyle.DANGER, "button:abort", lu.getText(event, path+".button_abort"))
-			);
-			event.getHook().editOriginalEmbeds(embed).setComponents(buttons).queue(msg -> {
-				waiter.waitForEvent(
-					ButtonInteractionEvent.class,
-					e -> msg.getId().equals(e.getMessageId()) && (e.getComponentId().equals("button:confirm") || e.getComponentId().equals("button:abort")),
-					action -> {
-					EmbedBuilder embedEdit = bot.getEmbedUtil().getEmbed(event);
-						if (action.getComponentId().equals("button:confirm")) {
-							bot.getDBUtil().group.add(groupId, guildId, false);
-							bot.getLogListener().group.onGuildJoined(event, groupId, groupName);
-
-							embedEdit.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done").replace("{group_name}", groupName));
-							event.getHook().editOriginalEmbeds(embedEdit.build()).setComponents().queue();
-						} else {
-							embedEdit.setColor(Constants.COLOR_FAILURE).setDescription(lu.getText(event, path+".abort"));
-							event.getHook().editOriginalEmbeds(embedEdit.build()).setComponents().queue();
-						}
-					},
-					20,
-					TimeUnit.SECONDS,
-					() -> {
-						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".abort")).setColor(Constants.COLOR_FAILURE).build())
-							.setComponents().queue();
-					}
-				);
-			});
-		}
-
-	} */
-
-	/* private class Leave extends SlashCommand {
-
-		public Leave(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
-			this.name = "leave";
-			this.path = "bot.moderation.group.leave";
-			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "group_joined", lu.getText(path+".group_joined.help"), true, true).setMinValue(0)
-			);
-		}
-
-		@Override
-		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
-			Integer groupId = event.optInteger("group_joined");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null || !bot.getDBUtil().group.alreadyMember(groupId, guildId)) {
-				createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
-				return;
-			}
-
-			String groupName = bot.getDBUtil().group.getName(groupId);
-
-			bot.getDBUtil().group.remove(groupId, guildId);
-			bot.getLogListener().group.onGuildLeft(event, groupId, groupName);
-
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
-				.setDescription(
-					lu.getText(event, path+".done").replace("{group_name}", groupName).replace("{group_id}", groupId.toString())
-				)
-				.build();
-			event.replyEmbeds(embed).queue();
-		}
-
-	} */
 
 	private class Remove extends SlashCommand {
 
@@ -335,20 +241,19 @@ public class GroupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			Integer groupId = event.optInteger("group_owned");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null) {
-				createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
-				return;
-			}
-			if (!event.getGuild().getId().equals(masterId)) {
-				createError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
-				return;
-			}
-
 			event.deferReply(true).queue();
+			Integer groupId = event.optInteger("group_owned");
+			Long ownerId = bot.getDBUtil().group.getOwner(groupId);
+			if (ownerId == null) {
+				editError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
+				return;
+			}
+			if (event.getGuild().getIdLong() != ownerId) {
+				editError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
+				return;
+			}
 
-			List<Guild> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId).stream().map(id -> {
+			List<Guild> guilds = bot.getDBUtil().group.getGroupMembers(groupId).stream().map(id -> {
 				Guild guild = event.getJDA().getGuildById(id);
 				if (guild == null) {
 					guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
@@ -371,14 +276,14 @@ public class GroupCmd extends CommandBase {
 				.setMaxValues(1)
 				.addOptions(guilds.stream().map(guild -> {
 					return SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId());
-				}).toList())
+				}).limit(25).toList())
 				.build();
 			event.getHook().editOriginalEmbeds(embed).setActionRow(menu).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
 					e -> e.getComponentId().equals("menu:remove-guild") && e.getMessageId().equals(msg.getId()),
 					actionMenu -> {
-						String targetId = actionMenu.getSelectedOptions().get(0).getValue();
+						Long targetId = Long.valueOf(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
 						if (targetGuild == null)
 							targetGuild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
@@ -422,13 +327,13 @@ public class GroupCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			Integer groupId = event.optInteger("group_owned");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null) {
-				createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
+			Long ownerId = bot.getDBUtil().group.getOwner(groupId);
+			if (ownerId == null) {
+				createError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
-			if (!event.getGuild().getId().equals(masterId)) {
-				createError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
+			if (event.getGuild().getIdLong() != ownerId) {
+				createError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
 
@@ -467,19 +372,19 @@ public class GroupCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 			Integer groupId = event.optInteger("group_owned");
-			String masterId = bot.getDBUtil().group.getMaster(groupId);
-			if (masterId == null) {
-				editError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
+			Long ownerId = bot.getDBUtil().group.getOwner(groupId);
+			if (ownerId == null) {
+				editError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
-			if (!event.getGuild().getId().equals(masterId)) {
-				editError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
+			if (event.getGuild().getIdLong() != ownerId) {
+				editError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
 
 			Boolean canManage = event.optBoolean("manage", false);
 
-			List<Guild> guilds = bot.getDBUtil().group.getGroupGuildIds(groupId).stream().map(id -> {
+			List<Guild> guilds = bot.getDBUtil().group.getGroupMembers(groupId).stream().map(id -> {
 				Guild guild = event.getJDA().getGuildById(id);
 				if (guild == null) {
 					guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
@@ -502,14 +407,14 @@ public class GroupCmd extends CommandBase {
 				.setMaxValues(1)
 				.addOptions(guilds.stream().map(guild -> {
 					return SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId());
-				}).toList())
+				}).limit(25).toList())
 				.build();
 			event.getHook().editOriginalEmbeds(embed).setActionRow(menu).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
 					e -> e.getComponentId().equals("menu:select-guild") && e.getMessageId().equals(msg.getId()),
 					actionMenu -> {
-						String targetId = actionMenu.getSelectedOptions().get(0).getValue();
+						Long targetId = Long.valueOf(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
 
 						bot.getDBUtil().group.setManage(groupId, targetId, canManage);
@@ -550,29 +455,29 @@ public class GroupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			if (event.hasOption("group_owned")) {
 				// View owned Group information - name, every guild info (name, ID, member count)
 				Integer groupId = event.optInteger("group_owned");
-				String masterId = bot.getDBUtil().group.getMaster(groupId);
-				if (masterId == null) {
-					createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
+				Long ownerId = bot.getDBUtil().group.getOwner(groupId);
+				if (ownerId == null) {
+					createError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
 					return;
 				}
-				if (!event.getGuild().getId().equals(masterId)) {
-					createError(event, path+".not_owned", "Group ID: `%s`\nGroup owner's ID: `%s`".formatted(groupId, masterId));
+				if (event.getGuild().getIdLong() != ownerId) {
+					createError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
 					return;
 				}
 
 				String groupName = bot.getDBUtil().group.getName(groupId);
-				List<String> groupGuildIds = bot.getDBUtil().group.getGroupGuildIds(groupId);
-				Integer groupSize = groupGuildIds.size();
+				List<Long> memberIds = bot.getDBUtil().group.getGroupMembers(groupId);
+				Integer groupSize = memberIds.size();
 
 				EmbedBuilder builder = new EmbedBuilder(bot.getEmbedUtil().getEmbed(event))
 					.setAuthor(lu.getText(event, path+".embed_title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
 					.setDescription(
 						lu.getText(event, path+".embed_value").replace("{guild_name}", event.getGuild().getName())
-						.replace("{guild_id}", masterId).replace("{size}", groupSize.toString())
+						.replace("{guild_id}", String.valueOf(ownerId)).replace("{size}", groupSize.toString())
 						.replace("{is_shared}", Emotes.CROSS_C.getEmote())
 					);
 				
@@ -580,10 +485,10 @@ public class GroupCmd extends CommandBase {
 					String fieldLabel = lu.getText(event, path+".embed_guilds");
 					StringBuffer buffer = new StringBuffer();
 					String format = "%s | %s | `%s`";
-					for (String groupGuildId : groupGuildIds) {
-						Guild guild = event.getJDA().getGuildById(groupGuildId);
+					for (Long memberId : memberIds) {
+						Guild guild = event.getJDA().getGuildById(memberId);
 						if (guild == null) {
-							guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(groupGuildId)).orElse(null);
+							guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(memberId)).orElse(null);
 							if (guild == null) continue;
 						};
 	
@@ -603,20 +508,20 @@ public class GroupCmd extends CommandBase {
 			} else if (event.hasOption("group_joined")) {
 				// View joined Group information - name, master name/ID, guild count
 				Integer groupId = event.optInteger("group_joined");
-				String masterId = bot.getDBUtil().group.getMaster(groupId);
-				if (masterId == null || !bot.getDBUtil().group.alreadyMember(groupId, guildId)) {
+				Long ownerId = bot.getDBUtil().group.getOwner(groupId);
+				if (ownerId == null || !bot.getDBUtil().group.isMember(groupId, guildId)) {
 					createError(event, path+".no_group", "Group ID: `%s`".formatted(groupId));
 					return;
 				}
 				
 				String groupName = bot.getDBUtil().group.getName(groupId);
-				String masterName = event.getJDA().getGuildById(masterId).getName();
-				Integer groupSize = bot.getDBUtil().group.getGroupGuildIds(groupId).size();
+				String masterName = event.getJDA().getGuildById(ownerId).getName();
+				Integer groupSize = bot.getDBUtil().group.countMembers(groupId);
 
 				EmbedBuilder builder = new EmbedBuilder(bot.getEmbedUtil().getEmbed(event))
 					.setAuthor(lu.getText(event, "logger.group.title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
 					.setDescription(lu.getText(event, path+".embed_value").replace("{guild_name}", masterName)
-					.replace("{guild_id}", masterId).replace("{size}", groupSize.toString())
+					.replace("{guild_id}", ownerId.toString()).replace("{size}", groupSize.toString())
 					.replace("{is_shared}", Emotes.CROSS_C.getEmote()));
 				createReplyEmbed(event, builder.build());
 			} else {

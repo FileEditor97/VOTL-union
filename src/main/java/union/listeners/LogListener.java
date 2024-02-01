@@ -51,8 +51,8 @@ public class LogListener {
 		return Optional.ofNullable(db.guild.getLogChannel(type, guild.getId())).map(guild::getTextChannelById).orElse(null);
 	}
 
-	private TextChannel getLogChannel(LogChannels type, String guildId) {
-		return Optional.ofNullable(db.guild.getLogChannel(type, guildId)).map(bot.JDA::getTextChannelById).orElse(null);
+	private TextChannel getLogChannel(LogChannels type, Long guildId) {
+		return Optional.ofNullable(db.guild.getLogChannel(type, guildId.toString())).map(bot.JDA::getTextChannelById).orElse(null);
 	}
 
 	private void sendLog(TextChannel channel, MessageEmbed embed) {
@@ -262,33 +262,33 @@ public class LogListener {
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.groupCreatedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), event.getGuild().getId(), event.getGuild().getIconUrl(), groupId, name));
+			sendLog(channel, logUtil.groupCreatedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), event.getGuild().getIdLong(), event.getGuild().getIconUrl(), groupId, name));
 		}
 
 		public void onDeletion(SlashCommandEvent event, Integer groupId, String name) {
-			String masterId = event.getGuild().getId();
-			String masterIcon = event.getGuild().getIconUrl();
+			long ownerId = event.getGuild().getIdLong();
+			String ownerIcon = event.getGuild().getIconUrl();
 
 			// For each group guild (except master) remove if from group DB and send log to log channel
-			List<String> guildIds = db.group.getGroupGuildIds(groupId);
-			for (String guildId : guildIds) {
-				db.group.remove(groupId, guildId);
+			List<Long> memberIds = db.group.getGroupMembers(groupId);
+			for (Long memberId : memberIds) {
+				db.group.remove(groupId, memberId);
 
-				TextChannel channel = getLogChannel(LogChannels.GROUPS, guildId);
+				TextChannel channel = getLogChannel(LogChannels.GROUPS, memberId);
 				if (channel == null) continue;
 
-				sendLog(channel, logUtil.groupMemberDeletedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, name));
+				sendLog(channel, logUtil.groupMemberDeletedEmbed(channel.getGuild().getLocale(), ownerId, ownerIcon, groupId, name));
 			}
 
 			// Master log
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.groupOwnerDeletedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name));
+			sendLog(channel, logUtil.groupOwnerDeletedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
 		}
 
-		public void onGuildAdded(SlashCommandEvent event, Integer groupId, String name, String targetId, String targetName) {
-			String ownerId = event.getGuild().getId();
+		public void onGuildAdded(SlashCommandEvent event, Integer groupId, String name, long targetId, String targetName) {
+			long ownerId = event.getGuild().getIdLong();
 			String ownerIcon = event.getGuild().getIconUrl();
 
 			// Send log to added server
@@ -305,80 +305,80 @@ public class LogListener {
 		}
 
 		public void onGuildJoined(SlashCommandEvent event, Integer groupId, String name) {
-			String masterId = db.group.getMaster(groupId);
-			String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
+			long ownerId = db.group.getOwner(groupId);
+			String ownerIcon = event.getJDA().getGuildById(ownerId).getIconUrl();
 
 			// Send log to added server
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
 			if (channel != null) {
-				sendLog(channel, logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name));
+				sendLog(channel, logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
 			}
 
 			// Master log
-			channel = getLogChannel(LogChannels.GROUPS, masterId);
+			channel = getLogChannel(LogChannels.GROUPS, ownerId);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.groupOwnerJoinedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, event.getGuild().getName(), event.getGuild().getId(), groupId, name));
+			sendLog(channel, logUtil.groupOwnerJoinedEmbed(channel.getGuild().getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
 		}
 
 		public void onGuildLeft(SlashCommandEvent event, Integer groupId, String name) {
-			String masterId = db.group.getMaster(groupId);
-			String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
+			long ownerId = db.group.getOwner(groupId);
+			String ownerIcon = event.getJDA().getGuildById(ownerId).getIconUrl();
 
 			// Send log to removed server
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
 			if (channel != null) {
-				sendLog(channel, logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, name));
+				sendLog(channel, logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
 			}
 
 			// Master log
-			channel = getLogChannel(LogChannels.GROUPS, masterId);
+			channel = getLogChannel(LogChannels.GROUPS, ownerId);
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.groupOwnerLeftEmbed(channel.getGuild().getLocale(), masterId, masterIcon, event.getGuild().getName(), event.getGuild().getId(), groupId, name));
+			sendLog(channel, logUtil.groupOwnerLeftEmbed(channel.getGuild().getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
 		}
 
 		public void onGuildRemoved(SlashCommandEvent event, Guild target, Integer groupId, String name) {
-			String masterId = event.getGuild().getId();
-			String masterIcon = event.getGuild().getIconUrl();
+			long ownerId = event.getGuild().getIdLong();
+			String ownerIcon = event.getGuild().getIconUrl();
 
 			// Send log to removed server
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, target);
 			if (channel != null) {
-				sendLog(channel, logUtil.groupMemberLeftEmbed(channel.getGuild().getLocale(), "Forced, by group Master", masterId, masterIcon, groupId, name));
+				sendLog(channel, logUtil.groupMemberLeftEmbed(channel.getGuild().getLocale(), "Forced, by group Master", ownerId, ownerIcon, groupId, name));
 			}
 
 			// Master log
 			channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.groupOwnerRemovedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, target.getName(), target.getId(), groupId, name));
+			sendLog(channel, logUtil.groupOwnerRemovedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, target.getName(), target.getIdLong(), groupId, name));
 		}
 
 		public void onRenamed(SlashCommandEvent event, String oldName, Integer groupId, String newName) {
-			String masterId = event.getGuild().getId();
-			String masterIcon = event.getGuild().getIconUrl();
+			long ownerId = event.getGuild().getIdLong();
+			String ownerIcon = event.getGuild().getIconUrl();
 
 			// Send log to each group guild
-			List<String> guildIds = db.group.getGroupGuildIds(groupId);
-			for (String guildId : guildIds) {
-				db.group.remove(groupId, guildId);
+			List<Long> memberIds = db.group.getGroupMembers(groupId);
+			for (Long memberId : memberIds) {
+				db.group.remove(groupId, memberId);
 
-				TextChannel channel = getLogChannel(LogChannels.GROUPS, guildId);
+				TextChannel channel = getLogChannel(LogChannels.GROUPS, memberId);
 				if (channel == null) continue;
 
-				sendLog(channel, logUtil.groupMemberRenamedEmbed(channel.getGuild().getLocale(), masterId, masterIcon, groupId, oldName, newName));
+				sendLog(channel, logUtil.groupMemberRenamedEmbed(channel.getGuild().getLocale(), ownerId, ownerIcon, groupId, oldName, newName));
 			}
 
 			// Master log
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, event.getGuild());
 			if (channel == null) return;
 
-			sendLog(channel, logUtil.groupOwnerRenamedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), masterId, masterIcon, groupId, oldName, newName));
+			sendLog(channel, logUtil.groupOwnerRenamedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, oldName, newName));
 		}
 
 		public void helperInformAction(Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
-			Guild master = Optional.ofNullable(db.group.getMaster(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, master);
@@ -388,7 +388,7 @@ public class LogListener {
 		}
 
 		public void helperInformLeave(Integer groupId, @Nullable Guild guild, String guildId) {
-			Guild master = Optional.ofNullable(db.group.getMaster(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
 			TextChannel channel = getLogChannel(LogChannels.GROUPS, master);

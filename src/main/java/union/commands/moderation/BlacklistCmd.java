@@ -53,8 +53,8 @@ public class BlacklistCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Integer groupId = event.optInteger("group");
-			String guildId = event.getGuild().getId();
-			if ( !(bot.getDBUtil().group.isMaster(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
+			long guildId = event.getGuild().getIdLong();
+			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
 				// Is not group's owner or manager
 				editError(event, path+".cant_view");
 				return;
@@ -101,8 +101,8 @@ public class BlacklistCmd extends CommandBase {
 			event.deferReply().queue();
 
 			Integer groupId = event.optInteger("group");
-			String guildId = event.getGuild().getId();
-			if ( !(bot.getDBUtil().group.isMaster(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
+			long guildId = event.getGuild().getIdLong();
+			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
 				// Is not group's owner or manager
 				editError(event, path+".cant_view");
 				return;

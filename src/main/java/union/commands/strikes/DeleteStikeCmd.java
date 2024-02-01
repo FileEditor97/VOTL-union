@@ -3,7 +3,6 @@ package union.commands.strikes;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -108,7 +107,7 @@ public class DeleteStikeCmd extends CommandBase {
 	private void strikeSelected(StringSelectInteractionEvent event, Message msg, String[] strikesInfoArray, User tu) {
 		event.deferEdit().queue();
 
-		List<String> strikesInfo = Arrays.asList(strikesInfoArray);
+		List<String> strikesInfo = new ArrayList<>(List.of(strikesInfoArray));
 		String[] selected = event.getValues().get(0).split("-");
 		Integer caseId = Integer.valueOf(selected[0]);
 		

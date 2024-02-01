@@ -87,7 +87,7 @@ public class LogUtil {
 			.setColor(DEFAULT)
 			.setAuthor(localized(locale, "case").formatted(caseData.getCaseId(), lu.getLocalized(locale, caseData.getCaseType().getPath()), caseData.getTargetTag()))
 			.addField(localized(locale, "reason"), caseData.getReason(), true);
-		if (caseData.isActive())
+		if (caseData.isActive() && !caseData.getDuration().isNegative())
 			builder.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
 				localized(locale, "temporary").formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false)), true);
 		return builder.build();
@@ -371,14 +371,14 @@ public class LogUtil {
 
 	// Groups
 	@Nonnull
-	private EmbedBuilder groupLogEmbed(DiscordLocale locale, String ownerId, String ownerIcon, Integer groupId, String name) {
+	private EmbedBuilder groupLogEmbed(DiscordLocale locale, Long ownerId, String ownerIcon, Integer groupId, String name) {
 		return getEmbed()
 			.setAuthor(localized(locale, "group.title").replace("{group_name}", name).replace("{group_id}", groupId.toString()), null, ownerIcon)
 			.setFooter(localized(locale, "group.master")+ownerId);
 	}
 
 	@Nonnull
-	public MessageEmbed groupCreatedEmbed(DiscordLocale locale, String adminMention, String ownerId, String ownerIcon, Integer groupId, String name) {
+	public MessageEmbed groupCreatedEmbed(DiscordLocale locale, String adminMention, Long ownerId, String ownerIcon, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setTitle(localized(locale, "group.created"))
@@ -387,7 +387,7 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupMemberDeletedEmbed(DiscordLocale locale, String ownerId, String ownerIcon, Integer groupId, String name) {
+	public MessageEmbed groupMemberDeletedEmbed(DiscordLocale locale, Long ownerId, String ownerIcon, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_FAILURE)
 			.setTitle(localized(locale, "group.deleted"))
@@ -395,7 +395,7 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupOwnerDeletedEmbed(DiscordLocale locale, String adminMention, String ownerId, String ownerIcon, Integer groupId, String name) {
+	public MessageEmbed groupOwnerDeletedEmbed(DiscordLocale locale, String adminMention, Long ownerId, String ownerIcon, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_FAILURE)
 			.setTitle(localized(locale, "group.deleted"))
@@ -404,7 +404,7 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupMemberJoinedEmbed(DiscordLocale locale, String adminMention, String ownerId, String ownerIcon, Integer groupId, String name) {
+	public MessageEmbed groupMemberJoinedEmbed(DiscordLocale locale, String adminMention, Long ownerId, String ownerIcon, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setTitle(localized(locale, "group.join"))
@@ -413,7 +413,7 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupOwnerJoinedEmbed(DiscordLocale locale, String ownerId, String ownerIcon, String targetName, String targetId, Integer groupId, String name) {
+	public MessageEmbed groupOwnerJoinedEmbed(DiscordLocale locale, Long ownerId, String ownerIcon, String targetName, Long targetId, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setTitle(localized(locale, "group.joined"))
@@ -422,7 +422,7 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupMemberAddedEmbed(DiscordLocale locale, String ownerId, String ownerIcon, Integer groupId, String name) {
+	public MessageEmbed groupMemberAddedEmbed(DiscordLocale locale, Long ownerId, String ownerIcon, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setTitle(localized(locale, "group.add"))
@@ -430,7 +430,7 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupOwnerAddedEmbed(DiscordLocale locale, String adminMention, String ownerId, String ownerIcon, String targetName, String targetId, Integer groupId, String name) {
+	public MessageEmbed groupOwnerAddedEmbed(DiscordLocale locale, String adminMention, Long ownerId, String ownerIcon, String targetName, Long targetId, Integer groupId, String name) {
 		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setTitle(localized(locale, "group.added"))
@@ -440,8 +440,8 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupMemberLeftEmbed(DiscordLocale locale, String adminMention, String masterId, String masterIcon, Integer groupId, String name) {
-		return groupLogEmbed(locale, masterId, masterIcon, groupId, name)
+	public MessageEmbed groupMemberLeftEmbed(DiscordLocale locale, String adminMention, Long ownerId, String ownerIcon, Integer groupId, String name) {
+		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_FAILURE)
 			.setTitle(localized(locale, "group.leave"))
 			.addField(localized(locale, "group.admin"), adminMention, false)
@@ -449,8 +449,8 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupOwnerLeftEmbed(DiscordLocale locale, String masterId, String masterIcon, String targetName, String targetId, Integer groupId, String name) {
-		return groupLogEmbed(locale, masterId, masterIcon, groupId, name)
+	public MessageEmbed groupOwnerLeftEmbed(DiscordLocale locale, Long ownerId, String ownerIcon, String targetName, Long targetId, Integer groupId, String name) {
+		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_FAILURE)
 			.setTitle(localized(locale, "group.left"))
 			.addField(localized(locale, "group.guild"), "*%s* (`%s`)".formatted(targetName, targetId), true)
@@ -458,8 +458,8 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupOwnerRemovedEmbed(DiscordLocale locale, String adminMention, String masterId, String masterIcon, String targetName, String targetId, Integer groupId, String name) {
-		return groupLogEmbed(locale, masterId, masterIcon, groupId, name)
+	public MessageEmbed groupOwnerRemovedEmbed(DiscordLocale locale, String adminMention, Long ownerId, String ownerIcon, String targetName, Long targetId, Integer groupId, String name) {
+		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, name)
 			.setColor(Constants.COLOR_FAILURE)
 			.setTitle(localized(locale, "group.removed"))
 			.addField(localized(locale, "group.guild"), "*%s* (`%s`)".formatted(targetName, targetId), true)
@@ -468,21 +468,23 @@ public class LogUtil {
 	}
 
 	@Nonnull
-	public MessageEmbed groupMemberRenamedEmbed(DiscordLocale locale, String masterId, String masterIcon, Integer groupId, String oldName, String newName) {
-		return groupLogEmbed(locale, masterId, masterIcon, groupId, newName)
+	public MessageEmbed groupMemberRenamedEmbed(DiscordLocale locale, Long ownerId, String ownerIcon, Integer groupId, String oldName, String newName) {
+		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, newName)
 			.setTitle(localized(locale, "group.renamed"))
 			.addField(localized(locale, "group.oldname"), oldName, true)
 			.build();
 	}
 
 	@Nonnull
-	public MessageEmbed groupOwnerRenamedEmbed(DiscordLocale locale, String adminMention, String masterId, String masterIcon, Integer groupId, String oldName, String newName) {
-		return groupLogEmbed(locale, masterId, masterIcon, groupId, newName)
+	public MessageEmbed groupOwnerRenamedEmbed(DiscordLocale locale, String adminMention, Long ownerId, String ownerIcon, Integer groupId, String oldName, String newName) {
+		return groupLogEmbed(locale, ownerId, ownerIcon, groupId, newName)
 			.setTitle(localized(locale, "group.renamed"))
 			.addField(localized(locale, "group.oldname"), oldName, true)
 			.addField(localized(locale, "group.admin"), adminMention, false)
 			.build();
 	}
+
+	// OTHER
 
 	@Nonnull
 	public MessageEmbed auditLogEmbed(DiscordLocale locale, Integer groupId, Guild target, AuditLogEntry auditLogEntry) {

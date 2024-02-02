@@ -161,7 +161,7 @@ public class DBUtil {
 		return version;
 	}
 
-	public List<List<String>> loadInstructions(Integer activeVersion) {
+	private List<List<String>> loadInstructions(Integer activeVersion) {
 		List<String> lines = new ArrayList<>();
 		try {
 			File tempFile = File.createTempFile("database_updates", ".tmp");

@@ -67,7 +67,7 @@ public class ModStatsCmd extends CommandBase {
 			.addField(lu.getText(event, path+".bans"), "%2d | %d".formatted(count7.getOrDefault(CaseType.BAN.getType(), 0), count30.getOrDefault(CaseType.BAN.getType(), 0)), true)
 			.addField(lu.getText(event, path+".roles"), "%2d | %d".formatted(roles7, roles30), true)
 			.addBlankField(true)
-			.addField(lu.getText(event, path+".total"), "%2d | %d".formatted(count7.values().stream().reduce(0, Integer::sum), count30.values().stream().reduce(0, Integer::sum)), false);
+			.addField(lu.getText(event, path+".total"), "%2d | %d".formatted(count7.values().stream().reduce(0, Integer::sum)+roles7, count30.values().stream().reduce(0, Integer::sum)+roles30), false);
 		
 		editHookEmbed(event, builder.build());
 	}

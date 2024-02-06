@@ -45,6 +45,7 @@ public class GuildListener extends ListenerAdapter {
 	public void onGuildLeave(@Nonnull GuildLeaveEvent event) {
 		String guildId = event.getGuild().getId();
 		long guildIdLong = event.getGuild().getIdLong();
+		bot.getLogger().info("Left guild '%s'(%s)".formatted(event.getGuild().getName(), guildId));
 
 		// Deletes every information connected to this guild from bot's DB (except ban tables)
 		// May be dangerous, but provides privacy
@@ -104,8 +105,7 @@ public class GuildListener extends ListenerAdapter {
 		
 		db.guild.remove(guildId);
 
-		bot.getLogger().info("Automatically removed guild '"+event.getGuild().getName()+"'("+guildId+") from db.");
-		bot.getLogger().info("Left guild '"+event.getGuild().getName()+"'("+guildId+")");
+		bot.getLogger().info("Automatically removed guild '%s'(%s) from db.".formatted(event.getGuild().getName(), guildId));
 	}
 
 	@Override

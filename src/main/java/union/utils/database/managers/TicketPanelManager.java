@@ -50,7 +50,7 @@ public class TicketPanelManager extends LiteDBBase {
 	}
 
 	public void deleteAll(String guildId) {
-		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public String getGuildId(Integer panelId) {
@@ -58,7 +58,7 @@ public class TicketPanelManager extends LiteDBBase {
 	}
 
 	public List<Integer> getPanelIds(String guildId) {
-		return select("SELECT panelId FROM %s WHERE (guildId=%d)".formatted(table, guildId), "panelId", Integer.class);
+		return select("SELECT panelId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "panelId", Integer.class);
 	}
 
 	public void updatePanel(Integer panelId, String title, String description, String image, String footer) {

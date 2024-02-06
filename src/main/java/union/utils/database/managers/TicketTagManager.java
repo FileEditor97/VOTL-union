@@ -59,7 +59,7 @@ public class TicketTagManager extends LiteDBBase {
 	}
 
 	public void deleteAll(String guildId) {
-		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
+		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
 	public void updateTag(Integer tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
@@ -89,7 +89,7 @@ public class TicketTagManager extends LiteDBBase {
 	}
 
 	public List<Integer> getTagIds(String guildId) {
-		return select("SELECT tagId FROM %s WHERE (guildId=%d)".formatted(table, guildId), "tagId", Integer.class);
+		return select("SELECT tagId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "tagId", Integer.class);
 	}
 
 	public Integer countPanelTags(Integer panelId) {

@@ -56,7 +56,7 @@ public class RolesSetupCmd extends CommandBase {
 						new Choice(lu.getText(RoleType.CUSTOM.getPath()), RoleType.CUSTOM.toString())
 					)),
 				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"), false)
-					.setMaxLength(100),
+					.setMaxLength(80),
 				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"), false)
 					.addChoices(List.of(
 						new Choice("1", 1),
@@ -128,7 +128,6 @@ public class RolesSetupCmd extends CommandBase {
 					return;
 				}
 				String description = event.optString("description", role.getName());
-				description = description.substring(0, Math.min(description.length(), 80));
 				bot.getDBUtil().role.add(guildId, role.getId(), description, null, RoleType.TOGGLE, "NULL");
 				sendSuccess(event, type, role);
 			} else if (type.equals(RoleType.CUSTOM.toString())) {
@@ -162,7 +161,7 @@ public class RolesSetupCmd extends CommandBase {
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
 				new OptionData(OptionType.STRING, "description", lu.getText(path+".description.help"))
-					.setMaxLength(100),
+					.setMaxLength(80),
 				new OptionData(OptionType.INTEGER, "row", lu.getText(path+".row.help"))
 					.addChoices(List.of(
 						new Choice("1", 1),
@@ -201,7 +200,6 @@ public class RolesSetupCmd extends CommandBase {
 					} else {
 						response.append(lu.getText(event, path+".changed_description").replace("{text}", description));
 					}
-					description = description.substring(0, Math.min(description.length(), 80));
 				} else {
 					if (description == null) {
 						description = "NULL";

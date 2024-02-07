@@ -79,7 +79,10 @@ public class CommandListener implements union.base.command.CommandListener {
 	@Override
 	public void onSlashCommandException(SlashCommandEvent event, SlashCommand command, Throwable t) {
 		LOGGER.error("SlashCommand Exception", t);
-		event.getHook().sendMessageEmbeds(getErrorEmbed(event, t)).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+		if (event.isAcknowledged())
+			event.getHook().sendMessageEmbeds(getErrorEmbed(event, t)).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+		else
+			event.replyEmbeds(getErrorEmbed(event, t)).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 	}
 
 	private MessageEmbed getErrorEmbed(SlashCommandEvent event, Throwable t) {

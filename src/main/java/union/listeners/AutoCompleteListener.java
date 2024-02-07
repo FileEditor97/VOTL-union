@@ -9,6 +9,7 @@ import jakarta.annotation.Nonnull;
 import union.base.command.CommandClient;
 import union.base.command.SlashCommand;
 import union.utils.database.DBUtil;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -107,7 +108,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 				String title = db.panels.getPanelTitle(id);
 				if (title != null) {
 					// if found panel with matching Id
-					event.replyChoice("%s | %s".formatted(id, title.substring(0, Math.min(90, title.length()))), id).queue();
+					event.replyChoice("%s | %s".formatted(id, MessageUtil.limitString(title, 80)), id).queue();
 					return;
 				}
 			}

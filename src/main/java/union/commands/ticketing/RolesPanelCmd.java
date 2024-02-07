@@ -13,6 +13,7 @@ import union.objects.CmdModule;
 import union.objects.RoleType;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -86,7 +87,7 @@ public class RolesPanelCmd extends CommandBase {
 					Role role = guild.getRoleById(roleId);
 					if (role == null) return;
 					String description = data.get("description").toString();
-					buttons.add(Button.primary("role:toggle:"+roleId, description.substring(0, Math.min(description.length(), 80))));
+					buttons.add(Button.primary("role:toggle:"+roleId, MessageUtil.limitString(description, 80)));
 				});
 				actionRows.add(ActionRow.of(buttons));
 			}
@@ -162,7 +163,7 @@ public class RolesPanelCmd extends CommandBase {
 						Role role = guild.getRoleById(roleId);
 						if (role == null) return;
 						String description = data.get("description").toString();
-						buttons.add(Button.primary("role:toggle:"+roleId, (description.length() > 100 ? description.substring(0, 100) : description)));
+						buttons.add(Button.primary("role:toggle:"+roleId, MessageUtil.limitString(description, 80)));
 					});
 					actionRows.add(ActionRow.of(buttons));
 				}

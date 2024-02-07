@@ -15,26 +15,26 @@ public class TicketSettingsManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public void setRowText(String guildId, Integer row, String text) {
-		execute("INSERT INTO %s(guildId, rowName%d) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET rowName%d=%s".formatted(row, table, guildId, quote(text), row, quote(text)));
+	public void setRowText(String guildId, int row, String text) {
+		execute("INSERT INTO %1$s(guildId, rowName%2$d) VALUES (%3$s, %4$s) ON CONFLICT(guildId) DO UPDATE SET rowName%2$d=%4$s".formatted(table, row, guildId, quote(text)));
 	}
 
-	public String getRowText(String guildId, Integer row) {
+	public String getRowText(String guildId, int row) {
 		String data = selectOne("SELECT rowName%d FROM %s WHERE (guildId=%s)".formatted(row, table, guildId), "rowName"+row, String.class);
 		return data==null ? "Select roles" : data;
 	}
 
-	public void setAutocloseTime(String guildId, Integer hours) {
+	public void setAutocloseTime(String guildId, int hours) {
 		execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%d".formatted(table, guildId, hours, hours));
 	}
 
-	public Integer getAutocloseTime(String guildId) {
+	public int getAutocloseTime(String guildId) {
 		Integer data = selectOne("SELECT autocloseTime FROM %s WHERE (guildId=%s)".formatted(table, guildId), "autocloseTime", Integer.class);
 		return data==null ? 0 : data;
 	}
 
-	public void setAutocloseLeft(String guildId, Boolean close) {
-		Integer value = close==true ? 1 : 0;
+	public void setAutocloseLeft(String guildId, boolean close) {
+		int value = close==true ? 1 : 0;
 		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%d".formatted(table, guildId, value, value));
 	}
 

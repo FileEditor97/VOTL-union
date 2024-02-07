@@ -6,6 +6,7 @@ import union.base.command.MessageContextMenu;
 import union.base.command.MessageContextMenuEvent;
 import union.objects.CmdModule;
 import union.objects.constants.Constants;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -58,8 +59,7 @@ public class ReportContext extends MessageContextMenu {
 	}
 
 	private MessageEmbed getReportEmbed(MessageContextMenuEvent event) {
-		String content = event.getTarget().getContentStripped();
-		if (content.length() > 1024) content = content.substring(0, Math.min(1020, content.length()))+"...";
+		String content = MessageUtil.limitString(event.getTarget().getContentStripped(), 1024);
 		return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
 			.setTitle(lu.getLocalized(event.getGuildLocale(), path+".title"))
 			.addField(lu.getLocalized(event.getGuildLocale(), path+".user"), event.getTarget().getAuthor().getAsMention(), true)

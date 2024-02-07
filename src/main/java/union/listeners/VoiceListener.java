@@ -58,8 +58,8 @@ public class VoiceListener extends ListenerAdapter {
 
 		String channelName = Optional.ofNullable(bot.getDBUtil().user.getName(userId))
 			.or(() -> Optional.ofNullable(bot.getDBUtil().guildVoice.getName(guildId)))
-			.orElse(lu.getLocalized(guildLocale, "bot.voice.listener.default_name"));
-		channelName = channelName.replace("{user}", member.getEffectiveName());
+			.orElse(lu.getLocalized(guildLocale, "bot.voice.listener.default_name"))
+			.replace("{user}", member.getEffectiveName());
 		channelName = channelName.substring(0, Math.min(100, channelName.length()));
 
 		Integer channelLimit = Optional.ofNullable(bot.getDBUtil().user.getLimit(userId))

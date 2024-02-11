@@ -175,7 +175,7 @@ public class ScheduledCheck {
 						if (cases.length > 1) {
 							List<String> list = new ArrayList<>(List.of(cases));
 							list.remove(0);
-							newData.append(String.join(";", list));
+							newData.append(";").append(String.join(";", list));
 						}
 						// Remove one strike and reset time
 						db.strike.removeStrike(guildId, userId,
@@ -195,7 +195,9 @@ public class ScheduledCheck {
 	// Each 2-5 minutes
 	public void regularChecks() {
 		CompletableFuture.runAsync(() -> {
-			checkAccountUpdates();
+			//checkAccountUpdates();
+			// TODO
+			System.out.println("check!");
 		}).thenRunAsync(() -> {
 			checkUnbans();
 		});

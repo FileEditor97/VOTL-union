@@ -197,9 +197,7 @@ public class ScheduledCheck {
 	// Each 2-5 minutes
 	public void regularChecks() {
 		CompletableFuture.runAsync(() -> {
-			//checkAccountUpdates();
-			// TODO
-			System.out.println("check!");
+			checkAccountUpdates();
 		}).thenRunAsync(() -> {
 			checkUnbans();
 		});

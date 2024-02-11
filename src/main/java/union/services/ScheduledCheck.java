@@ -177,7 +177,7 @@ public class ScheduledCheck {
 						if (cases.length > 1) {
 							List<String> list = new ArrayList<>(List.of(cases));
 							list.remove(0);
-							newData.append(";").append(String.join(";", list));
+							newData.append(String.join(";", list));
 						}
 						// Remove one strike and reset time
 						db.strike.removeStrike(guildId, userId,

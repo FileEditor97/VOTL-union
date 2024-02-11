@@ -168,6 +168,8 @@ public class ScheduledCheck {
 						StringBuffer newData = new StringBuffer();
 						if (newCount > 0) {
 							newData.append(caseId+"-"+newCount);
+							if (cases.length > 1)
+								newData.append(";");
 						} else {
 							// Set case inactive
 							db.cases.setInactive(Integer.parseInt(caseId));

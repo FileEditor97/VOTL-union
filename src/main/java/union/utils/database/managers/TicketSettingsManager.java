@@ -38,7 +38,7 @@ public class TicketSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%d".formatted(table, guildId, value, value));
 	}
 
-	public Boolean getAutocloseLeft(String guildId) {
+	public boolean getAutocloseLeft(String guildId) {
 		Integer data = selectOne("SELECT autocloseLeft FROM %s WHERE (guildId=%s)".formatted(table, guildId), "autocloseLeft", Integer.class);
 		return data==null ? false : data==1;
 	}

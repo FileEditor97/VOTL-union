@@ -72,6 +72,11 @@ public class TicketManager extends LiteDBBase {
 			"channelId", String.class);
 	}
 
+	public List<String> getOpenedChannel(String userId, String guildId) {
+		return select("SELECT channelId FROM %s WHERE (userId=%s AND guildId=%s AND closed=0)".formatted(table, userId, guildId),
+			"channelId", String.class);
+	}
+
 	public Integer countOpenedByUser(String userId, String guildId, Integer tagId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (userId=%s AND guildId=%s AND tagId=%s AND closed=0)".formatted(table, userId, guildId, tagId));
 	}

@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Instant;
 
 import union.App;
 import union.objects.CaseType;
@@ -16,6 +17,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
@@ -166,5 +168,12 @@ public class GuildListener extends ListenerAdapter {
 			db.access.removeUser(guildId, userId);
 		}
 		db.user.remove(userId);
+		if (db.ticketSettings.getAutocloseLeft(guildId)) {
+			db.ticket.getOpenedChannel(userId, guildId).stream().forEach(channelId -> {
+				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
+				GuildChannel channel = event.getGuild().getGuildChannelById(channelId);
+				if (channel != null) channel.delete().reason("Author left").queue();
+			});
+		}
 	}
 }

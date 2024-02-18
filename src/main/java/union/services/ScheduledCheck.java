@@ -182,7 +182,7 @@ public class ScheduledCheck {
 						// Remove one strike and reset time
 						db.strike.removeStrike(guildId, userId,
 							Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guildId.toString()), ChronoUnit.DAYS),
-							newData.toString()
+							1, newData.toString()
 						);
 					} else {
 						throw new Exception("Strike data is empty");

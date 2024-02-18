@@ -131,7 +131,7 @@ public class DeleteStikeCmd extends CommandBase {
 			else
 				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
 					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
-					String.join(";", strikesInfo)
+					1, String.join(";", strikesInfo)
 				);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
@@ -188,7 +188,7 @@ public class DeleteStikeCmd extends CommandBase {
 			else
 				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
 					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
-					String.join(";", cases)
+					removeAmount, String.join(";", cases)
 				);
 		} else {
 			// Delete selected amount of strikes (not all)

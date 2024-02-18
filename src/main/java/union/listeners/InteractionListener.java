@@ -1070,7 +1070,7 @@ public class InteractionListener extends ListenerAdapter {
 			.addOptions(groupIds.stream().map(groupId ->
 				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
 			).collect(Collectors.toList()))
-			.setMaxValues(5)
+			.setMaxValues(1)
 			.build();
 
 		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {

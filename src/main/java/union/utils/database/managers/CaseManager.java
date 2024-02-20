@@ -41,7 +41,7 @@ public class CaseManager extends LiteDBBase {
 
 	// update case duration
 	public void updateDuration(Integer caseId, Duration duration) {
-		execute("UPDATE %s SET duration=%d WHERE (caseId=%d)".formatted(table, quote(duration.getSeconds()), caseId));
+		execute("UPDATE %s SET duration=%d WHERE (caseId=%d)".formatted(table, duration.getSeconds(), caseId));
 	}
 
 	// set case inactive

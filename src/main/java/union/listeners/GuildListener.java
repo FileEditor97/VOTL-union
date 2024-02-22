@@ -8,7 +8,6 @@ import java.time.Instant;
 
 import union.App;
 import union.objects.CaseType;
-import union.objects.CmdAccessLevel;
 import union.objects.LogChannels;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
@@ -164,7 +163,7 @@ public class GuildListener extends ListenerAdapter {
 		String guildId = event.getGuild().getId();
 		String userId = event.getUser().getId();
 
-		if (db.access.getUserLevel(guildId, userId).isHigherThan(CmdAccessLevel.ALL)) {
+		if (db.access.getUserLevel(guildId, userId) != null) {
 			db.access.removeUser(guildId, userId);
 		}
 		db.user.remove(userId);

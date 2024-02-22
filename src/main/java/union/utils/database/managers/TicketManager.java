@@ -32,11 +32,10 @@ public class TicketManager extends LiteDBBase {
 	}
 
 	// get last ticket's ID
-	public Integer lastIdByTag(String guildId, Integer tagId) {
+	public int lastIdByTag(String guildId, Integer tagId) {
 		Integer data = selectOne("SELECT ticketId FROM %s WHERE (guildId=%s AND tagId=%d) ORDER BY ticketId DESC LIMIT 1"
 			.formatted(table, guildId, tagId), "ticketId", Integer.class);
-		if (data == null) return 0;
-		return data;
+		return data == null ? 0 : data;
 	}
 
 	// update mod
@@ -77,11 +76,11 @@ public class TicketManager extends LiteDBBase {
 			"channelId", String.class);
 	}
 
-	public Integer countOpenedByUser(String userId, String guildId, Integer tagId) {
+	public int countOpenedByUser(String userId, String guildId, Integer tagId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (userId=%s AND guildId=%s AND tagId=%s AND closed=0)".formatted(table, userId, guildId, tagId));
 	}
 
-	public Integer countAllOpenedByUser(String userId, String guildId) {
+	public int countAllOpenedByUser(String userId, String guildId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (userId=%s AND guildId=%s AND closed=0)".formatted(table, userId, guildId));
 	}
 
@@ -113,13 +112,13 @@ public class TicketManager extends LiteDBBase {
 		return data==null ? false : data==0;
 	}
 
-	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
+	public int countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
 		String tagType = roleTag ? "tagId=0" : "tagId>=1";
 		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND modId=%s AND timeClosed>=%d AND timeClosed<=%d AND %s)"
 			.formatted(table, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond(), tagType));
 	}
 
-	public Integer countTicketsByMod(String guildId, String modId, Instant afterTime, boolean roleTag) {
+	public int countTicketsByMod(String guildId, String modId, Instant afterTime, boolean roleTag) {
 		String tagType = roleTag ? "tagId=0" : "tagId>=1";
 		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND modId=%s AND timeClosed>=%d AND %s)"
 			.formatted(table, guildId, modId, afterTime.getEpochSecond(), tagType));
@@ -137,10 +136,9 @@ public class TicketManager extends LiteDBBase {
 		execute("UPDATE %s SET closeRequested=%d WHERE (channelId=%s)".formatted(table, closeRequested, channelId));
 	}
 
-	public Long getTimeClosing(String channelId) {
+	public long getTimeClosing(String channelId) {
 		Long data = selectOne("SELECT closeRequested FROM %s WHERE (channelId=%d);".formatted(table, channelId), "closeRequested", Long.class);
-		if (data == null) return 0L;
-		return data;
+		return data == null ? 0L : data;
 	}
 
 }

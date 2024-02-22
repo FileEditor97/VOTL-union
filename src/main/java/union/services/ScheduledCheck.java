@@ -57,8 +57,7 @@ public class ScheduledCheck {
 
 	private void checkTicketStatus() {
 		try {
-			List<String> opened = db.ticket.getOpenedChannels();
-			opened.forEach(channelId -> {
+			db.ticket.getOpenedChannels().forEach(channelId -> {
 				GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
 				if (channel == null) {
 					// Should be closed???
@@ -87,11 +86,10 @@ public class ScheduledCheck {
 				}
 			});
 
-			opened = db.ticket.getExpiredTickets();
-			opened.forEach(channelId -> {
+			db.ticket.getExpiredTickets().forEach(channelId -> {
 				GuildChannel channel = bot.JDA.getGuildChannelById(channelId);
 				if (channel == null) {
-					db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
+					bot.getDBUtil().ticket.forceCloseTicket(channelId);
 					return;
 				}
 				bot.getTicketUtil().closeTicket(channelId, null, "Autoclosure", failure -> {
@@ -182,7 +180,7 @@ public class ScheduledCheck {
 						// Remove one strike and reset time
 						db.strike.removeStrike(guildId, userId,
 							Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guildId.toString()), ChronoUnit.DAYS),
-							newData.toString()
+							1, newData.toString()
 						);
 					} else {
 						throw new Exception("Strike data is empty");

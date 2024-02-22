@@ -45,7 +45,7 @@ public class CheckUtil {
 		
 		// Check for user level
 		CmdAccessLevel userLevel = bot.getDBUtil().access.getUserLevel(member.getGuild().getId(), member.getId());
-		if (userLevel.isHigherThan(CmdAccessLevel.ALL))
+		if (userLevel != null)
 			return userLevel;
 		
 		// Check if has Administrator privileges

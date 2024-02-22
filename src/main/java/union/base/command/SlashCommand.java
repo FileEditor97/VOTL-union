@@ -217,11 +217,12 @@ public abstract class SlashCommand extends Interaction
 			}
 		}
 
-		// check db and permisisons
-		if (guildOnly && !event.isFromGuild()) {
+		// this check is unnecessary 
+		/* if (guildOnly && !event.isFromGuild()) {
 			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.guild_only"), client);
 			return;
-		}
+		} */
+		// check db and permisisons
 		if (event.isFromGuild() && !ownerCommand) {
 			Guild guild = event.getGuild();
 			Member author = event.getMember();
@@ -232,7 +233,7 @@ public abstract class SlashCommand extends Interaction
 				// check access
 					.hasAccess(event, author, getAccessLevel())
 				// check user perms
-					.hasPermissions(event, guild, author, getUserPermissions())
+				//	.hasPermissions(event, guild, author, getUserPermissions())
 				// check bots perms
 					.hasPermissions(event, guild, author, true, getBotPermissions());
 			} catch (CheckException ex) {
@@ -272,7 +273,7 @@ public abstract class SlashCommand extends Interaction
 	 * @return {@code true} if the User is the Owner, else {@code false}
 	 */
 	public boolean isOwner(SlashCommandEvent event, CommandClient client) {
-		if (client.getOwnerId().equals(event.getUser().getId()))
+		if (client.getOwnerIdLong() == event.getUser().getIdLong())
 			return true;
 		return false;
 	}

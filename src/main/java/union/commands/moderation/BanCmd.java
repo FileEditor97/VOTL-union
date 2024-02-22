@@ -114,14 +114,21 @@ public class BanCmd extends CommandBase {
 					event.getHook().editOriginalEmbeds(embed).queue();
 				}
 			} else {
-				// user has permanent ban
-				String br = ban.getReason();
+				// user has permanent ban, but not in DB
+				// create new case for manual ban (that is not in DB)
+				Member mod = event.getMember();
+				bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+					guild.getIdLong(), reason, Instant.now(), Duration.ZERO);
+				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
+				// log
+				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
+				// reply
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_WARNING)
 					.setDescription(lu.getText(event, path+".already_banned"))
 					.addField(lu.getText(event, "logger.ban.short_title"), lu.getText(event, "logger.ban.short_info")
 						.replace("{username}", ban.getUser().getEffectiveName())
-						.replace("{reason}", Optional.ofNullable(br).orElse("*none*"))
+						.replace("{reason}", Optional.ofNullable(ban.getReason()).orElse("*none*"))
 						, false)
 					.build();
 				event.getHook().editOriginalEmbeds(embed).setActionRow(

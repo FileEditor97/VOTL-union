@@ -137,7 +137,7 @@ public class KickCmd extends CommandBase {
 			.addOptions(groupIds.stream().map(groupId ->
 				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
 			).collect(Collectors.toList()))
-			.setMaxValues(5)
+			.setMaxValues(1)
 			.build();
 
 		message.replyEmbeds(builder.build()).setActionRow(menu).queue(msg -> {

@@ -43,7 +43,7 @@ public class AccessManager extends LiteDBBase {
 
 	public CmdAccessLevel getUserLevel(String guildId, String userId) {
 		Integer data = selectOne("SELECT level FROM %s WHERE (guildId=%s AND userId=%s)".formatted(table_user, guildId, userId), "level", Integer.class);
-		if (data == null) return CmdAccessLevel.ALL;
+		if (data == null) return null;
 		return CmdAccessLevel.byLevel(data);
 	}
 

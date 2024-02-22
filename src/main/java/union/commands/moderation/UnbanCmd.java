@@ -74,6 +74,13 @@ public class UnbanCmd extends CommandBase {
 		}
 
 		guild.retrieveBan(tu).queue(ban -> {
+			// Check if in blacklist
+			for (int groupId : bot.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong())) {
+				if (bot.getDBUtil().blacklist.inGroupUser(groupId, event.getUser().getIdLong())) {
+					editError(event, path+".blacklisted", "Group ID : "+groupId);
+					return;
+				}
+			}
 			Member mod = event.getMember();
 			// add info to db
 			bot.getDBUtil().cases.add(CaseType.UNBAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
@@ -126,7 +133,7 @@ public class UnbanCmd extends CommandBase {
 			.addOptions(groupIds.stream().map(groupId ->
 				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
 			).collect(Collectors.toList()))
-			.setMaxValues(5)
+			.setMaxValues(1)
 			.build();
 
 		message.replyEmbeds(builder.build()).setActionRow(menu).queue(msg -> {

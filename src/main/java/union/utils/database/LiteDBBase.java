@@ -112,8 +112,8 @@ public class LiteDBBase {
 		return results;
 	}
 
-	protected Integer count(final String sql) {
-		Integer result = 0;
+	protected int count(final String sql) {
+		int result = 0;
 
 		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());

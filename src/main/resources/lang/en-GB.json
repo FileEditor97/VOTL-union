@@ -1026,6 +1026,7 @@
 					},
 					"not_found": "Could not find member by specified ID.\nUser **must** be unbaned here and joined this server.",
 					"not_self": "You can't interact with yourself or me.",
+					"blacklisted": "**This user is blacklisted!**\nRemove user from blacklist (`/blacklist remove`) and then retry unban.",
 					"no_group": "Couldn't find Group by entered ID.",
 					"embed_title": "Are you sure you want to unban this user on all Group servers?",
 					"button_confirm": "YES",
@@ -1280,7 +1281,7 @@
 						"help": "Enter SteamID or Steam64 ID"
 					},
 					"cant_view": "Can't view selected group. (Not group's owner or manager)",
-					"no_options": "No options provided, see `/help`",
+					"no_options": "No options provided. Either select *user* or enter *SteamID*.",
 					"no_user": "Provided user is not blacklisted.",
 					"done_user": "Blacklist removed from user %s (%s) in group `%s`.",
 					"no_steam": "Entry not found with provided Steam ID.",
@@ -1501,7 +1502,7 @@
 				"not_found_steam": "Connected Steam profile not found",
 				"not_found_discord": "Connected Discord profile not found",
 				"not_found_user": "Discord user not found",
-				"no_options": "No options provided, see `/help`",
+				"no_options": "No options provided. Either select *user* or enter *SteamID*.",
 				"field_rank": "Rank",
 				"field_playtime": "Play time",
 				"field_discord": "Discord account"

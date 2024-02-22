@@ -42,10 +42,6 @@ public class StrikeManager extends LiteDBBase {
 		return Pair.of((Integer) data.get("count"), (Integer) data.get("expireAfter"));
 	}
 
-	public void removeStrike(Long guildId, Long userId, Instant expireAfter, String newData) {
-		execute("UPDATE %s SET expireAfter=%d, count=count-1, data=%s WHERE (guildId=%d AND userId=%d)".formatted(table, expireAfter.getEpochSecond(), quote(newData), guildId, userId));
-	}
-
 	public void removeStrike(Long guildId, Long userId, Instant expireAfter, Integer amount, String newData) {
 		execute("UPDATE %s SET expireAfter=%d, count=count-%d, data=%s WHERE (guildId=%d AND userId=%d)".formatted(table, expireAfter.getEpochSecond(), amount, quote(newData), guildId, userId));
 	}

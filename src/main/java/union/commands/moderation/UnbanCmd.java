@@ -74,6 +74,13 @@ public class UnbanCmd extends CommandBase {
 		}
 
 		guild.retrieveBan(tu).queue(ban -> {
+			// Check if in blacklist
+			for (int groupId : bot.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong())) {
+				if (bot.getDBUtil().blacklist.inGroupUser(groupId, event.getUser().getIdLong())) {
+					editError(event, path+".blacklisted", "Group ID : "+groupId);
+					return;
+				}
+			}
 			Member mod = event.getMember();
 			// add info to db
 			bot.getDBUtil().cases.add(CaseType.UNBAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),

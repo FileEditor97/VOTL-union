@@ -15,6 +15,7 @@ import java.util.List;
 
 import union.App;
 import union.utils.database.managers.AccessManager;
+import union.utils.database.managers.AlertsManager;
 import union.utils.database.managers.AutopunishManager;
 import union.utils.database.managers.BlacklistManager;
 import union.utils.database.managers.CaseManager;
@@ -69,6 +70,7 @@ public class DBUtil {
 	public final StrikeManager strike;
 	public final AutopunishManager autopunish;
 	public final BlacklistManager blacklist;
+	public final AlertsManager alerts;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -116,6 +118,7 @@ public class DBUtil {
 		strike = new StrikeManager(connectionUtil);
 		autopunish = new AutopunishManager(connectionUtil);
 		blacklist = new BlacklistManager(connectionUtil);
+		alerts = new AlertsManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);

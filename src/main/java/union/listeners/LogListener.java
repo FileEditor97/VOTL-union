@@ -13,6 +13,7 @@ import union.base.command.SlashCommandEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.LogChannels;
+import union.objects.constants.Constants;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
@@ -377,7 +378,7 @@ public class LogListener {
 			sendLog(channel, logUtil.groupOwnerRenamedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, oldName, newName));
 		}
 
-		public void helperInformAction(Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
+		public void helperInformAction(int groupId, Guild target, AuditLogEntry auditLogEntry) {
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
@@ -387,7 +388,7 @@ public class LogListener {
 			sendLog(channel, logUtil.auditLogEmbed(master.getLocale(), groupId, target, auditLogEntry));
 		}
 
-		public void helperInformLeave(Integer groupId, @Nullable Guild guild, String guildId) {
+		public void helperInformLeave(int groupId, @Nullable Guild guild, String guildId) {
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
@@ -395,6 +396,20 @@ public class LogListener {
 			if (channel == null) return;
 
 			sendLog(channel, logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId));
+		}
+
+		public void helperAlertTriggered(int groupId, Guild targetGuild, Member targetMember, String actionTaken, String reason) {
+			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			if (master == null) return;
+
+			TextChannel channel = getLogChannel(LogChannels.GROUPS, master);
+			if (channel == null) return;
+
+			try {
+				channel.sendMessage("||"+Constants.DEVELOPER_TAG+"||").addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
+			} catch (InsufficientPermissionException | IllegalArgumentException ex) {
+				// ignore
+			}
 		}
 	}
 

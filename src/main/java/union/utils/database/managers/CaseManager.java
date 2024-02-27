@@ -35,29 +35,29 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// update case reason
-	public void updateReason(Integer caseId, String reason) {
+	public void updateReason(int caseId, String reason) {
 		execute("UPDATE %s SET reason=%s WHERE (caseId=%d)".formatted(table, quote(reason), caseId));
 	}
 
 	// update case duration
-	public void updateDuration(Integer caseId, Duration duration) {
+	public void updateDuration(int caseId, Duration duration) {
 		execute("UPDATE %s SET duration=%d WHERE (caseId=%d)".formatted(table, duration.getSeconds(), caseId));
 	}
 
 	// set case inactive
-	public void setInactive(Integer caseId) {
+	public void setInactive(int caseId) {
 		execute("UPDATE %s SET active=0 WHERE (caseId=%d)".formatted(table, caseId));
 	}
 
 	// get case info
-	public CaseData getInfo(Integer caseId) {
+	public CaseData getInfo(int caseId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (caseId=%d)".formatted(table, caseId), fullCaseKeys);
 		if (data == null) return null;
 		return new CaseData(data);
 	}
 
 	// get 10 guild's cases sorted in pages 
-	public List<CaseData> getGuildAll(long guildId, Integer page) {
+	public List<CaseData> getGuildAll(long guildId, int page) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, (page-1)*10), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
@@ -65,7 +65,7 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// get 10 cases for guild's user sorted in pages
-	public List<CaseData> getGuildUser(long guildId, long userId, Integer page) {
+	public List<CaseData> getGuildUser(long guildId, long userId, int page) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, userId, (page-1)*10), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
@@ -73,7 +73,7 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// get 10 active timed cases sorted in pages
-	public List<CaseData> getActiveTimed(long guildId, Integer page) {
+	public List<CaseData> getActiveTimed(long guildId, int page) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND duration>0 AND guildId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, (page-1)*10), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
@@ -98,8 +98,8 @@ public class CaseManager extends LiteDBBase {
 
 	// set all strike cases for user inactive
 	// Better way for this is harder...
-	public void setInactiveStrikeCases(Long userId, Long guildId) {
-		execute("UPDATE %s SET active=0 WHERE (userId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
+	public void setInactiveStrikeCases(long userId, long guildId) {
+		execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
 	}
 
 	// get user's last case

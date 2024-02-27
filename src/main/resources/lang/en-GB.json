@@ -163,14 +163,16 @@
 			"oldname": "Previous Group name"
 		},
 		"audit": {
-			"group_id": "Group ID: #%s",
+			"group_id": "Group ID: #%d",
 			"admin": "Action by",
 			"banned": "User was banned in %s",
 			"unbanned": "User was unbanned in %s",
 			"default": "Action performed in %s",
 			"reason": "Reason",
 			"leave_guild": "Helper bot left server %s",
-			"guild_id": "Server ID"
+			"guild_id": "Server ID",
+			"alert": "Misconduct detected in '%s'!",
+			"action": "Action performed"
 		},
 		"verify": {
 			"added": "User verified | {user_tag}",

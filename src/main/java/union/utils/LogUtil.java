@@ -16,6 +16,7 @@ import union.utils.message.LocaleUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
@@ -487,28 +488,39 @@ public class LogUtil {
 	// OTHER
 
 	@Nonnull
-	public MessageEmbed auditLogEmbed(DiscordLocale locale, Integer groupId, Guild target, AuditLogEntry auditLogEntry) {
+	public MessageEmbed auditLogEmbed(DiscordLocale locale, int groupId, Guild target, AuditLogEntry auditLogEntry) {
 		String title = switch (auditLogEntry.getType()) {
 			case BAN -> localized(locale, "audit.banned").formatted(target.getName());
 			case UNBAN -> localized(locale, "audit.unbanned").formatted(target.getName());
 			default -> localized(locale, "audit.default").formatted(target.getName());
 		};
-		String admin = UserSnowflake.fromId(auditLogEntry.getUserId()).getAsMention();
+		String admin = UserSnowflake.fromId(auditLogEntry.getUserIdLong()).getAsMention();
 		return getEmbed(AMBER_LIGHT)
 			.setAuthor(title, null, target.getIconUrl())
 			.addField(localized(locale, "audit.admin"), admin, true)
 			.addField(localized(locale, "user"), UserSnowflake.fromId(auditLogEntry.getTargetId()).getAsMention(), true)
 			.addField(localized(locale, "audit.reason"), Optional.ofNullable(auditLogEntry.getReason()).orElse("-") , false)
-			.setFooter(localized(locale, "audit.group_id").formatted(groupId.toString()))
+			.setFooter(localized(locale, "audit.group_id").formatted(groupId))
 			.build();
 	}
 
 	@Nonnull
-	public MessageEmbed botLeftEmbed(DiscordLocale locale, Integer groupId, @Nullable Guild guild, String guildId) {
+	public MessageEmbed alertEmbed(DiscordLocale locale, int groupId, Guild guild, Member member, String actionTaken, String reason) {
+		return getEmbed(AMBER_LIGHT)
+			.setAuthor(localized(locale, "audit.alert").formatted(guild.getName()), null, guild.getIconUrl())
+			.addField(localized(locale, "target"), "%s (%d)".formatted(member.getAsMention(), member.getIdLong()), true)
+			.addField(localized(locale, "audit.reason"), reason, true)
+			.addField(localized(locale, "audit.action"), actionTaken, false)
+			.setFooter(localized(locale, "audit.group_id").formatted(groupId))
+			.build();
+	}
+
+	@Nonnull
+	public MessageEmbed botLeftEmbed(DiscordLocale locale, int groupId, @Nullable Guild guild, String guildId) {
 		return getEmbed(AMBER_LIGHT)
 			.setAuthor(localized(locale, "audit.leave_guild").formatted(Optional.ofNullable(guild).map(Guild::getName).orElse("unknown")))
 			.addField(localized(locale, "audit.guild_id"), guildId, true)
-			.setFooter(localized(locale, "audit.group_id").formatted(groupId.toString()))
+			.setFooter(localized(locale, "audit.group_id").formatted(groupId))
 			.build();
 	}
 

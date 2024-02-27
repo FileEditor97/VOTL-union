@@ -428,6 +428,13 @@ public class LogListener {
 
 			sendLog(channel, logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), (steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64, reason));
 		}
+
+		public void onVerifiedAttempt(User user, Long steam64, Guild guild, int groupId) {
+			TextChannel channel = getLogChannel(LogChannels.VERIFICATION, guild);
+			if (channel == null) return;
+
+			sendLog(channel, logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(), steam64, groupId));
+		}
 	}
 
 	// Tickets actions

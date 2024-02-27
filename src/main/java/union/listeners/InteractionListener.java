@@ -326,6 +326,7 @@ public class InteractionListener extends ListenerAdapter {
 		for (int groupId : groupIds) {
 			if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 				sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
+				bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), null, guild, groupId);
 				return;
 			}
 		}
@@ -336,6 +337,7 @@ public class InteractionListener extends ListenerAdapter {
 				// Check if steam64 is not blacklisted
 				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 					sendError(event, "bot.verification.blacklisted", "SteamID: "+bot.getSteamUtil().convertSteam64toSteamID(steam64));
+					bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild, groupId);
 					return;
 				}
 			}

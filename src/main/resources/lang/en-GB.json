@@ -175,11 +175,13 @@
 			"action": "Action performed"
 		},
 		"verify": {
-			"added": "User verified | {user_tag}",
-			"removed": "User unverified | {user_tag}",
+			"added": "User verified | %s",
+			"removed": "User unverified | %s",
+			"attempt": "User attempted verification | %s",
 			"steam": "Steam account",
 			"discord": "Discord account",
-			"reason": "Reason"
+			"reason": "Reason",
+			"blacklisted": "Blacklisted in group #%d"
 		},
 		"ticket": {
 			"closed_title": "Ticket Closed",

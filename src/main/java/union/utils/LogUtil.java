@@ -529,9 +529,9 @@ public class LogUtil {
 	@Nonnull
 	public MessageEmbed verifiedEmbed(DiscordLocale locale, String memberTag, String memberId, String memberIcon, String steamName, Long steam64) {
 		return getEmbed(GREEN_DARK)
-			.setAuthor(localized(locale, "verify.added").replace("{user_tag}", memberTag), null, memberIcon)
+			.setAuthor(localized(locale, "verify.added").formatted(memberTag), null, memberIcon)
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%s)".formatted(steamName, bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64, steam64)
+				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64)
 				), true)
 			.addField(localized(locale, "verify.discord"), User.fromId(memberId).getAsMention(), true)
 			.setFooter("ID: "+memberId)
@@ -541,9 +541,9 @@ public class LogUtil {
 	@Nonnull
 	public MessageEmbed unverifiedEmbed(DiscordLocale locale, String memberTag, String memberId, String memberIcon, String steamName, Long steam64, String reason) {
 		return getEmbed(RED_DARK)
-			.setAuthor(localized(locale, "verify.removed").replace("{user_tag}", memberTag), null, memberIcon)
+			.setAuthor(localized(locale, "verify.removed").formatted(memberTag), null, memberIcon)
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%s)".formatted(steamName, bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64, steam64)
+				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64)
 				), false)
 			.addField(localized(locale, "verify.discord"), User.fromId(memberId).getAsMention(), true)
 			.addField(localized(locale, "verify.reason"), reason, false)
@@ -551,6 +551,18 @@ public class LogUtil {
 			.build();
 	}
 
+	@Nonnull
+	public MessageEmbed verifyAttempt(DiscordLocale locale, String memberTag, String memberId, String memberIcon, Long steam64, int groupId) {
+		return getEmbed(AMBER_DARK)
+			.setAuthor(localized(locale, "verify.added").formatted(memberTag), null, memberIcon)
+			.setDescription(localized(locale, "verify.blacklisted").formatted(groupId))
+			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
+				"`%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64)
+				), true)
+			.addField(localized(locale, "verify.discord"), User.fromId(memberId).getAsMention(), true)
+			.setFooter("ID: "+memberId)
+			.build();
+	}
 
 	// Tickets
 	@Nonnull

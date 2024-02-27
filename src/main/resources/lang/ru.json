@@ -175,11 +175,13 @@
 			"action": "Принятое действие"
 		},
 		"verify": {
-			"added": "Верифицирован | {user_tag}",
-			"removed": "Снята верифицикация | {user_tag}",
+			"added": "Верифицирован | %s",
+			"removed": "Снята верифицикация | %s",
+			"attempt": "Попытка верификации | %s",
 			"steam": "Аккаунт Steam",
 			"discord": "Аккаунт Discord",
-			"reason": "Причина"
+			"reason": "Причина",
+			"blacklisted": "В черном списке группы #%d"
 		},
 		"ticket": {
 			"closed_title": "Тикет закрыт",

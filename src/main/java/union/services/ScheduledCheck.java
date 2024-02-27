@@ -198,6 +198,8 @@ public class ScheduledCheck {
 			checkAccountUpdates();
 		}).thenRunAsync(() -> {
 			checkUnbans();
+		}).thenRunAsync(() -> {
+			removeAlertPoints();
 		});
 	}
 
@@ -282,4 +284,12 @@ public class ScheduledCheck {
 		});
 	}
 
+	private void removeAlertPoints() {
+		try {
+			db.alerts.removePoint();
+		} catch (Throwable t) {
+			bot.getLogger().error("Exception caught during points removal.", t);
+		}
+	}
+	
 }

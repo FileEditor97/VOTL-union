@@ -15,6 +15,10 @@
  */
 package union.base.command;
 
+import java.io.File;
+
+import union.objects.annotation.NotNull;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -26,15 +30,11 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-import java.io.File;
-
-import jakarta.annotation.Nonnull;
-
 public class UserContextMenuEvent extends UserContextInteractionEvent
 {
 	private final CommandClient client;
 
-	public UserContextMenuEvent(@Nonnull JDA api, long responseNumber, @Nonnull UserContextInteraction interaction, CommandClient client)
+	public UserContextMenuEvent(@NotNull JDA api, long responseNumber, @NotNull UserContextInteraction interaction, CommandClient client)
 	{
 		super(api, responseNumber, interaction);
 		this.client = client;
@@ -58,7 +58,7 @@ public class UserContextMenuEvent extends UserContextInteractionEvent
 	 *
 	 * @param message A String message to reply with
 	 */
-	public void respond(@Nonnull String message)
+	public void respond(@NotNull String message)
 	{
 		reply(message).queue();
 	}
@@ -71,7 +71,7 @@ public class UserContextMenuEvent extends UserContextInteractionEvent
 	 *
 	 * @param embed The MessageEmbed to reply with
 	 */
-	public void respond(@Nonnull MessageEmbed embed)
+	public void respond(@NotNull MessageEmbed embed)
 	{
 		replyEmbeds(embed).queue();
 	}
@@ -84,7 +84,7 @@ public class UserContextMenuEvent extends UserContextInteractionEvent
 	 *
 	 * @param message The Message to reply with
 	 */
-	public void respond(@Nonnull MessageCreateData message)
+	public void respond(@NotNull MessageCreateData message)
 	{
 		reply(message).queue();
 	}
@@ -103,7 +103,7 @@ public class UserContextMenuEvent extends UserContextInteractionEvent
 	 * @param description The description to set (null for no description).
 	 * @param spoiler whether the file should be marked as spoiler.
 	 */
-	public void respond(@Nonnull File file, @Nonnull String filename, String description, boolean spoiler)
+	public void respond(@NotNull File file, @NotNull String filename, String description, boolean spoiler)
 	{
 		FileUpload fileUpload = FileUpload.fromData(file, filename);
 		if(description != null && !description.isEmpty())

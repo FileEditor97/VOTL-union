@@ -7,8 +7,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -17,6 +15,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.Emotes;
+import union.objects.annotation.NotNull;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -77,7 +76,7 @@ public class ModuleCmd extends CommandBase {
 			createReplyEmbed(event, embed);
 		}
 
-		@Nonnull
+		@NotNull
 		private String format(String sModule, Emotes emote) {
 			return emote.getEmote() + " | " + sModule;
 		}

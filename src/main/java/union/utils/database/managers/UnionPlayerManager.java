@@ -3,10 +3,9 @@ package union.utils.database.managers;
 import java.util.Map;
 import java.util.Objects;
 
+import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
-
-import jakarta.annotation.Nonnull;
 
 public class UnionPlayerManager extends SqlDBBase {
 
@@ -18,7 +17,7 @@ public class UnionPlayerManager extends SqlDBBase {
 		this.databases = databases;
 	}
 
-	public String getPlayerRank(@Nonnull String guildId, @Nonnull String steamId) {
+	public String getPlayerRank(@NotNull String guildId, @NotNull String steamId) {
 		// Find corresponding database
 		String database = databases.get(guildId);
 		if (database == null) return null;
@@ -26,7 +25,7 @@ public class UnionPlayerManager extends SqlDBBase {
 		return selectOne(database, TABLE_PLAYERS, "rank", "steamid", steamId);
 	}
 
-	public PlayerInfo getPlayerInfo(@Nonnull String guildId, @Nonnull String steamId) {
+	public PlayerInfo getPlayerInfo(@NotNull String guildId, @NotNull String steamId) {
 		// Find corresponding database
 		String database = databases.get(guildId);
 		if (database == null) return new PlayerInfo(steamId);

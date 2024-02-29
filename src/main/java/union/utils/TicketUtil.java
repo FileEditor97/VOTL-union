@@ -5,10 +5,9 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import union.App;
+import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.database.DBUtil;
 import union.utils.transcripts.DiscordHtmlTranscripts;
@@ -35,7 +34,7 @@ public class TicketUtil {
 		this.db = bot.getDBUtil();
 	}
 
-	public void closeTicket(@Nonnull String channelId, @Nullable User userClosed, @Nullable String reasonClosed, @Nonnull Consumer<? super Throwable> closeHandle) {
+	public void closeTicket(@NotNull String channelId, @Nullable User userClosed, @Nullable String reasonClosed, @NotNull Consumer<? super Throwable> closeHandle) {
 		GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
 		if (channel == null) return;
 

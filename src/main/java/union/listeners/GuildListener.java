@@ -1,7 +1,5 @@
 package union.listeners;
 
-import jakarta.annotation.Nonnull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.time.Instant;
@@ -9,6 +7,7 @@ import java.time.Instant;
 import union.App;
 import union.objects.CaseType;
 import union.objects.LogChannels;
+import union.objects.annotation.NotNull;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 
@@ -37,13 +36,13 @@ public class GuildListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onGuildJoin(@Nonnull GuildJoinEvent event) {
+	public void onGuildJoin(@NotNull GuildJoinEvent event) {
 		String guildId = event.getGuild().getId();
 		bot.getLogger().info("Joined guild '"+event.getGuild().getName()+"'("+guildId+")");
 	}
 
 	@Override
-	public void onGuildLeave(@Nonnull GuildLeaveEvent event) {
+	public void onGuildLeave(@NotNull GuildLeaveEvent event) {
 		String guildId = event.getGuild().getId();
 		long guildIdLong = event.getGuild().getIdLong();
 		bot.getLogger().info("Left guild '%s'(%s)".formatted(event.getGuild().getName(), guildId));
@@ -110,7 +109,7 @@ public class GuildListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onGuildUnban(@Nonnull GuildUnbanEvent event) {
+	public void onGuildUnban(@NotNull GuildUnbanEvent event) {
 		CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.BAN);
 		if (banData != null) {
 			db.cases.setInactive(banData.getCaseIdInt());
@@ -118,7 +117,7 @@ public class GuildListener extends ListenerAdapter {
 	}
 	
 	@Override
-	public void onGuildMemberUpdateTimeOut(@Nonnull GuildMemberUpdateTimeOutEvent event) {
+	public void onGuildMemberUpdateTimeOut(@NotNull GuildMemberUpdateTimeOutEvent event) {
 		if (event.getNewTimeOutEnd() == null) {
 			// timeout removed by moderator
 			CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.MUTE);
@@ -127,7 +126,7 @@ public class GuildListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
+	public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
 		// Checks cache on local DB, if user is verified, gives out the role
 		long userId = event.getUser().getIdLong();
 		
@@ -157,7 +156,7 @@ public class GuildListener extends ListenerAdapter {
 	}
 	
 	@Override
-	public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
+	public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
 		// When user leaves guild, check if there are any records in DB that would be better to remove.
 		// This does not consider clearing User DB, when bot leaves guild.
 		String guildId = event.getGuild().getId();

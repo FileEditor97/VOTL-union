@@ -15,7 +15,7 @@
  */
 package union.base.command;
 
-import jakarta.annotation.Nonnull;
+import union.objects.annotation.NotNull;
 
 /**
  * A series of {@link Enum}s used for defining the scope size for a
@@ -159,9 +159,9 @@ public enum CooldownScope
 	GLOBAL("Global", "errors.cooldown.global");
 
 	private final String format;
-	@Nonnull final String errorPath;
+	@NotNull final String errorPath;
 
-	CooldownScope(String format, @Nonnull String errorPath)
+	CooldownScope(String format, @NotNull String errorPath)
 	{
 		this.format = format;
 		this.errorPath = errorPath;

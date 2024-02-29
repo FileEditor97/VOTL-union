@@ -2,9 +2,8 @@ package union.utils.file.lang;
 
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
 import union.App;
+import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
@@ -15,7 +14,7 @@ public final class LangUtil {
 		this.bot = bot;
 	}
 	
-	@Nonnull
+	@NotNull
 	public String getString(String language, String path) {
 		switch (language) {
 			case "ru":
@@ -25,7 +24,7 @@ public final class LangUtil {
 		}
 	}
 
-	@Nonnull
+	@NotNull
 	public List<String> getStringList(String language, String path) {
 		switch (language) {
 			case "ru":
@@ -41,14 +40,14 @@ public final class LangUtil {
 
 		UNKNOWN ("\uDDFA", "\uDDF3");
 
-		@Nonnull
+		@NotNull
 		private final String emote;
 
 		Language(String code1, String code2) {
 			this.emote = "\uD83C" + code1 + "\uD83C" + code2;
 		}
 
-		@Nonnull
+		@NotNull
 		public static String getEmote(DiscordLocale locale) {
 			String lang = locale.getLocale();
 			for (Language language : values()) {
@@ -59,7 +58,7 @@ public final class LangUtil {
 			return UNKNOWN.emote;
 		}
 
-		@Nonnull
+		@NotNull
 		public static String getString(DiscordLocale locale) {
 			String lang = locale.getLocale().toLowerCase();
 			for (Language language : values()) {

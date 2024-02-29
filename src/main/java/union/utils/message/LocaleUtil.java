@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import jakarta.annotation.Nonnull;
-
 import union.App;
 import union.objects.Emotes;
+import union.objects.annotation.NotNull;
 import union.utils.file.lang.LangUtil;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -29,22 +28,22 @@ public class LocaleUtil {
 		this.defaultLocale = defaultLocale;
 	}
 
-	@Nonnull
+	@NotNull
 	public String getDefaultLanguage() {
 		return defaultLanguage;
 	}
 
-	@Nonnull
+	@NotNull
 	public String getLocalized(DiscordLocale locale, String path) {
 		return setPlaceholders(langUtil.getString(locale.getLocale(), path));
 	}
 
-	@Nonnull
+	@NotNull
 	public String getLocalized(DiscordLocale locale, String path, String user) {
 		return getLocalized(locale, path, user, true);
 	}
 
-	@Nonnull
+	@NotNull
 	public String getLocalized(DiscordLocale locale, String path, String user, boolean format) {
 		if (format)
 			user = bot.getMessageUtil().getFormattedMembers(locale, user);
@@ -52,19 +51,19 @@ public class LocaleUtil {
 		return Objects.requireNonNull(getLocalized(locale, path).replace("{user}", user));
 	}
 
-	@Nonnull
+	@NotNull
 	public String getLocalized(DiscordLocale locale, String path, String user, String target) {
 		target = (target == null ? "null" : target);
 		
 		return getLocalized(locale, path, user, Collections.singletonList(target), false);
 	}
 
-	@Nonnull
+	@NotNull
 	public String getLocalized(DiscordLocale locale, String path, String user, List<String> targets) {
 		return getLocalized(locale, path, user, targets, false);
 	}
 
-	@Nonnull
+	@NotNull
 	public String getLocalized(DiscordLocale locale, String path, String user, List<String> targets, boolean format) {
 		String targetReplacement = targets.isEmpty() ? "null" : bot.getMessageUtil().getFormattedMembers(locale, targets.toArray(new String[0]));
 
@@ -74,7 +73,7 @@ public class LocaleUtil {
 		);
 	}
 
-	@Nonnull
+	@NotNull
 	public Map<DiscordLocale, String> getFullLocaleMap(String path) {
 		Map<DiscordLocale, String> localeMap = new HashMap<>();
 		for (DiscordLocale locale : bot.getFileManager().getLanguages()) {
@@ -87,43 +86,43 @@ public class LocaleUtil {
 		return localeMap;
 	}
 
-	@Nonnull
-	private String setPlaceholders(@Nonnull String msg) {
+	@NotNull
+	private String setPlaceholders(@NotNull String msg) {
 		return Objects.requireNonNull(Emotes.getWithEmotes(msg));
 	}
 
-	@Nonnull
-	public String getText(@Nonnull String path) {
+	@NotNull
+	public String getText(@NotNull String path) {
 		return getLocalized(defaultLocale, path);
 	}
 
-	@Nonnull
-	public String getText(IReplyCallback replyCallback, @Nonnull String path) {
+	@NotNull
+	public String getText(IReplyCallback replyCallback, @NotNull String path) {
 		return getLocalized(replyCallback.getUserLocale(), path);
 	}
 
-	@Nonnull
-	public String getUserText(IReplyCallback replyCallback, @Nonnull String path) {
+	@NotNull
+	public String getUserText(IReplyCallback replyCallback, @NotNull String path) {
 		return getUserText(replyCallback, path, Collections.emptyList(), false);
 	}
 
-	@Nonnull
-	public String getUserText(IReplyCallback replyCallback, @Nonnull String path, boolean format) {
+	@NotNull
+	public String getUserText(IReplyCallback replyCallback, @NotNull String path, boolean format) {
 		return getUserText(replyCallback, path, Collections.emptyList(), format);
 	}
 
-	@Nonnull
-	public String getUserText(IReplyCallback replyCallback, @Nonnull String path, String target) {
+	@NotNull
+	public String getUserText(IReplyCallback replyCallback, @NotNull String path, String target) {
 		return getUserText(replyCallback, path, Collections.singletonList(target), false);
 	}
 	
-	@Nonnull
-	public String getUserText(IReplyCallback replyCallback, @Nonnull String path, List<String> targets) {
+	@NotNull
+	public String getUserText(IReplyCallback replyCallback, @NotNull String path, List<String> targets) {
 		return getUserText(replyCallback, path, targets, false);
 	}
 
-	@Nonnull
-	private String getUserText(IReplyCallback replyCallback, @Nonnull String path, List<String> targets, boolean format) {
+	@NotNull
+	private String getUserText(IReplyCallback replyCallback, @NotNull String path, List<String> targets, boolean format) {
 		return getLocalized(replyCallback.getUserLocale(), path, replyCallback.getUser().getEffectiveName(), targets, format);
 	}
 

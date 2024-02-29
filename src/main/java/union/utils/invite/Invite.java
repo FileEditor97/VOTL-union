@@ -16,17 +16,17 @@
 
 package union.utils.invite;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
+import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild.VerificationLevel;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.ImageProxy;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
-import java.time.OffsetDateTime;
-import java.util.Set;
 
 /**
  * Representation of a Discord Invite.
@@ -62,8 +62,8 @@ public interface Invite {
      * @return {@link net.dv8tion.jda.api.requests.RestAction RestAction} - Type: {@link Invite Invite}
      *         <br>The Invite object
      */
-    @Nonnull
-    static RestAction<Invite> resolve(@Nonnull final JDA api, @Nonnull final String code, final boolean withCounts) {
+    @NotNull
+    static RestAction<Invite> resolve(@NotNull final JDA api, @NotNull final String code, final boolean withCounts) {
         return InviteImpl.resolve(api, code, withCounts);
     }
 
@@ -72,7 +72,7 @@ public interface Invite {
      *
      * @return The invite's type
      */
-    @Nonnull
+    @NotNull
     Invite.InviteType getType();
 
     /**
@@ -80,7 +80,7 @@ public interface Invite {
      *
      * @return the invite code
      */
-    @Nonnull
+    @NotNull
     String getCode();
 
     /**
@@ -89,7 +89,7 @@ public interface Invite {
      *
      * @return Invite URL for this Invite
      */
-    @Nonnull
+    @NotNull
     default String getUrl()
     {
         return "https://discord.gg/" + getCode();
@@ -100,7 +100,7 @@ public interface Invite {
      *
      * @return the corresponding JDA instance
      */
-    @Nonnull
+    @NotNull
     JDA getJDA();
 
     /**
@@ -108,7 +108,7 @@ public interface Invite {
      *
      * @return The experation date of this invite
      */
-    @Nonnull
+    @NotNull
     OffsetDateTime getTimeExpires();
 
     /**
@@ -180,7 +180,7 @@ public interface Invite {
          *
          * @return The guild's name
          */
-        @Nonnull
+        @NotNull
         String getName();
 
         /**
@@ -222,7 +222,7 @@ public interface Invite {
          * 
          * @return the verification level of the guild
          */
-        @Nonnull
+        @NotNull
         VerificationLevel getVerificationLevel();
         
         /**
@@ -259,7 +259,7 @@ public interface Invite {
          *
          * @return Never-null, unmodifiable Set containing all of the Guild's features.
          */
-        @Nonnull
+        @NotNull
         Set<String> getFeatures();
     }
 

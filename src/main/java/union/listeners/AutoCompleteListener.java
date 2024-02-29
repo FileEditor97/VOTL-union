@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
 import union.base.command.CommandClient;
 import union.base.command.SlashCommand;
+import union.objects.annotation.NotNull;
 import union.utils.database.DBUtil;
 import union.utils.message.MessageUtil;
 
@@ -27,7 +27,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 	}
 		
 	@Override
-	public void onCommandAutoCompleteInteraction(@Nonnull CommandAutoCompleteInteractionEvent event) {
+	public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
 		String cmdName = event.getFullCommandName();
 		String focusedOption = event.getFocusedOption().getName();
 		if (cmdName.equals("help") && focusedOption.equals("command")) {

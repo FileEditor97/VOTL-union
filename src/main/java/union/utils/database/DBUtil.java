@@ -78,21 +78,13 @@ public class DBUtil {
 	public DBUtil(FileManager fileManager) {
 		this.fileManager = fileManager;
 
-		// Check if MySQL driver is initiated
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver").getDeclaredConstructor().newInstance();
-		} catch (Exception ex) {
-			logger.error("MySQL: Exiting!\nMySQL-J driver not found initiated.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
-			System.exit(666);
-		}
-
 		String urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("database"));
 		
-		String urlWebsite = "jdbc:mysql://%s:3306/union".formatted(fileManager.getNullableString("config", "website-ip"));
+		String urlWebsite = "jdbc:mariadb://%s:3306/union".formatted(fileManager.getNullableString("config", "website-ip"));
 		String userWebsite = fileManager.getNullableString("config", "website-user");
 		String passWebsite = fileManager.getNullableString("config", "website-pass");
 		
-		String urlCentralTemp = "jdbc:mysql://%s:3306/".formatted(fileManager.getNullableString("config", "central-ip"));
+		String urlCentralTemp = "jdbc:mariadb://%s:3306/".formatted(fileManager.getNullableString("config", "central-ip"));
 		String userCentral = fileManager.getNullableString("config", "central-user");
 		String passCentral = fileManager.getNullableString("config", "central-pass");
 		

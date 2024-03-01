@@ -126,7 +126,7 @@ public class FileManager {
 	}
 	
 	/**
-	 * @param name - json file to be saerched
+	 * @param name - json file to be searched
 	 * @param path - string's json path
 	 * @return Returns not-null string. If search returns null string, returns provided path. 
 	 */

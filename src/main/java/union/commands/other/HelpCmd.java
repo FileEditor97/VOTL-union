@@ -111,7 +111,6 @@ public class HelpCmd extends CommandBase {
 	private void sendHelp(SlashCommandEvent event, String filCat) {
 
 		DiscordLocale userLocale = event.getUserLocale();
-		String prefix = "/";
 		EmbedBuilder builder = null;
 
 		if (event.isFromGuild()) {
@@ -141,9 +140,7 @@ public class HelpCmd extends CommandBase {
 					fieldTitle = lu.getLocalized(userLocale, "bot.help.command_menu.categories."+category.getName());
 					fieldValue = new StringBuilder();
 				}
-				fieldValue.append("`").append(prefix==null?" ":prefix).append(command.getName())
-					.append(" - ").append(command.getDescriptionLocalization().get(userLocale))
-					.append("\n");
+				fieldValue.append("`/%s` - %s\n".formatted(command.getName(), command.getDescriptionLocalization().get(userLocale)));
 			}
 		}
 		if (category != null) {

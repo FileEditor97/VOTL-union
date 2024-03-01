@@ -35,7 +35,7 @@ public class LocaleUtil {
 
 	@NotNull
 	public String getLocalized(DiscordLocale locale, String path) {
-		return setPlaceholders(langUtil.getString(locale.getLocale(), path));
+		return Emotes.getWithEmotes(langUtil.getString(locale, path));
 	}
 
 	@NotNull
@@ -84,11 +84,6 @@ public class LocaleUtil {
 			localeMap.put(locale, getLocalized(locale, path));
 		}
 		return localeMap;
-	}
-
-	@NotNull
-	private String setPlaceholders(@NotNull String msg) {
-		return Objects.requireNonNull(Emotes.getWithEmotes(msg));
 	}
 
 	@NotNull

@@ -156,7 +156,6 @@ public class App {
 				// owner
 				new ShutdownCmd(this),
 				new EvalCmd(this),
-				new InviteCmd(this),
 				new GenerateListCmd(this),
 				new ForceAccessCmd(this),
 				// webhook

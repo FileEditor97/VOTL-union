@@ -113,6 +113,9 @@ public class BlacklistCmd extends CommandBase {
 				User user = event.optUser("user");
 				if (bot.getDBUtil().blacklist.inGroupUser(groupId, user.getIdLong())) {
 					bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong());
+					// Log
+					bot.getLogListener().mod.onBlacklistRemoved(event.getGuild(), event.getUser(), user, null, groupId);
+					// Reply
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_user").formatted(user.getAsMention(), user.getId(), groupId))
@@ -139,6 +142,9 @@ public class BlacklistCmd extends CommandBase {
 
 				if (bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
 					bot.getDBUtil().blacklist.removeSteam64(groupId, steam64);
+					// Log
+					bot.getLogListener().mod.onBlacklistRemoved(event.getGuild(), event.getUser(), null, steam64, groupId);
+					// Reply
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_steam").formatted(SteamUtil.convertSteam64toSteamID(steam64), groupId))

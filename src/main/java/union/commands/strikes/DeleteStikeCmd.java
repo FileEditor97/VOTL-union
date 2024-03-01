@@ -198,6 +198,9 @@ public class DeleteStikeCmd extends CommandBase {
 				removeAmount, String.join(";", cases)
 			);
 		}
+		// Log
+		bot.getLogListener().mod.onStrikeDeleted(event, tu, caseId, removeAmount, activeAmount);
+		// Reply
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(removeAmount, activeAmount, caseData.getReason(), tu.getName()))

@@ -107,19 +107,7 @@ public class LogUtil {
 	}
 
 	@NotNull
-	public MessageEmbed syncBanEmbed(DiscordLocale locale, Guild master, User enforcer, User target, String reason) {
-		return getEmbed(RED_DARK)
-			.setAuthor(localized(locale, "ban.title_synced").formatted(target.getName()), null, target.getAvatarUrl())
-			.addField(localized(locale, "user"), target.getAsMention(), true)
-			.addField(localized(locale, "reason"), reason, true)
-			.addField(localized(locale, "master"), "`%s` (#%s)".formatted(master.getName(), master.getId()), true)
-			.addField(localized(locale, "enforcer"), enforcer.getName(), true)
-			.setFooter("ID: "+target.getId())
-			.build();
-	}
-
-	@NotNull
-	public MessageEmbed helperBanEmbed(DiscordLocale locale, Integer groupId, User target, String reason, Integer success, Integer max) {
+	public MessageEmbed helperBanEmbed(DiscordLocale locale, int groupId, User target, String reason, Integer success, Integer max) {
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "ban.title_synced").formatted(target.getName()), null, target.getAvatarUrl())
 			.addField(localized(locale, "user"), target.getAsMention(), true)
@@ -140,25 +128,12 @@ public class LogUtil {
 	}
 
 	@NotNull
-	public MessageEmbed syncUnbanEmbed(DiscordLocale locale, Guild master, User enforcer, User target, String banReason, String reason) {
-		return getEmbed(AMBER_DARK)
-			.setAuthor(localized(locale, "unban.title_synced").formatted(target.getName()), null, target.getAvatarUrl())
-			.addField(localized(locale, "user"), target.getAsMention(), true)
-			.addField(localized(locale, "unban.ban_reason"), Optional.ofNullable(banReason).orElse("-"), true)
-			.addField(localized(locale, "reason"), reason, true)
-			.addField(localized(locale, "master"), "`%s` (#%s)".formatted(master.getName(), master.getId()), true)
-			.addField(localized(locale, "enforcer"), enforcer.getName(), true)
-			.setFooter("ID: "+target.getId())
-			.build();
-	}
-
-	@NotNull
-	public MessageEmbed helperUnbanEmbed(DiscordLocale locale, Integer groupId, User target, String reason, Integer success, Integer max) {
+	public MessageEmbed helperUnbanEmbed(DiscordLocale locale, int groupId, User target, String reason, int success, int max) {
 		return getEmbed(AMBER_DARK)
 			.setAuthor(localized(locale, "unban.title_synced").formatted(target.getName()), null, target.getAvatarUrl())
 			.addField(localized(locale, "user"), target.getAsMention(), true)
 			.addField(localized(locale, "reason"), reason, true)
-			.addField(localized(locale, "success"), "%s/%s".formatted(success, max), true)
+			.addField(localized(locale, "success"), success+"/"+max, true)
 			.setFooter("Group ID: "+groupId)
 			.build();
 	}
@@ -180,18 +155,6 @@ public class LogUtil {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_DARK)
 			.addField(localized(locale, "reason"), Optional.ofNullable(caseData.getReason()).orElse("-"), true)
-			.build();
-	}
-
-	@NotNull
-	public MessageEmbed syncKickEmbed(DiscordLocale locale, Guild master, User enforcer, User target, String reason) {
-		return getEmbed(RED_DARK)
-			.setAuthor(localized(locale, "kick.title_synced").formatted(target.getName()), null, target.getAvatarUrl())
-			.addField(localized(locale, "user"), target.getAsMention(), true)
-			.addField(localized(locale, "reason"), reason, true)
-			.addField(localized(locale, "master"), "`%s` (#%s)".formatted(master.getName(), master.getId()), true)
-			.addField(localized(locale, "enforcer"), enforcer.getName(), true)
-			.setFooter("ID: "+target.getId())
 			.build();
 	}
 
@@ -234,9 +197,29 @@ public class LogUtil {
 			.build();
 	}
 
+	public MessageEmbed strikesClearedEmbed(DiscordLocale locale, String userTag, long userId, long modId) {
+		return getEmbed(AMBER_LIGHT)
+			.setAuthor(localized(locale, "strike.cleared").formatted(userTag))
+			.addField(localized(locale, "user"), "<@"+userId+">", true)
+			.addField(localized(locale, "mod"), "<@"+modId+">", true)
+			.setFooter("ID: "+userId)
+			.build();
+	}
+
+	public MessageEmbed strikeDeletedEmbed(DiscordLocale locale, String userTag, long userId, long modId, int caseId, int deletedAmount, int maxAmount) {
+		return getEmbed(AMBER_LIGHT)
+			.setAuthor(localized(locale, "strike.deleted").formatted(userTag))
+			.addField(localized(locale, "strike.case"), String.valueOf(caseId), true)
+			.addField(localized(locale, "strike.amount"), "/"+userId+">", true)
+			.addField(localized(locale, "user"), "<@"+userId+">", true)
+			.addField(localized(locale, "mod"), "<@"+modId+">", true)
+			.setFooter("ID: "+userId)
+			.build();
+	}
+
 	//  Reason
 	@NotNull
-	public MessageEmbed reasonChangedEmbed(DiscordLocale locale, CaseData caseData, Long modId, String newReason) {
+	public MessageEmbed reasonChangedEmbed(DiscordLocale locale, CaseData caseData, long modId, String newReason) {
 		return getEmbed()
 			.setAuthor(localized(locale, "change.reason").formatted(caseData.getCaseId(), caseData.getTargetTag()))
 			.setDescription("> %s\n\n🔴 ~~%s~~\n🟢 %s".formatted(lu.getLocalized(locale, caseData.getCaseType().getPath()), Optional.ofNullable(caseData.getReason()).orElse("None"), newReason))
@@ -248,7 +231,7 @@ public class LogUtil {
 
 	//  Duration
 	@NotNull
-	public MessageEmbed durationChangedEmbed(DiscordLocale locale, CaseData caseData, Long modId, String newTime) {
+	public MessageEmbed durationChangedEmbed(DiscordLocale locale, CaseData caseData, long modId, String newTime) {
 		String oldTime = caseData.getDuration().isZero() ? localized(locale, "permanently") : localized(locale, "temporary")
 			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false));
 		return getEmbed()
@@ -257,6 +240,30 @@ public class LogUtil {
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
 			.addField(localized(locale, "mod"), "<@"+modId+">", true)
 			.setFooter("ID: "+caseData.getTargetId())
+			.build();
+	}
+
+	//  Blacklist
+	@NotNull
+	public MessageEmbed blacklistAddedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String groups) {
+		return getEmbed(RED_DARK)
+			.setAuthor(localized(locale, "blacklist.added").formatted(target.getName()), null, target.getAvatarUrl())
+			.addField(localized(locale, "user"), target.getAsMention(), true)
+			.addField(localized(locale, "blacklist.steam"), steamID, true)
+			.addField(localized(locale, "blacklist.groups"), groups, true)
+			.addField(localized(locale, "enforcer"), enforcer.getName(), true)
+			.setFooter("ID: "+target.getId())
+			.build();
+	}
+
+	@NotNull
+	public MessageEmbed blacklistRemovedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String group) {
+		return getEmbed(GREEN_DARK)
+			.setAuthor(localized(locale, "blacklist.removed").formatted(target==null ? steamID : target.getName()), null, target.getAvatarUrl())
+			.addField(localized(locale, "user"), target==null ? "none" : target.getAsMention(), true)
+			.addField(localized(locale, "blacklist.steam"), steamID, true)
+			.addField(localized(locale, "blacklist.group"), group, true)
+			.addField(localized(locale, "enforcer"), enforcer.getName(), true)
 			.build();
 	}
 
@@ -276,9 +283,9 @@ public class LogUtil {
 	public MessageEmbed checkRankEmbed(DiscordLocale locale, String modId, String roleId, String rankName) {
 		return getEmbed(AMBER_LIGHT)
 			.setAuthor(localized(locale, "roles.checkrank"), null, null)
-			.addField(localized(locale, "roles.role"), "<@&%s>".formatted(roleId), true)
+			.addField(localized(locale, "roles.role"), "<@&"+roleId+">", true)
 			.addField(localized(locale, "roles.rank"), rankName, true)
-			.addField(localized(locale, "enforcer"), "<@%s>".formatted(modId), false)
+			.addField(localized(locale, "enforcer"), "<@"+modId+">", false)
 			.setFooter("ID: "+modId)
 			.build();
 	}

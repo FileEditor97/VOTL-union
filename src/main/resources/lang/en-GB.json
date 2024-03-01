@@ -145,22 +145,28 @@
 			"reason": "Case %s | Reason changed | %s",
 			"duration": "Case %s | Duration changed | %s"
 		},
+		"strike": {
+			"cleared": "Strikes cleared | %s",
+			"deleted": "Strike deleted | %s",
+			"amount": "Amount",
+			"case": "Case ID"
+		},
 		"group": {
 			"admin": "Action by",
 			"title": "Group '{group_name}' (#{group_id})",
 			"master": "Main server's ID: ",
 			"guild": "Implicated server",
-			"created": "Created new server Group",
-			"deleted": "Deleted server Group",
-			"join": "This server joined Group",
-			"add": "This server was added to Group",
-			"leave": "This server left Group",
+			"created": "Created new Group",
+			"deleted": "Deleted the Group",
+			"join": "This server joined the Group",
+			"add": "This server was added to the Group",
+			"leave": "This server left the Group",
 			"joined": "Server joined your Group",
 			"added": "Server was added to your Group",
 			"left": "Server left your Group",
 			"removed": "Server was removed from your Group",
-			"renamed": "Server Group was renamed",
-			"oldname": "Previous Group name"
+			"renamed": "Group was renamed",
+			"oldname": "Previous Group's name"
 		},
 		"audit": {
 			"group_id": "Group ID: #%d",
@@ -225,6 +231,13 @@
 			"temp_updated": "Temporary role updated for user",
 			"temp_removed": "Temporaty role removed from user",
 			"guild": "Target server"
+		},
+		"blacklist": {
+			"added": "Blacklisted | %s",
+			"removed": "Removed from blacklist | %s",
+			"steam": "SteamID",
+			"groups": "Selected groups",
+			"group": "Group"
 		}
 	},
 	"bot": {

@@ -16,6 +16,7 @@ import union.objects.constants.Constants;
 import union.utils.LogUtil;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,6 +27,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.utils.FileUpload;
 
 public class LogListener {
@@ -122,20 +124,18 @@ public class LogListener {
 			if (embed!=null) sendLog(channel, embed);
 		}
 
-		public void onSyncBan(SlashCommandEvent event, Guild guild, User target, String reason) {
-			sendLog(type, event.getGuild(), logUtil.syncBanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, reason));
+		public void onStrikesCleared(IReplyCallback event, User target) {
+			sendLog(type, event.getGuild(), logUtil.strikesClearedEmbed(event.getGuild().getLocale(), target.getName(), target.getIdLong(),
+				event.getUser().getIdLong()));
 		}
 
-		public void onSyncUnban(SlashCommandEvent event, Guild guild, User target, String banReason, String reason) {
-			sendLog(type, event.getGuild(), logUtil.syncUnbanEmbed(guild.getLocale(), event.getGuild(), event.getUser(), target, banReason, reason));
+		public void onStrikeDeleted(IReplyCallback event, User target, int caseId, int deletedAmount, int maxAmount) {
+			sendLog(type, event.getGuild(), logUtil.strikeDeletedEmbed(event.getGuild().getLocale(), target.getName(), target.getIdLong(),
+				event.getUser().getIdLong(), caseId, deletedAmount, maxAmount));
 		}
 
 		public void onAutoUnban(CaseData caseData, Guild guild) {
 			sendLog(type, guild, logUtil.autoUnbanEmbed(guild.getLocale(), caseData));
-		}
-
-		public void onSyncKick(SlashCommandEvent event, Guild guild, User target, String reason) {
-			sendLog(type, event.getGuild(), logUtil.syncKickEmbed(guild.getLocale(), guild, event.getUser(), target, reason));
 		}
 
 		public void onChangeReason(SlashCommandEvent event, CaseData caseData, Member moderator, String newReason) {
@@ -166,6 +166,16 @@ public class LogListener {
 
 		public void onHelperSyncKick(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
 			sendLog(type, master, logUtil.helperKickEmbed(master.getLocale(), groupId, target, reason, success, max));
+		}
+
+		public void onBlacklistAdded(Guild guild, User mod, User target, Long steam64, List<Integer> groupIds) {
+			String groups = groupIds.stream().map(id -> "%s (#%d)".formatted(bot.getDBUtil().group.getName(id), id)).collect(Collectors.joining("\n"));
+			sendLog(type, guild, logUtil.blacklistAddedEmbed(guild.getLocale(), mod, target, steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groups));
+		}
+
+		public void onBlacklistRemoved(Guild guild, User mod, User target, Long steam64, int groupId) {
+			String group = "%s (#%d)".formatted(bot.getDBUtil().group.getName(groupId), groupId);
+			sendLog(type, guild, logUtil.blacklistRemovedEmbed(guild.getLocale(), mod, target, steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), group));
 		}
 	}
 

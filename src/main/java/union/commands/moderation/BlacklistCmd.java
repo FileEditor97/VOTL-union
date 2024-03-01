@@ -14,6 +14,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.message.MessageUtil;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -72,7 +73,7 @@ public class BlacklistCmd extends CommandBase {
 				.setTitle(lu.getText(event, path+".title").formatted(groupId, page, pages));
 			list.forEach(map -> 
 				builder.addField("ID: %s".formatted((Long) map.get("userId")), lu.getText(event, path+".value").formatted(
-					Optional.ofNullable((Long) map.get("steam64")).map(bot.getSteamUtil()::convertSteam64toSteamID).orElse("-"),
+					Optional.ofNullable((Long) map.get("steam64")).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
 					Optional.ofNullable((Long) map.get("guildId")).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
 					Optional.ofNullable((Long) map.get("modId")).map(v -> "<@%s> (%<s)".formatted(v)).orElse("-"),
 					Optional.ofNullable((String) map.get("reason")).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
@@ -126,7 +127,7 @@ public class BlacklistCmd extends CommandBase {
 
 				Long steam64 = null;
 				if (Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", input)) {
-					steam64 = bot.getSteamUtil().convertSteamIDtoSteam64(input);
+					steam64 = SteamUtil.convertSteamIDtoSteam64(input);
 				} else {
 					try {
 						steam64 = Long.valueOf(input);
@@ -140,7 +141,7 @@ public class BlacklistCmd extends CommandBase {
 					bot.getDBUtil().blacklist.removeSteam64(groupId, steam64);
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 						.setColor(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getText(event, path+".done_steam").formatted(bot.getSteamUtil().convertSteam64toSteamID(steam64), groupId))
+						.setDescription(lu.getText(event, path+".done_steam").formatted(SteamUtil.convertSteam64toSteamID(steam64), groupId))
 						.build()
 					);
 				} else {

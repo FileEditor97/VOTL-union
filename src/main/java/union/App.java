@@ -37,7 +37,6 @@ import union.utils.WebhookAppender;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
 import union.utils.file.lang.LangUtil;
-import union.utils.invite.InviteBuilder;
 import union.utils.message.*;
 
 import net.dv8tion.jda.api.JDA;
@@ -96,9 +95,7 @@ public class App {
 	private final LocaleUtil localeUtil;
 	private final TimeUtil timeUtil;
 	private final LogUtil logUtil;
-	private final SteamUtil steamUtil;
 	private final TicketUtil ticketUtil;
-	private final InviteBuilder inviteBuilder;
 
 	public App() {
 
@@ -121,9 +118,7 @@ public class App {
 		checkUtil	= new CheckUtil(this);
 		timeUtil	= new TimeUtil(this);
 		logUtil		= new LogUtil(this);
-		steamUtil	= new SteamUtil();
 		ticketUtil	= new TicketUtil(this);
-		inviteBuilder = new InviteBuilder();
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
@@ -311,16 +306,8 @@ public class App {
 		return logUtil;
 	}
 
-	public SteamUtil getSteamUtil() {
-		return steamUtil;
-	}
-
 	public TicketUtil getTicketUtil() {
 		return ticketUtil;
-	}
-
-	public InviteBuilder getInviteBuilder() {
-		return inviteBuilder;
 	}
 
 	public LogListener getLogListener() {

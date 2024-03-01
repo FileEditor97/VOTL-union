@@ -2,9 +2,7 @@ package union.utils.message;
 
 public class SteamUtil {
 
-	public SteamUtil() {}
-
-	public String convertSteam64toSteamID(long steam64) throws NumberFormatException {
+	public static String convertSteam64toSteamID(long steam64) throws NumberFormatException {
 		Long universe = (steam64 >> 56) & 0xFF;
 		if (universe == 1) universe = 0L;
 
@@ -15,7 +13,7 @@ public class SteamUtil {
 		return "STEAM_" + universe + ":" + accountIdLowBit + ":" + accountIdHighBits;
 	}
 
-	public long convertSteamIDtoSteam64(String steamId) {
+	public static long convertSteamIDtoSteam64(String steamId) {
 		long steam64 = 76561197960265728L;
 		String[] id_split = steamId.split(":");
 

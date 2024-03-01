@@ -27,6 +27,7 @@ import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.database.managers.TicketTagManager.Tag;
 import union.utils.message.LocaleUtil;
 import union.utils.message.MessageUtil;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -335,7 +336,7 @@ public class InteractionListener extends ListenerAdapter {
 			for (int groupId : groupIds) {
 				// Check if steam64 is not blacklisted
 				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
-					sendError(event, "bot.verification.blacklisted", "SteamID: "+bot.getSteamUtil().convertSteam64toSteamID(steam64));
+					sendError(event, "bot.verification.blacklisted", "SteamID: "+SteamUtil.convertSteam64toSteamID(steam64));
 					bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild, groupId);
 					return;
 				}
@@ -564,7 +565,7 @@ public class InteractionListener extends ListenerAdapter {
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(str -> str != null).distinct().collect(Collectors.joining("\n- ", "- ", ""));
 				MessageEmbed embed = new EmbedBuilder().setColor(db.guild.getColor(guildId))
 					.setDescription(String.format("SteamID\n> %s\n%s\n> %s\n\n%s, %s\n%s\n\n%s",
-						(steam64 == null ? "None" : bot.getSteamUtil().convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
+						(steam64 == null ? "None" : SteamUtil.convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
 						lu.getLocalized(event.getGuildLocale(), "ticket.role_title"),
 						rolesString,
 						event.getMember().getEffectiveName(),

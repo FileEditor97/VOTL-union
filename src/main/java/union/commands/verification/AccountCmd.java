@@ -12,6 +12,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
@@ -55,7 +56,7 @@ public class AccountCmd extends CommandBase {
 
 			Long steam64 = null;
 			if (Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", input)) {
-				steam64 = bot.getSteamUtil().convertSteamIDtoSteam64(input);
+				steam64 = SteamUtil.convertSteamIDtoSteam64(input);
 			} else {
 				try {
 					steam64 = Long.valueOf(input);
@@ -88,7 +89,7 @@ public class AccountCmd extends CommandBase {
 	private void replyAccountFull(SlashCommandEvent event, final Long steam64, User user) {
 		String steamId;
 		try {
-			steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+			steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
 			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
@@ -112,7 +113,7 @@ public class AccountCmd extends CommandBase {
 	private void replyAccountSteam(SlashCommandEvent event, final Long steam64) {
 		String steamId;
 		try {
-			steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+			steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
 			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;

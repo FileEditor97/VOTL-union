@@ -12,6 +12,7 @@ import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.message.LocaleUtil;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -531,7 +532,7 @@ public class LogUtil {
 		return getEmbed(GREEN_DARK)
 			.setAuthor(localized(locale, "verify.added").formatted(memberTag), null, memberIcon)
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64)
+				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				), true)
 			.addField(localized(locale, "verify.discord"), User.fromId(memberId).getAsMention(), true)
 			.setFooter("ID: "+memberId)
@@ -543,7 +544,7 @@ public class LogUtil {
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "verify.removed").formatted(memberTag), null, memberIcon)
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64)
+				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				), false)
 			.addField(localized(locale, "verify.discord"), User.fromId(memberId).getAsMention(), true)
 			.addField(localized(locale, "verify.reason"), reason, false)
@@ -557,7 +558,7 @@ public class LogUtil {
 			.setAuthor(localized(locale, "verify.added").formatted(memberTag), null, memberIcon)
 			.setDescription(localized(locale, "verify.blacklisted").formatted(groupId))
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
-				"`%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(bot.getSteamUtil().convertSteam64toSteamID(steam64), steam64)
+				"`%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				), true)
 			.addField(localized(locale, "verify.discord"), User.fromId(memberId).getAsMention(), true)
 			.setFooter("ID: "+memberId)

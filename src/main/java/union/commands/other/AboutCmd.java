@@ -84,7 +84,9 @@ public class AboutCmd extends CommandBase {
 					lu.getLocalized(userLocale, "bot.other.about.embed.links.unionteams_website").replace("{unionteams}", Links.UNIONTEAMS),
 					"[Rise of the Republic](%s)".formatted(Links.ROTR_INVITE),
 					"[The Force Conflict](%s)".formatted(Links.TFC_INVITE),
-					"[SCP RP](%s)".formatted(Links.SCP_INVITE)
+					"[SCP RP](%s)".formatted(Links.SCP_INVITE),
+					"[Обычный ДаркРП](%s)".formatted(Links.DARKRP_INVITE),
+					"[Восход Джедаев](%s)".formatted(Links.VOSHOD_INVITE)
 				),
 				true
 			)

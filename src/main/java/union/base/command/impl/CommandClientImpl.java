@@ -28,7 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
 import union.base.command.CommandClient;
 import union.base.command.CommandListener;
 import union.base.command.ContextMenu;
@@ -40,6 +39,7 @@ import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
 import union.base.utils.FixedSizeCache;
 import union.base.utils.SafeIdUtil;
+import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -348,7 +348,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 	}
 
 	@Override
-	public void onEvent(@Nonnull GenericEvent event)
+	public void onEvent(@NotNull GenericEvent event)
 	{
 		if(event instanceof MessageReceivedEvent)
 			onMessageReceived((MessageReceivedEvent)event);

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import union.objects.annotation.NotNull;
+
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -30,8 +32,6 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
-import jakarta.annotation.Nonnull;
 
  /**
  * Created by Ryzeon, forked by Inkception
@@ -81,7 +81,7 @@ public class DiscordHtmlTranscripts {
         );
     }
 
-    public void queueCreateTranscript(GuildMessageChannel channel, @Nonnull Consumer<FileUpload> action, @Nonnull Consumer<? super Throwable> failure) {
+    public void queueCreateTranscript(GuildMessageChannel channel, @NotNull Consumer<FileUpload> action, @NotNull Consumer<? super Throwable> failure) {
         channel.getIterableHistory()
             .deadline(System.currentTimeMillis() + 4000)
             .takeAsync(200)

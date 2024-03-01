@@ -3,10 +3,9 @@ package union.utils.database.managers;
 import java.util.List;
 import java.util.Map;
 
+import union.objects.annotation.Nullable;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
-
-import jakarta.annotation.Nullable;
 
 public class BlacklistManager extends LiteDBBase {
 

@@ -7,9 +7,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nullable;
-
 import union.App;
+import union.objects.annotation.Nullable;
 import union.utils.exception.FormatterException;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;

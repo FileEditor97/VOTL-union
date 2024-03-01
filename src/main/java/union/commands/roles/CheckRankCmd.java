@@ -12,6 +12,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -84,7 +85,7 @@ public class CheckRankCmd extends CommandBase {
 					completableFutures.add(guild.removeRoleFromMember(member, role).reason("Not verified").submit().exceptionally(ex -> null));
 					continue;
 				}
-				String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+				String steamId = SteamUtil.convertSteam64toSteamID(steam64);
 				String rank = bot.getDBUtil().unionPlayers.getPlayerRank(guild.getId(), steamId);
 				if (rank == null || !requiredRank.contains(rank)) {
 					completableFutures.add(guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).submit().exceptionally(ex -> null));

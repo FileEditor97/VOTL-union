@@ -18,6 +18,8 @@ import union.base.waiter.EventWaiter;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
+import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.utils.database.DBUtil;
@@ -25,6 +27,7 @@ import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.database.managers.TicketTagManager.Tag;
 import union.utils.message.LocaleUtil;
 import union.utils.message.MessageUtil;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -67,9 +70,6 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 public class InteractionListener extends ListenerAdapter {
 
 	private final App bot;
@@ -107,7 +107,7 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	// Check for cooldown parametrs, if exists - check if cooldown active, else apply it
-	private void runButtonInteraction(ButtonInteractionEvent event, @Nullable Cooldown cooldown, @Nonnull Runnable function) {
+	private void runButtonInteraction(ButtonInteractionEvent event, @Nullable Cooldown cooldown, @NotNull Runnable function) {
 		if (cooldown != null) {
 			String key = getCooldownKey(cooldown, event);
 			int remaining = bot.getClient().getRemainingCooldown(key);
@@ -134,7 +134,7 @@ public class InteractionListener extends ListenerAdapter {
 	
 
 	@Override
-	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
+	public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 		String buttonId = event.getComponentId();
 
 		if (!isAcceptedId(buttonId)) return;
@@ -336,7 +336,7 @@ public class InteractionListener extends ListenerAdapter {
 			for (int groupId : groupIds) {
 				// Check if steam64 is not blacklisted
 				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
-					sendError(event, "bot.verification.blacklisted", "SteamID: "+bot.getSteamUtil().convertSteam64toSteamID(steam64));
+					sendError(event, "bot.verification.blacklisted", "SteamID: "+SteamUtil.convertSteam64toSteamID(steam64));
 					bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild, groupId);
 					return;
 				}
@@ -565,7 +565,7 @@ public class InteractionListener extends ListenerAdapter {
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(str -> str != null).distinct().collect(Collectors.joining("\n- ", "- ", ""));
 				MessageEmbed embed = new EmbedBuilder().setColor(db.guild.getColor(guildId))
 					.setDescription(String.format("SteamID\n> %s\n%s\n> %s\n\n%s, %s\n%s\n\n%s",
-						(steam64 == null ? "None" : bot.getSteamUtil().convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
+						(steam64 == null ? "None" : SteamUtil.convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
 						lu.getLocalized(event.getGuildLocale(), "ticket.role_title"),
 						rolesString,
 						event.getMember().getEffectiveName(),
@@ -1093,6 +1093,9 @@ public class InteractionListener extends ListenerAdapter {
 							bot.getHelper().runBan(groupId, event.getGuild(), user, caseData.getReason());
 						});
 
+						// Log
+						bot.getLogListener().mod.onBlacklistAdded(event.getGuild(), event.getUser(), user, steam64, groupIds);
+						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
 							.setDescription(lu.getText(event, "bot.moderation.blacklist.done"))
@@ -1129,7 +1132,7 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onModalInteraction(@Nonnull ModalInteractionEvent event) {
+	public void onModalInteraction(@NotNull ModalInteractionEvent event) {
 		event.deferReply(true).queue();
 		String modalId = event.getModalId();
 
@@ -1201,7 +1204,7 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onStringSelectInteraction(@Nonnull StringSelectInteractionEvent event) {
+	public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
 		String menuId = event.getComponentId();
 
 		if (menuId.startsWith("menu:role_row")) {
@@ -1223,7 +1226,7 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onEntitySelectInteraction(@Nonnull EntitySelectInteractionEvent event) {
+	public void onEntitySelectInteraction(@NotNull EntitySelectInteractionEvent event) {
 		String menuId = event.getComponentId();
 		if (menuId.startsWith("voice")) {
 			event.deferEdit().queue();
@@ -1345,7 +1348,7 @@ public class InteractionListener extends ListenerAdapter {
 		private final int time;
 		private final CooldownScope scope;
 
-		Cooldown(@Nonnull int time, @Nonnull CooldownScope scope) {
+		Cooldown(@NotNull int time, @NotNull CooldownScope scope) {
 			this.time = time;
 			this.scope = scope;
 		}

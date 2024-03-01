@@ -15,6 +15,10 @@
  */
 package union.base.command;
 
+import java.io.File;
+
+import union.objects.annotation.NotNull;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -25,10 +29,6 @@ import net.dv8tion.jda.api.interactions.commands.context.MessageContextInteracti
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-
-import java.io.File;
-
-import jakarta.annotation.Nonnull;
 
 /**
  * <h2><b>Message Context Menus In JDA-Chewtils</b></h2>
@@ -71,7 +71,7 @@ public class MessageContextMenuEvent extends MessageContextInteractionEvent
 {
 	private final CommandClient client;
 
-	public MessageContextMenuEvent(@Nonnull JDA api, long responseNumber, @Nonnull MessageContextInteraction interaction, CommandClient client)
+	public MessageContextMenuEvent(@NotNull JDA api, long responseNumber, @NotNull MessageContextInteraction interaction, CommandClient client)
 	{
 		super(api, responseNumber, interaction);
 		this.client = client;
@@ -95,7 +95,7 @@ public class MessageContextMenuEvent extends MessageContextInteractionEvent
 	 *
 	 * @param message A String message to reply with
 	 */
-	public void respond(@Nonnull String message)
+	public void respond(@NotNull String message)
 	{
 		reply(message).queue();
 	}
@@ -108,7 +108,7 @@ public class MessageContextMenuEvent extends MessageContextInteractionEvent
 	 *
 	 * @param embed The MessageEmbed to reply with
 	 */
-	public void respond(@Nonnull MessageEmbed embed)
+	public void respond(@NotNull MessageEmbed embed)
 	{
 		replyEmbeds(embed).queue();
 	}
@@ -121,7 +121,7 @@ public class MessageContextMenuEvent extends MessageContextInteractionEvent
 	 *
 	 * @param message The Message to reply with
 	 */
-	public void respond(@Nonnull MessageCreateData message)
+	public void respond(@NotNull MessageCreateData message)
 	{
 		reply(message).queue();
 	}
@@ -140,7 +140,7 @@ public class MessageContextMenuEvent extends MessageContextInteractionEvent
 	 * @param description The description to set (null for no description).
 	 * @param spoiler whether the file should be marked as spoiler.
 	 */
-	public void respond(@Nonnull File file, @Nonnull String filename, String description, boolean spoiler)
+	public void respond(@NotNull File file, @NotNull String filename, String description, boolean spoiler)
 	{
 		FileUpload fileUpload = FileUpload.fromData(file, filename);
 		if(description != null && !description.isEmpty())

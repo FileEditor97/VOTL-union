@@ -1,18 +1,18 @@
 package union.utils.exception;
 
-import jakarta.annotation.Nonnull;
+import union.objects.annotation.NotNull;
 
 public class FormatterException extends Exception {
 	
-	@Nonnull
+	@NotNull
 	private String path;
 	
-	public FormatterException(@Nonnull String path) {
+	public FormatterException(@NotNull String path) {
 		super();
 		this.path = path;
 	}
 
-	@Nonnull
+	@NotNull
 	public String getPath() {
 		return path;
 	}

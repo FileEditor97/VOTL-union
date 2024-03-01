@@ -4,9 +4,8 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-
 import union.App;
+import union.objects.annotation.NotNull;
 import union.utils.message.LocaleUtil;
 
 import net.dv8tion.jda.api.Permission;
@@ -29,7 +28,7 @@ public class VoiceListener extends ListenerAdapter {
 		this.lu = bot.getLocaleUtil();
 	}
 
-	public void onGuildVoiceUpdate(@Nonnull GuildVoiceUpdateEvent event) {
+	public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
 		String masterVoiceID = bot.getDBUtil().guildVoice.getChannel(event.getGuild().getId());
 		AudioChannelUnion channelJoined = event.getChannelJoined();
 		if (channelJoined != null && channelJoined.getId().equals(masterVoiceID)) {

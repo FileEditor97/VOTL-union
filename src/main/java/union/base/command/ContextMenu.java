@@ -15,6 +15,14 @@
  */
 package union.base.command;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import union.objects.CmdAccessLevel;
+import union.objects.annotation.NotNull;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
@@ -25,15 +33,6 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import jakarta.annotation.Nonnull;
-
-import union.objects.CmdAccessLevel;
 
 /**
  * Middleware for child context menu types. Anything that extends this class will inherit the following options.
@@ -47,7 +46,7 @@ public abstract class ContextMenu extends Interaction
 	 * Can be 1-32 characters long. Spaces are allowed.
 	 * @see CommandData#setName(String)
 	 */
-	@Nonnull
+	@NotNull
 	protected String name = "null";
 
 	/**
@@ -55,7 +54,7 @@ public abstract class ContextMenu extends Interaction
 	 *
 	 * @return The name for the Context Menu.
 	 */
-	@Nonnull
+	@NotNull
 	public String getName()
 	{
 		return name;
@@ -64,14 +63,14 @@ public abstract class ContextMenu extends Interaction
 	/**
 	 * Localization of menu names. Allows discord to change the language of the name of menu in the client.
 	 */
-	@Nonnull
+	@NotNull
 	protected Map<DiscordLocale, String> nameLocalization = new HashMap<>();
 
 	/**
 	 * Gets the specified localizations of menu name.
 	 * @return Menu name localizations.
 	 */
-	@Nonnull
+	@NotNull
 	public Map<DiscordLocale, String> getNameLocalization() {
 		return nameLocalization;
 	}
@@ -81,7 +80,7 @@ public abstract class ContextMenu extends Interaction
 	 *
 	 * @return the type
 	 */
-	@Nonnull
+	@NotNull
 	public Command.Type getType()
 	{
 		if (this instanceof MessageContextMenu)

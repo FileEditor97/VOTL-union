@@ -16,6 +16,11 @@
 
 package union.utils.invite;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
+import union.objects.annotation.NotNull;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild.VerificationLevel;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -24,11 +29,6 @@ import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.EntityString;
-
-import jakarta.annotation.Nonnull;
-
-import java.time.OffsetDateTime;
-import java.util.Set;
 
 public class InviteImpl implements Invite {
 
@@ -64,25 +64,25 @@ public class InviteImpl implements Invite {
 		return new RestActionImpl<>(api, route, (response, request) -> InviteBuilder.createInvite(jda, response.getObject()));
 	}
 
-	@Nonnull
+	@NotNull
 	@Override
 	public Invite.InviteType getType() {
 		return this.type;
 	}
 
-	@Nonnull
+	@NotNull
 	@Override
 	public String getCode() {
 		return this.code;
 	}
 
-	@Nonnull
+	@NotNull
 	@Override
 	public JDAImpl getJDA() {
 		return this.api;
 	}
 
-	@Nonnull
+	@NotNull
 	@Override
 	public OffsetDateTime getTimeExpires() {
 		return this.timeExpires;
@@ -172,7 +172,7 @@ public class InviteImpl implements Invite {
             return id;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public String getName()
         {
@@ -192,7 +192,7 @@ public class InviteImpl implements Invite {
                     : "https://cdn.discordapp.com/splashes/" + this.id + "/" + this.splashId + ".png";
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public VerificationLevel getVerificationLevel()
         {
@@ -211,7 +211,7 @@ public class InviteImpl implements Invite {
             return memberCount;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public Set<String> getFeatures()
         {

@@ -14,10 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import union.App;
+import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -56,7 +55,7 @@ public class FileManager {
 	}
 	
 	// Convenience method do add new languages more easy.
-	public FileManager addLang(@Nonnull String file) throws Exception {
+	public FileManager addLang(@NotNull String file) throws Exception {
 		if (locales == null)
 		locales = new ArrayList<>();
 		
@@ -127,11 +126,11 @@ public class FileManager {
 	}
 	
 	/**
-	 * @param name - json file to be saerched
+	 * @param name - json file to be searched
 	 * @param path - string's json path
 	 * @return Returns not-null string. If search returns null string, returns provided path. 
 	 */
-	@Nonnull
+	@NotNull
 	public String getString(String name, String path) {
 		String result = getNullableString(name, path);
 		if (result == null)
@@ -193,7 +192,7 @@ public class FileManager {
 		return false;
 	}
 
-	@Nonnull
+	@NotNull
 	public List<String> getStringList(String name, String path){
 		File file = files.get(name);
 		
@@ -219,7 +218,7 @@ public class FileManager {
 	}
 
 	@SuppressWarnings("all")
-	@Nonnull
+	@NotNull
 	public Map<String, String> getMap(String name, String path){
 		File file = files.get(name);
 		if(file == null)

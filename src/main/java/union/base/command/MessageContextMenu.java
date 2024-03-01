@@ -15,10 +15,10 @@
  */
 package union.base.command;
 
-import jakarta.annotation.Nonnull;
-
 import union.objects.CmdAccessLevel;
+import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
+
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -106,7 +106,7 @@ public abstract class MessageContextMenu extends ContextMenu
 	 */
 	protected abstract void execute(MessageContextMenuEvent event);
 
-	private void terminate(MessageContextMenuEvent event, @Nonnull MessageEmbed embed) {
+	private void terminate(MessageContextMenuEvent event, @NotNull MessageEmbed embed) {
 		terminate(event, MessageCreateData.fromEmbeds(embed));
 	}
 

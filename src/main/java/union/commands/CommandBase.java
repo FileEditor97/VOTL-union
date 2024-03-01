@@ -3,14 +3,13 @@ package union.commands;
 import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
+import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
-
-import jakarta.annotation.Nonnull;
 
 public abstract class CommandBase extends SlashCommand {
 	
@@ -20,36 +19,36 @@ public abstract class CommandBase extends SlashCommand {
 	}
 
 	// reply to event
-	public final void createReply(SlashCommandEvent event, @Nonnull String msg) {
+	public final void createReply(SlashCommandEvent event, @NotNull String msg) {
 		event.reply(msg).setEphemeral(true).queue();
 	}
 
-	public final void createReply(SlashCommandEvent event, @Nonnull MessageCreateData data) {
+	public final void createReply(SlashCommandEvent event, @NotNull MessageCreateData data) {
 		event.reply(data).setEphemeral(true).queue();
 	}
 
-	public final void createReply(SlashCommandEvent event, Boolean ephemeral, @Nonnull String msg) {
+	public final void createReply(SlashCommandEvent event, Boolean ephemeral, @NotNull String msg) {
 		event.reply(msg).setEphemeral(true).queue();
 	}
 
-	public final void createReply(SlashCommandEvent event, Boolean ephemeral, @Nonnull MessageCreateData data) {
+	public final void createReply(SlashCommandEvent event, Boolean ephemeral, @NotNull MessageCreateData data) {
 		event.reply(data).setEphemeral(ephemeral).queue();
 	}
 
-	public final void createReplyEmbed(SlashCommandEvent event, @Nonnull MessageEmbed... embeds) {
+	public final void createReplyEmbed(SlashCommandEvent event, @NotNull MessageEmbed... embeds) {
 		event.deferReply(true).addEmbeds(embeds).queue();
 	}
 
-	public final void createReplyEmbed(SlashCommandEvent event, Boolean ephemeral, @Nonnull MessageEmbed... embeds) {
+	public final void createReplyEmbed(SlashCommandEvent event, Boolean ephemeral, @NotNull MessageEmbed... embeds) {
 		event.deferReply(ephemeral).addEmbeds(embeds).queue();
 	}
 
 	// Error
-	public final void createError(SlashCommandEvent event, @Nonnull String path) {
+	public final void createError(SlashCommandEvent event, @NotNull String path) {
 		createReplyEmbed(event, bot.getEmbedUtil().getError(event, path));
 	}
 
-	public final void createError(SlashCommandEvent event, @Nonnull String path, String reason) {
+	public final void createError(SlashCommandEvent event, @NotNull String path, String reason) {
 		createReplyEmbed(event, bot.getEmbedUtil().getError(event, path, reason));
 	}
 
@@ -64,24 +63,24 @@ public abstract class CommandBase extends SlashCommand {
 	
 
 	// editOriginal with InteractionHook
-	public final void editHook(SlashCommandEvent event, @Nonnull String msg) {
+	public final void editHook(SlashCommandEvent event, @NotNull String msg) {
 		event.getHook().editOriginal(msg).queue();
 	}
 
-	public final void editHook(SlashCommandEvent event, @Nonnull MessageEditData data) {
+	public final void editHook(SlashCommandEvent event, @NotNull MessageEditData data) {
 		event.getHook().editOriginal(data).queue();
 	}
 
-	public final void editHookEmbed(SlashCommandEvent event, @Nonnull MessageEmbed... embeds) {
+	public final void editHookEmbed(SlashCommandEvent event, @NotNull MessageEmbed... embeds) {
 		event.getHook().editOriginalEmbeds(embeds).queue();
 	}
 
 	// Error
-	public final void editError(SlashCommandEvent event, @Nonnull String path) {
+	public final void editError(SlashCommandEvent event, @NotNull String path) {
 		editHookEmbed(event, bot.getEmbedUtil().getError(event, path));
 	}
 
-	public final void editError(SlashCommandEvent event, @Nonnull String path, String reason) {
+	public final void editError(SlashCommandEvent event, @NotNull String path, String reason) {
 		editHookEmbed(event, bot.getEmbedUtil().getError(event, path, reason));
 	}
 

@@ -4,8 +4,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
 
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
@@ -74,8 +74,8 @@ public enum Emotes {
 		return this.id;
 	}
 
-	@Nonnull
-	public static String getWithEmotes(@Nonnull String input) {
+	@NotNull
+	public static String getWithEmotes(@NotNull String input) {
 		Matcher matcher = emote_pattern.matcher(input);
 		if (matcher.find()) {
 			StringBuilder builder = new StringBuilder();

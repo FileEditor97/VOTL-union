@@ -5,14 +5,13 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.annotation.Nonnull;
-
 import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdModule;
 import union.objects.Emotes;
+import union.objects.annotation.NotNull;
 import union.objects.constants.CmdCategory;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -653,7 +652,7 @@ public class VoiceCmd extends CommandBase {
 			return Emotes.NONE.getEmote();
 		}
 
-		@Nonnull
+		@NotNull
 		private String formatHolder(String holder, String view, String join) {
 			return "> " + view + " | " + join + " | `" + holder + "`";
 		}

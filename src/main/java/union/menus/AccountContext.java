@@ -7,6 +7,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.Constants;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
+import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
@@ -34,7 +35,7 @@ public class AccountContext extends UserContextMenu {
 			return;
 		}
 
-		String steamId = bot.getSteamUtil().convertSteam64toSteamID(steam64);
+		String steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64.toString()) + "_full.jpg";

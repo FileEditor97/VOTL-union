@@ -17,6 +17,8 @@ public final class Links {
 	public static final String ROTR_INVITE = "https://discord.gg/ersz3gp";
 	public static final String TFC_INVITE = "https://discord.gg/t9cHjtQ";
 	public static final String SCP_INVITE = "https://discord.gg/nDPATNn";
+	public static final String DARKRP_INVITE = "https://discord.gg/GcesjQpgVJ";
+	public static final String VOSHOD_INVITE = "https://discord.gg/E3PKRCv8bj";
 	// Other
 	public static final String CHEWTILS_GITHUB = "https://github.com/Chew/JDA-Chewtils";
 }

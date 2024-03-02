@@ -63,7 +63,7 @@ public class Helper {
 		return logger;
 	}
 
-	private void banUser(Integer groupId, Guild master, User user, String reason) {
+	private void banUser(Integer groupId, Guild executedGuild, User user, String reason) {
 		List<Long> guildIds = new ArrayList<Long>();
 		for (long guildId : db.group.getGroupManagers(groupId)) {
 			for (int subGroupId : db.group.getOwnedGroups(guildId)) {
@@ -92,7 +92,8 @@ public class Helper {
 				for (CompletableFuture<Void> future : completableFutures) {
 					if (!future.isCompletedExceptionally()) banned++;
 				}
-				logListener.mod.onHelperSyncBan(groupId, master, user, reason, banned, maxCount);
+				// Log in server where 
+				logListener.mod.onHelperSyncBan(groupId, executedGuild, user, reason, banned, maxCount);
 			});
 	}
 
@@ -158,9 +159,9 @@ public class Helper {
 			});
 	}
 
-	public void runBan(Integer groupId, Guild master, User user, String reason) {
+	public void runBan(Integer groupId, Guild executedGuild, User user, String reason) {
 		CompletableFuture.runAsync(() -> {
-			banUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
+			banUser(groupId, executedGuild, user, Optional.ofNullable(reason).orElse("none"));
 		});
 	}
 

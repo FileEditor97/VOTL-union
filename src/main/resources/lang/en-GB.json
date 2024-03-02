@@ -236,7 +236,6 @@
 			"added": "Blacklisted | %s",
 			"removed": "Removed from blacklist | %s",
 			"steam": "SteamID",
-			"groups": "Selected groups",
 			"group": "Group"
 		}
 	},

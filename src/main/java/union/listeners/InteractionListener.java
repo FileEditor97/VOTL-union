@@ -1093,8 +1093,8 @@ public class InteractionListener extends ListenerAdapter {
 							bot.getHelper().runBan(groupId, event.getGuild(), user, caseData.getReason());
 						});
 
-						// Log
-						bot.getLogListener().mod.onBlacklistAdded(event.getGuild(), event.getUser(), user, steam64, groupIds);
+						// Log to master
+						bot.getLogListener().mod.onBlacklistAdded(event.getUser(), user, steam64, groupIds);
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)

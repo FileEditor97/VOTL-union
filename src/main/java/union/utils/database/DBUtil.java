@@ -78,6 +78,14 @@ public class DBUtil {
 	public DBUtil(FileManager fileManager) {
 		this.fileManager = fileManager;
 
+		// Check if MariaDB driver is initiated
+		try {
+			Class.forName("org.mariadb.jdbc.Driver").getDeclaredConstructor().newInstance();
+		} catch (Exception ex) {
+			logger.error("MariaDB: Exiting!\nMariaDB java client driver not found.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
+			System.exit(666);
+		}
+
 		String urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("database"));
 		
 		String urlWebsite = "jdbc:mariadb://%s:3306/union".formatted(fileManager.getNullableString("config", "website-ip"));

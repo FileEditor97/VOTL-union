@@ -47,7 +47,7 @@ public class SqlDBBase {
 				results.add(rs.getString(selectKey));
 			}
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return results;
 	}
@@ -99,7 +99,7 @@ public class SqlDBBase {
 				results.add(data);
 			}
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql.toString(), ex);
+			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql.toString(), ex);
 		}
 		return results;
 	}
@@ -114,7 +114,7 @@ public class SqlDBBase {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}
@@ -130,7 +130,7 @@ public class SqlDBBase {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}
@@ -144,7 +144,7 @@ public class SqlDBBase {
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MySQL: Error at UPDATE\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MariaDB: Error at UPDATE\nrequest: {}", sql, ex);
 		}
 	}
 
@@ -169,7 +169,7 @@ public class SqlDBBase {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result.setInfo(rs.getString("rank"), rs.getLong("play_time"));
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MySQL: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}

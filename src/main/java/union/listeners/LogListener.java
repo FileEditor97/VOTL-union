@@ -156,26 +156,30 @@ public class LogListener {
 			sendLog(type, event.getGuild(), logUtil.durationChangedEmbed(event.getGuildLocale(), caseData, moderator.getIdLong(), newTime));
 		}
 
-		public void onHelperSyncBan(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
-			sendLog(type, master, logUtil.helperBanEmbed(master.getLocale(), groupId, target, reason, success, max));
+		public void onHelperSyncBan(int groupId, Guild guild, User target, String reason, int success, int max) {
+			sendLog(type, guild, logUtil.helperBanEmbed(guild.getLocale(), groupId, target, reason, success, max));
 		}
 
-		public void onHelperSyncUnban(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
-			sendLog(type, master, logUtil.helperUnbanEmbed(master.getLocale(), groupId, target, reason, success, max));
+		public void onHelperSyncUnban(int groupId, Guild guild, User target, String reason, int success, int max) {
+			sendLog(type, guild, logUtil.helperUnbanEmbed(guild.getLocale(), groupId, target, reason, success, max));
 		}
 
-		public void onHelperSyncKick(Integer groupId, Guild master, User target, String reason, Integer success, Integer max) {
-			sendLog(type, master, logUtil.helperKickEmbed(master.getLocale(), groupId, target, reason, success, max));
+		public void onHelperSyncKick(int groupId, Guild guild, User target, String reason, int success, int max) {
+			sendLog(type, guild, logUtil.helperKickEmbed(guild.getLocale(), groupId, target, reason, success, max));
 		}
 
-		public void onBlacklistAdded(Guild guild, User mod, User target, Long steam64, List<Integer> groupIds) {
-			String groups = groupIds.stream().map(id -> "%s (#%d)".formatted(bot.getDBUtil().group.getName(id), id)).collect(Collectors.joining("\n"));
-			sendLog(type, guild, logUtil.blacklistAddedEmbed(guild.getLocale(), mod, target, steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groups));
+		public void onBlacklistAdded(User mod, User target, Long steam64, List<Integer> groupIds) {
+			for (int groupId : groupIds) {
+				final String groupInfo = "%s (#%d)".formatted(bot.getDBUtil().group.getName(groupId), groupId);
+				Guild master = bot.JDA.getGuildById(bot.getDBUtil().group.getOwner(groupId));
+				sendLog(type, master, logUtil.blacklistAddedEmbed(master.getLocale(), mod, target, steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
+			}
 		}
 
-		public void onBlacklistRemoved(Guild guild, User mod, User target, Long steam64, int groupId) {
-			String group = "%s (#%d)".formatted(bot.getDBUtil().group.getName(groupId), groupId);
-			sendLog(type, guild, logUtil.blacklistRemovedEmbed(guild.getLocale(), mod, target, steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), group));
+		public void onBlacklistRemoved(User mod, User target, Long steam64, int groupId) {
+			final String groupInfo = "%s (#%d)".formatted(bot.getDBUtil().group.getName(groupId), groupId);
+			Guild master = bot.JDA.getGuildById(bot.getDBUtil().group.getOwner(groupId));
+			sendLog(type, master, logUtil.blacklistRemovedEmbed(master.getLocale(), mod, target, steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
 		}
 	}
 

@@ -107,12 +107,12 @@ public class LogUtil {
 	}
 
 	@NotNull
-	public MessageEmbed helperBanEmbed(DiscordLocale locale, int groupId, User target, String reason, Integer success, Integer max) {
+	public MessageEmbed helperBanEmbed(DiscordLocale locale, int groupId, User target, String reason, int success, int max) {
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "ban.title_synced").formatted(target.getName()), null, target.getAvatarUrl())
 			.addField(localized(locale, "user"), target.getAsMention(), true)
 			.addField(localized(locale, "reason"), reason, true)
-			.addField(localized(locale, "success"), "%s/%s".formatted(success, max), true)
+			.addField(localized(locale, "success"), success+"/"+max, true)
 			.setFooter("Group ID: "+groupId)
 			.build();
 	}
@@ -159,12 +159,12 @@ public class LogUtil {
 	}
 
 	@NotNull
-	public MessageEmbed helperKickEmbed(DiscordLocale locale, Integer groupId, User target, String reason, Integer success, Integer max) {
+	public MessageEmbed helperKickEmbed(DiscordLocale locale, Integer groupId, User target, String reason, int success, int max) {
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "kick.title_synced").formatted(target.getName()), null, target.getAvatarUrl())
 			.addField(localized(locale, "user"), target.getAsMention(), true)
 			.addField(localized(locale, "reason"), reason, true)
-			.addField(localized(locale, "success"), "%s/%s".formatted(success, max), true)
+			.addField(localized(locale, "success"), success+"/"+max, true)
 			.setFooter("Group ID: "+groupId)
 			.build();
 	}
@@ -245,24 +245,24 @@ public class LogUtil {
 
 	//  Blacklist
 	@NotNull
-	public MessageEmbed blacklistAddedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String groups) {
+	public MessageEmbed blacklistAddedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String groupInfo) {
 		return getEmbed(RED_DARK)
 			.setAuthor(localized(locale, "blacklist.added").formatted(target.getName()), null, target.getAvatarUrl())
 			.addField(localized(locale, "user"), target.getAsMention(), true)
 			.addField(localized(locale, "blacklist.steam"), steamID, true)
-			.addField(localized(locale, "blacklist.groups"), groups, true)
+			.addField(localized(locale, "blacklist.group"), groupInfo, true)
 			.addField(localized(locale, "enforcer"), enforcer.getName(), true)
 			.setFooter("ID: "+target.getId())
 			.build();
 	}
 
 	@NotNull
-	public MessageEmbed blacklistRemovedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String group) {
+	public MessageEmbed blacklistRemovedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String groupInfo) {
 		return getEmbed(GREEN_DARK)
 			.setAuthor(localized(locale, "blacklist.removed").formatted(target==null ? steamID : target.getName()), null, target.getAvatarUrl())
 			.addField(localized(locale, "user"), target==null ? "none" : target.getAsMention(), true)
 			.addField(localized(locale, "blacklist.steam"), steamID, true)
-			.addField(localized(locale, "blacklist.group"), group, true)
+			.addField(localized(locale, "blacklist.group"), groupInfo, true)
 			.addField(localized(locale, "enforcer"), enforcer.getName(), true)
 			.build();
 	}

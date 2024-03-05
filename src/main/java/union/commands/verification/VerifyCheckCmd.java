@@ -45,10 +45,10 @@ public class VerifyCheckCmd extends CommandBase {
 			}
 
 			bot.getDBUtil().verify.enableCheck(event.getGuild().getId());
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 
 	}
@@ -65,10 +65,10 @@ public class VerifyCheckCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			bot.getDBUtil().verify.disableCheck(event.getGuild().getId());
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 		
 	}

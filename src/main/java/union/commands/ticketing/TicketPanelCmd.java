@@ -92,10 +92,10 @@ public class TicketPanelCmd extends CommandBase {
 			bot.getDBUtil().panels.createPanel(event.getGuild().getId(), title, description, image, footer);
 			Integer panelId = bot.getDBUtil().panels.getIncrement();
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{title}", title).replace("{id}", panelId.toString()))
-				.build());
+				.build()
+			);
 		}
 
 	}
@@ -120,10 +120,12 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
 			Integer panelId = event.optInteger("panel_id");
 			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
-				createError(event, path+".not_found", "Received ID: %s".formatted(panelId));
+				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
 
@@ -133,22 +135,21 @@ public class TicketPanelCmd extends CommandBase {
 			String footer = event.optString("embed_footer");
 
 			if (isInvalidURL(image)) {
-				createError(event, path+".image_not_valid", "Received unvalid URL: `%s`".formatted(image));
+				editError(event, path+".image_not_valid", "Received unvalid URL: `%s`".formatted(image));
 				return;
 			}
 			
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event);
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed();
 			if (title != null)			builder.addField(lu.getText(event, path+".changed_title"), title, true);
 			if (description != null)	builder.addField(lu.getText(event, path+".changed_description"), description, true);
 			if (image != null)			builder.addField(lu.getText(event, path+".changed_image"), image, true);
 			if (footer != null)			builder.addField(lu.getText(event, path+".changed_footer"), footer, true);
 			
 			if (builder.getFields().isEmpty()) {
-				createError(event, path+".no_options");
-				return;
+				editError(event, path+".no_options");
 			} else {
 				bot.getDBUtil().panels.updatePanel(panelId, title, description, image, footer);
-				createReplyEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
+				editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
 					.setTitle(lu.getText(event, path+".done"))
 					.build());
 			}
@@ -172,13 +173,14 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
 			Integer panelId = event.optInteger("panel_id");
 			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
-				createError(event, path+".not_found", "Received ID: %s".formatted(panelId));
+				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
-			event.deferReply(true).queue();
 
 			List<Button> buttons = bot.getDBUtil().tags.getPanelTags(panelId);
 			if (buttons.isEmpty())
@@ -224,17 +226,15 @@ public class TicketPanelCmd extends CommandBase {
 			List<Button> buttons = bot.getDBUtil().tags.getPanelTags(panelId);
 			if (buttons.isEmpty()) {
 				channel.sendMessageEmbeds(buildPanelEmbed(event.getGuild(), panelId)).queue(done -> {
-					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
+					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
-						.setColor(Constants.COLOR_SUCCESS)
 						.build()
 					).queue();
 				});
 			} else {
 				channel.sendMessageEmbeds(buildPanelEmbed(event.getGuild(), panelId)).setActionRow(buttons).queue(done -> {
-					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
+					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
-						.setColor(Constants.COLOR_SUCCESS)
 						.build()
 					).queue();
 				}, failure -> {
@@ -270,10 +270,10 @@ public class TicketPanelCmd extends CommandBase {
 
 			bot.getDBUtil().panels.delete(panelId);
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(panelId))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 
 	}
@@ -313,18 +313,19 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
 			Integer panelId = event.optInteger("panel_id");
 			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
-				createError(event, path+".not_found", "Received ID: %s".formatted(panelId));
+				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
 
 			if (bot.getDBUtil().tags.countPanelTags(panelId) >= 5) {
-				createError(event, path+".max_tags", "Maximum tags on 1 panel: %d".formatted(5));
+				editError(event, path+".max_tags", "Maximum tags on 1 panel: %d".formatted(5));
 				return;
 			}
-			event.deferReply(true).queue();
 
 			Integer type = event.optInteger("tag_type", 1);
 			String buttonName = event.optString("button_text", "Create ticket");
@@ -347,10 +348,10 @@ public class TicketPanelCmd extends CommandBase {
 			bot.getDBUtil().tags.createTag(guildId, panelId, type, buttonName, emoji, categoryId, message, supportRoleIds, ticketName, buttonStyle.getKey());
 			Integer tagId = bot.getDBUtil().tags.getIncrement();
 
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{tag}", tagId.toString()).replace("{panel}", panelId.toString()))
-				.build());
+				.build()
+			);
 		}
 
 	}
@@ -387,10 +388,12 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
 			Integer tagId = event.optInteger("tag_id");
 			String guildId = bot.getDBUtil().tags.getGuildId(tagId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
-				createError(event, path+".not_found", "Received ID: %s".formatted(tagId));
+				editError(event, path+".not_found", "Received ID: %s".formatted(tagId));
 				return;
 			}
 
@@ -412,7 +415,7 @@ public class TicketPanelCmd extends CommandBase {
 				supportRoleIds = supportRoles.stream().map(Role::getId).collect(Collectors.joining(";"));
 			}
 
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event);
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed();
 			if (buttonText != null)		builder.addField(lu.getText(event, path+".changed_text"), buttonText, true);
 			if (emoji != null)			builder.addField(lu.getText(event, path+".changed_emoji"), emoji, true);
 			if (buttonStyle != ButtonStyle.UNKNOWN)	builder.addField(lu.getText(event, path+".changed_style"), buttonStyle.toString(), true);
@@ -423,13 +426,13 @@ public class TicketPanelCmd extends CommandBase {
 			if (message != null)		builder.addField(lu.getText(event, path+".changed_message"), message, false);
 			
 			if (builder.getFields().isEmpty()) {
-				createError(event, path+".no_options");
-				return;
+				editError(event, path+".no_options");
 			} else {
 				bot.getDBUtil().tags.updateTag(tagId, type, buttonText, emoji, Optional.ofNullable(category).map(Category::getId).orElse(null), message, supportRoleIds, ticketName, buttonStyle.getKey());
-				createReplyEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
+				editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
 					.setTitle(lu.getText(event, path+".done"))
-					.build());
+					.build()
+				);
 			}
 		}
 
@@ -452,6 +455,7 @@ public class TicketPanelCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
+
 			Integer tagId = event.optInteger("tag_id");
 			String guildId = bot.getDBUtil().tags.getGuildId(tagId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
@@ -507,10 +511,10 @@ public class TicketPanelCmd extends CommandBase {
 
 			bot.getDBUtil().tags.deleteTag(tagId);
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(tagId))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 
 	}
@@ -534,6 +538,7 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
 			String guildId = event.getGuild().getId();
 			
 			StringBuffer response = new StringBuffer();
@@ -549,14 +554,14 @@ public class TicketPanelCmd extends CommandBase {
 			}
 			
 			if (response.isEmpty()) {
-				createError(event, path+".no_options");
-				return;
+				editError(event, path+".no_options");
+			} else {
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".embed_title"))
+					.appendDescription(response.toString())
+					.build()
+				);
 			}
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getText(event, path+".embed_title"))
-				.appendDescription(response.toString())
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
 		}
 
 	}

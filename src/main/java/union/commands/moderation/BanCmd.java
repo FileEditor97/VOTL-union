@@ -92,8 +92,7 @@ public class BanCmd extends CommandBase {
 						guild.getIdLong(), reason, Instant.now(), duration);
 					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 					// create embed
-					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_SUCCESS)
+					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".ban_success")
 							.replace("{user_tag}", tu.getName())
 							.replace("{duration}", lu.getText(event, "logger.permanently"))
@@ -108,8 +107,7 @@ public class BanCmd extends CommandBase {
 					).queue();
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
-					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_WARNING)
+					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getCaseId()))
 						.build();
 					event.getHook().editOriginalEmbeds(embed).queue();
@@ -124,8 +122,7 @@ public class BanCmd extends CommandBase {
 				// log
 				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 				// reply
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_WARNING)
+				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 					.setDescription(lu.getText(event, path+".already_banned"))
 					.addField(lu.getText(event, "logger.ban.short_title"), lu.getText(event, "logger.ban.short_info")
 						.replace("{username}", ban.getUser().getEffectiveName())
@@ -189,8 +186,7 @@ public class BanCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), duration);
 				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// create embed
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
+				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".ban_success")
 						.replace("{user_tag}", tu.getName())
 						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger.permanently") : 

@@ -23,8 +23,13 @@ public class EmbedUtil {
 	}
 
 	@NotNull
+	public EmbedBuilder getEmbed(int color) {
+		return new EmbedBuilder().setColor(color).setTimestamp(ZonedDateTime.now());
+	}
+
+	@NotNull
 	public EmbedBuilder getEmbed() {
-		return new EmbedBuilder().setColor(Constants.COLOR_DEFAULT).setTimestamp(ZonedDateTime.now());
+		return getEmbed(Constants.COLOR_DEFAULT);
 	}
 
 	@NotNull
@@ -33,11 +38,12 @@ public class EmbedUtil {
 			lu.getText(replyCallback, "embed.footer").formatted(replyCallback.getUser().getName()),
 			replyCallback.getUser().getEffectiveAvatarUrl()
 		);
+
 	}
 
 	@NotNull
 	private EmbedBuilder getErrorEmbed(IReplyCallback replyCallback) {
-		return getEmbed(replyCallback).setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(replyCallback, "errors.title"));
+		return getEmbed().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(replyCallback, "errors.title"));
 	}
 
 	@NotNull

@@ -44,9 +44,8 @@ public class VerifyRoleCmd extends CommandBase {
 
 		bot.getDBUtil().verify.setVerifyRole(guild.getId(), role.getId());
 
-		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()))
-			.setColor(Constants.COLOR_SUCCESS)
 			.build());
 	}
 

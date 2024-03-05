@@ -20,7 +20,6 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -42,9 +41,7 @@ public class ModuleCmd extends CommandBase {
 	}
 
 	@Override
-	protected void execute(SlashCommandEvent event) {
-
-	}
+	protected void execute(SlashCommandEvent event) {}
 
 	private class Show extends SlashCommand {
 
@@ -68,12 +65,11 @@ public class ModuleCmd extends CommandBase {
 				).append("\n");
 			}
 
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed.title"))
 				.setDescription(lu.getText(event, path+".embed.value"))
 				.addField(lu.getText(event, path+".embed.field"), builder.toString(), false)
-				.build();
-			createReplyEmbed(event, embed);
+				.build());
 		}
 
 		@NotNull
@@ -99,7 +95,7 @@ public class ModuleCmd extends CommandBase {
 
 			String guildId = Optional.ofNullable(event.getGuild()).map(g -> g.getId()).orElse("0");
 
-			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"));
 
 			List<CmdModule> enabled = getModules(guildId, true);
@@ -135,9 +131,8 @@ public class ModuleCmd extends CommandBase {
 						}
 						bot.getDBUtil().module.add(guildId, sModule);
 						// Send reply
-						hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
+						hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
-							.setColor(Constants.COLOR_SUCCESS)
 							.build()
 						).setComponents().queue();
 						// Log
@@ -173,7 +168,7 @@ public class ModuleCmd extends CommandBase {
 
 			String guildId = Optional.ofNullable(event.getGuild()).map(g -> g.getId()).orElse("0");
 
-			EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"));
 
 			List<CmdModule> enabled = getModules(guildId, false);
@@ -210,9 +205,8 @@ public class ModuleCmd extends CommandBase {
 								}
 								bot.getDBUtil().module.remove(guildId, sModule);
 								// Send reply
-								hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
+								hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 									.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
-									.setColor(Constants.COLOR_SUCCESS)
 									.build()
 								).setComponents().queue();
 								// Log

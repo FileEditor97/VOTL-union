@@ -72,9 +72,11 @@ public class LogCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
 			GuildChannel channel = event.optGuildChannel("channel");
 			if (channel == null) {
-				createError(event, path+".no_channel");
+				editError(event, path+".no_channel");
 				return;
 			}
 			
@@ -82,17 +84,16 @@ public class LogCmd extends CommandBase {
 				bot.getCheckUtil().hasPermissions(event, event.getGuild(), event.getMember(), true, channel,
 					new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS});
 			} catch (CheckException ex) {
-				createReply(event, ex.getCreateData());
+				editHook(event, ex.getEditData());
 				return;
 			}
 
 			TextChannel tc = (TextChannel) channel;
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS);
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS);
 			
 			bot.getDBUtil().guild.setupLogChannels(event.getGuild().getId(), channel.getId());
 			tc.sendMessageEmbeds(builder.setDescription(lu.getLocalized(event.getGuildLocale(), path+".as_log")).build()).queue();
-			createReplyEmbed(event, builder.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention())).build());
+			editHookEmbed(event, builder.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention())).build());
 		}
 
 	}
@@ -110,7 +111,7 @@ public class LogCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".title"));
 
 			Guild guild = event.getGuild();
@@ -150,7 +151,7 @@ public class LogCmd extends CommandBase {
 
 			if (buttonPressed.equals("button:remove")) {
 				bot.getDBUtil().guild.setupLogChannels(guildId, "NULL");
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
+				MessageEmbed embed = bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, path+".removed"))
 					.build();
 				event.getHook().editOriginalEmbeds(embed).setComponents().queue();
@@ -180,7 +181,7 @@ public class LogCmd extends CommandBase {
 			interaction.deferEdit().queue();
 			LogChannels logChannel = LogChannels.of(interaction.getValues().get(0));
 
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
+			MessageEmbed embed = bot.getEmbedUtil().getEmbed()
 				.setDescription(lu.getText(event, path+".select_channel").replace("{type}", lu.getText(event, logChannel.getPath())))
 				.build();
 			
@@ -225,8 +226,7 @@ public class LogCmd extends CommandBase {
 			TextChannel newTc = (TextChannel) channel;
 			bot.getDBUtil().guild.setLogChannel(logChannel, event.getGuild().getId(), newTc.getId());
 			
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS);
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS);
 			
 			newTc.sendMessageEmbeds(builder.setDescription(lu.getLocalized(event.getGuildLocale(), path+".as_log")
 				.replace("{type}", lu.getLocalized(event.getGuildLocale(), logChannel.getPath()))).build()).queue();

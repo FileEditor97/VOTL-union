@@ -55,32 +55,34 @@ public class VerifyPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
 			String guildId = event.getGuild().getId();
 			GuildChannel channel = event.optGuildChannel("channel");
 			if (channel == null ) {
-				createError(event, path+".no_channel", "Received: No channel");
+				editError(event, path+".no_channel", "Received: No channel");
 				return;
 			}
 			TextChannel tc = (TextChannel) channel;
 
 			if (bot.getDBUtil().verify.getVerifyRole(guildId) == null) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 
 			Button next = Button.primary("verify", lu.getLocalized(event.getGuildLocale(), path+".continue"));
-			MessageEmbed embed = new EmbedBuilder()
+
+			tc.sendMessageEmbeds(new EmbedBuilder()
 				.setColor(bot.getDBUtil().guild.getColor(guildId))
 				.setDescription(bot.getDBUtil().verify.getMainText(guildId))
 				.setFooter(event.getGuild().getName(), event.getGuild().getIconUrl())
-				.build();
+				.build()
+			).addActionRow(next).queue();
 
-			tc.sendMessageEmbeds(embed).addActionRow(next).queue();
-
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 
 	}

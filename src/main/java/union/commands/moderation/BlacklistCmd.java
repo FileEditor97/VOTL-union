@@ -116,8 +116,7 @@ public class BlacklistCmd extends CommandBase {
 					// Log into master
 					bot.getLogListener().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
 					// Reply
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_SUCCESS)
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_user").formatted(user.getAsMention(), user.getId(), groupId))
 						.build()
 					);
@@ -145,8 +144,7 @@ public class BlacklistCmd extends CommandBase {
 					// Log into master
 					bot.getLogListener().mod.onBlacklistRemoved(event.getUser(), null, steam64, groupId);
 					// Reply
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_SUCCESS)
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_steam").formatted(SteamUtil.convertSteam64toSteamID(steam64), groupId))
 						.build()
 					);

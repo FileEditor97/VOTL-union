@@ -9,8 +9,8 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDAInfo;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -31,15 +31,8 @@ public class AboutCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		DiscordLocale userLocale = event.getUserLocale();
-		EmbedBuilder builder = null;
-
-		if (event.isFromGuild()) {
-			builder = bot.getEmbedUtil().getEmbed(event);
-		} else {
-			builder = bot.getEmbedUtil().getEmbed();
-		}
-
-		builder.setAuthor(event.getJDA().getSelfUser().getName(), event.getJDA().getSelfUser().getEffectiveAvatarUrl())
+		MessageEmbed embed = bot.getEmbedUtil().getEmbed()
+			.setAuthor(event.getJDA().getSelfUser().getName(), event.getJDA().getSelfUser().getEffectiveAvatarUrl())
 			.setThumbnail(event.getJDA().getSelfUser().getEffectiveAvatarUrl())
 			.addField(
 				lu.getLocalized(userLocale, "bot.other.about.embed.about_title")
@@ -94,9 +87,10 @@ public class AboutCmd extends CommandBase {
 				lu.getLocalized(userLocale, "bot.other.about.embed.links.translate"),
 				"[Crowdin.com](%s)".formatted(Links.CROWDIN),
 				false
-			);
+			)
+			.build();
 		
-		createReplyEmbed(event, event.isFromGuild() ? !event.optBoolean("show", false) : false, builder.build());
+		createReplyEmbed(event, event.isFromGuild() ? !event.optBoolean("show", false) : false, embed);
 	}
 
 }

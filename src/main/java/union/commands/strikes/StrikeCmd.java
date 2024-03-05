@@ -95,8 +95,7 @@ public class StrikeCmd extends CommandBase {
 		// log
 		bot.getLogListener().mod.onNewCase(guild, tm.getUser(), caseData);
 		// send reply
-		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
-			.setColor(Constants.COLOR_SUCCESS)
+		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".success")
 				.replace("{user_tag}", tm.getUser().getName())
 				.replace("{type}", lu.getText(event, type.getPath()))

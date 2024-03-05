@@ -143,9 +143,8 @@ public class RolesSetupCmd extends CommandBase {
 		}
 
 		private void sendSuccess(SlashCommandEvent event, String type, Role role) {
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{type}", type))
-				.setColor(Constants.COLOR_SUCCESS)
 				.build());
 		}
 
@@ -247,10 +246,9 @@ public class RolesSetupCmd extends CommandBase {
 				editError(event, path+".no_options");
 				return;
 			}
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".embed_title").replace("{role}", role.getAsMention()))
 				.appendDescription(response.toString())
-				.setColor(Constants.COLOR_SUCCESS)
 				.build());
 		}
 
@@ -276,9 +274,8 @@ public class RolesSetupCmd extends CommandBase {
 				return;
 			}
 			bot.getDBUtil().role.remove(roleId);
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{id}", roleId))
-				.setColor(Constants.COLOR_SUCCESS)
 				.build());
 		}
 		
@@ -298,7 +295,7 @@ public class RolesSetupCmd extends CommandBase {
 			event.deferReply(true).queue();
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".title"));
 			
 			for (RoleType type : RoleType.values()) {

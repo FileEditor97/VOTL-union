@@ -55,8 +55,7 @@ public class RemoveUserCmd extends CommandBase {
 		if (event.getChannelType().equals(ChannelType.GUILD_PRIVATE_THREAD)) {
 			// Thread
 			event.getChannel().asThreadChannel().removeThreadMember(user).queue(done -> {
-				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
+				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()))
 					.build()
 				).setAllowedMentions(Collections.emptyList()).queue();
@@ -68,8 +67,7 @@ public class RemoveUserCmd extends CommandBase {
 			try {
 				event.getChannel().asTextChannel().getManager()
 					.removePermissionOverride(user.getIdLong())
-					.queue(done -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_SUCCESS)
+					.queue(done -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()))
 						.build()
 					).setAllowedMentions(Collections.emptyList()).queue()

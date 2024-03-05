@@ -13,6 +13,7 @@ import union.objects.CmdModule;
 import union.objects.Emotes;
 import union.objects.annotation.NotNull;
 import union.objects.constants.CmdCategory;
+import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -80,10 +81,9 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done"))
-					.build()
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done"))
+				.build()
 			);
 		}
 	}
@@ -123,10 +123,9 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done"))
-					.build()
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done"))
+				.build()
 			);
 		}
 	}
@@ -166,10 +165,9 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done"))
-					.build()
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done"))
+				.build()
 			);
 		}
 	}
@@ -209,10 +207,9 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done"))
-					.build()
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done"))
+				.build()
 			);
 		}
 	}
@@ -274,11 +271,11 @@ public class VoiceCmd extends CommandBase {
 
 		bot.getDBUtil().user.setName(userId, name);
 
-		createReplyEmbed(event, 
-			bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getText(event, "bot.voice.name.done").replace("{value}", name))
-				.build()
+		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			.setDescription(lu.getText(event, "bot.voice.name.done").replace("{value}", name))
+			.build()
 		);
+
 	}
 
 	private class LimitSet extends SlashCommand {
@@ -333,10 +330,9 @@ public class VoiceCmd extends CommandBase {
 
 		bot.getDBUtil().user.setLimit(userId, limit);
 
-		createReplyEmbed(event, 
-			bot.getEmbedUtil().getEmbed(event)
-				.setDescription(lu.getText(event, "bot.voice.limit.done").replace("{value}", limit.toString()))
-				.build()
+		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			.setDescription(lu.getText(event, "bot.voice.limit.done").replace("{value}", limit.toString()))
+			.build()
 		);
 	}
 
@@ -389,10 +385,9 @@ public class VoiceCmd extends CommandBase {
 					}
 					bot.getDBUtil().voice.setUser(vc.getId(), author.getId());
 					
-					editHookEmbed(event, 
-						bot.getEmbedUtil().getEmbed(event)
-							.setDescription(lu.getText(event, path+".done").replace("{channel}", vc.getAsMention()))
-							.build()
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setDescription(lu.getText(event, path+".done").replace("{channel}", vc.getAsMention()))
+						.build()
 					);
 				}, failure -> {
 					editError(event, "errors.error", failure.getMessage());
@@ -463,7 +458,7 @@ public class VoiceCmd extends CommandBase {
 			}
 
 			vcManager.queue(done -> {
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getUserText(event, path+".done", mentionStrings))
 					.build()
 				);
@@ -539,7 +534,7 @@ public class VoiceCmd extends CommandBase {
 			}
 
 			vcManager.queue(done -> {
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getUserText(event, path+".done", mentionStrings))
 					.build()
 				);
@@ -577,7 +572,7 @@ public class VoiceCmd extends CommandBase {
 			Guild guild = event.getGuild();
 			VoiceChannel vc = guild.getVoiceChannelById(channelId);
 
-			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed.title").replace("{channel}", vc.getName()))
 				.setDescription(lu.getText(event, path+".embed.field")+"\n\n");
 
@@ -689,10 +684,9 @@ public class VoiceCmd extends CommandBase {
 				return;
 			}
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done"))
-					.build()
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done"))
+				.build()
 			);
 		}
 		

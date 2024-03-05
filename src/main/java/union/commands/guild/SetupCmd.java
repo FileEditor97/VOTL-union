@@ -68,9 +68,8 @@ public class SetupCmd extends CommandBase {
 			}
 			bot.getDBUtil().guild.setColor(guildId, color.getRGB() & 0xFFFFFF);
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(color.getRGB())
 				.setDescription(lu.getText(event, path+".done").replace("{color}", "#"+Integer.toHexString(color.getRGB() & 0xFFFFFF)))
-				.setColor(color)
 				.build());
 		}
 	}
@@ -98,7 +97,7 @@ public class SetupCmd extends CommandBase {
 
 			bot.getDBUtil().guild.setAppealLink(guildId, text);
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{link}", text))
 				.build());
 		}
@@ -137,7 +136,7 @@ public class SetupCmd extends CommandBase {
 
 			bot.getDBUtil().guild.setReportChannelId(guildId, channel.getId());
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
 				.build());
 		}
@@ -173,12 +172,9 @@ public class SetupCmd extends CommandBase {
 										channel -> {
 											bot.getDBUtil().guildVoice.setup(guildId, category.getId(), channel.getId());
 											bot.getLogger().info("Voice setup done in guild `"+guild.getName()+"'("+guildId+")");
-											editHookEmbed(event, 
-												bot.getEmbedUtil().getEmbed(event)
-													.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
-													.setColor(Constants.COLOR_SUCCESS)
-													.build()
-											);
+											editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+												.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
+												.build());
 										}
 									);
 							} catch (InsufficientPermissionException ex) {
@@ -235,9 +231,8 @@ public class SetupCmd extends CommandBase {
 					.setDescription(lu.getLocalized(event.getGuildLocale(), path+".embed_value").replace("{id}", bot.getDBUtil().guildVoice.getChannel(event.getGuild().getId()))).build()
 			).addComponents(row1, row2, row4, row5).queue();
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
-				.setColor(Constants.COLOR_SUCCESS)
 				.build());
 		}
 	}
@@ -267,11 +262,9 @@ public class SetupCmd extends CommandBase {
 
 			bot.getDBUtil().guildVoice.setName(event.getGuild().getId(), filName);
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done").replace("{value}", filName))
-					.build()
-			);
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").replace("{value}", filName))
+				.build());
 		}
 	}
 
@@ -295,11 +288,9 @@ public class SetupCmd extends CommandBase {
 
 			bot.getDBUtil().guildVoice.setLimit(event.getGuild().getId(), filLimit);
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done").replace("{value}", filLimit.toString()))
-					.build()
-			);
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").replace("{value}", filLimit.toString()))
+				.build());
 		}
 	}
 
@@ -323,11 +314,9 @@ public class SetupCmd extends CommandBase {
 
 			bot.getDBUtil().guild.setStrikeExpiresAfter(event.getGuild().getId(), hours);
 
-			createReplyEmbed(event,
-				bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, path+".done").formatted(hours))
-					.build()
-			);
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(hours))
+				.build());
 		}
 
 	}

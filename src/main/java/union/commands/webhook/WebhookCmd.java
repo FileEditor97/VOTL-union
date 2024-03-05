@@ -11,6 +11,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
+import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -65,7 +66,7 @@ public class WebhookCmd extends CommandBase {
 
 			Boolean listAll = event.optBoolean("all", false);
 
-			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getLocalized(userLocale, path+".embed.title"));
 			
 			// Retrieves every webhook in server
@@ -138,10 +139,9 @@ public class WebhookCmd extends CommandBase {
 				event.getGuild().getTextChannelById(channel.getId()).createWebhook(setName).reason("By "+event.getUser().getName()).queue(
 					webhook -> {
 						bot.getDBUtil().webhook.add(webhook.getId(), webhook.getGuild().getId(), webhook.getToken());
-						editHookEmbed(event,
-							bot.getEmbedUtil().getEmbed(event).setDescription(
-								lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName())
-							).build()
+						editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName()))
+							.build()
 						);
 					}
 				);
@@ -178,10 +178,9 @@ public class WebhookCmd extends CommandBase {
 							editError(event, path+".error_registered");
 						} else {
 							bot.getDBUtil().webhook.add(webhook.getId(), webhook.getGuild().getId(), webhook.getToken());
-							editHookEmbed(event,
-								bot.getEmbedUtil().getEmbed(event).setDescription(
-									lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName())
-								).build()
+							editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+								.setDescription(lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName()))
+								.build()
 							);
 						}
 					}, failure -> {
@@ -226,10 +225,9 @@ public class WebhookCmd extends CommandBase {
 									webhook.delete(webhook.getToken()).reason("By "+event.getUser().getName()).queue();
 								}
 								bot.getDBUtil().webhook.remove(webhookId);
-								createReplyEmbed(event,
-									bot.getEmbedUtil().getEmbed(event).setDescription(
-										lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName())
-									).build()
+								createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+									.setDescription(lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName()))
+									.build()
 								);
 							} else {
 								createError(event, path+".error_not_guild", 
@@ -286,12 +284,12 @@ public class WebhookCmd extends CommandBase {
 						bot.getDBUtil().guild.setLastWebhookId(guild.getId(), webhookId);
 						webhook.getManager().setChannel(textChannel).reason("By "+event.getUser().getName()).queue(
 							wm -> {
-								editHookEmbed(event,
-									bot.getEmbedUtil().getEmbed(event).setDescription(
-										lu.getText(event, path+".done")
-											.replace("{webhook_name}", webhook.getName())
-											.replace("{channel}", channel.getName())
-									).build()
+								editHookEmbed(event,bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+									.setDescription(lu.getText(event, path+".done")
+										.replace("{webhook_name}", webhook.getName())
+										.replace("{channel}", channel.getName())
+									)
+									.build()
 								);
 							},
 							failure -> {
@@ -340,12 +338,12 @@ public class WebhookCmd extends CommandBase {
 					if (bot.getDBUtil().webhook.exists(webhookId)) {
 						webhook.getManager().setChannel(guild.getTextChannelById(channel.getId())).reason("By "+event.getUser().getName()).queue(
 							wm -> {
-								editHookEmbed(event,
-									bot.getEmbedUtil().getEmbed(event).setDescription(
-										lu.getText(event, path+".done")
-											.replace("{webhook_name}", webhook.getName())
-											.replace("{channel}", channel.getName())
-									).build()
+								editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+									.setDescription(lu.getText(event, path+".done")
+										.replace("{webhook_name}", webhook.getName())
+										.replace("{channel}", channel.getName())
+									)
+									.build()
 								);
 							},
 							failure -> {

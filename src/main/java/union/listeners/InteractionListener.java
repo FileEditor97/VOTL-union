@@ -480,7 +480,7 @@ public class InteractionListener extends ListenerAdapter {
 				actionEvent -> {
 					List<Role> remove = actionEvent.getSelectedOptions().stream().map(option -> guild.getRoleById(option.getValue())).toList();
 					guild.modifyMemberRoles(event.getMember(), null, remove).reason("User request").queue(done -> {
-						msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+						msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed()
 							.setDescription(lu.getText(event, "bot.ticketing.listener.remove_done").replace("{roles}", remove.stream().map(role -> role.getAsMention()).collect(Collectors.joining(", "))))
 							.setColor(Constants.COLOR_SUCCESS)
 							.build()
@@ -508,7 +508,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		if (event.getMember().getRoles().contains(role)) {
 			event.getGuild().removeRoleFromMember(event.getMember(), role).queue(done -> {
-				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, "bot.ticketing.listener.toggle_removed").replace("{role}", role.getAsMention()))
 					.setColor(Constants.COLOR_SUCCESS)
 					.build()
@@ -518,7 +518,7 @@ public class InteractionListener extends ListenerAdapter {
 			});
 		} else {
 			event.getGuild().addRoleToMember(event.getMember(), role).queue(done -> {
-				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, "bot.ticketing.listener.toggle_added").replace("{role}", role.getAsMention()))
 					.setColor(Constants.COLOR_SUCCESS)
 					.build()
@@ -926,7 +926,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoicePerms(ButtonInteractionEvent event, VoiceChannel vc) {
 		Guild guild = event.getGuild();
-		EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(event)
+		EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 			.setTitle(lu.getText(event, "bot.voice.listener.panel.perms.title").replace("{channel}", vc.getName()))
 			.setDescription(lu.getText(event, "bot.voice.listener.panel.perms.field")+"\n\n");
 		

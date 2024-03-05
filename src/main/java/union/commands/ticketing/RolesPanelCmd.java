@@ -104,10 +104,10 @@ public class RolesPanelCmd extends CommandBase {
 
 			channel.sendMessageEmbeds(embed).addComponents(actionRows).queue();
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 
 	}
@@ -173,10 +173,10 @@ public class RolesPanelCmd extends CommandBase {
 				
 				msg.editMessageComponents(actionRows).queue();
 
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
-					.setColor(Constants.COLOR_SUCCESS)
-					.build());
+					.build()
+				);
 			}, failure -> {
 				createError(event, path+".not_found", failure.getMessage());
 			});
@@ -207,7 +207,7 @@ public class RolesPanelCmd extends CommandBase {
 
 			bot.getDBUtil().ticketSettings.setRowText(guildId, row, text);
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))
 				.build());
 		}

@@ -8,6 +8,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
+import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -62,7 +63,7 @@ public class VerifyCmd extends CommandBase {
 					bot.getLogListener().verify.onVerified(member.getUser(), null, guild);
 					bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
 
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".done")).build());
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")).build());
 				},
 				failure -> {
 					editError(event, "bot.verification.failed_role");

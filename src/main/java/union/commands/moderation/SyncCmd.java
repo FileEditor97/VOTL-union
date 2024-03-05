@@ -15,9 +15,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -81,13 +79,13 @@ public class SyncCmd extends CommandBase {
 				return;
 			}
 
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event);
-
-			MessageEmbed embed = builder.setDescription(lu.getText(event, path+".embed_title")).build();
 			ActionRow button = ActionRow.of(
 				Button.of(ButtonStyle.PRIMARY, "button:confirm", lu.getText(event, path+".button_confirm"))
 			);
-			event.getHook().editOriginalEmbeds(embed).setComponents(button).queue(msg -> {
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+				.setDescription(lu.getText(event, path+".embed_title"))
+				.build()
+			).setComponents(button).queue(msg -> {
 				waiter.waitForEvent(
 					ButtonInteractionEvent.class,
 					e -> msg.getId().equals(e.getMessageId()) && e.getComponentId().equals("button:confirm"),
@@ -98,8 +96,10 @@ public class SyncCmd extends CommandBase {
 							return;
 						};
 
-						event.getHook().editOriginalEmbeds(builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")).build())
-							.setComponents().queue();
+						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, path+".done"))
+							.build()
+						).setComponents().queue();
 						// Perform action using Helper bot
 						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runUnban(groupId, event.getGuild(), target, "Manual ban lift"));
 					},
@@ -154,13 +154,13 @@ public class SyncCmd extends CommandBase {
 				return;
 			}
 
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event);
-
-			MessageEmbed embed = builder.setDescription(lu.getText(event, path+".embed_title")).build();
 			ActionRow button = ActionRow.of(
 				Button.of(ButtonStyle.PRIMARY, "button:confirm", lu.getText(event, path+".button_confirm"))
 			);
-			event.getHook().editOriginalEmbeds(embed).setComponents(button).queue(msg -> {
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+				.setDescription(lu.getText(event, path+".embed_title"))
+				.build()
+			).setComponents(button).queue(msg -> {
 				waiter.waitForEvent(
 					ButtonInteractionEvent.class,
 					e -> msg.getId().equals(e.getMessageId()) && e.getComponentId().equals("button:confirm"),
@@ -170,8 +170,10 @@ public class SyncCmd extends CommandBase {
 							return;
 						};
 
-						event.getHook().editOriginalEmbeds(builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")).build())
-							.setComponents().queue();
+						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, path+".done"))
+							.build()
+						).setComponents().queue();
 						// Perform action using Helper bot
 						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runKick(groupId, event.getGuild(), target, "Manual kick"));
 					},

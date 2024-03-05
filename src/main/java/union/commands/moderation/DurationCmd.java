@@ -78,8 +78,7 @@ public class DurationCmd extends CommandBase {
 		
 		String newTime = duration.isZero() ? lu.getText(event, "logger.permanently") : lu.getText(event, "logger.temporary")
 			.formatted(TimeUtil.formatTime(caseData.getTimeStart().plus(duration), false));
-		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-			.setColor(Constants.COLOR_SUCCESS)
+		MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{duration}", newTime))
 			.build();
 		editHookEmbed(event, embed);

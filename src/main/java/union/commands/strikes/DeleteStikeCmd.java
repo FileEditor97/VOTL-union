@@ -21,7 +21,6 @@ import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
@@ -133,11 +132,11 @@ public class DeleteStikeCmd extends CommandBase {
 					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
 					1, String.join(";", strikesInfo)
 				);
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
+			
+			msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done_one").formatted(caseData.getReason(), tu.getName()))
-				.build();
-			msg.editMessageEmbeds(embed).setComponents().queue();
+				.build()
+			).setComponents().queue();
 		} else {
 			// Provide user with options, delete 1,2 or 3(maximum) strikes for user
 			int max = caseData.getCaseType().getType()-20;
@@ -201,11 +200,10 @@ public class DeleteStikeCmd extends CommandBase {
 		// Log
 		bot.getLogListener().mod.onStrikeDeleted(event, tu, caseId, removeAmount, activeAmount);
 		// Reply
-		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-			.setColor(Constants.COLOR_SUCCESS)
+		msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(removeAmount, activeAmount, caseData.getReason(), tu.getName()))
-			.build();
-		msg.editMessageEmbeds(embed).setComponents().queue();
+			.build()
+		).setComponents().queue();
 	}
 
 	private List<SelectOption> buildOptions(String[] cases) {

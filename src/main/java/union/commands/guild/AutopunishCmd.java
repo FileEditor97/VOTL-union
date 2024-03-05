@@ -15,6 +15,7 @@ import union.objects.PunishActions;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.exception.FormatterException;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -85,7 +86,7 @@ public class AutopunishCmd extends CommandBase {
 			if (event.hasOption("mute")) {
 				Duration duration;
 				try {
-					duration = bot.getTimeUtil().stringToDuration(event.optString("mute"), false);
+					duration = TimeUtil.stringToDuration(event.optString("mute"), false);
 				} catch (FormatterException ex) {
 					editError(event, ex.getPath());
 					return;
@@ -96,12 +97,12 @@ public class AutopunishCmd extends CommandBase {
 				}
 				actions.add(PunishActions.MUTE);
 				data.add("t"+duration.getSeconds());
-				buffer.append(lu.getText(event, path+".vmute").formatted(bot.getTimeUtil().durationToLocalizedString(event.getUserLocale(), duration)));
+				buffer.append(lu.getText(event, path+".vmute").formatted(TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
 			}
 			if (event.hasOption("ban")) {
 				Duration duration;
 				try {
-					duration = bot.getTimeUtil().stringToDuration(event.optString("ban"), false);
+					duration = TimeUtil.stringToDuration(event.optString("ban"), false);
 				} catch (FormatterException ex) {
 					editError(event, ex.getPath());
 					return;
@@ -110,7 +111,7 @@ public class AutopunishCmd extends CommandBase {
 				data.add("t"+duration.getSeconds());
 				buffer.append(lu.getText(event, path+".vban").formatted(duration.isZero() ?
 					lu.getText(event, "logger.permanently") :
-					lu.getText(event, path+".for")+" "+bot.getTimeUtil().durationToLocalizedString(event.getUserLocale(), duration)
+					lu.getText(event, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)
 				));
 			}
 			if (event.hasOption("remove-role")) {
@@ -232,7 +233,7 @@ public class AutopunishCmd extends CommandBase {
 							} catch (NumberFormatException ex) {
 								break;
 							}
-							buffer.append("%s (%s)".formatted(lu.getText(event, action.getPath()), bot.getTimeUtil().durationToLocalizedString(event.getUserLocale(), duration)));
+							buffer.append("%s (%s)".formatted(lu.getText(event, action.getPath()), TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
 							break;
 						case REMOVE_ROLE:
 						case ADD_ROLE:

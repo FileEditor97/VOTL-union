@@ -11,6 +11,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
@@ -70,7 +71,7 @@ public class ModLogsCmd extends CommandBase {
 			if (!c.getDuration().isNegative())
 				buffer.append(lu.getLocalized(locale, path+".duration").formatted(c.getDuration().isZero() ?
 					lu.getLocalized(locale, path+".permanent") :
-					bot.getTimeUtil().durationToLocalizedString(locale, c.getDuration())
+					TimeUtil.durationToLocalizedString(lu, locale, c.getDuration())
 				));
 			buffer.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
 

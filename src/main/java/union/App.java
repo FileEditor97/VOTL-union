@@ -1,7 +1,6 @@
 package union;
 
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,11 +31,9 @@ import union.utils.TicketUtil;
 import union.utils.WebhookAppender;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
-import union.utils.file.lang.LangUtil;
 import union.utils.message.EmbedUtil;
 import union.utils.message.LocaleUtil;
 import union.utils.message.MessageUtil;
-import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -72,14 +69,11 @@ public class App {
 
 	private final FileManager fileManager = new FileManager();
 
-	private final Random random = new Random();
-
 	private final GuildListener guildListener;
 	private final AutoCompleteListener acListener;
 	private final InteractionListener interactionListener;
 	private final VoiceListener voiceListener;
 	private final MessageListener messagesListener;
-	private final CommandListener commandListener;
 
 	private final LogListener logListener;
 	
@@ -89,10 +83,8 @@ public class App {
 	private final DBUtil dbUtil;
 	private final MessageUtil messageUtil;
 	private final EmbedUtil embedUtil;
-	private final LangUtil langUtil;
 	private final CheckUtil checkUtil;
 	private final LocaleUtil localeUtil;
-	private final TimeUtil timeUtil;
 	private final LogUtil logUtil;
 	private final TicketUtil ticketUtil;
 
@@ -109,14 +101,12 @@ public class App {
 		}
 		
 		// Define for default
-		dbUtil		= new DBUtil(getFileManager());
-		langUtil	= new LangUtil(this);
-		localeUtil	= new LocaleUtil(this, langUtil, "en-GB", DiscordLocale.ENGLISH_UK);
-		messageUtil	= new MessageUtil(this);
+		dbUtil		= new DBUtil(fileManager);
+		localeUtil	= new LocaleUtil(this, "en-GB", DiscordLocale.ENGLISH_UK);
+		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this);
-		timeUtil	= new TimeUtil(this);
-		logUtil		= new LogUtil(this);
+		logUtil		= new LogUtil(localeUtil);
 		ticketUtil	= new TicketUtil(this);
 
 		WAITER				= new EventWaiter();
@@ -125,7 +115,6 @@ public class App {
 		interactionListener	= new InteractionListener(this, WAITER);
 		voiceListener		= new VoiceListener(this);
 		messagesListener	= new MessageListener(this);
-		commandListener		= new CommandListener(localeUtil);
 
 		scheduledExecutor	= new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 		scheduledCheck		= new ScheduledCheck(this);
@@ -206,7 +195,7 @@ public class App {
 				new AccountContext(this),
 				new ReportContext(this)
 			)
-			.setListener(commandListener)
+			.setListener(new CommandListener(localeUtil))
 			.setDevGuildIds(fileManager.getStringList("config", "dev-servers").toArray(new String[0]))
 			.build();
 
@@ -273,10 +262,6 @@ public class App {
 		return fileManager;
 	}
 
-	public Random getRandom() {
-		return random;
-	}
-
 	public DBUtil getDBUtil() {
 		return dbUtil;
 	}
@@ -295,10 +280,6 @@ public class App {
 
 	public LocaleUtil getLocaleUtil() {
 		return localeUtil;
-	}
-
-	public TimeUtil getTimeUtil() {
-		return timeUtil;
 	}
 
 	public LogUtil getLogUtil() {
@@ -335,7 +316,7 @@ public class App {
 
 
 	private void createWebhookAppender() {
-		String url = fileManager.getNullableString("config", "webhook");
+		String url = getFileManager().getNullableString("config", "webhook");
 		if (url == null) return;
 		
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();

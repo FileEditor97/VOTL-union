@@ -16,6 +16,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.exception.FormatterException;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -95,7 +96,7 @@ public class TempRoleCmd extends CommandBase {
 			// Check duration
 			final Duration duration;
 			try {
-				duration = bot.getTimeUtil().stringToDuration(event.optString("duration"), false);
+				duration = TimeUtil.stringToDuration(event.optString("duration"), false);
 			} catch (FormatterException ex) {
 				editError(event, ex.getPath());
 				return;
@@ -120,7 +121,7 @@ public class TempRoleCmd extends CommandBase {
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 					.setColor(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
-						.replace("{until}", bot.getTimeUtil().formatTime(until, true)))
+						.replace("{until}", TimeUtil.formatTime(until, true)))
 					.build()
 				);
 			}, failure -> {
@@ -219,7 +220,7 @@ public class TempRoleCmd extends CommandBase {
 			// Check duration
 			final Duration duration;
 			try {
-				duration = bot.getTimeUtil().stringToDuration(event.optString("duration"), false);
+				duration = TimeUtil.stringToDuration(event.optString("duration"), false);
 			} catch (FormatterException ex) {
 				editError(event, ex.getPath());
 				return;
@@ -237,7 +238,7 @@ public class TempRoleCmd extends CommandBase {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
 				.setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
-					.replace("{until}", bot.getTimeUtil().formatTime(until, true)))
+					.replace("{until}", TimeUtil.formatTime(until, true)))
 				.build()
 			);
 		}

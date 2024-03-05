@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import union.App;
 import union.objects.CmdModule;
 import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
@@ -13,6 +12,7 @@ import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.message.LocaleUtil;
 import union.utils.message.SteamUtil;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -27,11 +27,9 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 public class LogUtil {
 
-	private final App bot;
-	//private final EmbedUtil embedUtil;
 	private final LocaleUtil lu;
 
-	private final String path = "logger.";
+	private final String pathHeader = "logger.";
 
 	private final int GREEN_DARK = 0x277236;
 	private final int GREEN_LIGHT = 0x67CB7B;
@@ -42,14 +40,12 @@ public class LogUtil {
 	private final int WHITE = 0xFFFFFF;
 	private final int DEFAULT = Constants.COLOR_DEFAULT;
 
-	public LogUtil(App bot) {
-		this.bot = bot;
-		//this.embedUtil = bot.getEmbedUtil();
-		this.lu = bot.getLocaleUtil();
+	public LogUtil(LocaleUtil localeUtil) {
+		this.lu = localeUtil;
 	}
 
 	private String localized(DiscordLocale locale, String pathFooter) {
-		return lu.getLocalized(locale, path+pathFooter);
+		return lu.getLocalized(locale, pathHeader+pathFooter);
 	}
 
 	private EmbedBuilder getEmbed() {
@@ -91,7 +87,7 @@ public class LogUtil {
 			.addField(localized(locale, "reason"), caseData.getReason(), true);
 		if (caseData.isActive() && !caseData.getDuration().isNegative())
 			builder.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
-				localized(locale, "temporary").formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false)), true);
+				localized(locale, "temporary").formatted(TimeUtil.formatTime(caseData.getTimeEnd(), false)), true);
 		return builder.build();
 	}
 
@@ -101,7 +97,7 @@ public class LogUtil {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_DARK)
 			.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
-				localized(locale, "temporary").formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false)), true)
+				localized(locale, "temporary").formatted(TimeUtil.formatTime(caseData.getTimeEnd(), false)), true)
 			.addField(localized(locale, "reason"), caseData.getReason(), true)
 			.build();
 	}
@@ -144,7 +140,7 @@ public class LogUtil {
 			.setAuthor(localized(locale, "unban.title_expired").formatted(caseData.getTargetTag()))
 			.addField(localized(locale, "user"), "<@"+caseData.getTargetId()+">", true)
 			.addField(localized(locale, "unban.ban_reason"), Optional.ofNullable(caseData.getReason()).orElse("-"), true)
-			.addField(localized(locale, "duration"), bot.getTimeUtil().durationToString(caseData.getDuration()), true)
+			.addField(localized(locale, "duration"), TimeUtil.durationToString(caseData.getDuration()), true)
 			.setFooter("ID: "+caseData.getTargetId())
 			.build();
 	}
@@ -175,7 +171,7 @@ public class LogUtil {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_DARK)
 			.addField(localized(locale, "duration"), caseData.getDuration().isZero() ? localized(locale, "permanently") : 
-				localized(locale, "temporary").formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false)), true)
+				localized(locale, "temporary").formatted(TimeUtil.formatTime(caseData.getTimeEnd(), false)), true)
 			.addField(localized(locale, "reason"), caseData.getReason(), true)
 			.build();
 	}
@@ -233,7 +229,7 @@ public class LogUtil {
 	@NotNull
 	public MessageEmbed durationChangedEmbed(DiscordLocale locale, CaseData caseData, long modId, String newTime) {
 		String oldTime = caseData.getDuration().isZero() ? localized(locale, "permanently") : localized(locale, "temporary")
-			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeEnd(), false));
+			.formatted(TimeUtil.formatTime(caseData.getTimeEnd(), false));
 		return getEmbed()
 			.setAuthor(localized(locale, "change.duration").formatted(caseData.getCaseId(), caseData.getTargetTag()))
 			.setDescription("> %s\n\n🔴 ~~%s~~\n🟢 %s".formatted(lu.getLocalized(locale, caseData.getCaseType().getPath()), oldTime, newTime))
@@ -328,7 +324,7 @@ public class LogUtil {
 			.setAuthor(localized(locale, "roles.temp_added"), null, user.getAvatarUrl())
 			.addField(localized(locale, "user"), user.getAsMention(), true)
 			.addField(localized(locale, "roles.role"), role.getAsMention(), true)
-			.addField(localized(locale, "duration"), bot.getTimeUtil().durationToLocalizedString(locale, duration), true)
+			.addField(localized(locale, "duration"), TimeUtil.durationToLocalizedString(lu, locale, duration), true)
 			.addField(localized(locale, "mod"), mod.getAsMention(), false)
 			.setFooter("ID: "+user.getId())
 			.build();
@@ -350,7 +346,7 @@ public class LogUtil {
 			.setAuthor(localized(locale, "roles.temp_updated"), null, user.getAvatarUrl())
 			.addField(localized(locale, "user"), user.getAsMention(), true)
 			.addField(localized(locale, "roles.role"), role.getAsMention(), true)
-			.addField(localized(locale, "duration"), bot.getTimeUtil().formatTime(until, false), true)
+			.addField(localized(locale, "duration"), TimeUtil.formatTime(until, false), true)
 			.addField(localized(locale, "mod"), mod.getAsMention(), false)
 			.setFooter("ID: "+user.getId())
 			.build();
@@ -603,7 +599,7 @@ public class LogUtil {
 			.setDescription(localized(locale, "ticket.closed_pm")
 				.replace("{guild}", channel.getGuild().getName())
 				.replace("{closed}", Optional.ofNullable(userClosed).map(User::getAsMention).orElse(localized(locale, "ticket.autoclosed")))
-				.replace("{time}", bot.getTimeUtil().formatTime(timeClosed, false))
+				.replace("{time}", TimeUtil.formatTime(timeClosed, false))
 				.replace("{reason}", reasonClosed)
 			)
 			.setFooter("Channel ID: "+channel.getId())

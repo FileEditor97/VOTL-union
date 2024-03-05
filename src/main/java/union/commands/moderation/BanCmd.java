@@ -18,6 +18,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -71,7 +72,7 @@ public class BanCmd extends CommandBase {
 
 		final Duration duration;
 		try {
-			duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
+			duration = TimeUtil.stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
@@ -169,7 +170,7 @@ public class BanCmd extends CommandBase {
 						.setDescription(duration.isZero() ? 
 							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
 							:
-							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, duration), reason)
+							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, duration), reason)
 						)
 						.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
 						.build();
@@ -194,7 +195,7 @@ public class BanCmd extends CommandBase {
 						.replace("{user_tag}", tu.getName())
 						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger.permanently") : 
 							lu.getText(event, "logger.temporary")
-								.formatted( bot.getTimeUtil().formatTime(Instant.now().plus(duration), true))
+								.formatted(TimeUtil.formatTime(Instant.now().plus(duration), true))
 						)
 						.replace("{reason}", reason))
 					.build();

@@ -14,6 +14,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -46,7 +47,7 @@ public class DurationCmd extends CommandBase {
 
 		final Duration duration;
 		try {
-			duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
+			duration = TimeUtil.stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
@@ -76,7 +77,7 @@ public class DurationCmd extends CommandBase {
 		bot.getDBUtil().cases.updateDuration(caseId, duration);
 		
 		String newTime = duration.isZero() ? lu.getText(event, "logger.permanently") : lu.getText(event, "logger.temporary")
-			.formatted(bot.getTimeUtil().formatTime(caseData.getTimeStart().plus(duration), false));
+			.formatted(TimeUtil.formatTime(caseData.getTimeStart().plus(duration), false));
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
 			.setColor(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{duration}", newTime))

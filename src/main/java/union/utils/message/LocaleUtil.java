@@ -21,9 +21,9 @@ public class LocaleUtil {
 	private final String defaultLanguage;
 	private final DiscordLocale defaultLocale;
 
-	public LocaleUtil(App bot, LangUtil langUtil, String defaultLanguage, DiscordLocale defaultLocale) {
+	public LocaleUtil(App bot, String defaultLanguage, DiscordLocale defaultLocale) {
 		this.bot = bot;
-		this.langUtil = langUtil;
+		this.langUtil = new LangUtil(bot.getFileManager());
 		this.defaultLanguage = defaultLanguage;
 		this.defaultLocale = defaultLocale;
 	}

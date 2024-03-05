@@ -10,11 +10,9 @@ import union.utils.database.LiteDBBase;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class StrikeManager extends LiteDBBase {
-	
-	private final String table = "strikeExpire";
 
 	public StrikeManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "strikeExpire");
 	}
 
 	public void addStrikes(Long guildId, Long userId, Instant expireAfter, Integer count, String caseInfo) {

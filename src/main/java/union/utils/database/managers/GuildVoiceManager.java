@@ -4,11 +4,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class GuildVoiceManager extends LiteDBBase {
-	
-	private final String table = "guildVoice";
 
 	public GuildVoiceManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "guildVoice");
 	}
 
 	public void setup(String guildId, String categoryId, String channelId) {

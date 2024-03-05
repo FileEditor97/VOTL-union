@@ -6,11 +6,9 @@ import union.utils.database.LiteDBBase;
 import union.utils.database.ConnectionUtil;
 
 public class WebhookManager extends LiteDBBase {
-
-	private final String table = "webhook";
 	
 	public WebhookManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "webhook");
 	}
 
 	public void add(String webhookId, String guildId, String token) {

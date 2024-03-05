@@ -12,11 +12,9 @@ import union.utils.database.LiteDBBase;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 public class TicketPanelManager extends LiteDBBase {
-	
-	private final String table = "ticketPanel";
 
 	public TicketPanelManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "ticketPanel");
 	}
 
 	public void createPanel(String guildId, String title, String description, String image, String footer) {

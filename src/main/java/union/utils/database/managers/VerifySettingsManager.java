@@ -3,12 +3,10 @@ package union.utils.database.managers;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
-public class VerifyManager extends LiteDBBase {
+public class VerifySettingsManager extends LiteDBBase {
 
-	private final String table = "verify";
-
-	public VerifyManager(ConnectionUtil cu) {
-		super(cu);
+	public VerifySettingsManager(ConnectionUtil cu) {
+		super(cu, "verify");
 	}
 
 	public void remove(String guildId) {

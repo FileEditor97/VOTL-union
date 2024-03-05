@@ -15,9 +15,11 @@ import union.objects.annotation.Nullable;
 public class LiteDBBase {
 
 	private final ConnectionUtil util;
+	protected final String table;
 
-	public LiteDBBase(ConnectionUtil connectionUtil) {
+	public LiteDBBase(ConnectionUtil connectionUtil, String table) {
 		this.util = connectionUtil;
+		this.table = table;
 	}
 
 	// Execute statement

@@ -42,7 +42,7 @@ public class UnverifyCmd extends CommandBase {
 		}
 
 		Guild guild = event.getGuild();
-		String roleId = bot.getDBUtil().verify.getVerifyRole(guild.getId());
+		String roleId = bot.getDBUtil().verifySettings.getVerifyRole(guild.getId());
 		if (roleId == null) {
 			editError(event, path+".not_setup");
 			return;

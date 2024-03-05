@@ -8,11 +8,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class BlacklistManager extends LiteDBBase {
-
-	private final String table = "blacklist";
 	
 	public BlacklistManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "blacklist");
 	}
 
 	public void add(long guildId, int groupId, long userId, @Nullable Long steam64, @Nullable String reason, long modId) {

@@ -65,7 +65,7 @@ public class VerifyPanelCmd extends CommandBase {
 			}
 			TextChannel tc = (TextChannel) channel;
 
-			if (bot.getDBUtil().verify.getVerifyRole(guildId) == null) {
+			if (bot.getDBUtil().verifySettings.getVerifyRole(guildId) == null) {
 				editError(event, path+".no_role");
 				return;
 			}
@@ -74,7 +74,7 @@ public class VerifyPanelCmd extends CommandBase {
 
 			tc.sendMessageEmbeds(new EmbedBuilder()
 				.setColor(bot.getDBUtil().guild.getColor(guildId))
-				.setDescription(bot.getDBUtil().verify.getMainText(guildId))
+				.setDescription(bot.getDBUtil().verifySettings.getMainText(guildId))
 				.setFooter(event.getGuild().getName(), event.getGuild().getIconUrl())
 				.build()
 			).addActionRow(next).queue();
@@ -102,7 +102,7 @@ public class VerifyPanelCmd extends CommandBase {
 			Integer color = bot.getDBUtil().guild.getColor(guildId); 
 			
 			MessageEmbed main = new EmbedBuilder().setColor(color)
-				.setDescription(bot.getDBUtil().verify.getMainText(guildId))
+				.setDescription(bot.getDBUtil().verifySettings.getMainText(guildId))
 				.setFooter(event.getGuild().getName(), event.getGuild().getIconUrl())
 				.build();
 

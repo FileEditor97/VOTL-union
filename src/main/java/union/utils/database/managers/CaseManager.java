@@ -14,12 +14,10 @@ import union.utils.database.LiteDBBase;
 
 public class CaseManager extends LiteDBBase {
 
-	private final String table = "cases";
-
 	private final List<String> fullCaseKeys = List.of("caseId", "type", "targetId", "targetTag", "modId", "modTag", "guildId", "reason", "timeStart", "duration", "active");
 	
 	public CaseManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "cases");
 	}
 
 	// add new case

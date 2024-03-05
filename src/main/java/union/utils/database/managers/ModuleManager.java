@@ -8,11 +8,9 @@ import union.utils.database.LiteDBBase;
 import union.utils.database.ConnectionUtil;
 
 public class ModuleManager extends LiteDBBase {
-
-	private final String table = "moduleOff";
 	
 	public ModuleManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "moduleOff");
 	}
 
 	public void add(String guildId, CmdModule module) {

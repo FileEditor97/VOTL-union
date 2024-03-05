@@ -56,7 +56,7 @@ public class AccessCmd extends CommandBase {
 			List<String> modIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.MOD);
 			List<String> userIds = bot.getDBUtil().access.getAllUsers(guildId);
 
-			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, "bot.guild.access.view.embed.title"));
 
 			if (helperIds.isEmpty() && modIds.isEmpty() && userIds.isEmpty()) {
@@ -150,12 +150,11 @@ public class AccessCmd extends CommandBase {
 			// Log
 			bot.getLogListener().server.onAccessAdded(guild, event.getUser(), null, role, level);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.role.done")
 					.replace("{role}", role.getAsMention())
 					.replace("{level}", level.getName())
 				)
-				.setColor(Constants.COLOR_SUCCESS)
 				.build()
 			);
 		}
@@ -197,12 +196,11 @@ public class AccessCmd extends CommandBase {
 			// Log
 			bot.getLogListener().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.role.done")
 					.replace("{role}", role.getAsMention())
 					.replace("{level}", level.getName())
 				)
-				.setColor(Constants.COLOR_SUCCESS)
 				.build()
 			);
 		}
@@ -250,9 +248,8 @@ public class AccessCmd extends CommandBase {
 			// Log
 			bot.getLogListener().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.operator.done").replace("{user}", member.getAsMention()))
-				.setColor(Constants.COLOR_SUCCESS)
 				.build()
 			);
 		}
@@ -296,9 +293,8 @@ public class AccessCmd extends CommandBase {
 			// Log
 			bot.getLogListener().server.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.operator.done").replace("{user}", user.getAsMention()))
-				.setColor(Constants.COLOR_SUCCESS)
 				.build()
 			);
 		}

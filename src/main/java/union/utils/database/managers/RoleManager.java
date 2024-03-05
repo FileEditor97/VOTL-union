@@ -11,11 +11,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class RoleManager extends LiteDBBase {
-	
-	private final String table = "requestRole";
 
 	public RoleManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "requestRole");
 	}
 
 	public void add(String guildId, String roleId, String description, Integer row, RoleType roleType, String discordInvite) {

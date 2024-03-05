@@ -4,11 +4,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class UserSettingsManager extends LiteDBBase {
-	
-	private final String table = "user";
 
 	public UserSettingsManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "user");
 	}
 
 	public void remove(String userId) {

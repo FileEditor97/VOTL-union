@@ -8,11 +8,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TempRoleManager extends LiteDBBase {
-
-	private final String table = "tempRoles";
 	
 	public TempRoleManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "tempRoles");
 	}
 
 	public void add(String guildId, String roleId, String userId, Boolean deleteAfter, Instant expireAfter) {

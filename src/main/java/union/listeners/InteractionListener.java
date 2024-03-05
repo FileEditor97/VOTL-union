@@ -270,12 +270,12 @@ public class InteractionListener extends ListenerAdapter {
 	// Check verified
 	private Boolean isVerified(IReplyCallback event) {
 		Guild guild = event.getGuild();
-		if (!bot.getDBUtil().verify.isCheckEnabled(guild.getId())) return true;
+		if (!bot.getDBUtil().verifySettings.isCheckEnabled(guild.getId())) return true;
 
 		User user = event.getUser();
 		if (bot.getDBUtil().verifyCache.isVerified(user.getIdLong())) return true;
 
-		Role role = Objects.requireNonNull(guild.getRoleById(bot.getDBUtil().verify.getVerifyRole(guild.getId())));
+		Role role = Objects.requireNonNull(guild.getRoleById(bot.getDBUtil().verifySettings.getVerifyRole(guild.getId())));
 		
 		// check if still has account connected
 		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(user.getId())).map(Long::valueOf).orElse(null);
@@ -304,7 +304,7 @@ public class InteractionListener extends ListenerAdapter {
 		Member member = event.getMember();
 		Guild guild = event.getGuild();
 
-		String roleId = db.verify.getVerifyRole(guild.getId());
+		String roleId = db.verifySettings.getVerifyRole(guild.getId());
 		if (roleId == null) {
 			sendError(event, "bot.verification.failed_role", "The verification role is not configured");
 			return;
@@ -820,7 +820,7 @@ public class InteractionListener extends ListenerAdapter {
 	// Voice
 	private void buttonVoiceLock(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
 
 		try {
 			if (verifyRoleId != null) {
@@ -840,7 +840,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoiceUnlock(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
 
 		try {
 			if (verifyRoleId != null) {
@@ -860,7 +860,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoiceGhost(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
 
 		try {
 			if (verifyRoleId != null) {
@@ -880,7 +880,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoiceUnghost(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
 
 		try {
 			if (verifyRoleId != null) {
@@ -1144,7 +1144,7 @@ public class InteractionListener extends ListenerAdapter {
 			String guildId = event.getGuild().getId();
 
 			String main = event.getValue("main").getAsString();
-			db.verify.setMainText(guildId, main.isBlank() ? "NULL" : main);
+			db.verifySettings.setMainText(guildId, main.isBlank() ? "NULL" : main);
 
 			event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))

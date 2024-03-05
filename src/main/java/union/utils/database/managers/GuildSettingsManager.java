@@ -13,11 +13,9 @@ import union.objects.constants.Constants;
 import union.utils.database.ConnectionUtil;
 
 public class GuildSettingsManager extends LiteDBBase {
-
-	private final String table = "guild";
 	
 	public GuildSettingsManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "guild");
 	}
 
 	public void remove(String guildId) {

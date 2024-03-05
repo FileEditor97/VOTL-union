@@ -5,10 +5,8 @@ import union.utils.database.LiteDBBase;
 
 public class VoiceChannelManager extends LiteDBBase {
 	
-	private final String table = "voiceChannel";
-	
 	public VoiceChannelManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "voiceChannel");
 	}
 
 	public void add(String userId, String channelId) {

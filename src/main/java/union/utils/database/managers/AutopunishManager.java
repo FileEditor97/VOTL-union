@@ -11,10 +11,8 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class AutopunishManager extends LiteDBBase {
 
-	private final String table = "autopunish";
-
 	public AutopunishManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "autopunish");
 	}
 
 	public void addAction(Long guildId, Integer atStrikeCount, List<PunishActions> actions, String data) {

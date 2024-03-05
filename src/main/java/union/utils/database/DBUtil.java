@@ -34,7 +34,7 @@ import union.utils.database.managers.UnionVerifyManager;
 import union.utils.database.managers.UserSettingsManager;
 import union.utils.database.managers.TicketSettingsManager;
 import union.utils.database.managers.VerifyCacheManager;
-import union.utils.database.managers.VerifyManager;
+import union.utils.database.managers.VerifySettingsManager;
 import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
 import union.utils.file.FileManager;
@@ -55,7 +55,7 @@ public class DBUtil {
 	public final ModuleManager module;
 	public final AccessManager access;
 	public final GroupManager group;
-	public final VerifyManager verify;
+	public final VerifySettingsManager verifySettings;
 	public final VerifyCacheManager verifyCache;
 	public final TicketSettingsManager ticketSettings;
 	public final TicketPanelManager panels;
@@ -103,7 +103,7 @@ public class DBUtil {
 		module = new ModuleManager(connectionUtil);
 		access = new AccessManager(connectionUtil);
 		group = new GroupManager(connectionUtil);
-		verify = new VerifyManager(connectionUtil);
+		verifySettings = new VerifySettingsManager(connectionUtil);
 		verifyCache = new VerifyCacheManager(connectionUtil);
 		ticketSettings = new TicketSettingsManager(connectionUtil);
 		panels = new TicketPanelManager(connectionUtil);

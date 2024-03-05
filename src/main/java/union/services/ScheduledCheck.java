@@ -246,7 +246,7 @@ public class ScheduledCheck {
 			if (removeRoles.isEmpty()) return;
 
 			bot.JDA.getGuilds().forEach(guild -> {
-				String roleId = db.verify.getVerifyRole(guild.getId());
+				String roleId = db.verifySettings.getVerifyRole(guild.getId());
 				if (roleId == null) return;
 				Role role = guild.getRoleById(roleId);
 				if (role == null) return;

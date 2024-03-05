@@ -6,11 +6,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class VerifyCacheManager extends LiteDBBase {
-	
-	private final String table = "verified";
 
 	public VerifyCacheManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "verified");
 	}
 
 	public void addUser(long discordId, long steam64) {

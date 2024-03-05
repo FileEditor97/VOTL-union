@@ -19,11 +19,9 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.internal.interactions.component.ButtonImpl;
 
 public class TicketTagManager extends LiteDBBase {
-	
-	private final String table = "ticketTag";
 
 	public TicketTagManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "ticketTag");
 	}
 
 	public void createTag(String guildId, Integer panelId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {

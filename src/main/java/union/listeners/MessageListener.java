@@ -23,12 +23,12 @@ public class MessageListener extends ListenerAdapter {
 		if (event.getAuthor().isBot()) return;
 		
 		final Guild guild = event.getGuild();
-		if (!bot.getDBUtil().verify.isCheckEnabled(guild.getId())) return;
+		if (!bot.getDBUtil().verifySettings.isCheckEnabled(guild.getId())) return;
 
 		final long userId = event.getAuthor().getIdLong();
 		if (bot.getDBUtil().verifyCache.isVerified(userId)) return;
 
-		final Role role = guild.getRoleById(bot.getDBUtil().verify.getVerifyRole(guild.getId()));
+		final Role role = guild.getRoleById(bot.getDBUtil().verifySettings.getVerifyRole(guild.getId()));
 		if (!event.getMember().getRoles().contains(role)) return;
 		
 		// check if still has account connected

@@ -93,7 +93,7 @@ public class GuildListener extends ListenerAdapter {
 		db.access.removeAll(guildId);
 		db.module.removeAll(guildId);
 		db.webhook.removeAll(guildId);
-		db.verify.remove(guildId);
+		db.verifySettings.remove(guildId);
 		db.ticketSettings.remove(guildId);
 		db.role.removeAll(guildId);
 		db.guildVoice.remove(guildId);
@@ -144,7 +144,7 @@ public class GuildListener extends ListenerAdapter {
 				if (cachedSteam64!=null && db.blacklist.inGroupSteam64(groupId, cachedSteam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) return;
 			}
 
-			String roleId = db.verify.getVerifyRole(guild.getId());
+			String roleId = db.verifySettings.getVerifyRole(guild.getId());
 			if (roleId == null) return;
 			Role role = guild.getRoleById(roleId);
 			if (role == null) return;

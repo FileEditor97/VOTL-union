@@ -144,8 +144,6 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class Add extends SlashCommand {
-
-		// TODO: use invite system, to confirm that selected server is WILLFUL to join server Group
 		// for currect requirement is enough, but as major release - NO
 		public Add(App bot) {
 			this.bot = bot;

@@ -19,7 +19,7 @@ public class VerifySettingsManager extends LiteDBBase {
 	private final VerifySettings blankSettings = new VerifySettings();
 
 	public VerifySettingsManager(ConnectionUtil cu) {
-		super(cu, "verify");
+		super(cu, "verifySettings");
 	}
 
 	public VerifySettings getSettings(Guild guild) {

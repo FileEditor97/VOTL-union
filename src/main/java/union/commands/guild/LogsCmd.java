@@ -109,17 +109,24 @@ public class LogsCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
+			long guildId = event.getGuild().getIdLong();
 
 			String input = event.optString("type");
 			if (input == "all") {
-				bot.getDBUtil().logs.removeGuild(event.getGuild().getIdLong());
+				bot.getDBUtil().logs.removeGuild(guildId);
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_all"))
 					.build()
 				);
 			} else {
 				LogChannels type = LogChannels.of(input);
-				bot.getDBUtil().logs.removeLogWebhook(type, event.getGuild().getIdLong());
+				WebhookData data = bot.getDBUtil().logs.getLogWebhook(type, guildId);
+				if (data != null) {
+					event.getJDA().retrieveWebhookById(data.getWebhookId()).queue(webhook -> {
+						webhook.delete(data.getToken()).reason("Log disabled").queue();
+					});
+				}
+				bot.getDBUtil().logs.removeLogWebhook(type, guildId);
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").formatted(lu.getText(event, type.getPathName())))
 					.build()

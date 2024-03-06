@@ -30,7 +30,7 @@ public enum CmdModule {
 	
 	CmdModule(String path, int value) {
 		this.path = path;
-		this.value = 2^(value-1);
+		this.value = (int) Math.pow(2, value-1);
 	}
 
 	public String getPath() {
@@ -42,11 +42,11 @@ public enum CmdModule {
 	}
 
 	public static Set<CmdModule> decodeModules(int data) {
-		Set<CmdModule> actions = new HashSet<>(values().length);
+		Set<CmdModule> modules = new HashSet<>(values().length);
 		for (CmdModule v : values()) {
-			if ((data & v.value) == v.value) actions.add(v);
+			if ((data & v.value) == v.value) modules.add(v);
 		}
-		return actions;
+		return modules;
 	}
 
 	public static int encodeModules(Set<CmdModule> actions) {

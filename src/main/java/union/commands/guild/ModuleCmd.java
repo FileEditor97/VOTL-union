@@ -1,5 +1,6 @@
 package union.commands.guild;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -55,11 +56,9 @@ public class ModuleCmd extends CommandBase {
 
 			StringBuilder builder = new StringBuilder();
 			Set<CmdModule> disabled = getModules(guildId, false);
-			for (CmdModule sModule : getModules(guildId, true, false)) {
-				builder.append(
-					format(lu.getText(event, sModule.getPath()),
-					(disabled.contains(sModule) ? Emotes.CROSS_C : Emotes.CHECK_C))
-				).append("\n");
+			for (CmdModule sModule : CmdModule.ALL) {
+				builder.append(format(lu.getText(event, sModule.getPath()), disabled.contains(sModule)))
+					.append("\n");
 			}
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
@@ -70,8 +69,8 @@ public class ModuleCmd extends CommandBase {
 		}
 
 		@NotNull
-		private String format(String sModule, Emotes emote) {
-			return emote.getEmote() + " | " + sModule;
+		private String format(String sModule, boolean check) {
+			return (check ? Emotes.CROSS_C : Emotes.CHECK_C).getEmote() + " | " + sModule;
 		}
 
 	}
@@ -228,19 +227,13 @@ public class ModuleCmd extends CommandBase {
 	}
 
 	private Set<CmdModule> getModules(long guildId, boolean on) {
-		return getModules(guildId, false, on);
-	}
-
-	private Set<CmdModule> getModules(long guildId, boolean all, boolean on) {
-		Set<CmdModule> modules = CmdModule.ALL;
-		if (all)
-			return modules;
-
 		Set<CmdModule> disabled = bot.getDBUtil().getGuildSettings(guildId).getDisabledModules();
 		if (on) {
+			Set<CmdModule> modules = new HashSet<>(CmdModule.ALL);
 			modules.removeAll(disabled);
 			return modules;
 		} else
 			return disabled;
 	}
+
 }

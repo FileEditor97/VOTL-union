@@ -58,7 +58,7 @@ public class SetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			String text = event.optString("color");
 
 			Color color = bot.getMessageUtil().getColor(text);
@@ -66,7 +66,7 @@ public class SetupCmd extends CommandBase {
 				createError(event, path+".no_color");
 				return;
 			}
-			bot.getDBUtil().guild.setColor(guildId, color.getRGB() & 0xFFFFFF);
+			bot.getDBUtil().guildSettings.setColor(guildId, color.getRGB() & 0xFFFFFF);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(color.getRGB())
 				.setDescription(lu.getText(event, path+".done").replace("{color}", "#"+Integer.toHexString(color.getRGB() & 0xFFFFFF)))
@@ -87,7 +87,7 @@ public class SetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			String text = event.optString("link");
 
 			if (!isValidURL(text)) {
@@ -95,7 +95,7 @@ public class SetupCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().guild.setAppealLink(guildId, text);
+			bot.getDBUtil().guildSettings.setAppealLink(guildId, text);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{link}", text))
@@ -127,14 +127,14 @@ public class SetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			MessageChannel channel = event.optMessageChannel("channel");
 
 			if (!channel.canTalk()) {
 				createError(event, path+".cant_send");
 			}
 
-			bot.getDBUtil().guild.setReportChannelId(guildId, channel.getId());
+			bot.getDBUtil().guildSettings.setReportChannelId(guildId, channel.getIdLong());
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
@@ -312,7 +312,7 @@ public class SetupCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			Integer hours = event.optInteger("time");
 
-			bot.getDBUtil().guild.setStrikeExpiresAfter(event.getGuild().getId(), hours);
+			bot.getDBUtil().guildSettings.setStrikeExpiresAfter(event.getGuild().getIdLong(), hours);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(hours))

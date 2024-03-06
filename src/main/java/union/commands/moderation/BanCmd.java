@@ -162,7 +162,7 @@ public class BanCmd extends CommandBase {
 			if (event.optBoolean("dm", true)) {
 				tu.openPrivateChannel().queue(pm -> {
 					DiscordLocale locale = guild.getLocale();
-					String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
+					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
 					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 						.setDescription(duration.isZero() ? 
 							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)

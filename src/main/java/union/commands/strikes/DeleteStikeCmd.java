@@ -120,16 +120,17 @@ public class DeleteStikeCmd extends CommandBase {
 
 		Integer activeAmount = Integer.valueOf(selected[1]);
 		if (activeAmount == 1) {
+			long guildId = event.getGuild().getIdLong();
 			// As only one strike remains - delete case from strikes data and set case inactive
 			
 			strikesInfo.remove(event.getValues().get(0));
 
 			bot.getDBUtil().cases.setInactive(caseId);
 			if (strikesInfo.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tu.getIdLong());
+				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
-					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+				bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+					Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 					1, String.join(";", strikesInfo)
 				);
 			
@@ -177,23 +178,25 @@ public class DeleteStikeCmd extends CommandBase {
 			return;
 		}
 
+		long guildId = event.getGuild().getIdLong();
 		int removeAmount = Integer.parseInt(value[1]);
 		if (removeAmount == activeAmount) {
+			
 			// Delete all strikes, set case inactive
 			cases.remove(event.getComponentId());
 			bot.getDBUtil().cases.setInactive(caseId);
 			if (cases.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tu.getIdLong());
+				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
-					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+				bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+					Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 					removeAmount, String.join(";", cases)
 				);
 		} else {
 			// Delete selected amount of strikes (not all)
 			Collections.replaceAll(cases, caseId+"-"+activeAmount, caseId+"-"+(activeAmount-removeAmount));
-			bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
-				Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+			bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+				Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 				removeAmount, String.join(";", cases)
 			);
 		}

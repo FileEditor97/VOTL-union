@@ -77,8 +77,7 @@ public class GuildListener extends ListenerAdapter {
 		db.group.deleteGuildGroups(guildIdLong);
 
 		db.access.removeAll(guildId);
-		db.module.removeAll(guildId);
-		db.webhook.removeAll(guildId);
+		db.webhook.removeAll(guildIdLong);
 		db.verifySettings.remove(guildIdLong);
 		db.ticketSettings.remove(guildId);
 		db.role.removeAll(guildId);
@@ -90,7 +89,7 @@ public class GuildListener extends ListenerAdapter {
 		db.strike.removeGuild(guildIdLong);
 		db.logs.removeGuild(guildIdLong);
 		
-		db.guild.remove(guildId);
+		db.guildSettings.remove(guildIdLong);
 
 		bot.getLogger().info("Automatically removed guild '%s'(%s) from db.".formatted(event.getGuild().getName(), guildId));
 	}

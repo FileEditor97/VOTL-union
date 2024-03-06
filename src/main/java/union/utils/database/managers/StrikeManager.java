@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
@@ -25,17 +26,17 @@ public class StrikeManager extends LiteDBBase {
 	}
 
 	public List<Map<String, Object>> getExpired(Instant time) {
-		return select("SELECT * FROM %s WHERE (expireAfter<%d)".formatted(table, time.getEpochSecond()), List.of("guildId", "userId", "count", "data"));
+		return select("SELECT * FROM %s WHERE (expireAfter<%d)".formatted(table, time.getEpochSecond()), Set.of("guildId", "userId", "count", "data"));
 	}
 
 	public Pair<Integer, String> getData(Long guildId, Long userId) {
-		Map<String, Object> data = selectOne("SELECT count, data FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId), List.of("count", "data"));
+		Map<String, Object> data = selectOne("SELECT count, data FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId), Set.of("count", "data"));
 		if (data == null) return null;
 		return Pair.of((Integer) data.get("count"), (String) data.getOrDefault("data", ""));
 	}
 
 	public Pair<Integer, Integer> getDataCountAndDate(Long guildId, Long userId) {
-		Map<String, Object> data = selectOne("SELECT count, expireAfter FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId), List.of("count", "expireAfter"));
+		Map<String, Object> data = selectOne("SELECT count, expireAfter FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId), Set.of("count", "expireAfter"));
 		if (data == null) return null;
 		return Pair.of((Integer) data.get("count"), (Integer) data.get("expireAfter"));
 	}

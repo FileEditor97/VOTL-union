@@ -23,7 +23,6 @@ import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildLogsManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
-import union.utils.database.managers.ModuleManager;
 import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.StrikeManager;
 import union.utils.database.managers.TempRoleManager;
@@ -38,6 +37,7 @@ import union.utils.database.managers.VerifyCacheManager;
 import union.utils.database.managers.VerifySettingsManager;
 import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
+import union.utils.database.managers.GuildSettingsManager.GuildSettings;
 import union.utils.database.managers.VerifySettingsManager.VerifySettings;
 import union.utils.file.FileManager;
 
@@ -54,9 +54,8 @@ public class DBUtil {
 	
 	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
 
-	public final GuildSettingsManager guild;
+	public final GuildSettingsManager guildSettings;
 	public final WebhookManager webhook;
-	@Deprecated public final ModuleManager module;
 	public final AccessManager access;
 	public final GroupManager group;
 	public final VerifySettingsManager verifySettings;
@@ -103,9 +102,8 @@ public class DBUtil {
 		
 		this.connectionUtil = new ConnectionUtil(urlSQLite, logger);
 		
-		guild = new GuildSettingsManager(connectionUtil);
+		guildSettings = new GuildSettingsManager(connectionUtil);
 		webhook = new WebhookManager(connectionUtil);
-		module = new ModuleManager(connectionUtil);
 		access = new AccessManager(connectionUtil);
 		group = new GroupManager(connectionUtil);
 		verifySettings = new VerifySettingsManager(connectionUtil);
@@ -134,6 +132,14 @@ public class DBUtil {
 
 	public VerifySettings getVerifySettings(Guild guild) {
 		return verifySettings.getSettings(guild);
+	}
+
+	public GuildSettings getGuildSettings(Guild guild) {
+		return guildSettings.getSettings(guild);
+	}
+
+	public GuildSettings getGuildSettings(long guildId) {
+		return guildSettings.getSettings(guildId);
 	}
 
 

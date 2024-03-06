@@ -579,7 +579,7 @@ public class TicketPanelCmd extends CommandBase {
 
 	private MessageEmbed buildPanelEmbed(Guild guild, Integer panelId) {
 		Panel panel = bot.getDBUtil().panels.getPanel(panelId);
-		return panel.getPrefiledEmbed(bot.getDBUtil().guild.getColor(guild.getId())).build();
+		return panel.getPrefiledEmbed(bot.getDBUtil().getGuildSettings(guild).getColor()).build();
 	}
 	
 }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import union.objects.CaseType;
@@ -14,7 +15,7 @@ import union.utils.database.LiteDBBase;
 
 public class CaseManager extends LiteDBBase {
 
-	private final List<String> fullCaseKeys = List.of("caseId", "type", "targetId", "targetTag", "modId", "modTag", "guildId", "reason", "timeStart", "duration", "active");
+	private final Set<String> fullCaseKeys = Set.of("caseId", "type", "targetId", "targetTag", "modId", "modTag", "guildId", "reason", "timeStart", "duration", "active");
 	
 	public CaseManager(ConnectionUtil cu) {
 		super(cu, "cases");
@@ -116,14 +117,14 @@ public class CaseManager extends LiteDBBase {
 	// count cases by moderator
 	public Map<Integer, Integer> countCasesByMod(long guildId, long modId, Instant afterTime) {
 		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d AND timeStart>%d) GROUP BY type"
-			.formatted(table, guildId, modId, afterTime.getEpochSecond()), List.of("type", "cc"));
+			.formatted(table, guildId, modId, afterTime.getEpochSecond()), Set.of("type", "cc"));
 		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
 	}
 	
 	public Map<Integer, Integer> countCasesByMod(long guildId, long modId) {
 		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d) GROUP BY type"
-			.formatted(table, guildId, modId), List.of("type", "cc"));
+			.formatted(table, guildId, modId), Set.of("type", "cc"));
 		if (data.isEmpty()) return null;
 		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
 	}

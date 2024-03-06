@@ -353,7 +353,6 @@ public class InteractionListener extends ListenerAdapter {
 					bot.getLogger().warn("Was unable to add verify role to user in "+guild.getName()+"("+guild.getId()+")", failure);
 				});
 		} else {
-			String guildId = guild.getId();
 			Button refresh = Button.of(ButtonStyle.DANGER, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
 			// Check if user pressed refresh button
 			if (event.getButton().getId().endsWith("refresh")) {
@@ -364,7 +363,7 @@ public class InteractionListener extends ListenerAdapter {
 			} else {
 				// Reply with instruction on how to verify, buttons - link and refresh
 				Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
-				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId))
+				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 					.setTitle(lu.getText(event, "bot.verification.embed.title"))
 					.setDescription(lu.getText(event, "bot.verification.embed.description"))
 					.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
@@ -564,7 +563,7 @@ public class InteractionListener extends ListenerAdapter {
 				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
 				String rolesString = String.join(" ", add.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), (otherRole ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other") : ""));
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(str -> str != null).distinct().collect(Collectors.joining("\n- ", "- ", ""));
-				MessageEmbed embed = new EmbedBuilder().setColor(db.guild.getColor(guildId))
+				MessageEmbed embed = new EmbedBuilder().setColor(db.getGuildSettings(guild).getColor())
 					.setDescription(String.format("SteamID\n> %s\n%s\n> %s\n\n%s, %s\n%s\n\n%s",
 						(steam64 == null ? "None" : SteamUtil.convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
 						lu.getLocalized(event.getGuildLocale(), "ticket.role_title"),
@@ -670,7 +669,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 		db.ticket.setRequestStatus(channelId, -1L);
 		MessageEmbed embed = new EmbedBuilder()
-			.setColor(db.guild.getColor(guild.getId()))
+			.setColor(db.getGuildSettings(guild).getColor())
 			.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.autoclose_cancel"))
 			.build();
 		event.getHook().editOriginalEmbeds(embed).setComponents().queue();

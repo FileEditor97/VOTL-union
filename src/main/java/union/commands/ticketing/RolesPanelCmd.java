@@ -96,7 +96,7 @@ public class RolesPanelCmd extends CommandBase {
 			}
 
 			MessageEmbed embed = new EmbedBuilder()
-				.setColor(bot.getDBUtil().guild.getColor(guildId))
+				.setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 				.setTitle(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.role_title"))
 				.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.role_value"))
 				.setFooter(guild.getName(), guild.getIconUrl())

@@ -1,9 +1,6 @@
 package union.commands.guild;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -54,10 +51,10 @@ public class ModuleCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = Optional.ofNullable(event.getGuild()).map(g -> g.getId()).orElse("0");
+			long guildId = event.getGuild().getIdLong();
 
 			StringBuilder builder = new StringBuilder();
-			List<CmdModule> disabled = getModules(guildId, false);
+			Set<CmdModule> disabled = getModules(guildId, false);
 			for (CmdModule sModule : getModules(guildId, true, false)) {
 				builder.append(
 					format(lu.getText(event, sModule.getPath()),
@@ -93,12 +90,12 @@ public class ModuleCmd extends CommandBase {
 			event.deferReply(true).queue();
 			InteractionHook hook = event.getHook();
 
-			String guildId = Optional.ofNullable(event.getGuild()).map(g -> g.getId()).orElse("0");
+			long guildId = event.getGuild().getIdLong();
 
 			EmbedBuilder embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"));
 
-			List<CmdModule> enabled = getModules(guildId, true);
+			Set<CmdModule> enabled = getModules(guildId, true);
 			if (enabled.isEmpty()) {
 				embed.setDescription(lu.getText(event, path+".none"))
 					.setColor(Constants.COLOR_FAILURE);
@@ -122,14 +119,15 @@ public class ModuleCmd extends CommandBase {
 					StringSelectInteractionEvent.class,
 					e -> e.getComponentId().equals("disable-module") && e.getMessageId().equals(msg.getId()),
 					actionEvent -> {
-
 						actionEvent.deferEdit().queue();
 						CmdModule sModule = CmdModule.valueOf(actionEvent.getSelectedOptions().get(0).getValue());
-						if (bot.getDBUtil().module.isDisabled(guildId, sModule)) {
+						if (bot.getDBUtil().getGuildSettings(guildId).isDisabled(sModule)) {
 							hook.editOriginalEmbeds(bot.getEmbedUtil().getError(event, path+".already")).setComponents().queue();
 							return;
 						}
-						bot.getDBUtil().module.add(guildId, sModule);
+						// set new data
+						final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() + sModule.getValue();
+						bot.getDBUtil().guildSettings.setModuleDisabled(guildId, newData);
 						// Send reply
 						hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
@@ -137,7 +135,6 @@ public class ModuleCmd extends CommandBase {
 						).setComponents().queue();
 						// Log
 						bot.getLogListener().server.onModuleDisabled(event.getGuild(), event.getUser(), sModule);
-
 					},
 					30,
 					TimeUnit.SECONDS,
@@ -166,12 +163,12 @@ public class ModuleCmd extends CommandBase {
 			event.deferReply(true).queue();
 			InteractionHook hook = event.getHook();
 
-			String guildId = Optional.ofNullable(event.getGuild()).map(g -> g.getId()).orElse("0");
+			long guildId = event.getGuild().getIdLong();
 
 			EmbedBuilder embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"));
 
-			List<CmdModule> enabled = getModules(guildId, false);
+			Set<CmdModule> enabled = getModules(guildId, false);
 			if (enabled.isEmpty()) {
 				embed.setDescription(lu.getText(event, path+".none"))
 					.setColor(Constants.COLOR_FAILURE);
@@ -199,11 +196,13 @@ public class ModuleCmd extends CommandBase {
 						actionEvent.deferEdit().queue(
 							actionHook -> {
 								CmdModule sModule = CmdModule.valueOf(actionEvent.getSelectedOptions().get(0).getValue());
-								if (!bot.getDBUtil().module.isDisabled(guildId, sModule)) {
+								if (!bot.getDBUtil().getGuildSettings(guildId).isDisabled(sModule)) {
 									hook.editOriginalEmbeds(bot.getEmbedUtil().getError(event, path+".already")).setComponents().queue();
 									return;
 								}
-								bot.getDBUtil().module.remove(guildId, sModule);
+								// set new data
+								final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() - sModule.getValue();
+								bot.getDBUtil().guildSettings.setModuleDisabled(guildId, newData);
 								// Send reply
 								hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 									.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
@@ -228,22 +227,20 @@ public class ModuleCmd extends CommandBase {
 
 	}
 
-	private List<CmdModule> getModules(String guildId, boolean on) {
+	private Set<CmdModule> getModules(long guildId, boolean on) {
 		return getModules(guildId, false, on);
 	}
 
-	private List<CmdModule> getModules(String guildId, boolean all, boolean on) {
-		List<CmdModule> modules = new ArrayList<CmdModule>(Arrays.asList(CmdModule.values()));
-		if (all) {
+	private Set<CmdModule> getModules(long guildId, boolean all, boolean on) {
+		Set<CmdModule> modules = CmdModule.ALL;
+		if (all)
 			return modules;
-		}
 
-		List<CmdModule> disabled = bot.getDBUtil().module.getDisabled(guildId);
+		Set<CmdModule> disabled = bot.getDBUtil().getGuildSettings(guildId).getDisabledModules();
 		if (on) {
 			modules.removeAll(disabled);
 			return modules;
-		} else {
+		} else
 			return disabled;
-		}
 	}
 }

@@ -74,7 +74,7 @@ public class VerifyPanelCmd extends CommandBase {
 			Button next = Button.primary("verify", lu.getLocalized(event.getGuildLocale(), path+".continue"));
 
 			tc.sendMessageEmbeds(new EmbedBuilder()
-				.setColor(bot.getDBUtil().guild.getColor(guild.getId()))
+				.setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 				.setDescription(bot.getDBUtil().getVerifySettings(guild).getMainText())
 				.setFooter(event.getGuild().getName(), event.getGuild().getIconUrl())
 				.build()
@@ -100,7 +100,7 @@ public class VerifyPanelCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			Guild guild = event.getGuild();
-			Integer color = bot.getDBUtil().guild.getColor(guild.getId()); 
+			Integer color = bot.getDBUtil().getGuildSettings(guild).getColor(); 
 			
 			MessageEmbed main = new EmbedBuilder().setColor(color)
 				.setDescription(bot.getDBUtil().getVerifySettings(guild).getMainText())

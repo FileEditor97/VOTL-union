@@ -108,7 +108,7 @@ public class StrikeCmd extends CommandBase {
 	private Field executeStrike(DiscordLocale locale, Guild guild, Member target, Integer addAmount, Integer caseId) {
 		// Add strike(-s) to DB
 		bot.getDBUtil().strike.addStrikes(guild.getIdLong(), target.getIdLong(),
-			Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guild.getId()), ChronoUnit.DAYS),
+			Instant.now().plus(bot.getDBUtil().getGuildSettings(guild).getStrikeExpires(), ChronoUnit.DAYS),
 			addAmount, caseId+"-"+addAmount);
 		// Get strike new strike amount
 		Integer strikes = bot.getDBUtil().strike.getStrikeCount(guild.getIdLong(), target.getIdLong());
@@ -161,7 +161,7 @@ public class StrikeCmd extends CommandBase {
 				Duration durationCopy = duration;
 				// Send PM to user
 				target.getUser().openPrivateChannel().queue(pm -> {
-					String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
+					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
 					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 						.setDescription(durationCopy.isZero() ? 
 							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)

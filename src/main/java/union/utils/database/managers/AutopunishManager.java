@@ -2,6 +2,7 @@ package union.utils.database.managers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import union.objects.PunishActions;
 import union.utils.database.ConnectionUtil;
@@ -28,13 +29,13 @@ public class AutopunishManager extends LiteDBBase {
 	}
 
 	public Pair<Integer, String> getAction(Long guildId, Integer atStrikeCount) {
-		Map<String, Object> data = selectOne("SELECT actions, data FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount), List.of("actions", "data"));
+		Map<String, Object> data = selectOne("SELECT actions, data FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount), Set.of("actions", "data"));
 		if (data == null) return null;
 		return Pair.of((Integer) data.get("actions"), (String) data.getOrDefault("data", ""));
 	}
 
 	public List<Map<String, Object>> getAllActions(Long guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), List.of("strike", "actions", "data"));
+		return select("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), Set.of("strike", "actions", "data"));
 	}
 	
 }

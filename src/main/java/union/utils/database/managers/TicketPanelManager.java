@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import union.utils.database.ConnectionUtil;
@@ -75,7 +76,7 @@ public class TicketPanelManager extends LiteDBBase {
 
 	public Panel getPanel(Integer panelId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (panelId=%d)".formatted(table, panelId),
-			List.of("title", "description", "image", "footer"));
+			Set.of("title", "description", "image", "footer"));
 		if (data==null) return null;
 		return new Panel(data);
 	}
@@ -85,7 +86,7 @@ public class TicketPanelManager extends LiteDBBase {
 	}
 
 	public Map<Integer, String> getPanelsText(String guildId) {
-		List<Map<String, Object>> data = select("SELECT panelId, title FROM %s WHERE (guildId=%s)".formatted(table, guildId), List.of("panelId", "title"));
+		List<Map<String, Object>> data = select("SELECT panelId, title FROM %s WHERE (guildId=%s)".formatted(table, guildId), Set.of("panelId", "title"));
 		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().limit(25).collect(Collectors.toMap(s -> (Integer) s.get("panelId"), s -> (String) s.get("title")));
 	}

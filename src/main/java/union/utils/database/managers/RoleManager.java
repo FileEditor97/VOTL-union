@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import union.objects.RoleType;
@@ -30,33 +31,35 @@ public class RoleManager extends LiteDBBase {
 	}
 
 	public List<Map<String, Object>> getAll(String guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), List.of("roleId", "description", "type"));
+		return select("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), Set.of("roleId", "description", "type"));
 	}
 
 	public List<Map<String, Object>> getRolesByType(String guildId, RoleType type) {
-		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, type.getType()), List.of("roleId", "description"));
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, type.getType()), Set.of("roleId", "description"));
 	}
 
 	public List<Map<String, Object>> getAssignable(String guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.ASSIGN.getType()), List.of("roleId", "description", "row"));
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.ASSIGN.getType()), Set.of("roleId", "description", "row"));
 	}
 
 	public List<Map<String, Object>> getAssignableByRow(String guildId, Integer row) {
 		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d AND row=%d)".formatted(table, guildId, RoleType.ASSIGN.getType(), row),
-			List.of("roleId", "description", "discordInvite"));
+			Set.of("roleId", "description", "discordInvite")
+		);
 	}
 
 	public List<Map<String, Object>> getToggleable(String guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.TOGGLE.getType()), List.of("roleId", "description"));
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.TOGGLE.getType()), Set.of("roleId", "description"));
 	}
 
 	public List<Map<String, Object>> getCustom(String guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.CUSTOM.getType()), List.of("roleId", "description"));
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.CUSTOM.getType()), Set.of("roleId", "description"));
 	}
 
 	public Map<String, String> getRolesWithInvites(String guildId) {
 		List<Map<String, Object>> data = select("SELECT roleId, discordInvite FROM %s WHERE (guildId=%s AND discordInvite IS NOT NULL)".formatted(table, guildId),
-			List.of("roleId", "discordInvite"));
+			Set.of("roleId", "discordInvite")
+		);
 		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().collect(Collectors.toMap(s -> (String) s.get("roleId"), s -> (String) s.get("discordInvite")));
 	}

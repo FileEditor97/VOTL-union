@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -103,28 +104,31 @@ public class TicketTagManager extends LiteDBBase {
 	}
 
 	public Map<Integer, String> getTagsText(String guildId) {
-		List<Map<String, Object>> data = select("SELECT tagId, buttonText FROM %s WHERE (guildId=%s)".formatted(table, guildId), List.of("tagId", "buttonText"));
+		List<Map<String, Object>> data = select("SELECT tagId, buttonText FROM %s WHERE (guildId=%s)".formatted(table, guildId), Set.of("tagId", "buttonText"));
 		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().limit(25).collect(Collectors.toMap(s -> (Integer) s.get("tagId"), s -> (String) s.get("buttonText")));
 	}
 
 	public List<Button> getPanelTags(Integer panelId) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (panelId=%s)".formatted(table, panelId),
-			List.of("tagId", "buttonText", "buttonStyle", "emoji"));
+			Set.of("tagId", "buttonText", "buttonStyle", "emoji")
+		);
 		if (data.isEmpty()) return null;
 		return data.stream().map(map -> Tag.createButton(map)).toList();
 	}
 
 	public Tag getTagFull(Integer tagId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (tagId=%s)".formatted(table, tagId),
-			List.of("buttonText", "buttonStyle", "emoji", "tagType", "location", "message", "supportRoles", "ticketName"));
+			Set.of("buttonText", "buttonStyle", "emoji", "tagType", "location", "message", "supportRoles", "ticketName")
+		);
 		if (data==null) return null;
 		return new Tag(data);
 	}
 
 	public Tag getTagInfo(Integer tagId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (tagId=%s)".formatted(table, tagId),
-			List.of("tagType", "location", "message", "supportRoles", "ticketName"));
+			Set.of("tagType", "location", "message", "supportRoles", "ticketName")
+		);
 		if (data==null) return null;
 		return new Tag(data);
 	}

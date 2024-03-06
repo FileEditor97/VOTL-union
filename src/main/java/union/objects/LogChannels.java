@@ -1,9 +1,10 @@
 package union.objects;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import union.utils.message.LocaleUtil;
@@ -26,7 +27,7 @@ public enum LogChannels {
 	private final String name;
 	private final String path;
 
-	private static final List<String> ALL = new ArrayList<>();
+	private static final Set<String> ALL = new HashSet<>();
 	private static final Map<String, LogChannels> BY_NAME = new HashMap<String, LogChannels>();
 
 	static {
@@ -57,7 +58,7 @@ public enum LogChannels {
 		return Stream.of(values()).map(log -> new Choice(lu.getText(log.getPathName()), log.getName())).toList();
 	}
 
-	public static List<String> getAllNames() {
+	public static Set<String> getAllNames() {
 		return ALL;
 	}
 

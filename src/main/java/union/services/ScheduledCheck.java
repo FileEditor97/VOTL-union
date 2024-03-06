@@ -73,7 +73,7 @@ public class ScheduledCheck {
 					Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
 
 					MessageEmbed embed = new EmbedBuilder()
-						.setColor(db.guild.getColor(guild.getId()))
+						.setColor(db.getGuildSettings(guild).getColor())
 						.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_auto")
 							.replace("{user}", user.getAsMention())
 							.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))
@@ -179,7 +179,7 @@ public class ScheduledCheck {
 						}
 						// Remove one strike and reset time
 						db.strike.removeStrike(guildId, userId,
-							Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guildId.toString()), ChronoUnit.DAYS),
+							Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 							1, newData.toString()
 						);
 					} else {

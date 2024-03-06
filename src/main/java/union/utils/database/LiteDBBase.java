@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import union.objects.annotation.NotNull;
@@ -77,7 +78,7 @@ public class LiteDBBase {
 	}
 
 	@Nullable
-	protected Map<String, Object> selectOne(final String sql, final List<String> selectKeys) {
+	protected Map<String, Object> selectOne(final String sql, final Set<String> selectKeys) {
 		Map<String, Object> result = new HashMap<>();
 
 		util.logger.debug(sql);
@@ -95,7 +96,7 @@ public class LiteDBBase {
 		return result.isEmpty() ? null : result;
 	}
 
-	protected List<Map<String, Object>> select(final String sql, final List<String> selectKeys) {
+	protected List<Map<String, Object>> select(final String sql, final Set<String> selectKeys) {
 		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
 		util.logger.debug(sql);

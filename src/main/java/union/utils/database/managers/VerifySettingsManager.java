@@ -1,7 +1,7 @@
 package union.utils.database.managers;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import union.objects.constants.Constants;
 import union.utils.FixedCache;
@@ -11,6 +11,8 @@ import union.utils.database.LiteDBBase;
 import net.dv8tion.jda.api.entities.Guild;
 
 public class VerifySettingsManager extends LiteDBBase {
+
+	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled");
 
 	// Cache
 	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
@@ -35,27 +37,28 @@ public class VerifySettingsManager extends LiteDBBase {
 	}
 
 	private Map<String, Object> getData(long guildId) {
-		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), List.of("roleId", "mainText", "checkEnabled"));
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
 	}
 
 	public void remove(long guildId) {
+		invalidateCache(guildId);
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
 	public void setVerifyRole(long guildId, long roleId) {
-		invalidateCache(0);
+		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET roleId=%<d".formatted(table, guildId, roleId));
 	}
 
 	public void setMainText(long guildId, String text) {
-		invalidateCache(0);
+		invalidateCache(guildId);
 		final String textParsed = quote(text.replace("\\n", "<br>"));
 		execute("INSERT INTO %s(guildId, mainText) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET mainText=%<s".formatted(table, guildId, textParsed));
 	}
 
 	// manage check for verification role
 	public void setCheckState(long guildId, boolean enabled) {
-		invalidateCache(0);
+		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabledCheck=%<d".formatted(table, guildId, enabled?1:0));
 	}
 

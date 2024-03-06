@@ -41,37 +41,50 @@ public class TicketUtil {
 		Guild guild = channel.getGuild();
 		Instant now = Instant.now();
 
-		DiscordHtmlTranscripts transcripts = DiscordHtmlTranscripts.getInstance();
-		transcripts.queueCreateTranscript(channel,
-			file -> {
-				channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
-					db.ticket.closeTicket(now, channelId, reasonClosed);
+		if (db.ticket.isRoleTicket(channelId)) {
+			channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
+				db.ticket.closeTicket(now, channelId, reasonClosed);
 
-					String authorId = db.ticket.getUserId(channelId);
-					if (!db.ticket.isRoleTicket(channelId)) {
+				String authorId = db.ticket.getUserId(channelId);
+
+				bot.getLogListener().ticket.onClose(guild, channel, userClosed, authorId);
+			}, failure -> {
+				bot.getLogger().error("Error while closing ticket, unable to delete", failure);
+				closeHandle.accept(failure);
+			});
+		} else {
+			DiscordHtmlTranscripts transcripts = DiscordHtmlTranscripts.getInstance();
+			transcripts.queueCreateTranscript(channel,
+				file -> {
+					channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
+						db.ticket.closeTicket(now, channelId, reasonClosed);
+
+						String authorId = db.ticket.getUserId(channelId);
+
 						bot.JDA.retrieveUserById(authorId).queue(user -> {
 							user.openPrivateChannel().queue(pm -> {
 								MessageEmbed embed = bot.getLogUtil().ticketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
 								pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 							});
 						});
-					}
 
-					bot.getLogListener().ticket.onClose(guild, channel, userClosed, authorId, file);
-				}, failure -> {
-					bot.getLogger().error("Error while closing ticket, unable to delete", failure);
-					closeHandle.accept(failure);
-				});
-			},
-			closeHandle
-		);
+						bot.getLogListener().ticket.onClose(guild, channel, userClosed, authorId, file);
+					}, failure -> {
+						bot.getLogger().error("Error while closing ticket, unable to delete", failure);
+						closeHandle.accept(failure);
+					});
+				},
+				closeHandle
+			);
+		}
+		
 
 	}
 
 	public void createTicket(ButtonInteractionEvent event, GuildMessageChannel channel, String mentions, String message) {
 		channel.sendMessage(mentions).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
 
-		MessageEmbed embed = new EmbedBuilder().setColor(db.guild.getColor(event.getGuild().getId()))
+		MessageEmbed embed = new EmbedBuilder().setColor(db.getGuildSettings(event.getGuild()).getColor())
 			.setDescription(message)
 			.build();
 		Button close = Button.danger("ticket:close", bot.getLocaleUtil().getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒")).asDisabled();

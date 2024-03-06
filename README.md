@@ -1,11 +1,11 @@
 # VOTL (UnionTeam's)
  [![Publish Release](https://github.com/FileEditor97/VOTL-union/actions/workflows/gradle.yml/badge.svg)](https://github.com/FileEditor97/VOTL-union/actions/workflows/gradle.yml)  
- Voice of the Lord - discord bot written in Java using JDA library.
- Functions: server moderation and sync blacklists, custom voice channels and verification, ticketing.
+ Voice of the Lord - discord bot written in Java using JDA library.  
+ Functions: server moderation and sync blacklists, custom voice channels and verification, ticketing.  
 
- Visit main website https://votl.fileeditor.dev/
+ Visit main website https://votl.fileeditor.dev/  
 
- This is modified version of [public bot (VOTL)](https://github.com/FileEditor97/VOTL) for [UnionTeam's](https://unionteams.ru) discord servers
+ This is modified version of [public bot (VOTL)](https://github.com/FileEditor97/VOTL) for [UnionTeam's](https://unionteams.ru) discord servers  
 
 ## Config file
  data/config.json:
@@ -32,6 +32,6 @@
  ```
 
 ## Inspiration/Credits
- Thanks to Chew (JDA-Chewtils and Chewbotcca bot) and jagrosh (JDA-Utilities)
- [PurrBot](github.com/purrbot-site/PurrBot) by Andre_601 (purrbot.site)
+ Thanks to Chew (JDA-Chewtils and Chewbotcca bot) and jagrosh (JDA-Utilities)  
+ [PurrBot](github.com/purrbot-site/PurrBot) by Andre_601 (purrbot.site)  
  Inkception for [Discord (JDA) HTML Transcripts](https://github.com/Inkception/discord-html-transcripts)

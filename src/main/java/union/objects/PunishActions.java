@@ -14,7 +14,7 @@ public enum PunishActions {
 	REMOVE_ROLE(8, "punish_action.remove_role", "rr(\\d+)"),	// role ID
 	ADD_ROLE(16, "punish_action.add_role", "ar(\\d+)");		// role ID
 
-	private final Integer type;
+	private final int type;
 	private final String path;
 	private final String pattern;
 	
@@ -26,19 +26,19 @@ public enum PunishActions {
 		}
 	}
 
-	PunishActions(Integer type, String path, String pattern) {
+	PunishActions(int type, String path, String pattern) {
 		this.type = type;
 		this.path = path;
 		this.pattern = pattern;
 	}
 
-	PunishActions(Integer type, String path) {
+	PunishActions(int type, String path) {
 		this.type = type;
 		this.path = path;
 		this.pattern = "";
 	}
 
-	public Integer getType() {
+	public int getType() {
 		return type;
 	}
 
@@ -50,7 +50,7 @@ public enum PunishActions {
 		return Pattern.compile(pattern);
 	}
 
-	public static List<PunishActions> decodeActions(Integer data) {
+	public static List<PunishActions> decodeActions(int data) {
 		List<PunishActions> actions = new ArrayList<>();
 		for (PunishActions v : values()) {
 			if ((data & v.type) == v.type) actions.add(v);
@@ -58,15 +58,15 @@ public enum PunishActions {
 		return actions;
 	}
 
-	public static Integer encodeActions(List<PunishActions> actions) {
-		Integer data = 0;
+	public static int encodeActions(List<PunishActions> actions) {
+		int data = 0;
 		for (PunishActions v : actions) {
 			data += v.type;
 		}
 		return data;
 	}
 
-	public static PunishActions byType(Integer type) {
+	public static PunishActions byType(int type) {
 		return BY_TYPE.get(type);
 	}
 

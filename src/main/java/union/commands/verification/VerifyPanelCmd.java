@@ -13,6 +13,7 @@ import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -57,7 +58,7 @@ public class VerifyPanelCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 
-			String guildId = event.getGuild().getId();
+			Guild guild = event.getGuild();
 			GuildChannel channel = event.optGuildChannel("channel");
 			if (channel == null ) {
 				editError(event, path+".no_channel", "Received: No channel");
@@ -65,7 +66,7 @@ public class VerifyPanelCmd extends CommandBase {
 			}
 			TextChannel tc = (TextChannel) channel;
 
-			if (bot.getDBUtil().verifySettings.getVerifyRole(guildId) == null) {
+			if (bot.getDBUtil().getVerifySettings(guild).getRoleId() == null) {
 				editError(event, path+".no_role");
 				return;
 			}
@@ -73,8 +74,8 @@ public class VerifyPanelCmd extends CommandBase {
 			Button next = Button.primary("verify", lu.getLocalized(event.getGuildLocale(), path+".continue"));
 
 			tc.sendMessageEmbeds(new EmbedBuilder()
-				.setColor(bot.getDBUtil().guild.getColor(guildId))
-				.setDescription(bot.getDBUtil().verifySettings.getMainText(guildId))
+				.setColor(bot.getDBUtil().guild.getColor(guild.getId()))
+				.setDescription(bot.getDBUtil().getVerifySettings(guild).getMainText())
 				.setFooter(event.getGuild().getName(), event.getGuild().getIconUrl())
 				.build()
 			).addActionRow(next).queue();
@@ -98,11 +99,11 @@ public class VerifyPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
-			Integer color = bot.getDBUtil().guild.getColor(guildId); 
+			Guild guild = event.getGuild();
+			Integer color = bot.getDBUtil().guild.getColor(guild.getId()); 
 			
 			MessageEmbed main = new EmbedBuilder().setColor(color)
-				.setDescription(bot.getDBUtil().verifySettings.getMainText(guildId))
+				.setDescription(bot.getDBUtil().getVerifySettings(guild).getMainText())
 				.setFooter(event.getGuild().getName(), event.getGuild().getIconUrl())
 				.build();
 

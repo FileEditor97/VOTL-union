@@ -1,49 +1,96 @@
 package union.utils.database.managers;
 
+import java.util.List;
+import java.util.Map;
+
+import union.objects.constants.Constants;
+import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import net.dv8tion.jda.api.entities.Guild;
+
 public class VerifySettingsManager extends LiteDBBase {
+
+	// Cache
+	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
+	private final VerifySettings blankSettings = new VerifySettings();
 
 	public VerifySettingsManager(ConnectionUtil cu) {
 		super(cu, "verify");
 	}
 
-	public void remove(String guildId) {
-		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
+	public VerifySettings getSettings(Guild guild) {
+		return getSettings(guild.getIdLong());
 	}
 
-	public void setVerifyRole(String guildId, String roleId) {
-		execute("INSERT INTO %s(guildId, roleId) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET roleId=%s".formatted(table, guildId, roleId, roleId));
+	public VerifySettings getSettings(long guildId) {
+		if (cache.contains(guildId))
+			return cache.get(guildId);
+		VerifySettings settings = applyNonNull(getData(guildId), data -> new VerifySettings(data));
+		if (settings == null)
+			return blankSettings;
+		cache.put(guildId, settings);
+		return settings;
 	}
 
-	public String getVerifyRole(String guildId) {
-		return selectOne("SELECT roleId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "roleId", String.class);
+	private Map<String, Object> getData(long guildId) {
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), List.of("roleId", "mainText", "checkEnabled"));
 	}
 
-	public void setMainText(String guildId, String text) {
+	public void remove(long guildId) {
+		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
+	}
+
+	public void setVerifyRole(long guildId, long roleId) {
+		invalidateCache(0);
+		execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET roleId=%<d".formatted(table, guildId, roleId));
+	}
+
+	public void setMainText(long guildId, String text) {
+		invalidateCache(0);
 		final String textParsed = quote(text.replace("\\n", "<br>"));
-		execute("INSERT INTO %s(guildId, mainText) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET mainText=%s".formatted(table, guildId, textParsed, textParsed));
-	}
-
-	public String getMainText(String guildId) {
-		String data = selectOne("SELECT mainText FROM %s WHERE (guildId=%s)".formatted(table, guildId), "mainText", String.class);
-		if (data == null) return "No text";
-		return data.replaceAll("<br>", "\n");
+		execute("INSERT INTO %s(guildId, mainText) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET mainText=%<s".formatted(table, guildId, textParsed));
 	}
 
 	// manage check for verification role
-	public void enableCheck(String guildId) {
-		execute("INSERT INTO %s(guildId, enabledCheck) VALUES (%s, 1) ON CONFLICT(guildId) DO UPDATE SET enabledCheck=1".formatted(table, guildId));
+	public void setCheckState(long guildId, boolean enabled) {
+		invalidateCache(0);
+		execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabledCheck=%<d".formatted(table, guildId, enabled?1:0));
 	}
 
-	public void disableCheck(String guildId) {
-		execute("INSERT INTO %s(guildId, enabledCheck) VALUES (%s, 0) ON CONFLICT(guildId) DO UPDATE SET enabledCheck=0".formatted(table, guildId));
+	private void invalidateCache(long guildId) {
+		cache.pull(guildId);
 	}
 
-	public Boolean isCheckEnabled(String guildId) {
-		Integer data = selectOne("SELECT enabledCheck FROM %s WHERE (guildId=%s)".formatted(table, guildId), "enabledCheck", Integer.class);
-		return data==null ? false : data==1;
+	public class VerifySettings {
+		private final Long roleId;
+		private final String mainText;
+		private final boolean checkEnabled;
+
+		public VerifySettings() {
+			this.roleId = null;
+			this.mainText = null;
+			this.checkEnabled = false;
+		}
+
+		public VerifySettings(Map<String, Object> data) {
+			this.roleId = (Long) data.getOrDefault("roleId", null);
+			this.mainText = (String) data.getOrDefault("mainText", null);
+			this.checkEnabled = ((int) data.getOrDefault("checkEnabled", 0)) == 1;
+		}
+
+		public Long getRoleId() {
+			return roleId;
+		}
+
+		public String getMainText() {
+			return mainText;
+		}
+
+		public boolean isCheckEnabled() {
+			return checkEnabled;
+		}
 	}
 
 }

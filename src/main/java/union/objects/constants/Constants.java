@@ -24,4 +24,6 @@ public final class Constants {
 
 	public static final String DEVELOPER_TAG = "@fileeditor";
 	public static final String DEVELOPER_ID = "369062521719488524";
+
+	public static final int DEFAULT_CACHE_SIZE = 100; 
 }

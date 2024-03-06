@@ -37,7 +37,10 @@ import union.utils.database.managers.VerifyCacheManager;
 import union.utils.database.managers.VerifySettingsManager;
 import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
+import union.utils.database.managers.VerifySettingsManager.VerifySettings;
 import union.utils.file.FileManager;
+
+import net.dv8tion.jda.api.entities.Guild;
 
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +127,10 @@ public class DBUtil {
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
+	}
+
+	public VerifySettings getVerifySettings(Guild guild) {
+		return verifySettings.getSettings(guild);
 	}
 
 

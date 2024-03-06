@@ -65,7 +65,7 @@ public class VoiceCmd extends CommandBase {
 			}
 
 			// Verify role
-			String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
+			Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
@@ -107,7 +107,7 @@ public class VoiceCmd extends CommandBase {
 			}
 
 			// Verify role
-			String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
+			Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
@@ -149,7 +149,7 @@ public class VoiceCmd extends CommandBase {
 			}
 
 			// Verify role
-			String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
+			Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {
@@ -191,7 +191,7 @@ public class VoiceCmd extends CommandBase {
 			}
 
 			// Verify role
-			String verifyRoleId = bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId());
+			Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 			try {

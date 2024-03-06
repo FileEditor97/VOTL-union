@@ -222,7 +222,7 @@ public class ScheduledCheck {
 					if (cacheDiscordId == null) return;
 					// if forced - skip
 					if (db.verifyCache.isForced(cacheDiscordId)) {
-						db.verifyCache.removeSteam64(cacheDiscordId);
+						db.verifyCache.forceRemoveSteam64(cacheDiscordId);
 						return;
 					};
 
@@ -246,7 +246,7 @@ public class ScheduledCheck {
 			if (removeRoles.isEmpty()) return;
 
 			bot.JDA.getGuilds().forEach(guild -> {
-				String roleId = db.verifySettings.getVerifyRole(guild.getId());
+				Long roleId = db.getVerifySettings(guild).getRoleId();
 				if (roleId == null) return;
 				Role role = guild.getRoleById(roleId);
 				if (role == null) return;

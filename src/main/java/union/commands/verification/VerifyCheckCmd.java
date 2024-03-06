@@ -39,12 +39,12 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			if (bot.getDBUtil().verifySettings.getVerifyRole(event.getGuild().getId()) == null) {
+			if (bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId() == null) {
 				createError(event, path+".no_role");
 				return;
 			}
 
-			bot.getDBUtil().verifySettings.enableCheck(event.getGuild().getId());
+			bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), true);
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build()
@@ -64,7 +64,7 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			bot.getDBUtil().verifySettings.disableCheck(event.getGuild().getId());
+			bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), false);
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build()

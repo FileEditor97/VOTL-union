@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
+import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 
 public class LiteDBBase {
@@ -148,6 +150,10 @@ public class LiteDBBase {
 		if (str == "NULL") return str;
 
 		return "'" + String.valueOf(value).replaceAll("'", "''") + "'"; // smt's -> 'smt''s'
+	}
+
+	protected <T, V> T applyNonNull(V obj, @NotNull Function<V, T> function) {
+		return (obj != null) ? function.apply(obj) : null;
 	}
 
 }

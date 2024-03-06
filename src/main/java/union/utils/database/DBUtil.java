@@ -20,6 +20,7 @@ import union.utils.database.managers.AutopunishManager;
 import union.utils.database.managers.BlacklistManager;
 import union.utils.database.managers.CaseManager;
 import union.utils.database.managers.GroupManager;
+import union.utils.database.managers.GuildLogsManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
 import union.utils.database.managers.ModuleManager;
@@ -55,7 +56,7 @@ public class DBUtil {
 
 	public final GuildSettingsManager guild;
 	public final WebhookManager webhook;
-	public final ModuleManager module;
+	@Deprecated public final ModuleManager module;
 	public final AccessManager access;
 	public final GroupManager group;
 	public final VerifySettingsManager verifySettings;
@@ -74,6 +75,7 @@ public class DBUtil {
 	public final AutopunishManager autopunish;
 	public final BlacklistManager blacklist;
 	public final AlertsManager alerts;
+	public final GuildLogsManager logs;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -122,6 +124,7 @@ public class DBUtil {
 		autopunish = new AutopunishManager(connectionUtil);
 		blacklist = new BlacklistManager(connectionUtil);
 		alerts = new AlertsManager(connectionUtil);
+		logs = new GuildLogsManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);

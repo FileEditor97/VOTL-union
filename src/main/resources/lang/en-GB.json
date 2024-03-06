@@ -109,7 +109,7 @@
 		"role_footer": "*After the issuance of roles - the request will be deleted.*\n*Do not close the ticket, wait for the moderator!*",
 		"autoclose_cancel": "The automated close on this ticket has been cancelled."
 	},
-	"logger": {
+	"logger_embed": {
 		"user": "User",
 		"mod": "Moderator",
 		"target": "Target",
@@ -237,6 +237,41 @@
 			"removed": "Removed from blacklist | %s",
 			"steam": "SteamID",
 			"group": "Group"
+		}
+	},
+	"logger": {
+		"moderation": {
+			"name": "Moderation logs"
+		},
+		"groups": {
+			"name": "Group logs"
+		},
+		"verify": {
+			"name": "Verification logs"
+		},
+		"tickets": {
+			"name": "Ticket logs"
+		},
+		"roles": {
+			"name": "Role logs"
+		},
+		"server": {
+			"name": "Server logs"
+		},
+		"messages": {
+			"name": "Message logs"
+		},
+		"members": {
+			"name": "Member logs"
+		},
+		"voice": {
+			"name": "Voice logs"
+		},
+		"channels": {
+			"name": "Channel logs"
+		},
+		"other": {
+			"name": "Audit logs"
 		}
 	},
 	"bot": {
@@ -487,43 +522,38 @@
 					}
 				}
 			},
-			"log": {
+			"logs": {
 				"help": "Log server events",
-				"setup": {
-					"help": "Setup log channel",
-					"usage": "setup <#Channel>",
+				"enable": {
+					"help": "Enable logging",
+					"usage": "enable <Type> <#Channel>",
+					"type": {
+						"name": "type",
+						"help": "Select event type"
+					},
 					"channel": {
 						"name": "channel",
 						"help": "Select channel where to log actions"
 					},
 					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
-					"as_log": "This channel is selected as a log channel for all actions.",
-					"done": "Successfully set {channel} as log channel!"
+					"as_log": "This channel is selected as a log channel for %s events.",
+					"done": "Successfully set %s for logging %s!"
 				},
-				"manage": {
-					"help": "Manage current logging setting",
-					"usage": "manage",
+				"disable": {
+					"help": "Disable logging",
+					"usage": "disable <Type>",
+					"type": {
+						"name": "type",
+						"help": "Select event type"
+					},
+					"done_all": "Disabled logging for all events!",
+					"done": "Disabled logging for %s events!"
+				},
+				"view": {
+					"help": "View logging settings",
+					"usage": "view",
 					"title": "Currently logging",
-					"none": "*None*\n\n*Use `/log setup` to setup logging*",
-					"button_change": "Change channel",
-					"button_remove": "Remove logging",
-					"menu_type": "Select which log type you wish to change",
-					"menu_channel": "Select new channel",
-					"select_channel": "Select new channel, which will be used for logging {type}",
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
-					"as_log": "This channel is selected as a log channel for performed {type}.",
-					"done": "Successfully set {channel} as log channel!",
-					"removed": "Log channels for all actions were removed."
-				},
-				"types": {
-					"all": "All actions",
-					"none": "*not found*",
-					"moderation": "Moderation actions",
-					"group": "Group actions",
-					"verify": "Verifications",
-					"tickets": "Ticket actions",
-					"roles": "Roles",
-					"server": "Bot's management"
+					"none": "**None**\n\n*Use `/logs enable` to setup logging*"
 				}
 			},
 			"autopunish": {

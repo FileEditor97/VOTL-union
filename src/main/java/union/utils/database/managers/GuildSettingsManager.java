@@ -3,9 +3,6 @@ package union.utils.database.managers;
 import union.utils.database.LiteDBBase;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import union.objects.LogChannels;
@@ -36,22 +33,6 @@ public class GuildSettingsManager extends LiteDBBase {
 		String updateList = LogChannels.getAllNames().stream().map(k -> k+"="+channelId).collect(Collectors.joining(", "));
 		execute("INSERT INTO %s(guildId, %s) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET %s"
 			.formatted(table, String.join(", ", LogChannels.getAllNames()), guildId, String.join(", ", Collections.nCopies(LogChannels.values().length, channelId)), updateList));
-	}
-
-	public void setLogChannel(LogChannels type, String guildId, String channelId) {
-		execute("INSERT INTO %s(guildId, %s) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET %s=%s".formatted(table, type.getName(), guildId, channelId, type.getName(), channelId));
-	}
-
-	public String getLogChannel(LogChannels type, String guildId) {
-		return selectOne("SELECT %s FROM %s WHERE (guildId=%s)".formatted(type.getName(), table, guildId), type.getName(), String.class);
-	}
-
-	public Map<LogChannels, String> getAllLogChannels(String guildId) {
-		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), LogChannels.getAllNames());
-		if (data==null || data.values().stream().allMatch(Objects::isNull)) return null;
-		Map<LogChannels, String> result = new HashMap<>(data.size());
-		data.forEach((log, id) -> result.put(LogChannels.of(log), (String) id));
-		return result;
 	}
 
 	public void setLastWebhookId(String guildId, String webhookId) {

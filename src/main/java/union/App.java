@@ -29,6 +29,7 @@ import union.utils.CheckUtil;
 import union.utils.LogUtil;
 import union.utils.TicketUtil;
 import union.utils.WebhookAppender;
+import union.utils.WebhookLogger;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
 import union.utils.message.EmbedUtil;
@@ -87,6 +88,7 @@ public class App {
 	private final LocaleUtil localeUtil;
 	private final LogUtil logUtil;
 	private final TicketUtil ticketUtil;
+	private final WebhookLogger webhookLogger;
 
 	public App() {
 
@@ -108,6 +110,7 @@ public class App {
 		checkUtil	= new CheckUtil(this);
 		logUtil		= new LogUtil(localeUtil);
 		ticketUtil	= new TicketUtil(this);
+		webhookLogger = new WebhookLogger(dbUtil);
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
@@ -134,7 +137,7 @@ public class App {
 				new SetupCmd(this),
 				new ModuleCmd(this, WAITER),
 				new AccessCmd(this),
-				new LogCmd(this, WAITER),
+				new LogsCmd(this),
 				new AutopunishCmd(this),
 				// owner
 				new ShutdownCmd(this),
@@ -288,6 +291,10 @@ public class App {
 
 	public TicketUtil getTicketUtil() {
 		return ticketUtil;
+	}
+ 
+	public WebhookLogger getGuildLogger() {
+		return webhookLogger;
 	}
 
 	public LogListener getLogListener() {

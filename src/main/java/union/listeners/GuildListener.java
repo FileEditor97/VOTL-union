@@ -12,9 +12,7 @@ import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
@@ -22,7 +20,6 @@ import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateTimeOutEvent;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class GuildListener extends ListenerAdapter {
@@ -53,37 +50,26 @@ public class GuildListener extends ListenerAdapter {
 			String groupName = db.group.getName(groupId);
 			String guildName = event.getGuild().getName();
 			Long masterId = db.group.getOwner(groupId);
-			String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
 
-			String masterChannelId = db.guild.getLogChannel(LogChannels.GROUPS, String.valueOf(masterId));
-			if (masterChannelId != null) {
-				TextChannel channel = event.getJDA().getTextChannelById(masterChannelId);
-				if (channel != null) {
-					try {
-						MessageEmbed masterEmbed = bot.getLogUtil().groupOwnerLeftEmbed(channel.getGuild().getLocale(), masterId, masterIcon, guildName, guildIdLong, groupId, groupName);
-						channel.sendMessageEmbeds(masterEmbed).queue();
-					} catch (InsufficientPermissionException ex) {}
-				}
-			}
+			try {
+				Guild master = event.getJDA().getGuildById(masterId);
+				String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
+				bot.getGuildLogger().sendMessageEmbed(master, LogChannels.GROUPS,
+					() -> bot.getLogUtil().groupOwnerLeftEmbed(master.getLocale(), masterId, masterIcon, guildName, guildIdLong, groupId, groupName)
+				);
+			} catch (Exception ex) {}
 		}
 		for (Integer groupId : db.group.getOwnedGroups(guildIdLong)) {
 			String groupName = db.group.getName(groupId);
+			String ownerIcon = event.getGuild().getIconUrl();
 			for (Long memberId : db.group.getGroupMembers(groupId)) {
-				String channelId = db.guild.getLogChannel(LogChannels.GROUPS, memberId.toString());
-				if (channelId == null) {
-					continue;
-				}
-				TextChannel channel = event.getJDA().getTextChannelById(channelId);
-				if (channel == null) {
-					continue;
-				}
-
 				try {
-					MessageEmbed embed = bot.getLogUtil().groupMemberDeletedEmbed(channel.getGuild().getLocale(), guildIdLong, event.getGuild().getIconUrl(), groupId, groupName);
-					channel.sendMessageEmbeds(embed).queue();
-				} catch (InsufficientPermissionException ex) {
-					continue;
-				}
+					Guild member = event.getJDA().getGuildById(memberId);
+					
+					bot.getGuildLogger().sendMessageEmbed(member, LogChannels.GROUPS,
+						() -> bot.getLogUtil().groupMemberDeletedEmbed(member.getLocale(), guildIdLong, ownerIcon, groupId, groupName)
+					);
+				} catch (Exception ex) {}
 			}
 			db.group.clearGroup(groupId);
 		}
@@ -102,6 +88,7 @@ public class GuildListener extends ListenerAdapter {
 		db.tempRole.removeAll(guildId);
 		db.autopunish.removeGuild(guildIdLong);
 		db.strike.removeGuild(guildIdLong);
+		db.logs.removeGuild(guildIdLong);
 		
 		db.guild.remove(guildId);
 

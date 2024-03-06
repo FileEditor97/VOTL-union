@@ -29,7 +29,7 @@ public class LogUtil {
 
 	private final LocaleUtil lu;
 
-	private final String pathHeader = "logger.";
+	private final String pathHeader = "logger_embed.";
 
 	private final int GREEN_DARK = 0x277236;
 	private final int GREEN_LIGHT = 0x67CB7B;

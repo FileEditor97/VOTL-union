@@ -26,7 +26,7 @@ dependencies {
 		exclude module: 'opus-java'
 	}
 	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-	implementation 'ch.qos.logback:logback-classic:1.5.0'			// Logging (required by JDA)
+	implementation 'ch.qos.logback:logback-classic:1.5.3'			// Logging (required by JDA)
 
 	// Tools
 	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
@@ -40,11 +40,11 @@ dependencies {
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
-	implementation 'org.apache.groovy:groovy:4.0.18'				// Groovy - code evaluation
+	implementation 'org.apache.groovy:groovy:4.0.19'				// Groovy - code evaluation
 
 	// Chewtils commands
 	// https://mvnrepository.com/artifact/org.json/json
-	implementation 'org.json:json:20240205'
+	implementation 'org.json:json:20240303'
 }
 
 // Changes builded libraries directory from 'libs' to 'lib'

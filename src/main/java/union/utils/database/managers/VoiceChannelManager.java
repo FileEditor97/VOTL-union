@@ -6,34 +6,34 @@ import union.utils.database.LiteDBBase;
 public class VoiceChannelManager extends LiteDBBase {
 	
 	public VoiceChannelManager(ConnectionUtil cu) {
-		super(cu, "voiceChannel");
+		super(cu, "voiceChannels");
 	}
 
-	public void add(String userId, String channelId) {
-		execute("INSERT INTO %s(userId, channelId) VALUES (%s, %s) ON CONFLICT(channelId) DO UPDATE SET channelId=%s".formatted(table, userId, channelId, channelId));
+	public void add(long userId, String channelId) {
+		execute("INSERT INTO %s(userId, channelId) VALUES (%d, %d) ON CONFLICT(channelId) DO UPDATE SET channelId=%<d".formatted(table, userId, channelId));
 	}
 
-	public void remove(String channelId) {
-		execute("DELETE FROM %s WHERE (channelId=%s)".formatted(table, channelId));
+	public void remove(long channelId) {
+		execute("DELETE FROM %s WHERE (channelId=%d)".formatted(table, channelId));
 	}
 
-	public boolean existsUser(String userId) {
-		return selectOne("SELECT userId FROM %s WHERE (userId=%s)".formatted(table, userId), "userId", String.class) != null;
+	public boolean existsUser(long userId) {
+		return getChannel(userId) != null;
 	}
 
-	public boolean existsChannel(String channelId) {
-		return selectOne("SELECT channelId FROM %s WHERE (channelId=%s)".formatted(table, channelId), "channelId", String.class) != null;
+	public boolean existsChannel(long channelId) {
+		return getUser(channelId) != null;
 	}
 
-	public void setUser(String channelId, String userId) {
-		execute("UPDATE %s SET userId=%s WHERE (channelId=%s)".formatted(table, userId, channelId));
+	public void setUser(long channelId, long userId) {
+		execute("UPDATE %s SET userId=%s WHERE (channelId=%d)".formatted(table, userId, channelId));
 	}
 
-	public String getChannel(String userId) {
-		return selectOne("SELECT channelId FROM %s WHERE (userId=%s)".formatted(table, userId), "channelId", String.class);
+	public Long getChannel(long userId) {
+		return selectOne("SELECT channelId FROM %s WHERE (userId=%d)".formatted(table, userId), "channelId", Long.class);
 	}
 
-	public String getUser(String channelId) {
-		return selectOne("SELECT userId FROM %s WHERE (channelId=%s)".formatted(table, channelId), "userId", String.class);
+	public Long getUser(long channelId) {
+		return selectOne("SELECT userId FROM %s WHERE (channelId=%d)".formatted(table, channelId), "userId", Long.class);
 	}
 }

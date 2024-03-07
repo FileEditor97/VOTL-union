@@ -207,7 +207,7 @@ public class InteractionListener extends ListenerAdapter {
 					sendError(event, "bot.voice.listener.not_in_voice");
 					return;
 				}
-				String channelId = db.voice.getChannel(event.getUser().getId());
+				Long channelId = db.voice.getChannel(event.getUser().getIdLong());
 				if (channelId == null) {
 					sendError(event, "errors.no_channel");
 					return;
@@ -992,7 +992,7 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonVoiceDelete(ButtonInteractionEvent event, VoiceChannel vc) {
-		bot.getDBUtil().voice.remove(vc.getId());
+		bot.getDBUtil().voice.remove(vc.getIdLong());
 		vc.delete().reason("Channel owner request").queue();
 		sendSuccess(event, "bot.voice.listener.panel.delete");
 	}
@@ -1235,7 +1235,7 @@ public class InteractionListener extends ListenerAdapter {
 				sendError(event, "bot.voice.listener.not_in_voice");
 				return;
 			}
-			String channelId = db.voice.getChannel(author.getId());
+			Long channelId = db.voice.getChannel(author.getIdLong());
 			if (channelId == null) {
 				sendError(event, "errors.no_channel");
 				return;

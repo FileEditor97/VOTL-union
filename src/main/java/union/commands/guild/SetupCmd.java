@@ -158,7 +158,7 @@ public class SetupCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Guild guild = event.getGuild();
-			String guildId = guild.getId();
+			long guildId = guild.getIdLong();
 
 			try {
 				guild.createCategory(lu.getLocalized(event.getGuildLocale(), path+".category_name"))
@@ -170,7 +170,7 @@ public class SetupCmd extends CommandBase {
 									.addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VOICE_SPEAK))
 									.queue(
 										channel -> {
-											bot.getDBUtil().guildVoice.setup(guildId, category.getId(), channel.getId());
+											bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong());
 											bot.getLogger().info("Voice setup done in guild `"+guild.getName()+"'("+guildId+")");
 											editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 												.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
@@ -226,9 +226,13 @@ public class SetupCmd extends CommandBase {
 			//ActionRow row3 = ActionRow.of(name, limit);
 			ActionRow row4 = ActionRow.of(permit, reject, perms);
 			ActionRow row5 = ActionRow.of(delete);
-			channel.sendMessageEmbeds(
-				new EmbedBuilder().setColor(Constants.COLOR_DEFAULT).setTitle(lu.getLocalized(event.getGuildLocale(), path+".embed_title"))
-					.setDescription(lu.getLocalized(event.getGuildLocale(), path+".embed_value").replace("{id}", bot.getDBUtil().guildVoice.getChannel(event.getGuild().getId()))).build()
+
+			Long channelId = bot.getDBUtil().guildVoice.getChannelId(event.getGuild().getIdLong());
+			channel.sendMessageEmbeds(new EmbedBuilder()
+				.setColor(Constants.COLOR_DEFAULT)
+				.setTitle(lu.getLocalized(event.getGuildLocale(), path+".embed_title"))
+				.setDescription(lu.getLocalized(event.getGuildLocale(), path+".embed_value").replace("{id}", String.valueOf(channelId)))
+				.build()
 			).addComponents(row1, row2, row4, row5).queue();
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -260,7 +264,7 @@ public class SetupCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().guildVoice.setName(event.getGuild().getId(), filName);
+			bot.getDBUtil().guildVoice.setName(event.getGuild().getIdLong(), filName);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{value}", filName))
@@ -286,7 +290,7 @@ public class SetupCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			Integer filLimit = event.optInteger("limit");
 
-			bot.getDBUtil().guildVoice.setLimit(event.getGuild().getId(), filLimit);
+			bot.getDBUtil().guildVoice.setLimit(event.getGuild().getIdLong(), filLimit);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{value}", filLimit.toString()))

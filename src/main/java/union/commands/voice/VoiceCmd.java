@@ -58,7 +58,7 @@ public class VoiceCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String channelId = bot.getDBUtil().voice.getChannel(event.getMember().getId());
+			Long channelId = bot.getDBUtil().voice.getChannel(event.getMember().getIdLong());
 			if (channelId == null) {
 				createError(event, "errors.no_channel");
 				return;
@@ -100,7 +100,7 @@ public class VoiceCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String channelId = bot.getDBUtil().voice.getChannel(event.getMember().getId());
+			Long channelId = bot.getDBUtil().voice.getChannel(event.getMember().getIdLong());
 			if (channelId == null) {
 				createError(event, "errors.no_channel");
 				return;
@@ -142,7 +142,7 @@ public class VoiceCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String channelId = bot.getDBUtil().voice.getChannel(event.getMember().getId());
+			Long channelId = bot.getDBUtil().voice.getChannel(event.getMember().getIdLong());
 			if (channelId == null) {
 				createError(event, "errors.no_channel");
 				return;
@@ -184,7 +184,7 @@ public class VoiceCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String channelId = bot.getDBUtil().voice.getChannel(event.getMember().getId());
+			Long channelId = bot.getDBUtil().voice.getChannel(event.getMember().getIdLong());
 			if (channelId == null) {
 				createError(event, "errors.no_channel");
 				return;
@@ -250,7 +250,7 @@ public class VoiceCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			String name = Optional.ofNullable(
-				bot.getDBUtil().guildVoice.getName(event.getGuild().getId())	
+				bot.getDBUtil().guildVoice.getName(event.getGuild().getIdLong())	
 			).orElse(
 				lu.getLocalized(event.getGuildLocale(), "bot.voice.listener.default_name")
 			);
@@ -259,8 +259,8 @@ public class VoiceCmd extends CommandBase {
 	}
 
 	private void sendNameReply(SlashCommandEvent event, String name) {
-		String userId = event.getMember().getId();
-		String channelId = bot.getDBUtil().voice.getChannel(userId);
+		long userId = event.getMember().getIdLong();
+		Long channelId = bot.getDBUtil().voice.getChannel(userId);
 		if (channelId == null) {
 			createError(event, "errors.no_channel");
 			return;
@@ -313,14 +313,14 @@ public class VoiceCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			Integer limit = Optional.ofNullable(bot.getDBUtil().guildVoice.getLimit(event.getGuild().getId())).orElse(0);
+			Integer limit = Optional.ofNullable(bot.getDBUtil().guildVoice.getLimit(event.getGuild().getIdLong())).orElse(0);
 			sendLimitReply(event, limit);			
 		}
 	}
 
 	private void sendLimitReply(SlashCommandEvent event, Integer limit) {
-		String userId = event.getMember().getId();
-		String channelId = bot.getDBUtil().voice.getChannel(userId);
+		long userId = event.getMember().getIdLong();
+		Long channelId = bot.getDBUtil().voice.getChannel(userId);
 		if (channelId == null) {
 			createError(event, "errors.no_channel");
 			return;
@@ -355,13 +355,13 @@ public class VoiceCmd extends CommandBase {
 				editError(event, "bot.voice.listener.not_in_voice");
 				return;
 			}
-			if (bot.getDBUtil().voice.existsUser(author.getId())) {
+			if (bot.getDBUtil().voice.existsUser(author.getIdLong())) {
 				editError(event, path+".has_channel");
 				return;
 			}
 
 			VoiceChannel vc = author.getVoiceState().getChannel().asVoiceChannel();
-			String ownerId = bot.getDBUtil().voice.getUser(vc.getId());
+			Long ownerId = bot.getDBUtil().voice.getUser(vc.getIdLong());
 			if (ownerId == null) {
 				editError(event, path+".not_custom");
 				return;
@@ -383,7 +383,7 @@ public class VoiceCmd extends CommandBase {
 						editPermError(event, ex.getPermission(), true);
 						return;
 					}
-					bot.getDBUtil().voice.setUser(vc.getId(), author.getId());
+					bot.getDBUtil().voice.setUser(vc.getIdLong(), author.getIdLong());
 					
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", vc.getAsMention()))
@@ -416,9 +416,8 @@ public class VoiceCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Member author = event.getMember();
-			String authorId = author.getId();
 
-			String channelId = bot.getDBUtil().voice.getChannel(authorId);
+			Long channelId = bot.getDBUtil().voice.getChannel(author.getIdLong());
 			if (channelId == null) {
 				editError(event, "errors.no_channel");
 				return;
@@ -489,9 +488,8 @@ public class VoiceCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Member author = event.getMember();
-			String authorId = author.getId();
 
-			String channelId = bot.getDBUtil().voice.getChannel(authorId);
+			Long channelId = bot.getDBUtil().voice.getChannel(author.getIdLong());
 			if (channelId == null) {
 				editError(event, "errors.no_channel");
 				return;
@@ -561,9 +559,8 @@ public class VoiceCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Member author = event.getMember();
-			String authorId = author.getId();
 
-			String channelId = bot.getDBUtil().voice.getChannel(authorId);
+			Long channelId = bot.getDBUtil().voice.getChannel(author.getIdLong());
 			if (channelId == null) {
 				editError(event, "errors.no_channel");
 				return;
@@ -669,7 +666,7 @@ public class VoiceCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			Member author = event.getMember();
 
-			String channelId = bot.getDBUtil().voice.getChannel(author.getId());
+			Long channelId = bot.getDBUtil().voice.getChannel(author.getIdLong());
 			if (channelId == null) {
 				createError(event, "errors.no_channel");
 				return;

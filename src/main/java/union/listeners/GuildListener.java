@@ -81,7 +81,7 @@ public class GuildListener extends ListenerAdapter {
 		db.verifySettings.remove(guildIdLong);
 		db.ticketSettings.remove(guildId);
 		db.role.removeAll(guildId);
-		db.guildVoice.remove(guildId);
+		db.guildVoice.remove(guildIdLong);
 		db.panels.deleteAll(guildId);
 		db.tags.deleteAll(guildId);
 		db.tempRole.removeAll(guildId);
@@ -151,7 +151,7 @@ public class GuildListener extends ListenerAdapter {
 		if (db.access.getUserLevel(guildId, userId) != null) {
 			db.access.removeUser(guildId, userId);
 		}
-		db.user.remove(userId);
+		db.user.remove(event.getUser().getIdLong());
 		if (db.ticketSettings.getAutocloseLeft(guildId)) {
 			db.ticket.getOpenedChannel(userId, guildId).stream().forEach(channelId -> {
 				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");

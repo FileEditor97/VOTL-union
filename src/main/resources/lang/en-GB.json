@@ -1353,7 +1353,7 @@
 				},
 				"embed": {
 					"about_title": "About {name}!",
-					"about_value": "Discord bot for server management with necessary moderation tools. Written in Java using JDA library.\nDeveloper - **{developer_name}** ({developer_id}).",
+					"about_value": "UnionTeam's Discord bot for moderation, server managment and other. Written in Java using JDA library.\nDeveloper - **{developer_name}** ({developer_id}).",
 					"bot_info": {
 						"title": "Bot info",
 						"bot_version": "Bot version: `VOTL-{bot_version}`",

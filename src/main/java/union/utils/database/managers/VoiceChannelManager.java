@@ -9,7 +9,7 @@ public class VoiceChannelManager extends LiteDBBase {
 		super(cu, "voiceChannels");
 	}
 
-	public void add(long userId, String channelId) {
+	public void add(long userId, long channelId) {
 		execute("INSERT INTO %s(userId, channelId) VALUES (%d, %d) ON CONFLICT(channelId) DO UPDATE SET channelId=%<d".formatted(table, userId, channelId));
 	}
 

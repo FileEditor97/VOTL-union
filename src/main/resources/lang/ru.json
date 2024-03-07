@@ -1353,7 +1353,7 @@
 				},
 				"embed": {
 					"about_title": "О {name}!",
-					"about_value": "Бот Discord для управления серверов с необходимыми инструментами модерации. Написано на Java с использованием библиотеки JDA.\nРазработчик - **{developer_name}** ({developer_id}).",
+					"about_value": "Discord бот проекта UnionTeam's для модерации и управления серверов. Написано на Java с использованием библиотеки JDA.\nРазработчик - **{developer_name}** ({developer_id}).",
 					"bot_info": {
 						"title": "Информация о боте",
 						"bot_version": "Версия: `VOTL-{bot_version}`",

@@ -36,7 +36,7 @@ public class AboutCmd extends CommandBase {
 			.setThumbnail(event.getJDA().getSelfUser().getEffectiveAvatarUrl())
 			.addField(
 				lu.getLocalized(userLocale, "bot.other.about.embed.about_title")
-					.replace("{name}", "union bot"),
+					.replace("{name}", "VOTL (UnionTeam's) bot"),
 				lu.getLocalized(userLocale, "bot.other.about.embed.about_value")
 					.replace("{developer_name}", Constants.DEVELOPER_TAG)
 					.replace("{developer_id}", Constants.DEVELOPER_ID),
@@ -53,7 +53,7 @@ public class AboutCmd extends CommandBase {
 					"\n",
 					lu.getLocalized(userLocale, "bot.other.about.embed.bot_info.bot_version").replace("{bot_version}", bot.VERSION),
 					lu.getLocalized(userLocale, "bot.other.about.embed.bot_info.library")
-						.replace("{jda_version}", JDAInfo.VERSION_MAJOR+"."+JDAInfo.VERSION_MINOR+"."+JDAInfo.VERSION_REVISION+"-"+JDAInfo.VERSION_CLASSIFIER)
+						.replace("{jda_version}", JDAInfo.VERSION)
 						.replace("{jda_github}", JDAInfo.GITHUB)
 						.replace("{chewtils_github}", Links.CHEWTILS_GITHUB)
 				),

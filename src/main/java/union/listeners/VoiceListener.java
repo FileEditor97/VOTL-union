@@ -30,9 +30,9 @@ public class VoiceListener extends ListenerAdapter {
 	}
 
 	public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
-		Long masterVoiceID = dbUtil.guildVoice.getChannelId(event.getGuild().getIdLong());
+		Long masterVoiceId = dbUtil.guildVoice.getChannelId(event.getGuild().getIdLong());
 		AudioChannelUnion channelJoined = event.getChannelJoined();
-		if (channelJoined != null && channelJoined.getIdLong() == masterVoiceID) {
+		if (channelJoined != null && masterVoiceId != null && channelJoined.getIdLong() == masterVoiceId) {
 			handleVoiceCreate(event.getGuild(), event.getMember());
 		}
 
@@ -73,7 +73,7 @@ public class VoiceListener extends ListenerAdapter {
 			.addPermissionOverride(member, EnumSet.of(Permission.MANAGE_CHANNEL), null)
 			.queue(
 				channel -> {
-					dbUtil.voice.add(userId, channel.getId());
+					dbUtil.voice.add(userId, channel.getIdLong());
 					guild.moveVoiceMember(member, channel).queueAfter(500, TimeUnit.MICROSECONDS);
 				}
 			);

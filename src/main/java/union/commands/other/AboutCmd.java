@@ -9,8 +9,8 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDAInfo;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -31,19 +31,12 @@ public class AboutCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		DiscordLocale userLocale = event.getUserLocale();
-		EmbedBuilder builder = null;
-
-		if (event.isFromGuild()) {
-			builder = bot.getEmbedUtil().getEmbed(event);
-		} else {
-			builder = bot.getEmbedUtil().getEmbed();
-		}
-
-		builder.setAuthor(event.getJDA().getSelfUser().getName(), event.getJDA().getSelfUser().getEffectiveAvatarUrl())
+		MessageEmbed embed = bot.getEmbedUtil().getEmbed()
+			.setAuthor(event.getJDA().getSelfUser().getName(), event.getJDA().getSelfUser().getEffectiveAvatarUrl())
 			.setThumbnail(event.getJDA().getSelfUser().getEffectiveAvatarUrl())
 			.addField(
 				lu.getLocalized(userLocale, "bot.other.about.embed.about_title")
-					.replace("{name}", "union bot"),
+					.replace("{name}", "VOTL (UnionTeam's) bot"),
 				lu.getLocalized(userLocale, "bot.other.about.embed.about_value")
 					.replace("{developer_name}", Constants.DEVELOPER_TAG)
 					.replace("{developer_id}", Constants.DEVELOPER_ID),
@@ -60,7 +53,7 @@ public class AboutCmd extends CommandBase {
 					"\n",
 					lu.getLocalized(userLocale, "bot.other.about.embed.bot_info.bot_version").replace("{bot_version}", bot.VERSION),
 					lu.getLocalized(userLocale, "bot.other.about.embed.bot_info.library")
-						.replace("{jda_version}", JDAInfo.VERSION_MAJOR+"."+JDAInfo.VERSION_MINOR+"."+JDAInfo.VERSION_REVISION+"-"+JDAInfo.VERSION_CLASSIFIER)
+						.replace("{jda_version}", JDAInfo.VERSION)
 						.replace("{jda_github}", JDAInfo.GITHUB)
 						.replace("{chewtils_github}", Links.CHEWTILS_GITHUB)
 				),
@@ -94,9 +87,10 @@ public class AboutCmd extends CommandBase {
 				lu.getLocalized(userLocale, "bot.other.about.embed.links.translate"),
 				"[Crowdin.com](%s)".formatted(Links.CROWDIN),
 				false
-			);
+			)
+			.build();
 		
-		createReplyEmbed(event, event.isFromGuild() ? !event.optBoolean("show", false) : false, builder.build());
+		createReplyEmbed(event, event.isFromGuild() ? !event.optBoolean("show", false) : false, embed);
 	}
 
 }

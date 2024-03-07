@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import union.App;
 import union.objects.annotation.NotNull;
+import union.utils.database.DBUtil;
 import union.utils.message.LocaleUtil;
 
 import net.dv8tion.jda.api.Permission;
@@ -20,49 +21,49 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class VoiceListener extends ListenerAdapter {
 	
-	private final App bot;
+	private final DBUtil dbUtil;
 	private final LocaleUtil lu;
 
 	public VoiceListener(App bot) {
-		this.bot = bot;
+		this.dbUtil = bot.getDBUtil();
 		this.lu = bot.getLocaleUtil();
 	}
 
 	public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
-		String masterVoiceID = bot.getDBUtil().guildVoice.getChannel(event.getGuild().getId());
+		Long masterVoiceId = dbUtil.guildVoice.getChannelId(event.getGuild().getIdLong());
 		AudioChannelUnion channelJoined = event.getChannelJoined();
-		if (channelJoined != null && channelJoined.getId().equals(masterVoiceID)) {
+		if (channelJoined != null && masterVoiceId != null && channelJoined.getIdLong() == masterVoiceId) {
 			handleVoiceCreate(event.getGuild(), event.getMember());
 		}
 
 		AudioChannelUnion channelLeft = event.getChannelLeft();
-		if (channelLeft != null && bot.getDBUtil().voice.existsChannel(channelLeft.getId()) && channelLeft.getMembers().isEmpty()) {
+		if (channelLeft != null && dbUtil.voice.existsChannel(channelLeft.getIdLong()) && channelLeft.getMembers().isEmpty()) {
 			channelLeft.delete().reason("Custom channel, empty").queueAfter(500, TimeUnit.MILLISECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL));
-			bot.getDBUtil().voice.remove(channelLeft.getId());
+			dbUtil.voice.remove(channelLeft.getIdLong());
 		}
 	}
 
 	private void handleVoiceCreate(Guild guild, Member member) {
-		String guildId = guild.getId();
-		String userId = member.getId();
+		long guildId = guild.getIdLong();
+		long userId = member.getIdLong();
 		DiscordLocale guildLocale = guild.getLocale();
 
-		if (bot.getDBUtil().voice.existsUser(userId)) {
+		if (dbUtil.voice.existsUser(userId)) {
 			member.getUser().openPrivateChannel()
 				.queue(channel -> channel.sendMessage(lu.getLocalized(guildLocale, "bot.voice.listener.cooldown")).queue());
 			return;
 		}
-		String categoryId = bot.getDBUtil().guildVoice.getCategory(guildId);
+		Long categoryId = dbUtil.guildVoice.getCategoryId(guildId);
 		if (categoryId == null) return;
 
-		String channelName = Optional.ofNullable(bot.getDBUtil().user.getName(userId))
-			.or(() -> Optional.ofNullable(bot.getDBUtil().guildVoice.getName(guildId)))
+		String channelName = Optional.ofNullable(dbUtil.user.getName(userId))
+			.or(() -> Optional.ofNullable(dbUtil.guildVoice.getName(guildId)))
 			.orElse(lu.getLocalized(guildLocale, "bot.voice.listener.default_name"))
 			.replace("{user}", member.getEffectiveName());
 		channelName = channelName.substring(0, Math.min(100, channelName.length()));
 
-		Integer channelLimit = Optional.ofNullable(bot.getDBUtil().user.getLimit(userId))
-			.or(() -> Optional.ofNullable(bot.getDBUtil().guildVoice.getLimit(guildId)))
+		Integer channelLimit = Optional.ofNullable(dbUtil.user.getLimit(userId))
+			.or(() -> Optional.ofNullable(dbUtil.guildVoice.getLimit(guildId)))
 			.orElse(0);
 		
 		guild.createVoiceChannel(channelName, guild.getCategoryById(categoryId))
@@ -72,7 +73,7 @@ public class VoiceListener extends ListenerAdapter {
 			.addPermissionOverride(member, EnumSet.of(Permission.MANAGE_CHANNEL), null)
 			.queue(
 				channel -> {
-					bot.getDBUtil().voice.add(userId, channel.getId());
+					dbUtil.voice.add(userId, channel.getIdLong());
 					guild.moveVoiceMember(member, channel).queueAfter(500, TimeUnit.MICROSECONDS);
 				}
 			);

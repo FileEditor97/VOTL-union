@@ -60,7 +60,7 @@ public class CheckRankCmd extends CommandBase {
 			return;
 		}
 
-		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".started"));
+		EmbedBuilder builder = bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".started"));
 		event.replyEmbeds(builder.build()).queue();
 
 		// Retrieve members with this role

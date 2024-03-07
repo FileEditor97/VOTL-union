@@ -9,15 +9,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
+import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 
 public class LiteDBBase {
 
 	private final ConnectionUtil util;
+	protected final String table;
 
-	public LiteDBBase(ConnectionUtil connectionUtil) {
+	public LiteDBBase(ConnectionUtil connectionUtil, String table) {
 		this.util = connectionUtil;
+		this.table = table;
 	}
 
 	// Execute statement
@@ -73,7 +78,7 @@ public class LiteDBBase {
 	}
 
 	@Nullable
-	protected Map<String, Object> selectOne(final String sql, final List<String> selectKeys) {
+	protected Map<String, Object> selectOne(final String sql, final Set<String> selectKeys) {
 		Map<String, Object> result = new HashMap<>();
 
 		util.logger.debug(sql);
@@ -91,7 +96,7 @@ public class LiteDBBase {
 		return result.isEmpty() ? null : result;
 	}
 
-	protected List<Map<String, Object>> select(final String sql, final List<String> selectKeys) {
+	protected List<Map<String, Object>> select(final String sql, final Set<String> selectKeys) {
 		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
 		util.logger.debug(sql);
@@ -146,6 +151,10 @@ public class LiteDBBase {
 		if (str == "NULL") return str;
 
 		return "'" + String.valueOf(value).replaceAll("'", "''") + "'"; // smt's -> 'smt''s'
+	}
+
+	protected <T, V> T applyNonNull(V obj, @NotNull Function<V, T> function) {
+		return (obj != null) ? function.apply(obj) : null;
 	}
 
 }

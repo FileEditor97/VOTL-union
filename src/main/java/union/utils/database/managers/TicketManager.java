@@ -9,11 +9,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TicketManager extends LiteDBBase {
-	
-	private final String table = "ticket";
 
 	public TicketManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "ticket");
 	}
 
 	/* tags:

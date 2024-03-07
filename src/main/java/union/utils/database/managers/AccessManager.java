@@ -12,7 +12,7 @@ public class AccessManager extends LiteDBBase {
 	private final String table_user = "userAccess";
 	
 	public AccessManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, null);
 	}
 
 	public void addRole(String guildId, String roleId, CmdAccessLevel level) {

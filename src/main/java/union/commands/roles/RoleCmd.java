@@ -76,7 +76,7 @@ public class RoleCmd extends CommandBase {
 				// Log
 				bot.getLogListener().role.onRoleAdded(guild, event.getUser(), member.getUser(), role);
 				// Send reply
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
 					.setColor(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getName()).replace("{user}", member.getEffectiveName()))
 					.build());
@@ -124,8 +124,7 @@ public class RoleCmd extends CommandBase {
 				// Log
 				bot.getLogListener().role.onRoleRemoved(guild, event.getUser(), member.getUser(), role);
 				// Send reply
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getName()).replace("{user}", member.getEffectiveName()))
 					.build());
 			}, failure -> {
@@ -164,7 +163,7 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".started"));
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".started"));
 			event.replyEmbeds(builder.build()).queue();
 
 			event.getGuild().findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {

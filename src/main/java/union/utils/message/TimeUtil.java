@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import union.App;
 import union.objects.annotation.Nullable;
 import union.utils.exception.FormatterException;
 
@@ -16,14 +15,8 @@ import net.dv8tion.jda.api.utils.TimeFormat;
 
 public class TimeUtil {
 
-	private final Pattern timePatternFull = Pattern.compile("^(([0-9]+)([smhdw]{1}))+$", Pattern.CASE_INSENSITIVE);
-	private final Pattern timePattern = Pattern.compile("([0-9]+)([smhdw]{1})", Pattern.CASE_INSENSITIVE);
-
-	private final LocaleUtil lu;
-	
-	public TimeUtil(App bot) {
-		this.lu = bot.getLocaleUtil();
-	}
+	private static final Pattern timePatternFull = Pattern.compile("^(([0-9]+)([smhdw]{1}))+$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern timePattern = Pattern.compile("([0-9]+)([smhdw]{1})", Pattern.CASE_INSENSITIVE);
 
 	private enum TimeFormats{
 		SECONDS('s', 1),
@@ -67,7 +60,7 @@ public class TimeUtil {
 	 * but they are quite inconvinient, as we want to
 	 * use both duration(h m s) and period(w d).
 	 */
-	public Duration stringToDuration(String text, boolean allowSeconds) throws FormatterException {
+	public static Duration stringToDuration(String text, boolean allowSeconds) throws FormatterException {
 		if (text == null || text.isEmpty()) {
 			return Duration.ZERO;
 		}
@@ -100,7 +93,7 @@ public class TimeUtil {
 		return Duration.ofSeconds(time);
 	}
 
-	public String durationToString(Duration duration) {
+	public static String durationToString(Duration duration) {
 		if (duration.isZero()) {
 			return "0 seconds";
 		}
@@ -124,7 +117,7 @@ public class TimeUtil {
 		return buffer.toString();
 	}
 
-	public String durationToLocalizedString(DiscordLocale locale, Duration duration) {
+	public static String durationToLocalizedString(LocaleUtil lu, DiscordLocale locale, Duration duration) {
 		if (duration.isZero()) {
 			return "0 %s".formatted(lu.getLocalized(locale, "misc.time.seconds"));
 		}
@@ -148,7 +141,7 @@ public class TimeUtil {
 		return buffer.toString();
 	}
 
-	public String formatTime(TemporalAccessor time, Boolean full) {
+	public static String formatTime(TemporalAccessor time, Boolean full) {
 		if (time != null) {
 			if (full) {
 				return String.format(

@@ -20,9 +20,9 @@ import union.utils.database.managers.AutopunishManager;
 import union.utils.database.managers.BlacklistManager;
 import union.utils.database.managers.CaseManager;
 import union.utils.database.managers.GroupManager;
+import union.utils.database.managers.GuildLogsManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
-import union.utils.database.managers.ModuleManager;
 import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.StrikeManager;
 import union.utils.database.managers.TempRoleManager;
@@ -34,10 +34,14 @@ import union.utils.database.managers.UnionVerifyManager;
 import union.utils.database.managers.UserSettingsManager;
 import union.utils.database.managers.TicketSettingsManager;
 import union.utils.database.managers.VerifyCacheManager;
-import union.utils.database.managers.VerifyManager;
+import union.utils.database.managers.VerifySettingsManager;
 import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
+import union.utils.database.managers.GuildSettingsManager.GuildSettings;
+import union.utils.database.managers.VerifySettingsManager.VerifySettings;
 import union.utils.file.FileManager;
+
+import net.dv8tion.jda.api.entities.Guild;
 
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +54,11 @@ public class DBUtil {
 	
 	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
 
-	public final GuildSettingsManager guild;
+	public final GuildSettingsManager guildSettings;
 	public final WebhookManager webhook;
-	public final ModuleManager module;
 	public final AccessManager access;
 	public final GroupManager group;
-	public final VerifyManager verify;
+	public final VerifySettingsManager verifySettings;
 	public final VerifyCacheManager verifyCache;
 	public final TicketSettingsManager ticketSettings;
 	public final TicketPanelManager panels;
@@ -71,12 +74,21 @@ public class DBUtil {
 	public final AutopunishManager autopunish;
 	public final BlacklistManager blacklist;
 	public final AlertsManager alerts;
+	public final GuildLogsManager logs;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
 
 	public DBUtil(FileManager fileManager) {
 		this.fileManager = fileManager;
+
+		// Check if MariaDB driver is initiated
+		try {
+			Class.forName("org.mariadb.jdbc.Driver").getDeclaredConstructor().newInstance();
+		} catch (Exception ex) {
+			logger.error("MariaDB: Exiting!\nMariaDB java client driver not found.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
+			System.exit(666);
+		}
 
 		String urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("database"));
 		
@@ -90,12 +102,11 @@ public class DBUtil {
 		
 		this.connectionUtil = new ConnectionUtil(urlSQLite, logger);
 		
-		guild = new GuildSettingsManager(connectionUtil);
+		guildSettings = new GuildSettingsManager(connectionUtil);
 		webhook = new WebhookManager(connectionUtil);
-		module = new ModuleManager(connectionUtil);
 		access = new AccessManager(connectionUtil);
 		group = new GroupManager(connectionUtil);
-		verify = new VerifyManager(connectionUtil);
+		verifySettings = new VerifySettingsManager(connectionUtil);
 		verifyCache = new VerifyCacheManager(connectionUtil);
 		ticketSettings = new TicketSettingsManager(connectionUtil);
 		panels = new TicketPanelManager(connectionUtil);
@@ -111,11 +122,24 @@ public class DBUtil {
 		autopunish = new AutopunishManager(connectionUtil);
 		blacklist = new BlacklistManager(connectionUtil);
 		alerts = new AlertsManager(connectionUtil);
+		logs = new GuildLogsManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
+	}
+
+	public VerifySettings getVerifySettings(Guild guild) {
+		return verifySettings.getSettings(guild);
+	}
+
+	public GuildSettings getGuildSettings(Guild guild) {
+		return guildSettings.getSettings(guild);
+	}
+
+	public GuildSettings getGuildSettings(long guildId) {
+		return guildSettings.getSettings(guildId);
 	}
 
 

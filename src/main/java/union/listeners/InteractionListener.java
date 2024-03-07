@@ -50,6 +50,7 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ContextException;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -207,7 +208,7 @@ public class InteractionListener extends ListenerAdapter {
 					sendError(event, "bot.voice.listener.not_in_voice");
 					return;
 				}
-				String channelId = db.voice.getChannel(event.getUser().getId());
+				Long channelId = db.voice.getChannel(event.getUser().getIdLong());
 				if (channelId == null) {
 					sendError(event, "errors.no_channel");
 					return;
@@ -270,12 +271,13 @@ public class InteractionListener extends ListenerAdapter {
 	// Check verified
 	private Boolean isVerified(IReplyCallback event) {
 		Guild guild = event.getGuild();
-		if (!bot.getDBUtil().verify.isCheckEnabled(guild.getId())) return true;
+		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return true;
 
 		User user = event.getUser();
 		if (bot.getDBUtil().verifyCache.isVerified(user.getIdLong())) return true;
 
-		Role role = Objects.requireNonNull(guild.getRoleById(bot.getDBUtil().verify.getVerifyRole(guild.getId())));
+		Role role = guild.getRoleById(db.getVerifySettings(guild).getRoleId());
+		if (role == null) return true;
 		
 		// check if still has account connected
 		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(user.getId())).map(Long::valueOf).orElse(null);
@@ -304,7 +306,7 @@ public class InteractionListener extends ListenerAdapter {
 		Member member = event.getMember();
 		Guild guild = event.getGuild();
 
-		String roleId = db.verify.getVerifyRole(guild.getId());
+		Long roleId = db.getVerifySettings(guild).getRoleId();
 		if (roleId == null) {
 			sendError(event, "bot.verification.failed_role", "The verification role is not configured");
 			return;
@@ -352,18 +354,17 @@ public class InteractionListener extends ListenerAdapter {
 					bot.getLogger().warn("Was unable to add verify role to user in "+guild.getName()+"("+guild.getId()+")", failure);
 				});
 		} else {
-			String guildId = guild.getId();
 			Button refresh = Button.of(ButtonStyle.DANGER, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
 			// Check if user pressed refresh button
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
 				event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE).setTitle(lu.getText(event, "bot.verification.listener.wait_title"))
 					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).setEphemeral(true).queue();
-				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS));
+				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ContextException.class)));
 			} else {
 				// Reply with instruction on how to verify, buttons - link and refresh
 				Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
-				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().guild.getColor(guildId))
+				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 					.setTitle(lu.getText(event, "bot.verification.embed.title"))
 					.setDescription(lu.getText(event, "bot.verification.embed.description"))
 					.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
@@ -480,7 +481,7 @@ public class InteractionListener extends ListenerAdapter {
 				actionEvent -> {
 					List<Role> remove = actionEvent.getSelectedOptions().stream().map(option -> guild.getRoleById(option.getValue())).toList();
 					guild.modifyMemberRoles(event.getMember(), null, remove).reason("User request").queue(done -> {
-						msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+						msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed()
 							.setDescription(lu.getText(event, "bot.ticketing.listener.remove_done").replace("{roles}", remove.stream().map(role -> role.getAsMention()).collect(Collectors.joining(", "))))
 							.setColor(Constants.COLOR_SUCCESS)
 							.build()
@@ -508,7 +509,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		if (event.getMember().getRoles().contains(role)) {
 			event.getGuild().removeRoleFromMember(event.getMember(), role).queue(done -> {
-				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, "bot.ticketing.listener.toggle_removed").replace("{role}", role.getAsMention()))
 					.setColor(Constants.COLOR_SUCCESS)
 					.build()
@@ -518,7 +519,7 @@ public class InteractionListener extends ListenerAdapter {
 			});
 		} else {
 			event.getGuild().addRoleToMember(event.getMember(), role).queue(done -> {
-				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, "bot.ticketing.listener.toggle_added").replace("{role}", role.getAsMention()))
 					.setColor(Constants.COLOR_SUCCESS)
 					.build()
@@ -563,7 +564,7 @@ public class InteractionListener extends ListenerAdapter {
 				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
 				String rolesString = String.join(" ", add.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), (otherRole ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other") : ""));
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(str -> str != null).distinct().collect(Collectors.joining("\n- ", "- ", ""));
-				MessageEmbed embed = new EmbedBuilder().setColor(db.guild.getColor(guildId))
+				MessageEmbed embed = new EmbedBuilder().setColor(db.getGuildSettings(guild).getColor())
 					.setDescription(String.format("SteamID\n> %s\n%s\n> %s\n\n%s, %s\n%s\n\n%s",
 						(steam64 == null ? "None" : SteamUtil.convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
 						lu.getLocalized(event.getGuildLocale(), "ticket.role_title"),
@@ -669,7 +670,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 		db.ticket.setRequestStatus(channelId, -1L);
 		MessageEmbed embed = new EmbedBuilder()
-			.setColor(db.guild.getColor(guild.getId()))
+			.setColor(db.getGuildSettings(guild).getColor())
 			.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.autoclose_cancel"))
 			.build();
 		event.getHook().editOriginalEmbeds(embed).setComponents().queue();
@@ -820,7 +821,7 @@ public class InteractionListener extends ListenerAdapter {
 	// Voice
 	private void buttonVoiceLock(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 		try {
 			if (verifyRoleId != null) {
@@ -840,7 +841,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoiceUnlock(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 		try {
 			if (verifyRoleId != null) {
@@ -860,7 +861,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoiceGhost(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 		try {
 			if (verifyRoleId != null) {
@@ -880,7 +881,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoiceUnghost(ButtonInteractionEvent event, VoiceChannel vc) {
 		// Verify role
-		String verifyRoleId = bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId());
+		Long verifyRoleId = bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId();
 
 		try {
 			if (verifyRoleId != null) {
@@ -926,7 +927,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoicePerms(ButtonInteractionEvent event, VoiceChannel vc) {
 		Guild guild = event.getGuild();
-		EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(event)
+		EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 			.setTitle(lu.getText(event, "bot.voice.listener.panel.perms.title").replace("{channel}", vc.getName()))
 			.setDescription(lu.getText(event, "bot.voice.listener.panel.perms.field")+"\n\n");
 		
@@ -992,7 +993,7 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonVoiceDelete(ButtonInteractionEvent event, VoiceChannel vc) {
-		bot.getDBUtil().voice.remove(vc.getId());
+		bot.getDBUtil().voice.remove(vc.getIdLong());
 		vc.delete().reason("Channel owner request").queue();
 		sendSuccess(event, "bot.voice.listener.panel.delete");
 	}
@@ -1141,10 +1142,9 @@ public class InteractionListener extends ListenerAdapter {
 				sendError(event, "errors.interaction.no_values");
 				return;
 			}
-			String guildId = event.getGuild().getId();
 
 			String main = event.getValue("main").getAsString();
-			db.verify.setMainText(guildId, main.isBlank() ? "NULL" : main);
+			db.verifySettings.setMainText(event.getGuild().getIdLong(), main.isBlank() ? "NULL" : main);
 
 			event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))
@@ -1236,7 +1236,7 @@ public class InteractionListener extends ListenerAdapter {
 				sendError(event, "bot.voice.listener.not_in_voice");
 				return;
 			}
-			String channelId = db.voice.getChannel(author.getId());
+			Long channelId = db.voice.getChannel(author.getIdLong());
 			if (channelId == null) {
 				sendError(event, "errors.no_channel");
 				return;

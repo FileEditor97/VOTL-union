@@ -18,6 +18,7 @@ import union.objects.PunishActions;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -94,8 +95,7 @@ public class StrikeCmd extends CommandBase {
 		// log
 		bot.getLogListener().mod.onNewCase(guild, tm.getUser(), caseData);
 		// send reply
-		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event)
-			.setColor(Constants.COLOR_SUCCESS)
+		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".success")
 				.replace("{user_tag}", tm.getUser().getName())
 				.replace("{type}", lu.getText(event, type.getPath()))
@@ -108,7 +108,7 @@ public class StrikeCmd extends CommandBase {
 	private Field executeStrike(DiscordLocale locale, Guild guild, Member target, Integer addAmount, Integer caseId) {
 		// Add strike(-s) to DB
 		bot.getDBUtil().strike.addStrikes(guild.getIdLong(), target.getIdLong(),
-			Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(guild.getId()), ChronoUnit.DAYS),
+			Instant.now().plus(bot.getDBUtil().getGuildSettings(guild).getStrikeExpires(), ChronoUnit.DAYS),
 			addAmount, caseId+"-"+addAmount);
 		// Get strike new strike amount
 		Integer strikes = bot.getDBUtil().strike.getStrikeCount(guild.getIdLong(), target.getIdLong());
@@ -161,12 +161,12 @@ public class StrikeCmd extends CommandBase {
 				Duration durationCopy = duration;
 				// Send PM to user
 				target.getUser().openPrivateChannel().queue(pm -> {
-					String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
+					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
 					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 						.setDescription(durationCopy.isZero() ? 
 							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
 							:
-							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, durationCopy), reason)
+							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, durationCopy), reason)
 						)
 						.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
 						.build();
@@ -185,7 +185,7 @@ public class StrikeCmd extends CommandBase {
 					bot.getLogger().error("Strike punishment execution, Ban member", failure);
 				});
 				buffer.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
-					.append(" "+lu.getLocalized(locale, path+".for")+" "+bot.getTimeUtil().durationToLocalizedString(locale, duration)+"\n");
+					.append(" "+lu.getLocalized(locale, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, locale, duration)+"\n");
 			}
 		}
 		if (actions.contains(PunishActions.MUTE)) {
@@ -216,7 +216,7 @@ public class StrikeCmd extends CommandBase {
 					bot.getLogger().error("Strike punishment execution, Mute member", failure);
 				});
 				buffer.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
-					.append(" "+lu.getLocalized(locale, path+".for")+" "+bot.getTimeUtil().durationToLocalizedString(locale, duration)+"\n");
+					.append(" "+lu.getLocalized(locale, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, locale, duration)+"\n");
 			}
 		}
 		if (actions.contains(PunishActions.REMOVE_ROLE)) {

@@ -5,6 +5,7 @@ import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
+import union.objects.constants.Constants;
 
 public class CloseCmd extends CommandBase {
 
@@ -31,8 +32,10 @@ public class CloseCmd extends CommandBase {
 			return;
 		}
 		String reason = bot.getDBUtil().ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support";
-		event.replyEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown")).build()).queue(hook -> {
-			
+		event.replyEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown"))
+			.build()
+		).queue(hook -> {	
 			bot.getTicketUtil().closeTicket(channelId, event.getUser(), reason, failure -> {
 				hook.editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed")).queue();
 				bot.getLogger().error("Couldn't close ticket with channelID:"+channelId, failure);

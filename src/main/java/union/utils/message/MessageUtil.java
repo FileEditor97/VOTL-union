@@ -9,8 +9,6 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import union.App;
-
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 public class MessageUtil {
@@ -22,9 +20,9 @@ public class MessageUtil {
 
 	private final Pattern rolePattern = Pattern.compile("<@&(\\d+)>", Pattern.CASE_INSENSITIVE);
 
-	public MessageUtil(App bot) {
-		this.random = bot.getRandom();
-		this.lu = bot.getLocaleUtil();
+	public MessageUtil(LocaleUtil localeUtil) {
+		this.random = new Random();
+		this.lu = localeUtil;
 	}
 
 	public String capitalize(final String str) {

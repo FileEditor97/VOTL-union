@@ -18,6 +18,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -71,7 +72,7 @@ public class BanCmd extends CommandBase {
 
 		final Duration duration;
 		try {
-			duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
+			duration = TimeUtil.stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
@@ -91,8 +92,7 @@ public class BanCmd extends CommandBase {
 						guild.getIdLong(), reason, Instant.now(), duration);
 					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 					// create embed
-					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_SUCCESS)
+					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".ban_success")
 							.replace("{user_tag}", tu.getName())
 							.replace("{duration}", lu.getText(event, "logger.permanently"))
@@ -107,8 +107,7 @@ public class BanCmd extends CommandBase {
 					).queue();
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
-					MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_WARNING)
+					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getCaseId()))
 						.build();
 					event.getHook().editOriginalEmbeds(embed).queue();
@@ -123,8 +122,7 @@ public class BanCmd extends CommandBase {
 				// log
 				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 				// reply
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_WARNING)
+				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 					.setDescription(lu.getText(event, path+".already_banned"))
 					.addField(lu.getText(event, "logger.ban.short_title"), lu.getText(event, "logger.ban.short_info")
 						.replace("{username}", ban.getUser().getEffectiveName())
@@ -164,12 +162,12 @@ public class BanCmd extends CommandBase {
 			if (event.optBoolean("dm", true)) {
 				tu.openPrivateChannel().queue(pm -> {
 					DiscordLocale locale = guild.getLocale();
-					String link = bot.getDBUtil().guild.getAppealLink(guild.getId());
+					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
 					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 						.setDescription(duration.isZero() ? 
 							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
 							:
-							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), bot.getTimeUtil().durationToLocalizedString(locale, duration), reason)
+							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, duration), reason)
 						)
 						.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
 						.build();
@@ -188,13 +186,12 @@ public class BanCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), duration);
 				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// create embed
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
+				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".ban_success")
 						.replace("{user_tag}", tu.getName())
 						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger.permanently") : 
 							lu.getText(event, "logger.temporary")
-								.formatted( bot.getTimeUtil().formatTime(Instant.now().plus(duration), true))
+								.formatted(TimeUtil.formatTime(Instant.now().plus(duration), true))
 						)
 						.replace("{reason}", reason))
 					.build();

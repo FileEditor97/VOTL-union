@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -88,30 +87,26 @@ public class UnbanCmd extends CommandBase {
 			CaseData unbanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 			// perform unban
 			guild.unban(tu).reason(reason).queue();
-			// create embed
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".unban_success")
-					.replace("{user_tag}", tu.getName())
-					.replace("{reason}", reason))
-				.build();
 			// log unban
 			bot.getLogListener().mod.onNewCase(guild, tu, unbanData, banData != null ? banData.getReason() : ban.getReason());
 
-			// ask for unban sync
-			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
+			// reply and ask for unban sync
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".unban_success")
+					.replace("{user_tag}", tu.getName())
+					.replace("{reason}", reason))
+				.build()
+			).queue(msg -> {
 				buttonSync(event, msg, tu, reason);
 			});
 		},
 		failure -> {
-			// create embed
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_FAILURE)
+			// reply and ask for unban sync
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_FAILURE)
 				.setDescription(lu.getText(event, path+".no_ban")
 					.replace("{user_tag}", tu.getName()))
-				.build();
-			// ask for unban sync
-			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
+				.build()
+			).queue(msg -> {
 				buttonSync(event, msg, tu, reason);
 			});
 		});

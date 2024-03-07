@@ -39,16 +39,16 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			if (bot.getDBUtil().verify.getVerifyRole(event.getGuild().getId()) == null) {
+			if (bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId() == null) {
 				createError(event, path+".no_role");
 				return;
 			}
 
-			bot.getDBUtil().verify.enableCheck(event.getGuild().getId());
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), true);
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 
 	}
@@ -64,11 +64,11 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			bot.getDBUtil().verify.disableCheck(event.getGuild().getId());
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+			bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), false);
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
-				.setColor(Constants.COLOR_SUCCESS)
-				.build());
+				.build()
+			);
 		}
 		
 	}

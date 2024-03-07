@@ -62,7 +62,7 @@ public class TicketCountCmd extends CommandBase {
 		Integer countOther = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, false);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault());
-		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+		createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle("`"+formatter.format(afterTime)+"` - `"+formatter.format(beforeTime)+"`")
 			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId())
 				.replace("{roles}", countRoles.toString()).replace("{other}", countOther.toString()))

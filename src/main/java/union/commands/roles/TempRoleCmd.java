@@ -16,6 +16,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.exception.FormatterException;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -95,7 +96,7 @@ public class TempRoleCmd extends CommandBase {
 			// Check duration
 			final Duration duration;
 			try {
-				duration = bot.getTimeUtil().stringToDuration(event.optString("duration"), false);
+				duration = TimeUtil.stringToDuration(event.optString("duration"), false);
 			} catch (FormatterException ex) {
 				editError(event, ex.getPath());
 				return;
@@ -117,10 +118,9 @@ public class TempRoleCmd extends CommandBase {
 				// Log
 				bot.getLogListener().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), role, duration);
 				// Send reply
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
-						.replace("{until}", bot.getTimeUtil().formatTime(until, true)))
+						.replace("{until}", TimeUtil.formatTime(until, true)))
 					.build()
 				);
 			}, failure -> {
@@ -171,8 +171,7 @@ public class TempRoleCmd extends CommandBase {
 			// Log
 			bot.getLogListener().role.onTempRoleRemoved(event.getGuild(), event.getUser(), member.getUser(), role);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build()
 			);
@@ -219,7 +218,7 @@ public class TempRoleCmd extends CommandBase {
 			// Check duration
 			final Duration duration;
 			try {
-				duration = bot.getTimeUtil().stringToDuration(event.optString("duration"), false);
+				duration = TimeUtil.stringToDuration(event.optString("duration"), false);
 			} catch (FormatterException ex) {
 				editError(event, ex.getPath());
 				return;
@@ -234,10 +233,9 @@ public class TempRoleCmd extends CommandBase {
 			// Log
 			bot.getLogListener().role.onTempRoleUpdated(event.getGuild(), event.getUser(), member.getUser(), role, until);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
-					.replace("{until}", bot.getTimeUtil().formatTime(until, true)))
+					.replace("{until}", TimeUtil.formatTime(until, true)))
 				.build()
 			);
 		}
@@ -258,12 +256,12 @@ public class TempRoleCmd extends CommandBase {
 			Guild guild = event.getGuild();
 			List<Map<String, Object>> list = bot.getDBUtil().tempRole.getAll(guild.getId());
 			if (list.isEmpty()) {
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event).setDescription(lu.getText(event, path+".empty")).build());
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty")).build());
 				return;
 			}
 
 			event.deferReply(true).queue();
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(event).setTitle(lu.getText(event, path+".title"));
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed().setTitle(lu.getText(event, path+".title"));
 			StringBuffer buffer = new StringBuffer();
 
 			list.forEach(data -> {

@@ -15,6 +15,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -72,9 +73,8 @@ public class HelpCmd extends CommandBase {
 		if (command == null) {
 			editError(event, "bot.help.command_info.no_command", "Requested: "+findCmd);
 		} else {
-			EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT);
-
-			builder.setTitle(lu.getLocalized(userLocale, "bot.help.command_info.title").replace("{command}", command.getName()))
+			MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+				.setTitle(lu.getLocalized(userLocale, "bot.help.command_info.title").replace("{command}", command.getName()))
 				.setDescription(lu.getLocalized(userLocale, "bot.help.command_info.value")
 					.replace("{category}", Optional.ofNullable(command.getCategory())
 						.map(cat -> lu.getLocalized(userLocale, "bot.help.command_menu.categories."+cat.getName())).orElse(Constants.NONE))
@@ -83,9 +83,10 @@ public class HelpCmd extends CommandBase {
 					.replace("{module}", Optional.ofNullable(command.getModule()).map(mod -> lu.getLocalized(userLocale, mod.getPath())).orElse(Constants.NONE)))
 				.addField(lu.getLocalized(userLocale, "bot.help.command_info.help_title"), lu.getLocalized(userLocale, command.getHelpPath()), false)
 				.addField(lu.getLocalized(userLocale, "bot.help.command_info.usage_title"), getUsageText(userLocale, command), false)
-				.setFooter(lu.getLocalized(userLocale, "bot.help.command_info.usage_subvalue"));
+				.setFooter(lu.getLocalized(userLocale, "bot.help.command_info.usage_subvalue"))
+				.build();
 			
-			editHookEmbed(event, builder.build());
+			editHookEmbed(event, embed);
 		}
 		
 	}
@@ -109,17 +110,9 @@ public class HelpCmd extends CommandBase {
 	}
 
 	private void sendHelp(SlashCommandEvent event, String filCat) {
-
 		DiscordLocale userLocale = event.getUserLocale();
-		EmbedBuilder builder = null;
-
-		if (event.isFromGuild()) {
-			builder = bot.getEmbedUtil().getEmbed(event);
-		} else {
-			builder = bot.getEmbedUtil().getEmbed();
-		}
-
-		builder.setTitle(lu.getLocalized(userLocale, "bot.help.command_menu.title"))
+		EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
+			.setTitle(lu.getLocalized(userLocale, "bot.help.command_menu.title"))
 			.setDescription(lu.getLocalized(userLocale, "bot.help.command_menu.description.command_value"));
 
 		Category category = null;

@@ -11,6 +11,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
+import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -60,12 +61,11 @@ public class WebhookCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Guild guild = Objects.requireNonNull(event.getGuild());
-			String guildId = guild.getId();
 			DiscordLocale userLocale = event.getUserLocale();
 
 			Boolean listAll = event.optBoolean("all", false);
 
-			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(event)
+			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getLocalized(userLocale, path+".embed.title"));
 			
 			// Retrieves every webhook in server
@@ -76,9 +76,9 @@ public class WebhookCmd extends CommandBase {
 				// If there is any webhook and only saved in DB are to be shown
 				if (!listAll) {
 					// Keeps only saved in DB type Webhook objects
-					List<String> regWebhookIDs = bot.getDBUtil().webhook.getWebhookIds(guildId);
+					List<Long> regWebhookIDs = bot.getDBUtil().webhook.getWebhookIds(guild.getIdLong());
 						
-					webhooks = webhooks.stream().filter(wh -> regWebhookIDs.contains(wh.getId())).collect(Collectors.toList());
+					webhooks = webhooks.stream().filter(wh -> regWebhookIDs.contains(wh.getIdLong())).collect(Collectors.toList());
 				}
 
 				if (webhooks.isEmpty()) {
@@ -137,11 +137,10 @@ public class WebhookCmd extends CommandBase {
 				// DYK, guildChannel doesn't have WebhookContainer! no shit
 				event.getGuild().getTextChannelById(channel.getId()).createWebhook(setName).reason("By "+event.getUser().getName()).queue(
 					webhook -> {
-						bot.getDBUtil().webhook.add(webhook.getId(), webhook.getGuild().getId(), webhook.getToken());
-						editHookEmbed(event,
-							bot.getEmbedUtil().getEmbed(event).setDescription(
-								lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName())
-							).build()
+						bot.getDBUtil().webhook.add(webhook.getIdLong(), webhook.getGuild().getIdLong(), webhook.getToken());
+						editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName()))
+							.build()
 						);
 					}
 				);
@@ -169,19 +168,18 @@ public class WebhookCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			String webhookId = event.optString("id", "0").trim();
+			Long webhookId = Long.parseLong(event.optString("id"));
 
 			try {
-				event.getJDA().retrieveWebhookById(Objects.requireNonNull(webhookId)).queue(
+				event.getJDA().retrieveWebhookById(webhookId).queue(
 					webhook -> {
 						if (bot.getDBUtil().webhook.exists(webhookId)) {
 							editError(event, path+".error_registered");
 						} else {
-							bot.getDBUtil().webhook.add(webhook.getId(), webhook.getGuild().getId(), webhook.getToken());
-							editHookEmbed(event,
-								bot.getEmbedUtil().getEmbed(event).setDescription(
-									lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName())
-								).build()
+							bot.getDBUtil().webhook.add(webhook.getIdLong(), webhook.getGuild().getIdLong(), webhook.getToken());
+							editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+								.setDescription(lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName()))
+								.build()
 							);
 						}
 					}, failure -> {
@@ -210,9 +208,8 @@ public class WebhookCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			Guild guild = Objects.requireNonNull(event.getGuild());
-
-			String webhookId = event.optString("id", "0").trim();
+			event.deferReply(true).queue();
+			Long webhookId = Long.parseLong(event.optString("id"));
 			Boolean delete = event.optBoolean("delete", false); 
 
 			try {
@@ -221,15 +218,14 @@ public class WebhookCmd extends CommandBase {
 						if (!bot.getDBUtil().webhook.exists(webhookId)) {
 							createError(event, path+".error_not_registered");
 						} else {
-							if (webhook.getGuild().equals(guild)) {
+							if (webhook.getGuild().equals(event.getGuild())) {
 								if (delete) {
 									webhook.delete(webhook.getToken()).reason("By "+event.getUser().getName()).queue();
 								}
 								bot.getDBUtil().webhook.remove(webhookId);
-								createReplyEmbed(event,
-									bot.getEmbedUtil().getEmbed(event).setDescription(
-										lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName())
-									).build()
+								createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+									.setDescription(lu.getText(event, path+".done").replace("{webhook_name}", webhook.getName()))
+									.build()
 								);
 							} else {
 								createError(event, path+".error_not_guild", 
@@ -264,9 +260,8 @@ public class WebhookCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			Guild guild = Objects.requireNonNull(event.getGuild());
-
-			String webhookId = event.optString("id", "0").trim();
+			Guild guild = event.getGuild();
+			Long webhookId = Long.parseLong(event.optString("id"));
 			GuildChannel channel = event.optGuildChannel("channel");
 
 			if (!channel.getType().equals(ChannelType.TEXT)) {
@@ -283,15 +278,15 @@ public class WebhookCmd extends CommandBase {
 			event.getJDA().retrieveWebhookById(webhookId).queue(
 				webhook -> {
 					if (bot.getDBUtil().webhook.exists(webhookId)) {
-						bot.getDBUtil().guild.setLastWebhookId(guild.getId(), webhookId);
+						bot.getDBUtil().guildSettings.setLastWebhookId(guild.getIdLong(), webhookId);
 						webhook.getManager().setChannel(textChannel).reason("By "+event.getUser().getName()).queue(
 							wm -> {
-								editHookEmbed(event,
-									bot.getEmbedUtil().getEmbed(event).setDescription(
-										lu.getText(event, path+".done")
-											.replace("{webhook_name}", webhook.getName())
-											.replace("{channel}", channel.getName())
-									).build()
+								editHookEmbed(event,bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+									.setDescription(lu.getText(event, path+".done")
+										.replace("{webhook_name}", webhook.getName())
+										.replace("{channel}", channel.getName())
+									)
+									.build()
 								);
 							},
 							failure -> {
@@ -323,7 +318,7 @@ public class WebhookCmd extends CommandBase {
 			event.deferReply(true).queue();
 			Guild guild = event.getGuild();
 
-			String webhookId = bot.getDBUtil().guild.getLastWebhookId(guild.getId());
+			Long webhookId = bot.getDBUtil().getGuildSettings(guild).getLastWebhookId();
 			if (webhookId == null) {
 				editError(event, path+".id_null");
 				return;
@@ -340,12 +335,12 @@ public class WebhookCmd extends CommandBase {
 					if (bot.getDBUtil().webhook.exists(webhookId)) {
 						webhook.getManager().setChannel(guild.getTextChannelById(channel.getId())).reason("By "+event.getUser().getName()).queue(
 							wm -> {
-								editHookEmbed(event,
-									bot.getEmbedUtil().getEmbed(event).setDescription(
-										lu.getText(event, path+".done")
-											.replace("{webhook_name}", webhook.getName())
-											.replace("{channel}", channel.getName())
-									).build()
+								editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+									.setDescription(lu.getText(event, path+".done")
+										.replace("{webhook_name}", webhook.getName())
+										.replace("{channel}", channel.getName())
+									)
+									.build()
 								);
 							},
 							failure -> {

@@ -5,10 +5,8 @@ import union.utils.database.LiteDBBase;
 
 public class AlertsManager extends LiteDBBase {
 	
-	private final String table = "alertActions";
-
 	public AlertsManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "alertActions");
 	}
 
 	public void addPoint(long guildId, long userId) {

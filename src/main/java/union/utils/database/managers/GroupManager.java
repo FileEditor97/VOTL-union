@@ -11,7 +11,7 @@ public class GroupManager extends LiteDBBase {
 	private final String members = "groupMembers";
 	
 	public GroupManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, null);
 	}
 
 	// groups table

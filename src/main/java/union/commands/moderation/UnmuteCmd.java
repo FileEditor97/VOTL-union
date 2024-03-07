@@ -18,7 +18,6 @@ import union.utils.database.managers.CaseManager.CaseData;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -66,13 +65,12 @@ public class UnmuteCmd extends CommandBase {
 				// log unban
 				bot.getLogListener().mod.onNewCase(guild, tm.getUser(), unmuteData, muteData != null ? muteData.getReason() : null);
 				// reply
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".success")
 						.replace("{user_tag}", tm.getUser().getName())
 						.replace("{reason}", reason))
-					.build();
-				editHookEmbed(event, embed);
+					.build()
+				);
 			},
 			failed -> {
 				editError(event, path+".abort", failed.getMessage());

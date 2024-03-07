@@ -4,11 +4,9 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TicketSettingsManager extends LiteDBBase {
-	
-	private final String table = "ticketSettings";
 
 	public TicketSettingsManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "ticketSettings");
 	}
 
 	public void remove(String guildId) {

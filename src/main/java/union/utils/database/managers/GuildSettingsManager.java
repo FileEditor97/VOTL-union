@@ -2,91 +2,141 @@ package union.utils.database.managers;
 
 import union.utils.database.LiteDBBase;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import net.dv8tion.jda.api.entities.Guild;
 
-import union.objects.LogChannels;
+import java.util.Map;
+import java.util.Set;
+
+import union.objects.CmdModule;
+import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
+import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 
 public class GuildSettingsManager extends LiteDBBase {
 
-	private final String table = "guild";
+	private final Set<String> columns = Set.of("color", "lastWebhookId", "appealLink", "reportChannelId", "strikeExpires", "modulesOff");
+
+	// Cache
+	private final FixedCache<Long, GuildSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
+	private final GuildSettings blankSettings = new GuildSettings();
 	
 	public GuildSettingsManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "guild");
 	}
 
-	public void remove(String guildId) {
-		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
+	public GuildSettings getSettings(Guild guild) {
+		return getSettings(guild.getIdLong());
+	}
+
+	public GuildSettings getSettings(long guildId) {
+		if (cache.contains(guildId))
+			return cache.get(guildId);
+		GuildSettings settings = applyNonNull(getData(guildId), data -> new GuildSettings(data));
+		if (settings == null)
+			return blankSettings;
+		cache.put(guildId, settings);
+		return settings;
+	}
+
+	private Map<String, Object> getData(long guildId) {
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
+	}
+
+	public void remove(long guildId) {
+		invalidateCache(guildId);
+		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 	
-	public void setColor(String guildId, Integer color) {
-		execute("INSERT INTO %s(guildId, color) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET color=%d".formatted(table, guildId, color, color));
+	public void setColor(long guildId, int color) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, color) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET color=%<d".formatted(table, guildId, color));
 	}
 
-	public Integer getColor(String guildId) {
-		String data = selectOne("SELECT color FROM %s WHERE (guildId=%s)".formatted(table, guildId), "color", String.class);
-		if (data == null) return Constants.COLOR_DEFAULT;
-		return Integer.decode(data);
+	public void setLastWebhookId(long guildId, long webhookId) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, lastWebhookId) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET lastWebhook=%<d".formatted(table, guildId, webhookId));
 	}
 
-	public void setupLogChannels(String guildId, String channelId) {
-		String updateList = LogChannels.getAllNames().stream().map(k -> k+"="+channelId).collect(Collectors.joining(", "));
-		execute("INSERT INTO %s(guildId, %s) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET %s"
-			.formatted(table, String.join(", ", LogChannels.getAllNames()), guildId, String.join(", ", Collections.nCopies(LogChannels.values().length, channelId)), updateList));
+	public void setAppealLink(long guildId, String link) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, appealLink) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET appealLink=%<s".formatted(table, guildId, quote(link)));
 	}
 
-	public void setLogChannel(LogChannels type, String guildId, String channelId) {
-		execute("INSERT INTO %s(guildId, %s) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET %s=%s".formatted(table, type.getName(), guildId, channelId, type.getName(), channelId));
+	public void setReportChannelId(long guildId, @Nullable Long channelId) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, reportChannelId) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET reportChannelId=%<s".formatted(table, guildId, channelId==null ? "NULL" : channelId));
 	}
 
-	public String getLogChannel(LogChannels type, String guildId) {
-		return selectOne("SELECT %s FROM %s WHERE (guildId=%s)".formatted(type.getName(), table, guildId), type.getName(), String.class);
+	public void setStrikeExpiresAfter(long guildId, int expiresAfter) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, strikeExpires) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET strikeExpires=%<d".formatted(table, guildId, expiresAfter));
 	}
 
-	public Map<LogChannels, String> getAllLogChannels(String guildId) {
-		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), LogChannels.getAllNames());
-		if (data==null || data.values().stream().allMatch(Objects::isNull)) return null;
-		Map<LogChannels, String> result = new HashMap<>(data.size());
-		data.forEach((log, id) -> result.put(LogChannels.of(log), (String) id));
-		return result;
+	public void setModuleDisabled(long guildId, int modulesOff) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, modulesOff) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET modulesOff=%<d".formatted(table, guildId, modulesOff));
 	}
 
-	public void setLastWebhookId(String guildId, String webhookId) {
-		execute("INSERT INTO %s(guildId, lastWebhook) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET lastWebhook=%s".formatted(table, guildId, webhookId, webhookId));
+	private void invalidateCache(long guildId) {
+		cache.pull(guildId);
 	}
 
-	public String getLastWebhookId(String guildId) {
-		return selectOne("SELECT lastWebhook FROM %s WHERE (guildId=%s)".formatted(table, guildId), "lastWebhook", String.class);
-	}
+	public class GuildSettings {
+		private final Long lastWebhookId, reportChannelId;
+		private final int color, strikeExpires, modulesOff;
+		private final String appealLink;
 
-	public void setAppealLink(String guildId, String link) {
-		execute("INSERT INTO %s(guildId, appealLink) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET appealLink=%s".formatted(table, guildId, quote(link), quote(link)));
-	}
+		public GuildSettings() {
+			this.color = Constants.COLOR_DEFAULT;
+			this.lastWebhookId = null;
+			this.appealLink = null;
+			this.reportChannelId = null;
+			this.strikeExpires = 7;
+			this.modulesOff = 0;
+		}
 
-	public String getAppealLink(String guildId) {
-		return selectOne("SELECT appealLink FROM %s WHERE (guildId=%s)".formatted(table, guildId), "appealLink", String.class);
-	}
+		public GuildSettings(Map<String, Object> data) {
+			this.color = Integer.decode((String) data.getOrDefault("color", Constants.COLOR_DEFAULT.toString()));
+			this.lastWebhookId = (Long) data.getOrDefault("lastWebhookId", null);
+			this.appealLink = (String) data.getOrDefault("appealLink", null);
+			this.reportChannelId = (Long) data.getOrDefault("reportChannelId", null);
+			this.strikeExpires = (Integer) data.getOrDefault("strikeExpires", 7);
+			this.modulesOff = (Integer) data.getOrDefault("modulesOff", 0);
+		}
 
-	public void setReportChannelId(String guildId, String channelId) {
-		execute("INSERT INTO %s(guildId, reportChannelId) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET reportChannelId=%s".formatted(table, guildId, channelId, channelId));
-	}
+		public int getColor() {
+			return color;
+		}
 
-	public String getReportChannelId(String guildId) {
-		return selectOne("SELECT reportChannelId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "reportChannelId", String.class);
-	}
+		public Long getLastWebhookId() {
+			return lastWebhookId;
+		}
 
-	public void setStrikeExpiresAfter(String guildId, Integer expiresAfter) {
-		execute("INSERT INTO %s(guildId, strikeExpires) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET strikeExpires=%d".formatted(table, guildId, expiresAfter, expiresAfter));
-	}
+		public String getAppealLink() {
+			return appealLink;
+		}
 
-	public int getStrikeExpiresAfter(String guildId) {
-		Integer data = selectOne("SELECT strikeExpires FROM %s WHERE (guildId=%s)".formatted(table, guildId), "strikeExpires", Integer.class);
-		return data == null ? 7 : data;
+		public Long getReportChannelId() {
+			return reportChannelId;
+		}
+
+		public int getStrikeExpires() {
+			return strikeExpires;
+		}
+
+		public int getModulesOff() {
+			return modulesOff;
+		}
+
+		public Set<CmdModule> getDisabledModules() {
+			return CmdModule.decodeModules(modulesOff);
+		}
+
+		public boolean isDisabled(CmdModule module) {
+			return (modulesOff & module.getValue()) == module.getValue();
+		}
+
 	}
 
 }

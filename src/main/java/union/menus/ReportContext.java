@@ -32,7 +32,7 @@ public class ReportContext extends MessageContextMenu {
 		event.deferReply(true).queue();
 	
 		event.getGuild().retrieveMember(event.getTarget().getAuthor()).queue(member -> {
-			String channelId = bot.getDBUtil().guild.getReportChannelId(event.getGuild().getId());
+			Long channelId = bot.getDBUtil().getGuildSettings(event.getGuild()).getReportChannelId();
 			if (channelId == null || member.getUser().isBot() || member.hasPermission(Permission.ADMINISTRATOR)) {
 				event.getHook().editOriginal(Constants.FAILURE).queue();
 				return;

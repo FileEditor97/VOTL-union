@@ -85,7 +85,7 @@ public class CheckUtil {
 	public CheckUtil moduleEnabled(IReplyCallback replyCallback, Guild guild, CmdModule module) throws CheckException {
 		if (module == null)
 			return this;
-		if (bot.getDBUtil().module.isDisabled(guild.getId(), module)) 
+		if (bot.getDBUtil().getGuildSettings(guild).isDisabled(module)) 
 			throw new CheckException(bot.getEmbedUtil().getError(replyCallback, "modules.module_disabled"));
 		return this;
 	}

@@ -21,7 +21,6 @@ import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
@@ -121,23 +120,24 @@ public class DeleteStikeCmd extends CommandBase {
 
 		Integer activeAmount = Integer.valueOf(selected[1]);
 		if (activeAmount == 1) {
+			long guildId = event.getGuild().getIdLong();
 			// As only one strike remains - delete case from strikes data and set case inactive
 			
 			strikesInfo.remove(event.getValues().get(0));
 
 			bot.getDBUtil().cases.setInactive(caseId);
 			if (strikesInfo.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tu.getIdLong());
+				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
-					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+				bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+					Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 					1, String.join(";", strikesInfo)
 				);
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
+			
+			msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done_one").formatted(caseData.getReason(), tu.getName()))
-				.build();
-			msg.editMessageEmbeds(embed).setComponents().queue();
+				.build()
+			).setComponents().queue();
 		} else {
 			// Provide user with options, delete 1,2 or 3(maximum) strikes for user
 			int max = caseData.getCaseType().getType()-20;
@@ -178,34 +178,35 @@ public class DeleteStikeCmd extends CommandBase {
 			return;
 		}
 
+		long guildId = event.getGuild().getIdLong();
 		int removeAmount = Integer.parseInt(value[1]);
 		if (removeAmount == activeAmount) {
+			
 			// Delete all strikes, set case inactive
 			cases.remove(event.getComponentId());
 			bot.getDBUtil().cases.setInactive(caseId);
 			if (cases.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(event.getGuild().getIdLong(), tu.getIdLong());
+				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
 			else
-				bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
-					Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+				bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+					Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 					removeAmount, String.join(";", cases)
 				);
 		} else {
 			// Delete selected amount of strikes (not all)
 			Collections.replaceAll(cases, caseId+"-"+activeAmount, caseId+"-"+(activeAmount-removeAmount));
-			bot.getDBUtil().strike.removeStrike(event.getGuild().getIdLong(), tu.getIdLong(),
-				Instant.now().plus(bot.getDBUtil().guild.getStrikeExpiresAfter(event.getGuild().getId()), ChronoUnit.DAYS),
+			bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+				Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 				removeAmount, String.join(";", cases)
 			);
 		}
 		// Log
 		bot.getLogListener().mod.onStrikeDeleted(event, tu, caseId, removeAmount, activeAmount);
 		// Reply
-		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-			.setColor(Constants.COLOR_SUCCESS)
+		msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(removeAmount, activeAmount, caseData.getReason(), tu.getName()))
-			.build();
-		msg.editMessageEmbeds(embed).setComponents().queue();
+			.build()
+		).setComponents().queue();
 	}
 
 	private List<SelectOption> buildOptions(String[] cases) {

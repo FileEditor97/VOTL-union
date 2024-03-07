@@ -57,8 +57,7 @@ public class AddUserCmd extends CommandBase {
 		if (event.getChannelType().equals(ChannelType.GUILD_PRIVATE_THREAD)) {
 			// Thread
 			event.getChannel().asThreadChannel().addThreadMember(user).queue(done -> {
-				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
+				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()))
 					.build()
 				).setAllowedMentions(Collections.emptyList()).queue();
@@ -70,8 +69,7 @@ public class AddUserCmd extends CommandBase {
 			try {
 				event.getChannel().asTextChannel().getManager()
 					.putMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
-					.queue(done -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(event)
-						.setColor(Constants.COLOR_SUCCESS)
+					.queue(done -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()))
 						.build()
 					).setAllowedMentions(Collections.emptyList()).queue()

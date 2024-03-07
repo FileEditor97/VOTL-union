@@ -3,16 +3,15 @@ package union.utils.database.managers;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TempRoleManager extends LiteDBBase {
-
-	private final String table = "tempRoles";
 	
 	public TempRoleManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "tempRoles");
 	}
 
 	public void add(String guildId, String roleId, String userId, Boolean deleteAfter, Instant expireAfter) {
@@ -43,11 +42,11 @@ public class TempRoleManager extends LiteDBBase {
 	}
 
 	public List<Map<String, Object>> expiredRoles(Instant now) {
-		return select("SELECT roleId, userId FROM %s WHERE (expireAfter<=%d)".formatted(table, now.getEpochSecond()), List.of("roleId", "userId"));
+		return select("SELECT roleId, userId FROM %s WHERE (expireAfter<=%d)".formatted(table, now.getEpochSecond()), Set.of("roleId", "userId"));
 	}
 
 	public List<Map<String, Object>> getAll(String guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), List.of("roleId", "userId", "expireAfter"));
+		return select("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), Set.of("roleId", "userId", "expireAfter"));
 	}
 
 	public Boolean shouldDelete(String roleId) {

@@ -64,7 +64,7 @@ public class RcloseCmd extends CommandBase {
 		Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
 
 		MessageEmbed embed = new EmbedBuilder()
-			.setColor(bot.getDBUtil().guild.getColor(guild.getId()))
+			.setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 			.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_request")
 				.replace("{user}", user.getAsMention())
 				.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))

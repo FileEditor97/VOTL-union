@@ -16,6 +16,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
+import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -62,7 +63,7 @@ public class MuteCmd extends CommandBase {
 
 		final Duration duration;
 		try {
-			duration = bot.getTimeUtil().stringToDuration(event.optString("time"), false);
+			duration = TimeUtil.stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
@@ -78,15 +79,14 @@ public class MuteCmd extends CommandBase {
 
 		if (tm.isTimedOut() && caseData != null) {
 			// Case already exists, change duration
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_WARNING)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 				.setDescription(lu.getText(event, path+".already_muted").replace("{id}", caseData.getCaseId()))
 				.addField(lu.getText(event, "logger.mute.short_title"), lu.getText(event, "logger.mute.short_info")
 					.replace("{username}", tm.getAsMention())
-					.replace("{until}", bot.getTimeUtil().formatTime(tm.getTimeOutEnd(), false))
+					.replace("{until}", TimeUtil.formatTime(tm.getTimeOutEnd(), false))
 					, false)
-				.build();
-			editHookEmbed(event, embed);
+				.build()
+			);
 		} else {
 			// No case -> ovveride current timeout
 			// No case and not timed out -> timeout
@@ -118,20 +118,18 @@ public class MuteCmd extends CommandBase {
 				bot.getDBUtil().cases.add(CaseType.MUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
 					guild.getIdLong(), reason, Instant.now(), duration);
 				CaseData muteDate = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
-				// create embed
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-					.setColor(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".success")
-						.replace("{user_tag}", tm.getUser().getName())
-						.replace("{duration}", lu.getText(event, "logger.temporary")
-							.formatted(bot.getTimeUtil().formatTime(Instant.now().plus(duration), true)))
-						.replace("{reason}", reason))
-					.build();
 				// log mute
 				bot.getLogListener().mod.onNewCase(guild, tm.getUser(), muteDate);
 				
 				// send embed
-				editHookEmbed(event, embed);
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".success")
+						.replace("{user_tag}", tm.getUser().getName())
+						.replace("{duration}", lu.getText(event, "logger.temporary")
+							.formatted(TimeUtil.formatTime(Instant.now().plus(duration), true)))
+						.replace("{reason}", reason))
+					.build()
+				);
 			},
 			failed -> {
 				editError(event, "errors.error", failed.getMessage());

@@ -11,7 +11,6 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -43,11 +42,10 @@ public class ReasonCmd extends CommandBase {
 		String newReason = event.optString("reason");
 		bot.getDBUtil().cases.updateReason(caseId, newReason);
 
-		MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-			.setColor(Constants.COLOR_SUCCESS)
+		editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{reason}", newReason))
-			.build();
-		editHookEmbed(event, embed);
+			.build()
+		);
 
 		bot.getLogListener().mod.onChangeReason(event, caseData, event.getMember(), newReason);
 	}

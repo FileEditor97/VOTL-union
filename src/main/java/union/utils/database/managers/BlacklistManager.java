@@ -2,17 +2,16 @@ package union.utils.database.managers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import union.objects.annotation.Nullable;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class BlacklistManager extends LiteDBBase {
-
-	private final String table = "blacklist";
 	
 	public BlacklistManager(ConnectionUtil cu) {
-		super(cu);
+		super(cu, "blacklist");
 	}
 
 	public void add(long guildId, int groupId, long userId, @Nullable Long steam64, @Nullable String reason, long modId) {
@@ -37,7 +36,7 @@ public class BlacklistManager extends LiteDBBase {
 	}
 
 	public Map<String, Object> getInfo(int groupId, long userId) {
-		return selectOne("SELECT * FROM %s WHERE (groupId=%d AND userId=%d)".formatted(table, groupId, userId), List.of("guildId", "steam64", "reason", "modId"));
+		return selectOne("SELECT * FROM %s WHERE (groupId=%d AND userId=%d)".formatted(table, groupId, userId), Set.of("guildId", "steam64", "reason", "modId"));
 	}
 
 	public Long getUserWithSteam64(int groupId, long steam64) {
@@ -45,7 +44,7 @@ public class BlacklistManager extends LiteDBBase {
 	}
 
 	public List<Map<String, Object>> getByPage(int groupId, int page) {
-		return select("SELECT * FROM %s WHERE (groupId=%d) ORDER BY userId DESC LIMIT 20 OFFSET %d".formatted(table, groupId, (page-1)*20), List.of("guildId", "userId", "steam64", "reason", "modId"));
+		return select("SELECT * FROM %s WHERE (groupId=%d) ORDER BY userId DESC LIMIT 20 OFFSET %d".formatted(table, groupId, (page-1)*20), Set.of("guildId", "userId", "steam64", "reason", "modId"));
 	}
 
 	public Integer countEntries(int groupId) {

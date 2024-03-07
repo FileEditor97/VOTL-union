@@ -101,18 +101,16 @@ public class KickCmd extends CommandBase {
 			bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
 				guild.getIdLong(), reason, Instant.now(), null);
 			CaseData kickData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
-			// create embed
-			MessageEmbed embed = bot.getEmbedUtil().getEmbed(event)
-				.setColor(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".kick_success")
-					.replace("{user_tag}", tm.getUser().getName())
-					.replace("{reason}", reason))
-				.build();
 			// log ban
 			bot.getLogListener().mod.onNewCase(guild, tm.getUser(), kickData);
 
-			// ask for kick sync
-			event.getHook().editOriginalEmbeds(embed).queue(msg -> {
+			// reply and ask for kick sync
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".kick_success")
+					.replace("{user_tag}", tm.getUser().getName())
+					.replace("{reason}", reason))
+				.build()
+			).queue(msg -> {
 				buttonSync(event, msg, tm.getUser(), reason);
 			});
 		},

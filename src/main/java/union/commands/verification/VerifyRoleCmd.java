@@ -32,7 +32,7 @@ public class VerifyRoleCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		Guild guild = event.getGuild();
-		if (bot.getDBUtil().verify.isCheckEnabled(guild.getId())) {
+		if (bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) {
 			createError(event, path+".disable_check");
 			return;
 		}
@@ -42,11 +42,10 @@ public class VerifyRoleCmd extends CommandBase {
 			return;
 		}
 
-		bot.getDBUtil().verify.setVerifyRole(guild.getId(), role.getId());
+		bot.getDBUtil().verifySettings.setVerifyRole(guild.getIdLong(), role.getIdLong());
 
-		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(event)
+		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()))
-			.setColor(Constants.COLOR_SUCCESS)
 			.build());
 	}
 

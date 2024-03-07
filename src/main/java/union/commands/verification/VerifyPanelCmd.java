@@ -80,7 +80,7 @@ public class VerifyPanelCmd extends CommandBase {
 				.build()
 			).addActionRow(next).queue();
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
 				.build()
 			);

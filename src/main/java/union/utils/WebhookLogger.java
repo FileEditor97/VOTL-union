@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import union.objects.LogChannels;
 import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.GuildLogsManager.WebhookData;
 
@@ -34,18 +35,21 @@ public class WebhookLogger {
 				.sendMessageEmbeds(embedSupplier.get()).queue();
 	}
 
-	public void sendMessageEmbed(Guild guild, LogChannels type, @NotNull MessageEmbed embed) {
+	public void sendMessageEmbed(@Nullable Guild guild, LogChannels type, @NotNull MessageEmbed embed) {
+		if (guild == null) return;
 		sendMessageEmbed(guild.getJDA(), guild.getIdLong(), type, embed);
 	}
 
-	public void sendMessageEmbed(Guild guild, LogChannels type, @NotNull Supplier<MessageEmbed> embedSupplier) {
+	public void sendMessageEmbed(@Nullable Guild guild, LogChannels type, @NotNull Supplier<MessageEmbed> embedSupplier) {
+		if (guild == null) return;
 		sendMessageEmbed(guild.getJDA(), guild.getIdLong(), type, embedSupplier);
 	}
 
-	public IncomingWebhookClientImpl getWebhookClient(Guild guild, LogChannels type) {
+	public IncomingWebhookClientImpl getWebhookClient(@Nullable Guild guild, LogChannels type) {
+		if (guild == null) return null;
 		WebhookData data = db.logs.getLogWebhook(type, guild.getIdLong());
-		if (data == null)
-			return null;
+		if (data == null) return null;
+		
 		return new IncomingWebhookClientImpl(data.getWebhookId(), data.getToken(), guild.getJDA());
 	}
 

@@ -221,7 +221,7 @@ public class DBUtil {
 					}
 				}
 			} catch(SQLException ex) {
-				logger.warn("SQLite: Failed to execute update!\nPerform database update manually or delete it.\n{}", ex.getMessage());
+				logger.error("SQLite: Failed to execute update!\nPerform database update manually or delete it.\n{}", ex.getMessage());
 				return;
 			}
 			
@@ -231,7 +231,7 @@ public class DBUtil {
 				st.execute("PRAGMA user_version = "+newVersion.toString());
 				logger.info("SQLite: Database version updated to {}", newVersion);
 			} catch(SQLException ex) {
-				logger.warn("SQLite: Failed to set active database version", ex);
+				logger.error("SQLite: Failed to set active database version", ex);
 			}
 		}
 	}

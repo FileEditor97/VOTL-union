@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import union.objects.CaseType;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
+import static union.utils.CastUtil.castLong;
 
 public class CaseManager extends LiteDBBase {
 
@@ -156,11 +157,11 @@ public class CaseManager extends LiteDBBase {
 		public CaseData(Map<String, Object> map) {
 			this.caseId = (Integer) map.get("caseId");
 			this.type = CaseType.byType((Integer) map.get("type"));
-			this.targetId = (Long) map.get("targetId");
+			this.targetId = castLong(map.get("targetId"));
 			this.targetTag = (String) map.get("targetTag");
 			this.modId = Optional.ofNullable(map.get("modId")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L);
 			this.modTag = (String) map.get("modTag");
-			this.guildId = (Long) map.get("guildId");
+			this.guildId = castLong(map.get("guildId"));
 			this.reason = (String) map.get("reason");
 			this.timeStart = Instant.ofEpochSecond(Optional.ofNullable(map.get("timeStart")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));
 			this.duration = Duration.ofSeconds(Optional.ofNullable(map.get("duration")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));

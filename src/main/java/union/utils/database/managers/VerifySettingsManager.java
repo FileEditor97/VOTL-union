@@ -7,6 +7,7 @@ import union.objects.constants.Constants;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
+import static union.utils.CastUtil.castLong;
 
 import net.dv8tion.jda.api.entities.Guild;
 
@@ -59,7 +60,7 @@ public class VerifySettingsManager extends LiteDBBase {
 	// manage check for verification role
 	public void setCheckState(long guildId, boolean enabled) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabledCheck=%<d".formatted(table, guildId, enabled?1:0));
+		execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET checkEnabled=%<d".formatted(table, guildId, enabled?1:0));
 	}
 
 	private void invalidateCache(long guildId) {
@@ -78,7 +79,7 @@ public class VerifySettingsManager extends LiteDBBase {
 		}
 
 		public VerifySettings(Map<String, Object> data) {
-			this.roleId = (Long) data.getOrDefault("roleId", null);
+			this.roleId = castLong(data.getOrDefault("roleId", null));
 			this.mainText = (String) data.getOrDefault("mainText", null);
 			this.checkEnabled = ((int) data.getOrDefault("checkEnabled", 0)) == 1;
 		}

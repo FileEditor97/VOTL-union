@@ -12,6 +12,7 @@ import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
+import static union.utils.CastUtil.castLong;
 
 public class GuildSettingsManager extends LiteDBBase {
 
@@ -98,9 +99,9 @@ public class GuildSettingsManager extends LiteDBBase {
 
 		public GuildSettings(Map<String, Object> data) {
 			this.color = Integer.decode((String) data.getOrDefault("color", Constants.COLOR_DEFAULT.toString()));
-			this.lastWebhookId = (Long) data.getOrDefault("lastWebhookId", null);
+			this.lastWebhookId = castLong(data.getOrDefault("lastWebhookId", null));
 			this.appealLink = (String) data.getOrDefault("appealLink", null);
-			this.reportChannelId = (Long) data.getOrDefault("reportChannelId", null);
+			this.reportChannelId = castLong(data.getOrDefault("reportChannelId", null));
 			this.strikeExpires = (Integer) data.getOrDefault("strikeExpires", 7);
 			this.modulesOff = (Integer) data.getOrDefault("modulesOff", 0);
 		}

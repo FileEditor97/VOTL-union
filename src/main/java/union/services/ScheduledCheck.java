@@ -209,6 +209,7 @@ public class ScheduledCheck {
 			if (data.isEmpty()) return;
 
 			List<Pair<Long, Long>> removeRoles = new ArrayList<Pair<Long, Long>>(); // DiscordId, Steam64
+
 			for (Map<String, String> account : data) {
 				String steam64Str = account.get("steam_id");
 				db.unionVerify.clearUpdated(steam64Str);
@@ -240,11 +241,11 @@ public class ScheduledCheck {
 					}
 
 					// Add user to cache
-					db.verifyCache.addUser(discordId, steam64);
+					//db.verifyCache.addUser(discordId, steam64);
 				}
 			};
-			if (removeRoles.isEmpty()) return;
 
+			if (removeRoles.isEmpty()) return;
 			bot.JDA.getGuilds().forEach(guild -> {
 				Long roleId = db.getVerifySettings(guild).getRoleId();
 				if (roleId == null) return;

@@ -335,13 +335,19 @@ public class InteractionListener extends ListenerAdapter {
 
 		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
 		if (steam64 != null) {
+			// Check if steam64 is not blacklisted
 			for (int groupId : groupIds) {
-				// Check if steam64 is not blacklisted
 				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 					sendError(event, "bot.verification.blacklisted", "SteamID: "+SteamUtil.convertSteam64toSteamID(steam64));
 					bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild, groupId);
 					return;
 				}
+			}
+			// Check if has joined at least once
+			if (db.unionPlayers.getPlayTime(guild.getId(), SteamUtil.convertSteam64toSteamID(steam64)) == null) {
+				// Deny verification
+				sendError(event, "bot.verification.playtime", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
+				return;
 			}
 			// Give verify role to user
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(

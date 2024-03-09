@@ -162,12 +162,12 @@ public class SqlDBBase {
 	protected PlayerInfo selectPlayerInfo(final String database, final String table, final String steamId) {
 		String sql = "SELECT rank, play_time FROM %s.%s WHERE steamid=%s;".formatted(database, table, quote(steamId));
 
-		PlayerInfo result = new PlayerInfo(steamId);
+		PlayerInfo result = null;
 		cu.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
-			if (rs.next()) result.setInfo(rs.getString("rank"), rs.getLong("play_time"));
+			if (rs.next()) result = new PlayerInfo(steamId, rs.getString("rank"), rs.getLong("play_time"));
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}

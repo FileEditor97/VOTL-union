@@ -1460,6 +1460,7 @@
 			"user_verified": "User is already verified (has role)",
 			"user_not_verified": "User is not verified",
 			"blacklisted": "You are blacklisted from completing verification.",
+			"playtime": "You haven't played on the server. Join the server at least once to complete verification.",
 			"role_removed": "You are unverified in __{server}__ server, as you don't have linked Steam account.\nComplete verification by following instructions in verification channel.",
 			"embed": {
 				"title": "Link your account to complete verification",

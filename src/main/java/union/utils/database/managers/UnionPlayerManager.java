@@ -6,6 +6,7 @@ import java.util.Objects;
 import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
+import static union.utils.CastUtil.castLong;
 
 public class UnionPlayerManager extends SqlDBBase {
 
@@ -25,6 +26,14 @@ public class UnionPlayerManager extends SqlDBBase {
 		return selectOne(database, TABLE_PLAYERS, "rank", "steamid", steamId);
 	}
 
+	public Long getPlayTime(@NotNull String guildId, @NotNull String steamId) {
+		// Find corresponding database
+		String database = databases.get(guildId);
+		if (database == null) return -1L;
+		// Get data from database table
+		return castLong(selectOne(database, TABLE_PLAYERS, "play_time", "steamid", steamId));
+	}
+
 	public PlayerInfo getPlayerInfo(@NotNull String guildId, @NotNull String steamId) {
 		// Find corresponding database
 		String database = databases.get(guildId);
@@ -35,20 +44,17 @@ public class UnionPlayerManager extends SqlDBBase {
 
 	public static class PlayerInfo {
 		private final String steamId;
-		private String rank;
-		private Long playedHours; // in hours
+		private final String rank;
+		private final Long playedHours; // in hours
 
 		public PlayerInfo(String steamId) {
 			this.steamId = steamId;
+			this.rank = null;
+			this.playedHours = null;
 		}
 
 		public PlayerInfo(String steamId, String rank, Long playTimeSeconds) {
 			this.steamId = steamId;
-			this.rank = rank;
-			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
-		}
-
-		public void setInfo(String rank, Long playTimeSeconds) {
 			this.rank = rank;
 			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
 		}

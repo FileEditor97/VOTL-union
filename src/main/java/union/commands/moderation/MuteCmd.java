@@ -81,7 +81,7 @@ public class MuteCmd extends CommandBase {
 			// Case already exists, change duration
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 				.setDescription(lu.getText(event, path+".already_muted").replace("{id}", caseData.getCaseId()))
-				.addField(lu.getText(event, "logger.mute.short_title"), lu.getText(event, "logger.mute.short_info")
+				.addField(lu.getText(event, "logger_embed.mute.short_title"), lu.getText(event, "logger_embed.mute.short_info")
 					.replace("{username}", tm.getAsMention())
 					.replace("{until}", TimeUtil.formatTime(tm.getTimeOutEnd(), false))
 					, false)
@@ -107,7 +107,7 @@ public class MuteCmd extends CommandBase {
 			tm.timeoutFor(duration).reason(reason).queue(done -> {
 				tm.getUser().openPrivateChannel().queue(pm -> {
 					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-						.setDescription(lu.getLocalized(guild.getLocale(), "logger.pm.muted").formatted(guild.getName(), reason))
+						.setDescription(lu.getLocalized(guild.getLocale(), "logger_embed.pm.muted").formatted(guild.getName(), reason))
 						.build();
 					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
@@ -125,7 +125,7 @@ public class MuteCmd extends CommandBase {
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".success")
 						.replace("{user_tag}", tm.getUser().getName())
-						.replace("{duration}", lu.getText(event, "logger.temporary")
+						.replace("{duration}", lu.getText(event, "logger_embed.temporary")
 							.formatted(TimeUtil.formatTime(Instant.now().plus(duration), true)))
 						.replace("{reason}", reason))
 					.build()

@@ -165,11 +165,11 @@ public class BanCmd extends CommandBase {
 					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
 					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 						.setDescription(duration.isZero() ? 
-							lu.getLocalized(locale, "logger.pm.banned").formatted(guild.getName(), reason)
+							lu.getLocalized(locale, "logger_embed.pm.banned").formatted(guild.getName(), reason)
 							:
-							lu.getLocalized(locale, "logger.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, duration), reason)
+							lu.getLocalized(locale, "logger_embed.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, duration), reason)
 						)
-						.appendDescription(link != null ? lu.getLocalized(locale, "logger.pm.appeal").formatted(link) : "")
+						.appendDescription(link != null ? lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link) : "")
 						.build();
 					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
@@ -189,8 +189,8 @@ public class BanCmd extends CommandBase {
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".ban_success")
 						.replace("{user_tag}", tu.getName())
-						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger.permanently") : 
-							lu.getText(event, "logger.temporary")
+						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger_embed.permanently") : 
+							lu.getText(event, "logger_embed.temporary")
 								.formatted(TimeUtil.formatTime(Instant.now().plus(duration), true))
 						)
 						.replace("{reason}", reason))

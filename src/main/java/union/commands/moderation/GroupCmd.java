@@ -511,7 +511,7 @@ public class GroupCmd extends CommandBase {
 				Integer groupSize = bot.getDBUtil().group.countMembers(groupId);
 
 				EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
-					.setAuthor(lu.getText(event, "logger.group.title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
+					.setAuthor(lu.getText(event, "logger_embed.group.title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
 					.setDescription(lu.getText(event, path+".embed_value").replace("{guild_name}", masterName)
 					.replace("{guild_id}", ownerId.toString()).replace("{size}", groupSize.toString())
 					.replace("{is_shared}", Emotes.CROSS_C.getEmote()));

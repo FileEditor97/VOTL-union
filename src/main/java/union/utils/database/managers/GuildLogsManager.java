@@ -1,7 +1,9 @@
 package union.utils.database.managers;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import union.objects.LogChannels;
@@ -87,6 +89,10 @@ public class GuildLogsManager extends LiteDBBase {
 			return logs.entrySet()
 				.stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getChannelId()));
+		}
+
+		public Set<WebhookData> getWebhooks() {
+			return new HashSet<>(logs.values());
 		}
 
 		public boolean isEmpty() {

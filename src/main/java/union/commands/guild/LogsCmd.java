@@ -73,6 +73,12 @@ public class LogsCmd extends CommandBase {
 			String text = lu.getText(event, type.getPathName());
 
 			try {
+				WebhookData oldData = bot.getDBUtil().logs.getLogWebhook(type, event.getGuild().getIdLong());
+				if (oldData != null) {
+					event.getJDA().retrieveWebhookById(oldData.getWebhookId()).queue(webhook -> {
+						webhook.delete(oldData.getToken()).reason("Log disabled").queue();
+					});
+				}
 				channel.createWebhook(lu.getText(type.getPathName())).reason("By "+event.getUser().getName()).queue(webhook -> {
 					// Add to DB
 					WebhookData data = new WebhookData(channel.getIdLong(), webhook.getIdLong(), webhook.getToken());
@@ -113,7 +119,18 @@ public class LogsCmd extends CommandBase {
 
 			String input = event.optString("type");
 			if (input == "all") {
+				// Delete all logging webhooks
+				LogSettings settings = bot.getDBUtil().logs.getSettings(guildId);
+				if (!settings.isEmpty()) {
+					for (WebhookData data : settings.getWebhooks()) {
+						event.getJDA().retrieveWebhookById(data.getWebhookId()).queue(webhook -> {
+							webhook.delete(data.getToken()).reason("Log disabled").queue();
+						});
+					}
+				}
+				// Remove guild from db
 				bot.getDBUtil().logs.removeGuild(guildId);
+				// Reply
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_all"))
 					.build()

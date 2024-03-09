@@ -20,6 +20,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
@@ -36,7 +38,8 @@ public class SetupCmd extends CommandBase {
 		this.name = "setup";
 		this.path = "bot.guild.setup";
 		this.children = new SlashCommand[]{new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), 
-			new Voice(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot), new Strikes(bot)
+			new VoiceCreate(bot), new VoiceSelect(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot),
+			new Strikes(bot)
 		};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -142,8 +145,8 @@ public class SetupCmd extends CommandBase {
 		}
 	}
 
-	private class Voice extends SlashCommand {
-		public Voice(App bot) {
+	private class VoiceCreate extends SlashCommand {
+		public VoiceCreate(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "create";
@@ -171,7 +174,6 @@ public class SetupCmd extends CommandBase {
 									.queue(
 										channel -> {
 											bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong());
-											bot.getLogger().info("Voice setup done in guild `"+guild.getName()+"'("+guildId+")");
 											editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 												.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
 												.build());
@@ -182,6 +184,50 @@ public class SetupCmd extends CommandBase {
 							}
 						}
 					);
+			} catch (InsufficientPermissionException ex) {
+				editPermError(event, ex.getPermission(), true);
+			}
+		}
+	}
+
+	private class VoiceSelect extends SlashCommand {
+		public VoiceSelect(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "select";
+			this.path = "bot.guild.setup.voice.select";
+			this.options = List.of(
+				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.name"), true)
+					.setChannelTypes(ChannelType.VOICE)
+			);
+			this.botPermissions = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS, Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT, Permission.VOICE_MOVE_OTHERS};
+			this.subcommandGroup = new SubcommandGroupData("voice", lu.getText("bot.guild.setup.voice.help"));
+			this.module = CmdModule.VOICE;
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			Guild guild = event.getGuild();
+			long guildId = guild.getIdLong();
+
+			VoiceChannel channel = (VoiceChannel) event.optGuildChannel("channel");
+			Category category = channel.getParentCategory();
+			if (category == null) {
+				editError(event, path+".no_category");
+				return;
+			}
+
+			try {
+				category.upsertPermissionOverride(guild.getBotRole()).setAllowed(getBotPermissions()).queue(doneCategory -> {
+					channel.upsertPermissionOverride(guild.getPublicRole()).setDenied(Permission.VOICE_SPEAK).queue(doneChannel -> {
+						bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong());
+						editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
+							.build());
+					});
+				});
 			} catch (InsufficientPermissionException ex) {
 				editPermError(event, ex.getPermission(), true);
 			}

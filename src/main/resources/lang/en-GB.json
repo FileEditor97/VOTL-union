@@ -359,13 +359,23 @@
 					"done": "Selected {channel} to receive user reports."
 				},
 				"voice": {
-					"help": "Manage custom VoiceChannel settings",
+					"help": "Manage custom voice channel settings",
 					"create": {
-						"help": "Create custom VoiceChannels category",
+						"help": "Create custom voice channels category",
 						"usage": "voice create",
 						"category_name": "Voice Channels",
 						"channel_name": "★ Join to create",
-						"done": "Successfully created channel {channel}! Setup is done."
+						"done": "Successfully created channel {channel}!"
+					},
+					"select": {
+						"help": "Select channel to be used for custom vc creation",
+						"usage": "voice select <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select voice channel"
+						},
+						"no_category": "Selected voice channel has no category.",
+						"done": "Successfully selected channel {channel}!"
 					},
 					"panel": {
 						"help": "Create panel for controlling custom VoiceChannels",

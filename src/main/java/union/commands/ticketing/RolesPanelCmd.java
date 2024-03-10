@@ -201,11 +201,10 @@ public class RolesPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String guildId = event.getGuild().getId();
 			Integer row = event.optInteger("row");
 			String text = event.optString("text");
 
-			bot.getDBUtil().ticketSettings.setRowText(guildId, row, text);
+			bot.getDBUtil().ticketSettings.setRowText(event.getGuild().getIdLong(), row, text);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))

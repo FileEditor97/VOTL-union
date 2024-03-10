@@ -400,7 +400,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		List<ActionRow> actionRows = new ArrayList<ActionRow>();
 		// String select menu IDs "menu:role_row:1/2/3"
-		for (Integer row = 1; row <= 3; row++) {
+		for (int row = 1; row <= 3; row++) {
 			ActionRow actionRow = createRoleRow(guild, row);
 			if (actionRow != null) {
 				actionRows.add(actionRow);
@@ -418,7 +418,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(embed).setComponents(actionRows).setEphemeral(true).queue();
 	}
 
-	private ActionRow createRoleRow(final Guild guild, Integer row) {
+	private ActionRow createRoleRow(final Guild guild, int row) {
 		List<Map<String, Object>> assignRoles = bot.getDBUtil().role.getAssignableByRow(guild.getId(), row);
 		if (assignRoles.isEmpty()) return null;
 		List<SelectOption> options = new ArrayList<SelectOption>();
@@ -431,7 +431,7 @@ public class InteractionListener extends ListenerAdapter {
 			options.add(SelectOption.of(role.getName(), roleId).withDescription(description));
 		}
 		StringSelectMenu menu = StringSelectMenu.create("menu:role_row:"+row)
-			.setPlaceholder(db.ticketSettings.getRowText(guild.getId(), row))
+			.setPlaceholder(db.getTicketSettings(guild).getRowText(row))
 			.setMaxValues(25)
 			.addOptions(options)
 			.build();

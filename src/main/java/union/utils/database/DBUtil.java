@@ -38,6 +38,7 @@ import union.utils.database.managers.VerifySettingsManager;
 import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
 import union.utils.database.managers.GuildSettingsManager.GuildSettings;
+import union.utils.database.managers.TicketSettingsManager.TicketSettings;
 import union.utils.database.managers.VerifySettingsManager.VerifySettings;
 import union.utils.file.FileManager;
 
@@ -140,6 +141,10 @@ public class DBUtil {
 
 	public GuildSettings getGuildSettings(long guildId) {
 		return guildSettings.getSettings(guildId);
+	}
+
+	public TicketSettings getTicketSettings(Guild guild) {
+		return ticketSettings.getSettings(guild);
 	}
 
 

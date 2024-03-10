@@ -79,7 +79,7 @@ public class GuildListener extends ListenerAdapter {
 		db.access.removeAll(guildId);
 		db.webhook.removeAll(guildIdLong);
 		db.verifySettings.remove(guildIdLong);
-		db.ticketSettings.remove(guildId);
+		db.ticketSettings.remove(guildIdLong);
 		db.role.removeAll(guildId);
 		db.guildVoice.remove(guildIdLong);
 		db.panels.deleteAll(guildId);
@@ -152,7 +152,7 @@ public class GuildListener extends ListenerAdapter {
 			db.access.removeUser(guildId, userId);
 		}
 		db.user.remove(event.getUser().getIdLong());
-		if (db.ticketSettings.getAutocloseLeft(guildId)) {
+		if (db.getTicketSettings(event.getGuild()).isAutocloseLeft()) {
 			db.ticket.getOpenedChannel(userId, guildId).stream().forEach(channelId -> {
 				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
 				GuildChannel channel = event.getGuild().getGuildChannelById(channelId);

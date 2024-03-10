@@ -300,9 +300,9 @@ public class RolesSetupCmd extends CommandBase {
 			
 			for (RoleType type : RoleType.values()) {
 				if (type.equals(RoleType.ASSIGN)) {
-					for (Integer row = 1; row <= 3; row++) {
+					for (int row = 1; row <= 3; row++) {
 						List<Map<String, Object>> roles = bot.getDBUtil().role.getAssignableByRow(guildId, row);
-						String title = "%s-%s | %s".formatted(lu.getText(event, type.getPath()), row, bot.getDBUtil().ticketSettings.getRowText(guildId, row));
+						String title = "%s-%s | %s".formatted(lu.getText(event, type.getPath()), row, bot.getDBUtil().getTicketSettings(guild).getRowText(row));
 						if (roles.isEmpty()) {
 							builder.addField(title, lu.getText(event, path+".none"), false);
 						} else {

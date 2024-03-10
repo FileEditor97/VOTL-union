@@ -64,7 +64,7 @@ public class ScheduledCheck {
 					bot.getDBUtil().ticket.forceCloseTicket(channelId);
 					return;
 				}
-				Integer autocloseTime = db.ticketSettings.getAutocloseTime(channel.getGuild().getId());
+				int autocloseTime = db.getTicketSettings(channel.getGuild()).getAutocloseTime();
 				if (autocloseTime == 0) return;
 
 				if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {

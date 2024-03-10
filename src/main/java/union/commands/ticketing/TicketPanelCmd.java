@@ -539,16 +539,16 @@ public class TicketPanelCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			
 			StringBuffer response = new StringBuffer();
 			if (event.hasOption("autoclose")) {
-				Integer time = event.optInteger("autoclose");
+				int time = event.optInteger("autoclose");
 				bot.getDBUtil().ticketSettings.setAutocloseTime(guildId, time);
-				response.append(lu.getText(event, path+".changed_autoclose").replace("{time}", time.toString()));
+				response.append(lu.getText(event, path+".changed_autoclose").replace("{time}", String.valueOf(time)));
 			}
 			if (event.hasOption("author_left")) {
-				Boolean left = event.optBoolean("author_left");
+				boolean left = event.optBoolean("author_left");
 				bot.getDBUtil().ticketSettings.setAutocloseLeft(guildId, left);
 				response.append(lu.getText(event, path+".changed_left").replace("{left}", left ? Constants.SUCCESS : Constants.FAILURE));
 			}

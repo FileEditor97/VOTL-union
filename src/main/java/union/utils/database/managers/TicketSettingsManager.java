@@ -1,44 +1,111 @@
 package union.utils.database.managers;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import union.objects.constants.Constants;
+import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import net.dv8tion.jda.api.entities.Guild;
+
 public class TicketSettingsManager extends LiteDBBase {
+
+	private final Set<String> columns = Set.of("autocloseTime", "autocloseLeft", "rowName1", "rowName2", "rowName3");
+
+	// Cache
+	private final FixedCache<Long, TicketSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
+	private final TicketSettings defaultSettings = new TicketSettings();
 
 	public TicketSettingsManager(ConnectionUtil cu) {
 		super(cu, "ticketSettings");
 	}
 
-	public void remove(String guildId) {
-		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
+	public TicketSettings getSettings(Guild guild) {
+		return getSettings(guild.getIdLong());
 	}
 
-	public void setRowText(String guildId, int row, String text) {
-		execute("INSERT INTO %1$s(guildId, rowName%2$d) VALUES (%3$s, %4$s) ON CONFLICT(guildId) DO UPDATE SET rowName%2$d=%4$s".formatted(table, row, guildId, quote(text)));
+	public TicketSettings getSettings(long guildId) {
+		if (cache.contains(guildId))
+			return cache.get(guildId);
+		TicketSettings settings = applyNonNull(getData(guildId), data -> new TicketSettings(data));
+		if (settings == null)
+			return defaultSettings;
+		cache.put(guildId, settings);
+		return settings;
 	}
 
-	public String getRowText(String guildId, int row) {
-		String data = selectOne("SELECT rowName%d FROM %s WHERE (guildId=%s)".formatted(row, table, guildId), "rowName"+row, String.class);
-		return data==null ? "Select roles" : data;
+	private Map<String, Object> getData(long guildId) {
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
 	}
 
-	public void setAutocloseTime(String guildId, int hours) {
-		execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%d".formatted(table, guildId, hours, hours));
+	public void remove(long guildId) {
+		invalidateCache(guildId);
+		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public int getAutocloseTime(String guildId) {
-		Integer data = selectOne("SELECT autocloseTime FROM %s WHERE (guildId=%s)".formatted(table, guildId), "autocloseTime", Integer.class);
-		return data==null ? 0 : data;
+	public void setRowText(long guildId, int row, String text) {
+		if (row < 1 || row > 3)
+			throw new IndexOutOfBoundsException(row);
+		invalidateCache(guildId);
+		execute("INSERT INTO %1$s(guildId, rowName%2$d) VALUES (%3$d, %4$s) ON CONFLICT(guildId) DO UPDATE SET rowName%2$d=%4$s".formatted(table, row, guildId, quote(text)));
 	}
 
-	public void setAutocloseLeft(String guildId, boolean close) {
-		int value = close==true ? 1 : 0;
-		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%d".formatted(table, guildId, value, value));
+	public void setAutocloseTime(long guildId, int hours) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%<d".formatted(table, guildId, hours));
 	}
 
-	public boolean getAutocloseLeft(String guildId) {
-		Integer data = selectOne("SELECT autocloseLeft FROM %s WHERE (guildId=%s)".formatted(table, guildId), "autocloseLeft", Integer.class);
-		return data==null ? false : data==1;
+	public void setAutocloseLeft(long guildId, boolean close) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close==true ? 1 : 0));
+	}
+
+	private void invalidateCache(long guildId) {
+		cache.pull(guildId);
+	}
+
+	public class TicketSettings {
+		private final int autocloseTime;
+		private final boolean autocloseLeft;
+		private final List<String> rowText;
+
+		public TicketSettings() {
+			this.autocloseTime = 0;
+			this.autocloseLeft = false;
+			this.rowText = Collections.nCopies(3, "Select roles");
+		}
+
+		public TicketSettings(Map<String, Object> data) {
+			this.autocloseTime = (Integer) data.getOrDefault("autocloseTime", 0);
+			this.autocloseLeft = ((Integer) data.getOrDefault("autocloseTime", 0)) == 1;
+			this.rowText = List.of(
+				(String) data.getOrDefault("rowName1", "Select roles"),
+				(String) data.getOrDefault("rowName2", "Select roles"),
+				(String) data.getOrDefault("rowName3", "Select roles")
+			);
+		}
+
+		public int getAutocloseTime() {
+			return autocloseTime;
+		}
+
+		public boolean isAutocloseLeft() {
+			return autocloseLeft;
+		}
+
+		public List<String> getRowText() {
+			return rowText;
+		}
+
+		public String getRowText(int n) {
+			if (n < 1 || n > 3)
+				throw new IndexOutOfBoundsException(n);
+			return rowText.get(n);
+		}
 	}
 
 }

@@ -358,6 +358,15 @@
 					"cant_send": "I cant send messages in selected channel! Check my permissions or select other channel.",
 					"done": "Selected {channel} to receive user reports."
 				},
+				"anticrash": {
+					"help": "Manage server's anti-crash protection",
+					"usage": "anticrash <enabled?>",
+					"enabled": {
+						"name": "enabled",
+						"help": "Enable anti-crash protection?"
+					},
+					"done": "Anti-crash protecting enabled - `%s`."
+				},
 				"voice": {
 					"help": "Manage custom voice channel settings",
 					"create": {
@@ -1672,7 +1681,7 @@
 					"usage": "other <enabled?>",
 					"enabled": {
 						"name": "enabled",
-						"help": "Enable other roles request"
+						"help": "Enable other roles request?"
 					},
 					"done": "Other roles request enabled - `%s`."
 				}

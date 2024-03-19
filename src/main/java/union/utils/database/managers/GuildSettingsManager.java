@@ -79,6 +79,12 @@ public class GuildSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, modulesOff) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET modulesOff=%<d".formatted(table, guildId, modulesOff));
 	}
 
+	public void setAnticrash(long guildId, boolean enabled) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d".formatted(table, guildId, enabled ? 1 : 0));
+	}
+
+
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
@@ -87,6 +93,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		private final Long lastWebhookId, reportChannelId;
 		private final int color, strikeExpires, modulesOff;
 		private final String appealLink;
+		private final boolean anticrash;
 
 		public GuildSettings() {
 			this.color = Constants.COLOR_DEFAULT;
@@ -95,6 +102,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.reportChannelId = null;
 			this.strikeExpires = 7;
 			this.modulesOff = 0;
+			this.anticrash = false;
 		}
 
 		public GuildSettings(Map<String, Object> data) {
@@ -104,6 +112,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.reportChannelId = castLong(data.getOrDefault("reportChannelId", null));
 			this.strikeExpires = (Integer) data.getOrDefault("strikeExpires", 7);
 			this.modulesOff = (Integer) data.getOrDefault("modulesOff", 0);
+			this.anticrash = ((Integer) data.getOrDefault("anticrash", 0)) == 1;
 		}
 
 		public int getColor() {
@@ -136,6 +145,10 @@ public class GuildSettingsManager extends LiteDBBase {
 
 		public boolean isDisabled(CmdModule module) {
 			return (modulesOff & module.getValue()) == module.getValue();
+		}
+
+		public boolean anticrashEnabled() {
+			return anticrash;
 		}
 
 	}

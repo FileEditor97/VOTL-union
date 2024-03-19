@@ -39,7 +39,7 @@ public class GuildListener extends ListenerAdapter {
 			);
 		}
 		// Alerts
-		if (watchedTypes.contains(event.getEntry().getType())) {
+		if (watchedTypes.contains(event.getEntry().getType()) && helper.getDBUtil().getGuildSettings(event.getGuild()).anticrashEnabled()) {
 			UserSnowflake admin = UserSnowflake.fromId(event.getEntry().getUserIdLong());
 			// Ignore actions made by both bots
 			if (admin != null && (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser()))) return;

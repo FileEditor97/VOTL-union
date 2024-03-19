@@ -37,7 +37,7 @@ public class SetupCmd extends CommandBase {
 		super(bot);
 		this.name = "setup";
 		this.path = "bot.guild.setup";
-		this.children = new SlashCommand[]{new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), 
+		this.children = new SlashCommand[]{new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), new Anticrash(bot),
 			new VoiceCreate(bot), new VoiceSelect(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot),
 			new Strikes(bot)
 		};
@@ -141,6 +141,30 @@ public class SetupCmd extends CommandBase {
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
+				.build());
+		}
+	}
+
+	private class Anticrash extends SlashCommand {
+		public Anticrash(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "anticrash";
+			this.path = "bot.guild.setup.anticrash";
+			this.options = List.of(
+				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+"enabled.help"), true)
+			);
+			this.accessLevel = CmdAccessLevel.OPERATOR;
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			boolean enabled = event.optBoolean("enabled");
+
+			bot.getDBUtil().guildSettings.setAnticrash(event.getGuild().getIdLong(), enabled);
+
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(String.valueOf(enabled)))
 				.build());
 		}
 	}

@@ -64,24 +64,31 @@ public class TicketSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close==true ? 1 : 0));
 	}
 
+	public void setOtherRole(long guildId, boolean otherRole) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole==true ? 1 : 0));
+	}
+
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
 
 	public class TicketSettings {
 		private final int autocloseTime;
-		private final boolean autocloseLeft;
+		private final boolean autocloseLeft, otherRole;
 		private final List<String> rowText;
 
 		public TicketSettings() {
 			this.autocloseTime = 0;
 			this.autocloseLeft = false;
+			this.otherRole = true;
 			this.rowText = Collections.nCopies(3, "Select roles");
 		}
 
 		public TicketSettings(Map<String, Object> data) {
 			this.autocloseTime = (Integer) data.getOrDefault("autocloseTime", 0);
 			this.autocloseLeft = ((Integer) data.getOrDefault("autocloseLeft", 0)) == 1;
+			this.otherRole = ((Integer) data.getOrDefault("otherRole", 1)) == 1;
 			this.rowText = List.of(
 				(String) data.getOrDefault("rowName1", "Select roles"),
 				(String) data.getOrDefault("rowName2", "Select roles"),
@@ -95,6 +102,10 @@ public class TicketSettingsManager extends LiteDBBase {
 
 		public boolean autocloseLeftEnabled() {
 			return autocloseLeft;
+		}
+
+		public boolean otherRoleEnabled() {
+			return otherRole;
 		}
 
 		public List<String> getRowText() {

@@ -34,7 +34,7 @@ public class RolesPanelCmd extends CommandBase {
 		super(bot);
 		this.name = "rolepanel";
 		this.path = "bot.ticketing.rolespanel";
-		this.children = new SlashCommand[]{new Create(bot), new Update(bot), new RowText(bot)};
+		this.children = new SlashCommand[]{new Create(bot), new Update(bot), new RowText(bot), new OtherRole(bot)};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
@@ -208,6 +208,31 @@ public class RolesPanelCmd extends CommandBase {
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))
+				.build());
+		}
+
+	}
+
+	private class OtherRole extends SlashCommand {
+
+		public OtherRole(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "other";
+			this.path = "bot.ticketing.rolespanel.other";
+			this.options = List.of(
+				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help"), true)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			boolean enabled = event.optBoolean("enabled");
+
+			bot.getDBUtil().ticketSettings.setOtherRole(event.getGuild().getIdLong(), enabled);
+
+			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(String.valueOf(enabled)))
 				.build());
 		}
 

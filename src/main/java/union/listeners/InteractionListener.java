@@ -406,7 +406,9 @@ public class InteractionListener extends ListenerAdapter {
 				actionRows.add(actionRow);
 			}
 		}
-		actionRows.add(ActionRow.of(Button.secondary("role:other", lu.getText(event, "bot.ticketing.listener.request_other"))));
+		if (db.getTicketSettings(guild).otherRoleEnabled()) {
+			actionRows.add(ActionRow.of(Button.secondary("role:other", lu.getText(event, "bot.ticketing.listener.request_other"))));
+		}
 		actionRows.add(ActionRow.of(Button.danger("role:clear", lu.getText(event, "bot.ticketing.listener.request_clear")),
 			Button.success("ticket:role_create", lu.getText(event, "bot.ticketing.listener.request_continue"))));
 

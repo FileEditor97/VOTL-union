@@ -1666,6 +1666,15 @@
 						"help": "Enter text which will be shown in role selection placeholder"
 					},
 					"done": "Placeholder text for row `{row}` set to `{text}`."
+				},
+				"other": {
+					"help": "Set if user can select 'other' roles request",
+					"usage": "other <enabled?>",
+					"enabled": {
+						"name": "enabled",
+						"help": "Enable other roles request"
+					},
+					"done": "Other roles request enabled - `%s`."
 				}
 			},
 			"tcount": {

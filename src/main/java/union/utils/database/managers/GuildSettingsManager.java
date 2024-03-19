@@ -56,7 +56,7 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	public void setLastWebhookId(long guildId, long webhookId) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, lastWebhookId) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET lastWebhook=%<d".formatted(table, guildId, webhookId));
+		execute("INSERT INTO %s(guildId, lastWebhookId) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET lastWebhookId=%<d".formatted(table, guildId, webhookId));
 	}
 
 	public void setAppealLink(long guildId, String link) {

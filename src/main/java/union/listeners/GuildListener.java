@@ -152,7 +152,7 @@ public class GuildListener extends ListenerAdapter {
 			db.access.removeUser(guildId, userId);
 		}
 		db.user.remove(event.getUser().getIdLong());
-		if (db.getTicketSettings(event.getGuild()).isAutocloseLeft()) {
+		if (db.getTicketSettings(event.getGuild()).autocloseLeftEnabled()) {
 			db.ticket.getOpenedChannel(userId, guildId).stream().forEach(channelId -> {
 				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
 				GuildChannel channel = event.getGuild().getGuildChannelById(channelId);

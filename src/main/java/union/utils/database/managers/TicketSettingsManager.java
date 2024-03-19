@@ -81,7 +81,7 @@ public class TicketSettingsManager extends LiteDBBase {
 
 		public TicketSettings(Map<String, Object> data) {
 			this.autocloseTime = (Integer) data.getOrDefault("autocloseTime", 0);
-			this.autocloseLeft = ((Integer) data.getOrDefault("autocloseTime", 0)) == 1;
+			this.autocloseLeft = ((Integer) data.getOrDefault("autocloseLeft", 0)) == 1;
 			this.rowText = List.of(
 				(String) data.getOrDefault("rowName1", "Select roles"),
 				(String) data.getOrDefault("rowName2", "Select roles"),
@@ -93,7 +93,7 @@ public class TicketSettingsManager extends LiteDBBase {
 			return autocloseTime;
 		}
 
-		public boolean isAutocloseLeft() {
+		public boolean autocloseLeftEnabled() {
 			return autocloseLeft;
 		}
 

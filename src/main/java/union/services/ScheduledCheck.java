@@ -12,6 +12,7 @@ import union.App;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
+import static union.utils.CastUtil.castLong;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -143,8 +144,8 @@ public class ScheduledCheck {
 			if (expired.isEmpty()) return;
 
 			for (Map<String, Object> data : expired) {
-				Long guildId = (Long) data.get("guildId");
-				Long userId =  (Long) data.get("userId");
+				Long guildId = castLong(data.get("guildId"));
+				Long userId = castLong(data.get("userId"));
 				Integer strikes = (Integer) data.get("count");
 
 				if (strikes <= 0) {
@@ -183,7 +184,8 @@ public class ScheduledCheck {
 							1, newData.toString()
 						);
 					} else {
-						throw new Exception("Strike data is empty");
+						db.strike.removeGuildUser(guildId, userId);
+						throw new Exception("Strike data is empty. Deleted data for gid '%s' and uid '%s'".formatted(guildId, userId));
 					}
 				}
 			};

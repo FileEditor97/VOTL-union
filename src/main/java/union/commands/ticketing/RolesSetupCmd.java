@@ -70,21 +70,23 @@ public class RolesSetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
 			String guildId = event.getGuild().getId();
+			
 			Role role = event.optRole("role");
 			if (role == null || role.hasPermission(Permission.ADMINISTRATOR, Permission.MANAGE_ROLES, Permission.MANAGE_SERVER)) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 			if (!event.getGuild().getSelfMember().canInteract(role)) {
-				createError(event, path+".cant_interact");
+				editError(event, path+".cant_interact");
 				return;
 			}
 			if (bot.getDBUtil().role.existsRole(role.getId())) {
-				createError(event, path+".exists");
+				editError(event, path+".exists");
 				return;
 			}
-			event.deferReply(true).queue();
+			
 			String type = event.optString("type");
 			if (type.equals(RoleType.ASSIGN.toString())) {
 				Integer row = event.optInteger("row", 0);

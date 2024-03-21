@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import union.objects.constants.Constants;
@@ -14,7 +15,7 @@ import net.dv8tion.jda.api.entities.Guild;
 
 public class TicketSettingsManager extends LiteDBBase {
 
-	private final Set<String> columns = Set.of("autocloseTime", "autocloseLeft", "rowName1", "rowName2", "rowName3");
+	private final Set<String> columns = Set.of("autocloseTime", "autocloseLeft", "rowName1", "rowName2", "rowName3", "otherRole");
 
 	// Cache
 	private final FixedCache<Long, TicketSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
@@ -86,13 +87,13 @@ public class TicketSettingsManager extends LiteDBBase {
 		}
 
 		public TicketSettings(Map<String, Object> data) {
-			this.autocloseTime = (Integer) data.getOrDefault("autocloseTime", 0);
-			this.autocloseLeft = ((Integer) data.getOrDefault("autocloseLeft", 0)) == 1;
-			this.otherRole = ((Integer) data.getOrDefault("otherRole", 1)) == 1;
+			this.autocloseTime = Optional.ofNullable((Integer) data.get("autocloseTime")).orElse(0);
+			this.autocloseLeft = Optional.ofNullable((Integer) data.get("autocloseLeft")).orElse(0) == 1;
+			this.otherRole = Optional.ofNullable((Integer) data.get("otherRole")).orElse(1) == 1;
 			this.rowText = List.of(
-				(String) data.getOrDefault("rowName1", "Select roles"),
-				(String) data.getOrDefault("rowName2", "Select roles"),
-				(String) data.getOrDefault("rowName3", "Select roles")
+				Optional.ofNullable((String) data.get("rowName1")).orElse("Select roles"),
+				Optional.ofNullable((String) data.get("rowName2")).orElse("Select roles"),
+				Optional.ofNullable((String) data.get("rowName3")).orElse("Select roles")
 			);
 		}
 
@@ -115,7 +116,7 @@ public class TicketSettingsManager extends LiteDBBase {
 		public String getRowText(int n) {
 			if (n < 1 || n > 3)
 				throw new IndexOutOfBoundsException(n);
-			return rowText.get(n);
+			return rowText.get(n-1);
 		}
 	}
 

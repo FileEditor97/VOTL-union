@@ -16,7 +16,7 @@ import static union.utils.CastUtil.castLong;
 
 public class GuildSettingsManager extends LiteDBBase {
 
-	private final Set<String> columns = Set.of("color", "lastWebhookId", "appealLink", "reportChannelId", "strikeExpires", "modulesOff");
+	private final Set<String> columns = Set.of("color", "lastWebhookId", "appealLink", "reportChannelId", "strikeExpires", "modulesOff", "anticrash");
 
 	// Cache
 	private final FixedCache<Long, GuildSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);

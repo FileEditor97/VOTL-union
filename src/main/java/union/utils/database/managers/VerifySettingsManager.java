@@ -1,6 +1,7 @@
 package union.utils.database.managers;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import union.objects.constants.Constants;
@@ -87,8 +88,8 @@ public class VerifySettingsManager extends LiteDBBase {
 		public VerifySettings(Map<String, Object> data) {
 			this.roleId = castLong(data.getOrDefault("roleId", null));
 			this.mainText = (String) data.getOrDefault("mainText", null);
-			this.checkEnabled = ((int) data.getOrDefault("checkEnabled", 0)) == 1;
-			this.minimumPlaytime = (int) data.getOrDefault("minimumPlaytime", -1);
+			this.checkEnabled = Optional.ofNullable((int) data.get("checkEnabled")).orElse(0) == 1;
+			this.minimumPlaytime = Optional.ofNullable((int) data.get("minimumPlaytime")).orElse(-1);
 		}
 
 		public Long getRoleId() {

@@ -24,8 +24,13 @@
 	"central-user": "username",
 	"central-pass": "password",
 	"central-dbs": {
-		"_enter guild id 1_": "db 1 name",
-		"_enter guild id 2_": "db 2 name"
+		"first guild id": {
+			"db name": "1 server/db title",
+			"db name": "2 server/db title"
+		},
+		"second guild id": {
+			"db name": "3 server/db title"
+		}
 	},
 	"helper-token": ""
  }

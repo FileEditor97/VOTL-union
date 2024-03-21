@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,12 +197,13 @@ public class FileManager {
 	public List<String> getStringList(String name, String path){
 		File file = files.get(name);
 		
-		if(file == null)
-			return new ArrayList<>();
+		if(file == null) {
+			logger.error("Couldn't find file {}.json", name);
+			return Collections.emptyList();
+		}
 
-		List<String> array = new ArrayList<String>();
 		try {
-			array = JsonPath.using(CONF).parse(file).read("$." + path);	
+			List<String> array = JsonPath.using(CONF).parse(file).read("$." + path);	
 			
 			if (array == null || array.isEmpty())
 				throw new KeyIsNull(path);
@@ -214,19 +216,20 @@ public class FileManager {
 		} catch (IOException ex) {
 			logger.warn("Couldn't process file {}.json", name, ex);
 		}
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
-	@SuppressWarnings("all")
+	@SuppressWarnings("unchecked")
 	@NotNull
 	public Map<String, String> getMap(String name, String path){
 		File file = files.get(name);
-		if(file == null)
-			return Map.of();
+		if(file == null) {
+			logger.error("Couldn't find file {}.json", name);
+			return Collections.emptyMap();
+		}
 
-		Map<String, String> map = new HashMap<String, String>();
 		try {
-			map = JsonPath.using(CONF).parse(file).read("$." + path, Map.class);	
+			Map<String, String> map = JsonPath.using(CONF).parse(file).read("$." + path, Map.class);	
 			
 			if (map == null || map.isEmpty())
 				throw new KeyIsNull(path);
@@ -239,7 +242,33 @@ public class FileManager {
 		} catch (IOException ex) {
 			logger.warn("Couldn't process file {}.json", name, ex);
 		}
-		return Map.of();
+		return Collections.emptyMap();
+	}
+
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public Map<String, Object> getMapObject(String name, String path){
+		File file = files.get(name);
+		if(file == null) {
+			logger.error("Couldn't find file {}.json", name);
+			return Collections.emptyMap();
+		}
+
+		try {
+			Map<String, Object> map = JsonPath.using(CONF).parse(file).read("$." + path, Map.class);	
+			
+			if (map == null || map.isEmpty())
+				throw new KeyIsNull(path);
+				
+			return map;
+		} catch (FileNotFoundException ex) {
+			logger.error("Couldn't find file {}.json", name);
+		} catch (KeyIsNull ex) {
+			logger.warn("Couldn't find \"{}\" in file {}.json", path, name);
+		} catch (IOException ex) {
+			logger.warn("Couldn't process file {}.json", name, ex);
+		}
+		return Collections.emptyMap();
 	}
 
 	public boolean export(InputStream inputStream, Path destination){

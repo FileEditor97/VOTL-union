@@ -6,7 +6,6 @@ import union.base.command.UserContextMenuEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.Constants;
-import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -36,7 +35,6 @@ public class AccountContext extends UserContextMenu {
 		}
 
 		String steamId = SteamUtil.convertSteam64toSteamID(steam64);
-		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64.toString()) + "_full.jpg";
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
@@ -44,10 +42,15 @@ public class AccountContext extends UserContextMenu {
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/"+steam64+")", true)
-			.addField(lu.getUserText(event, "bot.verification.account.field_rank"), "`%s`".formatted(playerInfo.getRank()), true)
-			.addField(lu.getUserText(event, "bot.verification.account.field_playtime"), "**%s** %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
-			.addField(lu.getUserText(event, "bot.verification.account.field_discord"), user.getAsMention(), false);
+			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
+			.addField(lu.getText(event, "bot.verification.account.field_discord"), user.getAsMention(), true);
+		
+		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
+			String value = playerInfo.exists()
+				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
+				: lu.getText(event, "bot.verification.account.no_data");
+			builder.addField(playerInfo.getServerTitle(), value, false);
+		});
 		
 		event.getHook().editOriginalEmbeds(builder.build()).queue();
 	}

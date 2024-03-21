@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.Guild;
 
 public class VerifySettingsManager extends LiteDBBase {
 
-	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled");
+	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled", "minimumPlaytime");
 
 	// Cache
 	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
@@ -57,10 +57,14 @@ public class VerifySettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, mainText) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET mainText=%<s".formatted(table, guildId, textParsed));
 	}
 
-	// manage check for verification role
 	public void setCheckState(long guildId, boolean enabled) {
 		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET checkEnabled=%<d".formatted(table, guildId, enabled?1:0));
+	}
+
+	public void setRequiredPlaytime(long guildId, int hours) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, minimumPlaytime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET minimumPlaytime=%<d".formatted(table, guildId, hours));
 	}
 
 	private void invalidateCache(long guildId) {
@@ -71,17 +75,20 @@ public class VerifySettingsManager extends LiteDBBase {
 		private final Long roleId;
 		private final String mainText;
 		private final boolean checkEnabled;
+		private final int minimumPlaytime;
 
 		public VerifySettings() {
 			this.roleId = null;
 			this.mainText = null;
 			this.checkEnabled = false;
+			this.minimumPlaytime = -1;
 		}
 
 		public VerifySettings(Map<String, Object> data) {
 			this.roleId = castLong(data.getOrDefault("roleId", null));
 			this.mainText = (String) data.getOrDefault("mainText", null);
 			this.checkEnabled = ((int) data.getOrDefault("checkEnabled", 0)) == 1;
+			this.minimumPlaytime = (int) data.getOrDefault("minimumPlaytime", -1);
 		}
 
 		public Long getRoleId() {
@@ -94,6 +101,10 @@ public class VerifySettingsManager extends LiteDBBase {
 
 		public boolean isCheckEnabled() {
 			return checkEnabled;
+		}
+
+		public int getMinimumPlaytime() {
+			return minimumPlaytime;
 		}
 	}
 

@@ -32,8 +32,8 @@ public class CheckRankCmd extends CommandBase {
 			new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
 			new OptionData(OptionType.STRING, "rank", lu.getText(path+".rank.help"), true)
 				.addChoice("VIP/Donate Admin", "vip/adminpay")
-				.addChoice("Admin (⚠️)", "admin")
-				.addChoice("Eventmaster (⚠️)", "eventmaster")
+				.addChoice("VIP", "vip")
+				.addChoice("Donate Moderator/Admin (DarkRP)", "d_moderator/d_admin")
 		);
 		this.category = CmdCategory.ROLES;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -86,10 +86,14 @@ public class CheckRankCmd extends CommandBase {
 					continue;
 				}
 				String steamId = SteamUtil.convertSteam64toSteamID(steam64);
-				String rank = bot.getDBUtil().unionPlayers.getPlayerRank(guild.getId(), steamId);
-				if (rank == null || !requiredRank.contains(rank)) {
-					completableFutures.add(guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).submit().exceptionally(ex -> null));
+				List<String> ranks = bot.getDBUtil().unionPlayers.getPlayerRank(guild.getIdLong(), steamId);
+				boolean remove = true;
+				if (ranks != null) {
+					for (String rank : ranks) {
+						if (rank != null && requiredRank.contains(rank)) remove = false;
+					};
 				}
+				if (remove) completableFutures.add(guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).submit().exceptionally(ex -> null));
 			}
 
 			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))

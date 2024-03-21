@@ -1,5 +1,8 @@
 package union.utils.database.managers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,40 +14,55 @@ import static union.utils.CastUtil.castLong;
 public class UnionPlayerManager extends SqlDBBase {
 
 	private final String TABLE_PLAYERS = "sam_players";
-	private final Map<String, String> databases;
 
-	public UnionPlayerManager(ConnectionUtil cu, Map<String, String> databases, String url, String user, String password) {
+	private final Map<Long, Map<String, String>> servers;
+
+	public UnionPlayerManager(ConnectionUtil cu, Map<String, Object> map, String url, String user, String password) {
 		super(cu, "%s?user=%s&password=%s".formatted(url, user, password));
-		this.databases = databases;
+		this.servers = convertMap(map);
 	}
 
-	public String getPlayerRank(@NotNull String guildId, @NotNull String steamId) {
+	public List<String> getPlayerRank(long guildId, @NotNull String steamId) {
 		// Find corresponding database
-		String database = databases.get(guildId);
-		if (database == null) return null;
-		// Get data from database table
-		return selectOne(database, TABLE_PLAYERS, "rank", "steamid", steamId);
+		Map<String, String> dbs = servers.get(guildId);
+		if (dbs == null) return List.of();
+		// Get data from database tables
+		List<String> data = new ArrayList<String>(dbs.size());
+		for (String db : dbs.keySet()) {
+			String rank = selectOne(db, TABLE_PLAYERS, "rank", "steamid", steamId);
+			if (rank != null) data.add(rank);
+		};
+		return data;
 	}
 
-	public Long getPlayTime(@NotNull String guildId, @NotNull String steamId) {
+	public Long getPlayTime(long guildId, @NotNull String steamId) throws Exception {
 		// Find corresponding database
-		String database = databases.get(guildId);
-		if (database == null) return -1L;
-		// Get data from database table
-		return castLong(selectOne(database, TABLE_PLAYERS, "play_time", "steamid", steamId));
+		Map<String, String> dbs = servers.get(guildId);
+		if (dbs == null) throw new Exception("Database not found.");
+		// Get data from database tables
+		Long playtime = null;
+		for (String db : dbs.keySet()) {
+			Long time = castLong(selectOne(db, TABLE_PLAYERS, "play_time", "steamid", steamId));
+			if (time != null) playtime = playtime==null ? time : playtime+time;
+		};
+		return playtime;
 	}
 
-	public PlayerInfo getPlayerInfo(@NotNull String guildId, @NotNull String steamId) {
+	public List<PlayerInfo> getPlayerInfo(long guildId, @NotNull String steamId) {
 		// Find corresponding database
-		String database = databases.get(guildId);
-		if (database == null) return new PlayerInfo(steamId);
+		Map<String, String> dbs = servers.get(guildId);
+		if (dbs == null) return List.of();
 		// Get data from database table
-		return selectPlayerInfo(database, TABLE_PLAYERS, steamId);
+		List<PlayerInfo> data = new ArrayList<PlayerInfo>(dbs.size());
+		dbs.forEach((db,title) -> {
+			data.add(selectPlayerInfo(db, TABLE_PLAYERS, steamId).setServerTitle(title));
+		});
+		return data;
 	}
 
 	public static class PlayerInfo {
-		private final String steamId;
-		private final String rank;
+		private String serverTitle = null;
+		private final String steamId, rank;
 		private final Long playedHours; // in hours
 
 		public PlayerInfo(String steamId) {
@@ -59,6 +77,15 @@ public class UnionPlayerManager extends SqlDBBase {
 			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
 		}
 
+		public PlayerInfo setServerTitle(String serverTitle) {
+			this.serverTitle = serverTitle;
+			return this;
+		}
+
+		public String getServerTitle() {
+			return serverTitle;
+		}
+
 		public String getSteamId() {
 			return steamId;
 		}
@@ -70,6 +97,24 @@ public class UnionPlayerManager extends SqlDBBase {
 		public Long getPlayTime() {
 			return Objects.requireNonNullElse(playedHours, 0L);
 		}
+
+		public boolean exists() {
+			return rank != null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<Long, Map<String, String>> convertMap(@NotNull Map<String, Object> obj) {
+		if (obj.isEmpty()) return Map.of();
+
+		Map<Long, Map<String, String>> map = new HashMap<Long, Map<String, String>>(obj.size());
+		obj.forEach((k,v) -> {
+			if (v instanceof Map) {
+				map.put(castLong(k), (Map<String, String>) v);
+			}
+		});
+
+		return map;
 	}
 
 }

@@ -11,7 +11,6 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
-import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -94,7 +93,7 @@ public class AccountCmd extends CommandBase {
 			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
-		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
+
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64.toString()) + "_full.jpg";
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
@@ -103,9 +102,14 @@ public class AccountCmd extends CommandBase {
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
-			.addField(lu.getUserText(event, path+".field_rank"), "`%s`".formatted(playerInfo.getRank()), true)
-			.addField(lu.getUserText(event, path+".field_playtime"), "%s %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
-			.addField(lu.getUserText(event, path+".field_discord"), user.getAsMention(), false);
+			.addField(lu.getText(event, path+".field_discord"), user.getAsMention(), true);
+		
+		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
+			String value = playerInfo.exists()
+				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
+				: lu.getText(event, "bot.verification.account.no_data");
+			builder.addField(playerInfo.getServerTitle(), value, false);
+		});
 		
 		editHookEmbed(event, builder.build());
 	}
@@ -118,15 +122,20 @@ public class AccountCmd extends CommandBase {
 			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
-		PlayerInfo playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getId(), steamId);
+
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
-			.addField(lu.getUserText(event, path+".field_rank"), "`%s`".formatted(playerInfo.getRank()), true)
-			.addField(lu.getUserText(event, path+".field_playtime"), "%s %s".formatted(playerInfo.getPlayTime(), lu.getUserText(event, "misc.time.hours")), true)
-			.addField(lu.getUserText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), false);
+			.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
+		
+		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
+			String value = playerInfo.exists()
+				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
+				: lu.getText(event, "bot.verification.account.no_data");
+			builder.addField(playerInfo.getServerTitle(), value, false);
+		});
 		
 		editHookEmbed(event, builder.build());
 	}

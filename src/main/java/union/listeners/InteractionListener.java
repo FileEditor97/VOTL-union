@@ -343,12 +343,26 @@ public class InteractionListener extends ListenerAdapter {
 					return;
 				}
 			}
-			// Check if has joined at least once
-			if (db.unionPlayers.getPlayTime(guild.getId(), SteamUtil.convertSteam64toSteamID(steam64)) == null) {
-				// Deny verification
-				sendError(event, "bot.verification.playtime", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
-				return;
+			// Check if user has required playtime
+			try {
+				int minumumPlaytime = db.getVerifySettings(guild).getMinimumPlaytime();
+				if (minumumPlaytime > -1) {
+					Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), SteamUtil.convertSteam64toSteamID(steam64));
+					// if user has not joined at least once
+					if (playtime == null) {
+						sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
+						return;
+					}
+					// if user doesn't have minimum playtime required
+					if (Math.floorDiv(playtime, 3600) < minumumPlaytime) {
+						sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minumumPlaytime, steam64));
+						return;
+					}
+				}
+			} catch (Exception ex) {
+				bot.getLogger().warn("Exception at playtime check, skipped.", ex);
 			}
+			
 			// Give verify role to user
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
 				success -> {

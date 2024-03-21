@@ -12,6 +12,8 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class VerifyCheckCmd extends CommandBase {
 	
@@ -19,7 +21,7 @@ public class VerifyCheckCmd extends CommandBase {
 		super(bot);
 		this.name = "vfcheck";
 		this.path = "bot.verification.vfcheck";
-		this.children = new SlashCommand[]{new Enable(bot), new Disable(bot), new Forced(bot)};
+		this.children = new SlashCommand[]{new Enable(bot), new Disable(bot), new Forced(bot), new Time(bot)};
 		this.module = CmdModule.VERIFICATION;
 		this.category = CmdCategory.VERIFICATION;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -29,7 +31,6 @@ public class VerifyCheckCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Enable extends SlashCommand {
-
 		public Enable(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -50,11 +51,9 @@ public class VerifyCheckCmd extends CommandBase {
 				.build()
 			);
 		}
-
 	}
 
 	private class Disable extends SlashCommand {
-
 		public Disable(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -70,11 +69,9 @@ public class VerifyCheckCmd extends CommandBase {
 				.build()
 			);
 		}
-		
 	}
 
 	private class Forced extends SlashCommand {
-
 		public Forced(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -97,7 +94,45 @@ public class VerifyCheckCmd extends CommandBase {
 			);
 			createReply(event, buffer.toString());
 		}
-		
+	}
+
+	private class Time extends SlashCommand {
+		public Time(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "playtime";
+			this.path = "bot.verification.vfcheck.playtime";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "hours", lu.getText(path+".hours.help"), true)
+					.setRequiredRange(-1, 10)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			if (bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId() == null) {
+				createError(event, path+".no_role");
+				return;
+			}
+
+			int hours = event.optInteger("hours");
+			bot.getDBUtil().verifySettings.setRequiredPlaytime(event.getGuild().getIdLong(), hours);
+			if (hours == -1)
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done_disabled"))
+					.build()
+				);
+			else if (hours == 0)
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done_once"))
+					.build()
+				);
+			else
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done_hours").formatted(hours))
+					.build()
+				);
+		}
 	}
 
 }

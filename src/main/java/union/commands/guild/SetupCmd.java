@@ -152,7 +152,7 @@ public class SetupCmd extends CommandBase {
 			this.name = "anticrash";
 			this.path = "bot.guild.setup.anticrash";
 			this.options = List.of(
-				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+"enabled.help"), true)
+				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help"), true)
 			);
 			this.accessLevel = CmdAccessLevel.OPERATOR;
 		}

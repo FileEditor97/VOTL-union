@@ -171,6 +171,6 @@ public class SqlDBBase {
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
-		return result;
+		return result==null ? new PlayerInfo(steamId) : result;
 	}
 }

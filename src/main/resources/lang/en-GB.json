@@ -1464,12 +1464,13 @@
 			}
 		},
 		"verification": {
-			"failed_role": "Verification error, failed to issue a role! Report this issue to the server Administration.",
+			"failed_role": "Verification error, failed to issue the role! Report this issue to the server's Administration.",
 			"you_verified": "You are already verified (has role)",
 			"user_verified": "User is already verified (has role)",
 			"user_not_verified": "User is not verified",
 			"blacklisted": "You are blacklisted from completing verification.",
-			"playtime": "You haven't played on the server. Join the server at least once to complete verification.",
+			"playtime_none": "You haven't played on the server. Join the server with connected Steam profile at least once to be verified.",
+			"playtime_minimum": "You must have played some hours on the server to be verified.",
 			"role_removed": "You are unverified in __{server}__ server, as you don't have linked Steam account.\nComplete verification by following instructions in verification channel.",
 			"embed": {
 				"title": "Link your account to complete verification",
@@ -1564,8 +1565,8 @@
 				"not_found_discord": "Connected Discord profile not found",
 				"not_found_user": "Discord user not found",
 				"no_options": "No options provided. Either select *user* or enter *SteamID*.",
-				"field_rank": "Rank",
-				"field_playtime": "Play time",
+				"field_info": "Rank: `%s`\nPlay time: **%s** hours",
+				"no_data": "No data",
 				"field_discord": "Discord account"
 			},
 			"vfcheck": {
@@ -1586,6 +1587,17 @@
 					"help": "Show verified users, that have forced property via `/verify`",
 					"usage": "forced",
 					"empty": "No forced users"
+				},
+				"playtime": {
+					"help": "Enabling the requirement of minimum playtime on the server for verification",
+					"usage": "playtime <time in hours>",
+					"hours": {
+						"name": "hours",
+						"help": "Set required playtime in hours (special cases: -1 to disable, 0 joined once)"
+					},
+					"done_hours": "User must have **played at least `%s` hours** to verify.",
+					"done_once": "User must have **joined the server at least once** to verify.",
+					"done_disabled": "Playtime requirement has been disabled."
 				}
 			}
 		},

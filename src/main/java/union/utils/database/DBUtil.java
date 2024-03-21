@@ -126,7 +126,7 @@ public class DBUtil {
 		logs = new GuildLogsManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
-		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMap("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
+		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
 	}

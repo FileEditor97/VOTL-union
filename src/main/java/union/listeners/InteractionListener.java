@@ -328,34 +328,41 @@ public class InteractionListener extends ListenerAdapter {
 		for (int groupId : groupIds) {
 			if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 				sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
-				bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), null, guild, groupId);
+				bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), null, guild,
+					lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
 				return;
 			}
 		}
 
-		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
+		final Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
 		if (steam64 != null) {
 			// Check if steam64 is not blacklisted
 			for (int groupId : groupIds) {
 				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 					sendError(event, "bot.verification.blacklisted", "SteamID: "+SteamUtil.convertSteam64toSteamID(steam64));
-					bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild, groupId);
+					bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+						lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
 					return;
 				}
 			}
 			// Check if user has required playtime
 			try {
-				int minumumPlaytime = db.getVerifySettings(guild).getMinimumPlaytime();
+				final int minumumPlaytime = db.getVerifySettings(guild).getMinimumPlaytime();
 				if (minumumPlaytime > -1) {
-					Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), SteamUtil.convertSteam64toSteamID(steam64));
+					final Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), SteamUtil.convertSteam64toSteamID(steam64));
 					// if user has not joined at least once
 					if (playtime == null) {
 						sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
+						bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+							lu.getText(event, "logger_embed.verify.playtime").formatted("none", minumumPlaytime));
 						return;
 					}
 					// if user doesn't have minimum playtime required
-					if (Math.floorDiv(playtime, 3600) < minumumPlaytime) {
+					final long played = Math.floorDiv(playtime, 3600);
+					if (played < minumumPlaytime) {
 						sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minumumPlaytime, steam64));
+						bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+							lu.getText(event, "logger_embed.verify.playtime").formatted(played, minumumPlaytime));
 						return;
 					}
 				}

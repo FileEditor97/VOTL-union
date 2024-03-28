@@ -380,9 +380,9 @@ public class LogListener {
 			);
 		}
 
-		public void onVerifiedAttempt(User user, Long steam64, Guild guild, int groupId) {
+		public void onVerifiedAttempt(User user, Long steam64, Guild guild, String reason) {
 			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
-				steam64, groupId)
+				steam64, reason)
 			);
 		}
 	}

@@ -556,10 +556,10 @@ public class LogUtil {
 	}
 
 	@NotNull
-	public MessageEmbed verifyAttempt(DiscordLocale locale, String memberTag, String memberId, String memberIcon, Long steam64, int groupId) {
+	public MessageEmbed verifyAttempt(DiscordLocale locale, String memberTag, String memberId, String memberIcon, Long steam64, String reason) {
 		return getEmbed(AMBER_DARK)
 			.setAuthor(localized(locale, "verify.added").formatted(memberTag), null, memberIcon)
-			.setDescription(localized(locale, "verify.blacklisted").formatted(groupId))
+			.setDescription(localized(locale, "verify.reason")+":\n>"+reason)
 			.addField(localized(locale, "verify.steam"), (steam64 == null ? "None" :
 				"`%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				), true)

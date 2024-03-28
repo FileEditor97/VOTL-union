@@ -187,7 +187,8 @@
 			"steam": "Steam account",
 			"discord": "Discord account",
 			"reason": "Reason",
-			"blacklisted": "Blacklisted in group #%d"
+			"blacklisted": "Blacklisted in group #%d",
+			"playtime": "Playtime is %s of required %s"
 		},
 		"ticket": {
 			"closed_title": "Ticket Closed",

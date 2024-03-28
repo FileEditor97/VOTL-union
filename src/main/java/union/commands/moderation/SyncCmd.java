@@ -32,7 +32,7 @@ public class SyncCmd extends CommandBase {
 		super(bot);
 		this.name = "sync";
 		this.path = "bot.moderation.sync";
-		this.children = new SlashCommand[]{new Unban(bot), new Kick(bot)};
+		this.children = new SlashCommand[]{new Kick(bot)};
 		this.botPermissions = new Permission[]{Permission.KICK_MEMBERS, Permission.BAN_MEMBERS};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
@@ -42,77 +42,6 @@ public class SyncCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {}
-
-	private class Unban extends SlashCommand {
-
-		public Unban(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
-			this.name = "unban";
-			this.path = "bot.moderation.sync.unban";
-			this.options = List.of(
-				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
-				new OptionData(OptionType.INTEGER, "group", lu.getText(path+".group.help"), true, true).setMinValue(0)
-			);
-			this.cooldownScope = CooldownScope.GUILD;
-			this.cooldown = 20;
-		}
-
-		@Override
-		protected void execute(SlashCommandEvent event) {
-			event.deferReply(true).queue();
-
-			User target = event.optUser("user");
-			if (target == null) {
-				editError(event, path+".not_found");
-				return;
-			}
-			if (event.getUser().equals(target) || event.getJDA().getSelfUser().equals(target)) {
-				editError(event, path+".not_self");
-				return;
-			}
-
-			Integer groupId = event.optInteger("group");
-			long guildId = event.getGuild().getIdLong();
-			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
-				editError(event, path+".no_group", "Group ID: `"+groupId.toString()+"`");
-				return;
-			}
-
-			ActionRow button = ActionRow.of(
-				Button.of(ButtonStyle.PRIMARY, "button:confirm", lu.getText(event, path+".button_confirm"))
-			);
-			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
-				.setDescription(lu.getText(event, path+".embed_title"))
-				.build()
-			).setComponents(button).queue(msg -> {
-				waiter.waitForEvent(
-					ButtonInteractionEvent.class,
-					e -> msg.getId().equals(e.getMessageId()) && e.getComponentId().equals("button:confirm"),
-					action -> {
-						bot.getDBUtil().blacklist.removeUser(groupId, target.getIdLong());
-						if (bot.getDBUtil().group.countMembers(groupId) < 1) {
-							editError(event, path+".no_guilds");
-							return;
-						};
-
-						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-							.setDescription(lu.getText(event, path+".done"))
-							.build()
-						).setComponents().queue();
-						// Perform action using Helper bot
-						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runUnban(groupId, event.getGuild(), target, "Manual ban lift"));
-					},
-					20,
-					TimeUnit.SECONDS,
-					() -> {
-						event.getHook().editOriginalComponents(ActionRow.of(Button.of(ButtonStyle.SECONDARY, "timed_out", "Timed out").asDisabled())).queue();
-					}
-				);
-			});
-		}
-
-	}
 
 	private class Kick extends SlashCommand {
 		

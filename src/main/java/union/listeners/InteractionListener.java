@@ -122,7 +122,7 @@ public class InteractionListener extends ListenerAdapter {
 		function.run();
 	}
 
-	private final List<String> acceptableButtons = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice", "blacklist", "strikes");
+	private final List<String> acceptableButtons = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice", "blacklist", "strikes", "unban_sync");
 
 	private boolean isAcceptedId(final String id) {
 		for (String match : acceptableButtons) {
@@ -252,6 +252,8 @@ public class InteractionListener extends ListenerAdapter {
 				}
 			} else if (buttonId.startsWith("blacklist")) {
 				runButtonInteraction(event, null, () -> buttonBlacklist(event));
+			} else if (buttonId.startsWith("unban_sync")) {
+				runButtonInteraction(event, null, () -> buttonUnbanSync(event));
 			} else if (buttonId.startsWith("strikes")) {
 				runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
 			}
@@ -1072,6 +1074,11 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
+		if (bot.getHelper() == null) {
+			sendError(event, "errors.no_helper");
+			return;
+		}
+
 		String userId = event.getComponentId().split(":")[1];
 		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
 		if (caseData == null || !caseData.getDuration().isZero()) {
@@ -1085,11 +1092,6 @@ public class InteractionListener extends ListenerAdapter {
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) {
 			sendError(event, "bot.moderation.blacklist.no_groups");
-			return;
-		}
-
-		if (bot.getHelper() == null) {
-			sendError(event, "errors.no_helper");
 			return;
 		}
 
@@ -1111,12 +1113,11 @@ public class InteractionListener extends ListenerAdapter {
 				e -> e.getMessageId().equals(msg.getId()),
 				selectEvent -> {
 					selectEvent.deferEdit().queue();
-					List<String> selected = selectEvent.getValues();
+					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
 						Long steam64 = db.verifyCache.getSteam64(user.getIdLong());
-						selected.forEach(id -> {
-							Integer groupId = Integer.parseInt(id);
+						selected.forEach(groupId -> {
 							if (!db.blacklist.inGroupUser(groupId, caseData.getTargetId()))
 								db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, caseData.getReason(), selectEvent.getUser().getIdLong());
 	
@@ -1124,7 +1125,7 @@ public class InteractionListener extends ListenerAdapter {
 						});
 
 						// Log to master
-						bot.getLogListener().mod.onBlacklistAdded(event.getUser(), user, steam64, groupIds);
+						bot.getLogListener().mod.onBlacklistAdded(event.getUser(), user, steam64, selected);
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
@@ -1135,6 +1136,76 @@ public class InteractionListener extends ListenerAdapter {
 					failure -> {
 						selectEvent.getHook().editOriginalEmbeds(
 							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.blacklist.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
+				},
+				20,
+				TimeUnit.SECONDS,
+				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
+			);
+		});
+	}
+
+	private void buttonUnbanSync(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		if (bot.getHelper() == null) {
+			sendError(event, "errors.no_helper");
+			return;
+		}
+
+		long guildId = event.getGuild().getIdLong();
+		List<Integer> groupIds = new ArrayList<Integer>();
+		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
+		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
+		if (groupIds.isEmpty()) {
+			sendError(event, "bot.moderation.sync.unban.no_groups");
+			return;
+		}
+
+		MessageEmbed embed = bot.getEmbedUtil().getEmbed()
+			.setColor(Constants.COLOR_WARNING)
+			.setDescription(lu.getText(event, "bot.moderation.sync.unban.title"))
+			.build();
+		StringSelectMenu menu = StringSelectMenu.create("groupId")
+			.setPlaceholder(lu.getText(event, "bot.moderation.sync.unban.value"))
+			.addOptions(groupIds.stream().map(groupId ->
+				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
+			).collect(Collectors.toList()))
+			.setMaxValues(1)
+			.build();
+
+		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
+			waiter.waitForEvent(
+				StringSelectInteractionEvent.class,
+				e -> e.getMessageId().equals(msg.getId()),
+				selectEvent -> {
+					selectEvent.deferEdit().queue();
+					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();;
+
+					event.getJDA().retrieveUserById(event.getComponentId().split(":")[1]).queue(user -> {
+						selected.forEach(groupId -> {
+							if (db.blacklist.inGroupUser(groupId, user.getIdLong())) {
+								db.blacklist.removeUser(groupId, user.getIdLong());
+								bot.getLogListener().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
+							}
+	
+							bot.getHelper().runUnban(groupId, event.getGuild(), user, "Sync group unban");
+						});
+
+						// Reply
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.sync.unban.done"))
+							.build())
+						.setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.unban.no_user", failure.getMessage())
 						).setComponents().queue();
 					});
 				},

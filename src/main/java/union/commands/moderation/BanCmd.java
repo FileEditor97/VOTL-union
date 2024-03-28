@@ -101,7 +101,7 @@ public class BanCmd extends CommandBase {
 					// log ban
 					bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 
-					// ask for ban sync
+					// reply and add blacklist button
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
 						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
 					).queue();
@@ -121,7 +121,7 @@ public class BanCmd extends CommandBase {
 				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// log
 				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
-				// reply
+				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 					.setDescription(lu.getText(event, path+".already_banned"))
 					.addField(lu.getText(event, "logger.ban.short_title"), lu.getText(event, "logger.ban.short_info")
@@ -129,6 +129,7 @@ public class BanCmd extends CommandBase {
 						.replace("{reason}", Optional.ofNullable(ban.getReason()).orElse("*none*"))
 						, false)
 					.build();
+				// reply and add blacklist button
 				event.getHook().editOriginalEmbeds(embed).setActionRow(
 					Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
 				).queue();
@@ -198,7 +199,7 @@ public class BanCmd extends CommandBase {
 				// log ban
 				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
 
-				// if permanent - add button to sync ban/blacklist target
+				// if permanent - add button to blacklist target
 				if (duration.isZero())
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
 						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))

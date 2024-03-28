@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import union.listeners.LogListener;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
-import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -63,7 +62,7 @@ public class Helper {
 		return logger;
 	}
 
-	private void banUser(Integer groupId, Guild executedGuild, User user, String reason) {
+	private void banUser(int groupId, Guild executedGuild, User user, String reason) {
 		List<Long> guildIds = new ArrayList<Long>();
 		for (long guildId : db.group.getGroupManagers(groupId)) {
 			for (int subGroupId : db.group.getOwnedGroups(guildId)) {
@@ -73,22 +72,21 @@ public class Helper {
 		guildIds.addAll(db.group.getGroupMembers(groupId));
 		if (guildIds.isEmpty()) return;
 
-		Integer maxCount = guildIds.size();
+		final int maxCount = guildIds.size();
 		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+		final String newReason = "Sync #"+groupId+": "+reason;
 		for (long guildId : guildIds) {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 			// fail-safe check if has expirable ban (to prevent auto unban)
-			CaseData banData = db.cases.getMemberActive(user.getIdLong(), guildId, CaseType.BAN);
-			if (banData != null)
-				db.cases.setInactive(banData.getCaseIdInt());
+			db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
 
-			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason("Sync: "+reason).submit());
+			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason(newReason).submit());
 		}
 
 		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 			.whenComplete((done, exception) -> {
-				Integer banned = 0;
+				int banned = 0;
 				for (CompletableFuture<Void> future : completableFutures) {
 					if (!future.isCompletedExceptionally()) banned++;
 				}
@@ -97,7 +95,7 @@ public class Helper {
 			});
 	}
 
-	private void unbanUser(Integer groupId, Guild master, User user, String reason) {
+	private void unbanUser(int groupId, Guild master, User user, String reason) {
 		List<Long> guildIds = new ArrayList<Long>();
 		for (long guildId : db.group.getGroupManagers(groupId)) {
 			for (int subGroupId : db.group.getOwnedGroups(guildId)) {
@@ -107,22 +105,21 @@ public class Helper {
 		guildIds.addAll(db.group.getGroupMembers(groupId));
 		if (guildIds.isEmpty()) return;
 
-		Integer maxCount = guildIds.size();
+		final int maxCount = guildIds.size();
 		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+		final String newReason = "Sync #"+groupId+": "+reason;
 		for (long guildId : guildIds) {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 			// Remove expirable ban case
-			CaseData banData = db.cases.getMemberActive(user.getIdLong(), guildId, CaseType.BAN);
-			if (banData != null)
-				db.cases.setInactive(banData.getCaseIdInt());
+			db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
 
-			completableFutures.add(guild.unban(user).reason("Sync: "+reason).submit());
+			completableFutures.add(guild.unban(user).reason(newReason).submit());
 		}
 
 		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 			.whenComplete((done, exception) -> {
-				Integer unbanned = 0;
+				int unbanned = 0;
 				for (CompletableFuture<Void> future : completableFutures) {
 					if (!future.isCompletedExceptionally()) unbanned++;
 				}
@@ -130,7 +127,7 @@ public class Helper {
 			});
 	}
 
-	private void kickUser(Integer groupId, Guild master, User user, String reason) {
+	private void kickUser(int groupId, Guild master, User user, String reason) {
 		List<Long> guildIds = new ArrayList<Long>();
 		for (long guildId : db.group.getGroupManagers(groupId)) {
 			for (int subGroupId : db.group.getOwnedGroups(guildId)) {
@@ -140,18 +137,19 @@ public class Helper {
 		guildIds.addAll(db.group.getGroupMembers(groupId));
 		if (guildIds.isEmpty()) return;
 
-		Integer maxCount = guildIds.size();
+		final int maxCount = guildIds.size();
 		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
+		final String newReason = "Sync #"+groupId+": "+reason;
 		for (long guildId : guildIds) {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 
-			completableFutures.add(guild.kick(user).reason("Sync: "+reason).submit());
+			completableFutures.add(guild.kick(user).reason(newReason).submit());
 		}
 
 		CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 			.whenComplete((done, exception) -> {
-				Integer kicked = 0;
+				int kicked = 0;
 				for (CompletableFuture<Void> future : completableFutures) {
 					if (!future.isCompletedExceptionally()) kicked++;
 				}
@@ -159,19 +157,19 @@ public class Helper {
 			});
 	}
 
-	public void runBan(Integer groupId, Guild executedGuild, User user, String reason) {
+	public void runBan(int groupId, Guild executedGuild, User user, String reason) {
 		CompletableFuture.runAsync(() -> {
 			banUser(groupId, executedGuild, user, Optional.ofNullable(reason).orElse("none"));
 		});
 	}
 
-	public void runUnban(Integer groupId, Guild master, User user, String reason) {
+	public void runUnban(int groupId, Guild master, User user, String reason) {
 		CompletableFuture.runAsync(() -> {
 			unbanUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
 		});
 	}
 
-	public void runKick(Integer groupId, Guild master, User user, String reason) {
+	public void runKick(int groupId, Guild master, User user, String reason) {
 		CompletableFuture.runAsync(() -> {
 			kickUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
 		});

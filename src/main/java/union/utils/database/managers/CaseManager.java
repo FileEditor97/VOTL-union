@@ -96,10 +96,15 @@ public class CaseManager extends LiteDBBase {
 		return data.stream().map(map -> new CaseData(map)).toList();
 	}
 
-	// set all strike cases for user inactive
-	// Better way for this is harder...
+	// set all ban cases for user inactive
 	public void setInactiveStrikeCases(long userId, long guildId) {
 		execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
+	}
+
+	// set all strike cases for user inactive
+	// Better way for this is harder...
+	public void setInactiveByType(long userId, long guildId, CaseType type) {
+		execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type=%d)".formatted(table, userId, guildId, type.getType()));
 	}
 
 	// get user's last case

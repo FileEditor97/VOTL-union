@@ -915,12 +915,7 @@
 				"not_found": "User not found or input error",
 				"not_self": "You can't interact with yourself or me",
 				"no_ban": "Specified user is not banned in this server",
-				"unban_success": "**{user_tag} was unbanned.** | {reason}",
-				"sync": {
-					"title": "**Sync this unban?**\nSelect groups bellow.",
-					"value": "Select group/-s",
-					"done": "Unban sync in progress! Result will be posted in log channel."
-				}
+				"unban_success": "**{user_tag} was unbanned.** | {reason}"
 			},
 			"kick": {
 				"help": "Kick user from this server",
@@ -1056,42 +1051,12 @@
 			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",
-				"ban": {
-					"help": "Sync permanent ban with Group servers",
-					"usage": "ban <case ID> <Group>",
-					"id": {
-						"name": "id",
-						"help": "Enter case ID"
-					},
-					"group": {
-						"name": "group",
-						"help": "Select Group"
-					},
-					"not_found": "Could not find case(ban) by specified ID.",
-					"expirable_ban": "Specified ban is not permanent or has expired.",
-					"no_group": "Couldn't find group by entered ID.",
-					"embed_title": "Are you sure you want to ban this user from all Group servers?",
-					"button_confirm": "YES",
-					"done": "Ban sync in progress! Result will be posted in log channel."
-				},
 				"unban": {
-					"help": "Sync unban with Group servers",
-					"usage": "unban <@User | ID> <Group>",
-					"user": {
-						"name": "user",
-						"help": "Enter user ID or ping them"
-					},
-					"group": {
-						"name": "group",
-						"help": "Select Group"
-					},
-					"not_found": "Could not find member by specified ID.\nUser **must** be unbaned here and joined this server.",
-					"not_self": "You can't interact with yourself or me.",
-					"blacklisted": "**This user is blacklisted!**\nRemove user from blacklist (`/blacklist remove`) and then retry unban.",
-					"no_group": "Couldn't find Group by entered ID.",
-					"embed_title": "Are you sure you want to unban this user on all Group servers?",
-					"button_confirm": "YES",
-					"done": "Unban sync in progress! Result will be posted in log channel."
+					"no_groups": "This server can't manage any group.",
+					"title": "Unban user in Group's servers. Select groups below.",
+					"value": "Select group/-s",
+					"no_user": "Unknown user.",
+					"done": "Unban sync in progress! Results will be posted in logs channel."
 				},
 				"kick": {
 					"help": "Sync kick with Group servers",
@@ -1110,7 +1075,7 @@
 					"no_group": "Couldn't find Group by entered ID.",
 					"embed_title": "Are you sure you want to kick this user from all Group servers?",
 					"button_confirm": "YES",
-					"done": "Kick sync in progress! Result will be posted in log channel."
+					"done": "Kick sync in progress! Results will be posted in logs channel."
 				}
 			},
 			"case": {

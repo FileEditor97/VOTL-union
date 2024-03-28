@@ -38,7 +38,7 @@ public class ScheduledCheck {
 	private final App bot;
 	private final DBUtil db;
 
-	private final Integer CLOSE_AFTER_DELAY = 16; // hours
+	private final Integer CLOSE_AFTER_DELAY = 12; // hours
 
 	public ScheduledCheck(App bot) {
 		this.bot = bot;

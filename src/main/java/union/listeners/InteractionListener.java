@@ -377,13 +377,14 @@ public class InteractionListener extends ListenerAdapter {
 				success -> {
 					bot.getLogListener().verify.onVerified(member.getUser(), steam64, guild);
 					bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
+					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
 				},
 				failure -> {
 					sendError(event, "bot.verification.failed_role");
 					bot.getLogger().warn("Was unable to add verify role to user in "+guild.getName()+"("+guild.getId()+")", failure);
 				});
 		} else {
-			Button refresh = Button.of(ButtonStyle.DANGER, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
+			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
 			// Check if user pressed refresh button
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
@@ -396,7 +397,8 @@ public class InteractionListener extends ListenerAdapter {
 				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 					.setTitle(lu.getText(event, "bot.verification.embed.title"))
 					.setDescription(lu.getText(event, "bot.verification.embed.description"))
-					.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false);
+					.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false)
+					.addField(lu.getText(event, "bot.verification.embed.video"), Constants.VERIFY_VIDEO_GUIDE, false);
 
 				event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();
 			}

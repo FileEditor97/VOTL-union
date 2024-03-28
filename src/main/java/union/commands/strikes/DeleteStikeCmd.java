@@ -217,10 +217,9 @@ public class DeleteStikeCmd extends CommandBase {
 			Integer strikeAmount = Integer.valueOf(args[1]);
 			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
 			options.add(SelectOption.of(
-				"%s | %s - %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), MessageUtil.limitString(caseData.getReason(), 50),
-					TimeFormat.DATE_SHORT.format(caseData.getTimeStart())),
+				"%s | %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), MessageUtil.limitString(caseData.getReason(), 50)),
 				caseId+"-"+strikeAmount
-			).withDescription("By: "+caseData.getModTag()));
+			).withDescription(TimeFormat.DATE_SHORT.format(caseData.getTimeStart())+" By: "+caseData.getModTag()));
 		};
 		return options;
 	}

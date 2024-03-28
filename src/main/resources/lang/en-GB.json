@@ -1289,7 +1289,7 @@
 					"cant_view": "Can't view selected group. (Not group's owner or manager)",
 					"empty": "No blacklist entries\nPage: `%d`",
 					"title": "Group's `%d` blacklist (Page %d of %d)",
-					"value": "SteamID: %s\nServer: `%s`\nModerator: %s\nReason: %s"
+					"value": "SteamID: `%s`\nServer: `%s`\nModerator: %s\nReason: `%s`"
 				},
 				"remove": {
 					"help": "Remove user from blacklist",
@@ -1442,7 +1442,8 @@
 				"title": "Link your account to complete verification",
 				"howto": "How to link your account?",
 				"description": "To get full access to the server (sending messages, application and complaint channels), follow the link below and link your Steam and Discord account.",
-				"guide": "1. Go to the project website https://unionteams.ru/\n2. Login to your Personal account via Steam\n3. Link your Discord account in the Personal account"
+				"guide": "1. Go to the project's website https://unionteams.ru/\n2. Press \"Authenticate\" in upper right corner and login via Steam.\n3. Press on your profile in upper-right corner and enter \"Personal account\".\n4. Link your Discord account on the oppened page.\n5. Return to Discord verification channel and press any button there.",
+				"video": "Video guide"
 			},
 			"listener": {
 				"refresh": "Refresh",

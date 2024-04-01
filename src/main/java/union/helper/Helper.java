@@ -6,9 +6,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import union.listeners.LogListener;
+import union.App;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
+import union.utils.logs.LoggingUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -25,15 +26,15 @@ public class Helper {
 	private final JDA JDA;
 	private final JDA mainJDA;
 	private final DBUtil db;
-	private final LogListener logListener;
+	private final LoggingUtil logUtil;
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Helper.class);
 
 	private final GuildListener guildListener;
 	
-	public Helper(JDA mainJDA, DBUtil dbUtil, LogListener logListener, final String token) throws Exception {
-		this.mainJDA = mainJDA;
-		this.db = dbUtil;
-		this.logListener = logListener;
+	public Helper(App instance, final String token) throws Exception {
+		this.mainJDA = instance.JDA;
+		this.db = instance.getDBUtil();
+		this.logUtil = instance.getLogger();
 
 		guildListener = new GuildListener(this);
 		
@@ -54,8 +55,8 @@ public class Helper {
 		return db;
 	}
 
-	public LogListener getLogListener() {
-		return logListener;
+	public LoggingUtil getLogUtil() {
+		return logUtil;
 	}
 
 	public Logger getLogger() {
@@ -91,7 +92,7 @@ public class Helper {
 					if (!future.isCompletedExceptionally()) banned++;
 				}
 				// Log in server where 
-				logListener.mod.onHelperSyncBan(groupId, executedGuild, user, reason, banned, maxCount);
+				logUtil.mod.onHelperSyncBan(groupId, executedGuild, user, reason, banned, maxCount);
 			});
 	}
 
@@ -123,7 +124,7 @@ public class Helper {
 				for (CompletableFuture<Void> future : completableFutures) {
 					if (!future.isCompletedExceptionally()) unbanned++;
 				}
-				logListener.mod.onHelperSyncUnban(groupId, master, user, reason, unbanned, maxCount);
+				logUtil.mod.onHelperSyncUnban(groupId, master, user, reason, unbanned, maxCount);
 			});
 	}
 
@@ -153,7 +154,7 @@ public class Helper {
 				for (CompletableFuture<Void> future : completableFutures) {
 					if (!future.isCompletedExceptionally()) kicked++;
 				}
-				logListener.mod.onHelperSyncKick(groupId, master, user, reason, kicked, maxCount);
+				logUtil.mod.onHelperSyncKick(groupId, master, user, reason, kicked, maxCount);
 			});
 	}
 

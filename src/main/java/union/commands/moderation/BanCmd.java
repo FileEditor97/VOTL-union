@@ -99,7 +99,7 @@ public class BanCmd extends CommandBase {
 							.replace("{reason}", reason))
 						.build();
 					// log ban
-					bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
+					bot.getLogger().mod.onNewCase(guild, tu, newBanData);
 
 					// reply and add blacklist button
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
@@ -120,7 +120,7 @@ public class BanCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), Duration.ZERO);
 				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// log
-				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
+				bot.getLogger().mod.onNewCase(guild, tu, newBanData);
 				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 					.setDescription(lu.getText(event, path+".already_banned"))
@@ -138,7 +138,7 @@ public class BanCmd extends CommandBase {
 		failure -> {
 			// checks if thrown something except from "ban not found"
 			if (!failure.getMessage().startsWith("10026")) {
-				bot.getLogger().warn(failure.getMessage());
+				bot.getAppLogger().warn(failure.getMessage());
 				editError(event, path+".ban_abort", failure.getMessage());
 				return;
 			}
@@ -197,7 +197,7 @@ public class BanCmd extends CommandBase {
 						.replace("{reason}", reason))
 					.build();
 				// log ban
-				bot.getLogListener().mod.onNewCase(guild, tu, newBanData);
+				bot.getLogger().mod.onNewCase(guild, tu, newBanData);
 
 				// if permanent - add button to blacklist target
 				if (duration.isZero())

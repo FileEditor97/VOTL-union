@@ -1,4 +1,4 @@
-package union.objects;
+package union.objects.logs;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,37 +7,38 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import union.utils.message.LocaleUtil;
+import union.utils.file.lang.LocaleUtil;
 
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 
-public enum LogChannels {
+public enum LogType {
 	MODERATION("moderation"),
-	GROUPS("groups"),
+	GROUP("groups"),
 	VERIFICATION("verify"),
-	TICKETS("tickets"),
-	ROLES("roles"),
-	SERVER("server"),
-	MESSAGES("messages"),
-	MEMBERS("members"),
+	TICKET("ticket"),
+	ROLE("role"),
+	GUILD("guild"),
+	MESSAGE("message"),
+	MEMBER("member"),
 	VOICE("voice"),
-	CHANNELS("channels"),
+	CHANNEL("channel"),
+	INVITE("invite"),
 	OTHER("other");
 
 	private final String name;
 	private final String path;
 
 	private static final Set<String> ALL = new HashSet<>();
-	private static final Map<String, LogChannels> BY_NAME = new HashMap<String, LogChannels>();
+	private static final Map<String, LogType> BY_NAME = new HashMap<String, LogType>();
 
 	static {
-		for (LogChannels lc : LogChannels.values()) {
+		for (LogType lc : LogType.values()) {
 			ALL.add(lc.getName());
 			BY_NAME.put(lc.getName(), lc);
 		}
 	}
 
-	LogChannels(String name) {
+	LogType(String name) {
 		this.name = name;
 		this.path = "logger."+name;
 	}
@@ -62,8 +63,8 @@ public enum LogChannels {
 		return ALL;
 	}
 
-	public static LogChannels of(String name) {
-		LogChannels result = BY_NAME.get(name);
+	public static LogType of(String name) {
+		LogType result = BY_NAME.get(name);
 		if (result == null) {
 			throw new IllegalArgumentException("Invalid DB name: " + name);
 		}

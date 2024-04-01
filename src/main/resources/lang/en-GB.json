@@ -242,37 +242,65 @@
 	},
 	"logger": {
 		"moderation": {
-			"name": "Moderation logs"
+			"name": "Moderation logs",
+			"ban": "Member banned | %s",
+			"unban": "Ban removed | %s",
+			"timeout": "Member timed out | %s",
+			"remove_timeout": "Timeout removed | %s"
 		},
-		"groups": {
+		"group": {
 			"name": "Group logs"
 		},
 		"verify": {
 			"name": "Verification logs"
 		},
-		"tickets": {
+		"ticket": {
 			"name": "Ticket logs"
 		},
-		"roles": {
-			"name": "Role logs"
+		"role": {
+			"name": "Role logs",
+			"create": "Role created | %s",
+			"update": "Role updated | %s",
+			"delete": "Role deleted | %s"
 		},
-		"server": {
-			"name": "Server logs"
+		"guild": {
+			"name": "Server logs",
+			"update": "Guild settings updated",
+			"emoji": "Emoji updated"
 		},
-		"messages": {
-			"name": "Message logs"
+		"message": {
+			"name": "Message logs",
+			"delete": "Message deleted",
+			"bulk_delete": "Bulk messages deleted",
+			"update": "Message updated"
 		},
-		"members": {
-			"name": "Member logs"
+		"member": {
+			"name": "Member logs",
+			"join": "Member joined | %s",
+			"leave": "Member left | %s",
+			"role_update": "Member's role updated | %s",
+			"name_change": "Member changed nickname",
+			"kick": "Member kicked | %s"
 		},
 		"voice": {
-			"name": "Voice logs"
+			"name": "Voice logs",
+			"join": "Joined voice channel | %s",
+			"leave": "Left voice channel | %s",
+			"switch": "Switched voice channel | %s"
 		},
-		"channels": {
-			"name": "Channel logs"
+		"channel": {
+			"name": "Channel logs",
+			"create": "Channel created | %s",
+			"update": "Channel updated | %s",
+			"delete": "Channel deleted | %s"
+		},
+		"invite": {
+			"name": "Invite logs",
+			"sent": "Invite sent"
 		},
 		"other": {
-			"name": "Audit logs"
+			"name": "Audit logs",
+			"audit": "Audit logs"
 		}
 	},
 	"bot": {

@@ -22,12 +22,12 @@ import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
+import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.database.managers.TicketTagManager.Tag;
-import union.utils.message.LocaleUtil;
+import union.utils.file.lang.LocaleUtil;
 import union.utils.message.MessageUtil;
-import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -260,7 +260,7 @@ public class InteractionListener extends ListenerAdapter {
 		} catch(Throwable t) {
 			// Logs throwable and trys to respond to the user with the error
 			// Thrown errors are not user's error, but code's fault as such things should be catched earlier and replied properly
-			bot.getLogger().error("ButtonInteraction Exception", t);
+			bot.getAppLogger().error("ButtonInteraction Exception", t);
 			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 				.setTitle(lu.getLocalized(event.getUserLocale(), "errors.title"))
 				.setDescription(lu.getLocalized(event.getUserLocale(), "errors.unknown"))
@@ -291,7 +291,7 @@ public class InteractionListener extends ListenerAdapter {
 						user.openPrivateChannel().queue(dm ->
 							dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.verification.role_removed").replace("{server}", guild.getName())).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
 						);
-						bot.getLogListener().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
+						bot.getLogger().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
 					}
 				);
 			} catch (Exception ex) {}
@@ -330,7 +330,7 @@ public class InteractionListener extends ListenerAdapter {
 		for (int groupId : groupIds) {
 			if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 				sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
-				bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), null, guild,
+				bot.getLogger().verify.onVerifiedAttempt(member.getUser(), null, guild,
 					lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
 				return;
 			}
@@ -342,7 +342,7 @@ public class InteractionListener extends ListenerAdapter {
 			for (int groupId : groupIds) {
 				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 					sendError(event, "bot.verification.blacklisted", "SteamID: "+SteamUtil.convertSteam64toSteamID(steam64));
-					bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+					bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
 						lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
 					return;
 				}
@@ -355,7 +355,7 @@ public class InteractionListener extends ListenerAdapter {
 					// if user has not joined at least once
 					if (playtime == null) {
 						sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
-						bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+						bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
 							lu.getText(event, "logger_embed.verify.playtime").formatted("none", minumumPlaytime));
 						return;
 					}
@@ -363,25 +363,25 @@ public class InteractionListener extends ListenerAdapter {
 					final long played = Math.floorDiv(playtime, 3600);
 					if (played < minumumPlaytime) {
 						sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minumumPlaytime, steam64));
-						bot.getLogListener().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+						bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
 							lu.getText(event, "logger_embed.verify.playtime").formatted(played, minumumPlaytime));
 						return;
 					}
 				}
 			} catch (Exception ex) {
-				bot.getLogger().warn("Exception at playtime check, skipped.", ex);
+				bot.getAppLogger().warn("Exception at playtime check, skipped.", ex);
 			}
 			
 			// Give verify role to user
 			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
 				success -> {
-					bot.getLogListener().verify.onVerified(member.getUser(), steam64, guild);
+					bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
 					bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
 					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
 				},
 				failure -> {
 					sendError(event, "bot.verification.failed_role");
-					bot.getLogger().warn("Was unable to add verify role to user in "+guild.getName()+"("+guild.getId()+")", failure);
+					bot.getAppLogger().warn("Was unable to add verify role to user in "+guild.getName()+"("+guild.getId()+")", failure);
 				});
 		} else {
 			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
@@ -615,7 +615,7 @@ public class InteractionListener extends ListenerAdapter {
 				});
 
 				// Log
-				bot.getLogListener().ticket.onCreate(guild, channel, event.getUser());
+				bot.getLogger().ticket.onCreate(guild, channel, event.getUser());
 				// Send reply
 				event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, "bot.ticketing.listener.created").replace("{channel}", channel.getAsMention()))
@@ -652,7 +652,7 @@ public class InteractionListener extends ListenerAdapter {
 				).setEphemeral(true).queue();
 			} else {
 				guild.modifyMemberRoles(member, roles, null).reason("Request role-"+ticketId+" approved by "+event.getMember().getEffectiveName()).queue(done -> {
-					bot.getLogListener().role.onApproved(member, event.getMember(), guild, roles, ticketId);
+					bot.getLogger().role.onApproved(member, event.getMember(), guild, roles, ticketId);
 					db.ticket.setClaimed(channelId, event.getMember().getId());
 					event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
 						.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))
@@ -688,7 +688,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown")).build()).queue(msg -> {
 			bot.getTicketUtil().closeTicket(channelId, event.getUser(), (db.ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support"), failure -> {
 				msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed", failure.getMessage())).queue();
-				bot.getLogger().error("Couldn't close ticket with channelID:"+channelId, failure);
+				bot.getAppLogger().error("Couldn't close ticket with channelID:"+channelId, failure);
 			});
 		});
 	}
@@ -979,7 +979,7 @@ public class InteractionListener extends ListenerAdapter {
 			overrides.remove(vc.getPermissionOverride(guild.getBotRole())); // removes bot's role
 			overrides.remove(vc.getPermissionOverride(guild.getPublicRole())); // removes @everyone role
 		} catch (NullPointerException ex) {
-			bot.getLogger().warn("PermsCmd null pointer at role override remove");
+			bot.getAppLogger().warn("PermsCmd null pointer at role override remove");
 		}
 		
 		if (overrides.isEmpty()) {
@@ -1000,7 +1000,7 @@ public class InteractionListener extends ListenerAdapter {
 			overrides.remove(vc.getPermissionOverride(event.getMember())); // removes user
 			overrides.remove(vc.getPermissionOverride(guild.getSelfMember())); // removes bot
 		} catch (NullPointerException ex) {
-			bot.getLogger().warn("PermsCmd null pointer at member override remove");
+			bot.getAppLogger().warn("PermsCmd null pointer at member override remove");
 		}
 
 		EmbedBuilder embedBuilder2 = embedBuilder;
@@ -1127,7 +1127,7 @@ public class InteractionListener extends ListenerAdapter {
 						});
 
 						// Log to master
-						bot.getLogListener().mod.onBlacklistAdded(event.getUser(), user, steam64, selected);
+						bot.getLogger().mod.onBlacklistAdded(event.getUser(), user, steam64, selected);
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
@@ -1192,7 +1192,7 @@ public class InteractionListener extends ListenerAdapter {
 						selected.forEach(groupId -> {
 							if (db.blacklist.inGroupUser(groupId, user.getIdLong())) {
 								db.blacklist.removeUser(groupId, user.getIdLong());
-								bot.getLogListener().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
+								bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
 							}
 	
 							bot.getHelper().runUnban(groupId, event.getGuild(), user, "Sync group unban");

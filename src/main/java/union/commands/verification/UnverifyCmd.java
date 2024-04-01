@@ -62,13 +62,13 @@ public class UnverifyCmd extends CommandBase {
 
 		guild.removeRoleFromMember(member, role).reason(String.format("Manual unverification by %s | %s", event.getUser().getName(), reason)).queue(
 			success -> {
-				bot.getLogListener().verify.onUnverified(member.getUser(), null, guild, reason);
+				bot.getLogger().verify.onUnverified(member.getUser(), null, guild, reason);
 				bot.getDBUtil().verifyCache.removeByDiscord(member.getIdLong());
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".done")).build());
 			},
 			failure -> {
 				editError(event, "bot.verification.failed_role");
-				bot.getLogger().info(String.format("Was unable to remove verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
+				bot.getAppLogger().info(String.format("Was unable to remove verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
 			});
 	}
 

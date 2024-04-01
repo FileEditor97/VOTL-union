@@ -1,6 +1,7 @@
 package union;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -26,21 +27,21 @@ import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
 import union.utils.CheckUtil;
-import union.utils.LogUtil;
 import union.utils.TicketUtil;
 import union.utils.WebhookAppender;
-import union.utils.WebhookLogger;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
+import union.utils.file.lang.LocaleUtil;
+import union.utils.logs.LogEmbedUtil;
+import union.utils.logs.LoggingUtil;
+import union.utils.logs.WebhookLogger;
 import union.utils.message.EmbedUtil;
-import union.utils.message.LocaleUtil;
 import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -64,6 +65,25 @@ public class App {
 
 	public final String VERSION = Optional.ofNullable(App.class.getPackage().getImplementationVersion()).map(ver -> "v"+ver).orElse("DEVELOPMENT");
 
+	private final Set<GatewayIntent> intents = Set.of(
+		GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+		GatewayIntent.GUILD_INVITES,
+		GatewayIntent.GUILD_MEMBERS,
+		GatewayIntent.GUILD_MESSAGES,
+		GatewayIntent.GUILD_MODERATION,
+		GatewayIntent.GUILD_VOICE_STATES,
+		GatewayIntent.GUILD_WEBHOOKS,
+		GatewayIntent.MESSAGE_CONTENT,
+		GatewayIntent.GUILD_MESSAGE_REACTIONS
+	);
+	private final Set<CacheFlag> cacheFlags = Set.of(
+		CacheFlag.EMOJI,
+		CacheFlag.MEMBER_OVERRIDES,
+		CacheFlag.STICKER,
+		CacheFlag.ROLE_TAGS,
+		CacheFlag.VOICE_STATE
+	);
+
 	public final JDA JDA;
 	public final EventWaiter WAITER;
 	private final CommandClient commandClient;
@@ -74,9 +94,13 @@ public class App {
 	private final AutoCompleteListener acListener;
 	private final InteractionListener interactionListener;
 	private final VoiceListener voiceListener;
-	private final MessageListener messagesListener;
+	private final MessageListener messageListener;
+	private final ChannelListener channelListener;
+	private final MemberListener memberListener;
+	private final ModerationListener moderationListener;
+	private final RoleListener roleListener;
 
-	private final LogListener logListener;
+	private final LoggingUtil logUtil;
 	
 	private final ScheduledExecutorService scheduledExecutor;
 	private final ScheduledCheck scheduledCheck;
@@ -86,7 +110,7 @@ public class App {
 	private final EmbedUtil embedUtil;
 	private final CheckUtil checkUtil;
 	private final LocaleUtil localeUtil;
-	private final LogUtil logUtil;
+	private final LogEmbedUtil logEmbedUtil;
 	private final TicketUtil ticketUtil;
 	private final WebhookLogger webhookLogger;
 
@@ -108,16 +132,20 @@ public class App {
 		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this);
-		logUtil		= new LogUtil(localeUtil);
 		ticketUtil	= new TicketUtil(this);
+		logEmbedUtil = new LogEmbedUtil(localeUtil);
+		logUtil		= new LoggingUtil(this);
 		webhookLogger = new WebhookLogger(dbUtil);
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
-		logListener			= new LogListener(this);
 		interactionListener	= new InteractionListener(this, WAITER);
 		voiceListener		= new VoiceListener(this);
-		messagesListener	= new MessageListener(this);
+		messageListener	= new MessageListener(this);
+		channelListener		= new ChannelListener();
+		memberListener		= new MemberListener(this);
+		moderationListener	= new ModerationListener(this);
+		roleListener		= new RoleListener();
 
 		scheduledExecutor	= new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 		scheduledCheck		= new ScheduledCheck(this);
@@ -203,32 +231,23 @@ public class App {
 			.build();
 
 		// Build
-		MemberCachePolicy policy = MemberCachePolicy.any(MemberCachePolicy.VOICE, MemberCachePolicy.OWNER);	// if in voice or server owner
-		
 		acListener = new AutoCompleteListener(commandClient, dbUtil);
 
 		JDABuilder mainBuilder = JDABuilder.createLight(fileManager.getString("config", "bot-token"))
-			.setEnabledIntents(
-				GatewayIntent.GUILD_MEMBERS,			// required for updating member profiles and ChunkingFilter
-				GatewayIntent.GUILD_MESSAGES,			// checks for verified
-				GatewayIntent.GUILD_VOICE_STATES		// required for CF VOICE_STATE and CP VOICE
-			)
-			.setMemberCachePolicy(policy)
+			.setEnabledIntents(intents)
+			.setMemberCachePolicy(MemberCachePolicy.ALL)	// cache all members
 			.setChunkingFilter(ChunkingFilter.ALL)		// chunk all guilds
-			.enableCache(
-				CacheFlag.MEMBER_OVERRIDES,		// channel permission overrides
-				CacheFlag.ROLE_TAGS,			// role search
-				CacheFlag.VOICE_STATE			// get members voice status
-			)
-			.addEventListeners(commandClient, WAITER, guildListener, acListener, interactionListener, voiceListener, messagesListener);
+			.enableCache(cacheFlags)
+			.addEventListeners(commandClient, WAITER, acListener, interactionListener, channelListener,
+			 guildListener, memberListener, messageListener, moderationListener, roleListener, voiceListener);
 
-		JDA jda = null;
+		JDA tempJda = null;
 
 		Integer retries = 4; // how many times will it try to build
 		Integer cooldown = 8; // in seconds; cooldown amount, will doubles after each retry
 		while (true) {
 			try {
-				jda = mainBuilder.build();
+				tempJda = mainBuilder.build();
 				break;
 			} catch (InvalidTokenException ex) {
 				logger.error("Login failed due to Token", ex);
@@ -250,14 +269,14 @@ public class App {
 			}
 		}
 
-		this.JDA = jda;
+		this.JDA = tempJda;
 	}
 
 	public CommandClient getClient() {
 		return commandClient;
 	}
 
-	public Logger getLogger() {
+	public Logger getAppLogger() {
 		return logger;
 	}
 
@@ -285,7 +304,11 @@ public class App {
 		return localeUtil;
 	}
 
-	public LogUtil getLogUtil() {
+	public LogEmbedUtil getLogEmbedUtil() {
+		return logEmbedUtil;
+	}
+
+	public LoggingUtil getLogger() {
 		return logUtil;
 	}
 
@@ -297,23 +320,17 @@ public class App {
 		return webhookLogger;
 	}
 
-	public LogListener getLogListener() {
-		return logListener;
-	}
-
 	public Helper getHelper() {
 		return helper;
 	}
 
 	public static void main(String[] args) {
-		Message.suppressContentIntentWarning();
-
 		instance = new App();
 		instance.createWebhookAppender();
 		instance.logger.info("Success start");
 
 		try {
-			helper = new Helper(instance.JDA, instance.getDBUtil(), instance.getLogListener(), instance.getFileManager().getNullableString("config", "helper-token"));
+			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
 			helper.getLogger().info("Helper started");
 		} catch (Exception ex) {
 			instance.logger.info("Was unable to start helper");

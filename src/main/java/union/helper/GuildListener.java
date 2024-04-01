@@ -35,7 +35,7 @@ public class GuildListener extends ListenerAdapter {
 
 			// Get master guilds IDs and send logs to them
 			helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> 
-				helper.getLogListener().group.helperInformAction(groupId, event.getGuild(), event.getEntry())
+				helper.getLogUtil().group.helperInformAction(groupId, event.getGuild(), event.getEntry())
 			);
 		}
 		// Alerts
@@ -55,13 +55,13 @@ public class GuildListener extends ListenerAdapter {
 						member.ban(0, TimeUnit.DAYS).reason("Possible misconduct, staff notified!").queue(done -> {
 							// Get master guilds IDs and send logs to them
 							helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId -> 
-								helper.getLogListener().group.helperAlertTriggered(groupId, event.getGuild(), member, "User banned!", event.getEntry().getType().name())
+								helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User banned!", event.getEntry().getType().name())
 							);
 						});
 					} catch (Exception ex) {
 						// Get master guilds IDs and send logs to them
 						helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId -> 
-							helper.getLogListener().group.helperAlertTriggered(groupId, event.getGuild(), member, Constants.WARNING+" Unable to ban user!\n"+ex.getMessage(), event.getEntry().getType().name())
+							helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, Constants.WARNING+" Unable to ban user!\n"+ex.getMessage(), event.getEntry().getType().name())
 						);
 					}
 				});
@@ -85,14 +85,14 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildLeave(GuildLeaveEvent event) {
 		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> 
-			helper.getLogListener().group.helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
+			helper.getLogUtil().group.helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
 		);
 	}
 
 	@Override
 	public void onUnavailableGuildLeave(UnavailableGuildLeaveEvent event) {
 		helper.getDBUtil().group.getGuildGroups(event.getGuildIdLong()).forEach(groupId -> 
-			helper.getLogListener().group.helperInformLeave(groupId, null, event.getGuildId())
+			helper.getLogUtil().group.helperInformLeave(groupId, null, event.getGuildId())
 		);
 	}
 

@@ -83,6 +83,6 @@ public class DurationCmd extends CommandBase {
 			.build();
 		editHookEmbed(event, embed);
 
-		bot.getLogListener().mod.onChangeDuration(event, caseData, event.getMember(), newTime);
+		bot.getLogger().mod.onChangeDuration(event, caseData, event.getMember(), newTime);
 	}
 }

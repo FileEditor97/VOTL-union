@@ -8,9 +8,9 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
-import union.objects.LogChannels;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.objects.logs.LogType;
 import union.utils.database.managers.GuildLogsManager.LogSettings;
 import union.utils.database.managers.GuildLogsManager.WebhookData;
 import union.utils.exception.CheckException;
@@ -45,7 +45,7 @@ public class LogsCmd extends CommandBase {
 			this.path = "bot.guild.logs.enable";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), true)
-					.addChoices(LogChannels.asChoices(lu)),
+					.addChoices(LogType.asChoices(lu)),
 				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
 					.setChannelTypes(ChannelType.TEXT)
 			);
@@ -69,7 +69,7 @@ public class LogsCmd extends CommandBase {
 				return;
 			}
 
-			LogChannels type = LogChannels.of(event.optString("type"));
+			LogType type = LogType.of(event.optString("type"));
 			String text = lu.getText(event, type.getPathName());
 
 			try {
@@ -108,7 +108,7 @@ public class LogsCmd extends CommandBase {
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), true)
 					.addChoice("All logs", "all")
-					.addChoices(LogChannels.asChoices(lu))
+					.addChoices(LogType.asChoices(lu))
 			);
 		}
 
@@ -136,7 +136,7 @@ public class LogsCmd extends CommandBase {
 					.build()
 				);
 			} else {
-				LogChannels type = LogChannels.of(input);
+				LogType type = LogType.of(input);
 				WebhookData data = bot.getDBUtil().logs.getLogWebhook(type, guildId);
 				if (data != null) {
 					event.getJDA().retrieveWebhookById(data.getWebhookId()).queue(webhook -> {

@@ -1,4 +1,4 @@
-package union.listeners;
+package union.utils.logs;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -11,14 +11,13 @@ import union.App;
 import union.base.command.SlashCommandEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.LogChannels;
 import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
-import union.utils.LogUtil;
+import union.objects.logs.LogType;
+import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
-import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
@@ -31,40 +30,30 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.requests.IncomingWebhookClientImpl;
 
-public class LogListener {
+public class LoggingUtil {
 	
 	private final App bot;
 	private final DBUtil db;
-	private final LogUtil logUtil;
+	private final LogEmbedUtil logUtil;
 
-	public final Moderation mod = new Moderation();
-	public final Roles role = new Roles();
-	public final Groups group = new Groups();
-	public final Verification verify = new Verification();
-	public final Tickets ticket = new Tickets();
-	public final Server server = new Server();
+	public final ModerationLogs mod = new ModerationLogs();
+	public final RoleLogs role = new RoleLogs();
+	public final GroupLogs group = new GroupLogs();
+	public final VerificationLogs verify = new VerificationLogs();
+	public final TicketLogs ticket = new TicketLogs();
+	public final GuildLogs guild = new GuildLogs();
 
-	public LogListener(App bot) {
+	public LoggingUtil(App bot) {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
-		this.logUtil = bot.getLogUtil();
+		this.logUtil = bot.getLogEmbedUtil();
 	}
 
-	/* @Deprecated
-	private TextChannel getLogChannel(LogChannels type, Guild guild) {
-		return Optional.ofNullable(db.guild.getLogChannel(type, guild.getId())).map(guild::getTextChannelById).orElse(null);
-	}
-
-	@Deprecated
-	private TextChannel getLogChannel(LogChannels type, long guildId) {
-		return Optional.ofNullable(db.guild.getLogChannel(type, String.valueOf(guildId))).map(bot.JDA::getTextChannelById).orElse(null);
-	} */
-
-	private IncomingWebhookClientImpl getWebhookClient(LogChannels type, Guild guild) {
+	private IncomingWebhookClientImpl getWebhookClient(LogType type, Guild guild) {
 		return bot.getGuildLogger().getWebhookClient(guild, type);
 	}
 
-	private void sendLog(Guild guild, LogChannels type, Supplier<MessageEmbed> embedSupplier) {
+	private void sendLog(Guild guild, LogType type, Supplier<MessageEmbed> embedSupplier) {
 		bot.getGuildLogger().sendMessageEmbed(guild, type, embedSupplier);
 	}
 
@@ -72,30 +61,9 @@ public class LogListener {
 		webhookClient.sendMessageEmbeds(embed).queue();
 	}
 
-	/* @Deprecated
-	private void sendLog(TextChannel channel, MessageEmbed embed) {
-		try {
-			channel.sendMessageEmbeds(embed).queue();
-		} catch (InsufficientPermissionException | IllegalArgumentException ex) {
-			return;
-		}
-	}
-
-	@Deprecated
-	private void sendLog(LogChannels type, Guild guild, MessageEmbed embed) {
-		TextChannel channel = getLogChannel(type, guild);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(embed).queue();
-		} catch (InsufficientPermissionException | IllegalArgumentException ex) {
-			return;
-		}
-	} */
-
 	// Moderation actions
-	public class Moderation {
-		private final LogChannels type = LogChannels.MODERATION;
+	public class ModerationLogs {
+		private final LogType type = LogType.MODERATION;
 
 		public void onNewCase(Guild guild, User target, CaseData caseData) {
 			onNewCase(guild, target, caseData, null);
@@ -106,7 +74,7 @@ public class LogListener {
 			if (client == null) return;
 
 			if (caseData == null) {
-				bot.getLogger().warn("Unknown case provided with interaction");
+				bot.getAppLogger().warn("Unknown case provided with interaction");
 				return;
 			}
 
@@ -157,7 +125,7 @@ public class LogListener {
 
 		public void onChangeReason(SlashCommandEvent event, CaseData caseData, Member moderator, String newReason) {
 			if (caseData == null) {
-				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
+				bot.getAppLogger().warn("Unknown case provided with interaction ", event.getName());
 				return;
 			}
 
@@ -166,7 +134,7 @@ public class LogListener {
 
 		public void onChangeDuration(SlashCommandEvent event, CaseData caseData, Member moderator, String newTime) {
 			if (caseData == null) {
-				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
+				bot.getAppLogger().warn("Unknown case provided with interaction ", event.getName());
 				return;
 			}
 
@@ -203,8 +171,8 @@ public class LogListener {
 	}
 
 	// Roles actions
-	public class Roles {
-		private final LogChannels type = LogChannels.ROLES;
+	public class RoleLogs {
+		private final LogType type = LogType.ROLE;
 
 		public void onApproved(Member member, Member admin, Guild guild, List<Role> roles, String ticketId) {
 			sendLog(guild, type, () -> logUtil.rolesApprovedEmbed(guild.getLocale(), ticketId, member.getAsMention(), member.getId(),
@@ -249,8 +217,8 @@ public class LogListener {
 	}
 
 	// Group actions
-	public class Groups {
-		private final LogChannels type = LogChannels.GROUPS;
+	public class GroupLogs {
+		private final LogType type = LogType.GROUP;
 
 		public void onCreation(SlashCommandEvent event, Integer groupId, String name) {
 			sendLog(event.getGuild(), type, () -> logUtil.groupCreatedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), event.getGuild().getIdLong(),
@@ -365,8 +333,8 @@ public class LogListener {
 	}
 
 	// Verification actions
-	public class Verification {
-		private final LogChannels type = LogChannels.VERIFICATION;
+	public class VerificationLogs {
+		private final LogType type = LogType.VERIFICATION;
 
 		public void onVerified(User user, Long steam64, Guild guild) {
 			sendLog(guild, type, () -> logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
@@ -388,8 +356,8 @@ public class LogListener {
 	}
 
 	// Tickets actions
-	public class Tickets {
-		private final LogChannels type = LogChannels.TICKETS;
+	public class TicketLogs {
+		private final LogType type = LogType.TICKET;
 
 		public void onCreate(Guild guild, GuildMessageChannel messageChannel, User author) {
 			sendLog(guild, type, () -> logUtil.ticketCreatedEmbed(guild.getLocale(), messageChannel, author));
@@ -411,8 +379,8 @@ public class LogListener {
 	}
 
 	// Server actions
-	public class Server {
-		private final LogChannels type = LogChannels.SERVER;
+	public class GuildLogs {
+		private final LogType type = LogType.GUILD;
 
 		public void onAccessAdded(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
 			sendLog(guild, type, () -> logUtil.accessAdded(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));

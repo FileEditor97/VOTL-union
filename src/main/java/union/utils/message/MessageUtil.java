@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import union.utils.file.lang.LocaleUtil;
+
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 public class MessageUtil {

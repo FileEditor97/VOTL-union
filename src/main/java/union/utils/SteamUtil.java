@@ -1,4 +1,4 @@
-package union.utils.message;
+package union.utils;
 
 public class SteamUtil {
 

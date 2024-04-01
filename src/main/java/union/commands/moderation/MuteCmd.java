@@ -119,7 +119,7 @@ public class MuteCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), duration);
 				CaseData muteDate = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
 				// log mute
-				bot.getLogListener().mod.onNewCase(guild, tm.getUser(), muteDate);
+				bot.getLogger().mod.onNewCase(guild, tm.getUser(), muteDate);
 				
 				// send embed
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)

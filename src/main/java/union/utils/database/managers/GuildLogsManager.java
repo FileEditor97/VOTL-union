@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import union.objects.LogChannels;
 import union.objects.annotation.NotNull;
 import union.objects.constants.Constants;
+import union.objects.logs.LogType;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
@@ -23,13 +23,13 @@ public class GuildLogsManager extends LiteDBBase {
 		super(cu, "logWebhooks");
 	}
 
-	public void setLogWebhook(LogChannels type, long guildId, WebhookData webhookData) {
+	public void setLogWebhook(LogType type, long guildId, WebhookData webhookData) {
 		invalidateCache(guildId);
 		String data = webhookData==null ? "NULL" : webhookData.encodeData();
 		execute("INSERT INTO %s(guildId, %s) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET %2$s=%4$s".formatted(table, type.getName(), guildId, quote(data)));
 	}
 
-	public void removeLogWebhook(LogChannels type, long guildId) {
+	public void removeLogWebhook(LogType type, long guildId) {
 		invalidateCache(guildId);
 		execute("UPDATE %s SET %s=NULL WHERE (guildId=%d)".formatted(table, type.getName(), guildId));
 	}
@@ -39,7 +39,7 @@ public class GuildLogsManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public WebhookData getLogWebhook(LogChannels type, long guildId) {
+	public WebhookData getLogWebhook(LogType type, long guildId) {
 		if (cache.contains(guildId))
 			return cache.get(guildId).getWebhookData(type);
 		LogSettings settings = applyNonNull(getData(guildId), data -> new LogSettings(data));
@@ -60,7 +60,7 @@ public class GuildLogsManager extends LiteDBBase {
 	}
 
 	private Map<String, Object> getData(long guildId) {
-		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), LogChannels.getAllNames());
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), LogType.getAllNames());
 	}
 
 	private void invalidateCache(long guildId) {
@@ -68,7 +68,7 @@ public class GuildLogsManager extends LiteDBBase {
 	}
 
 	public class LogSettings {
-		private final Map<LogChannels, WebhookData> logs;
+		private final Map<LogType, WebhookData> logs;
 
 		public LogSettings() {
 			this.logs = new HashMap<>();
@@ -78,14 +78,14 @@ public class GuildLogsManager extends LiteDBBase {
 			this.logs = new HashMap<>();
 			map.entrySet().stream()
 				.filter(e -> e.getValue() != null)
-				.forEach(e -> logs.put(LogChannels.of(e.getKey()), new WebhookData((String) e.getValue())));
+				.forEach(e -> logs.put(LogType.of(e.getKey()), new WebhookData((String) e.getValue())));
 		}
 
-		public WebhookData getWebhookData(LogChannels type) {
+		public WebhookData getWebhookData(LogType type) {
 			return logs.getOrDefault(type, null);
 		}
 
-		public Map<LogChannels, Long> getChannels() {
+		public Map<LogType, Long> getChannels() {
 			return logs.entrySet()
 				.stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getChannelId()));

@@ -1,11 +1,17 @@
 package union.listeners;
 
 import union.App;
+import union.objects.annotation.NotNull;
+import union.objects.logs.LogType;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
@@ -43,7 +49,7 @@ public class MessageListener extends ListenerAdapter {
 							dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.verification.role_removed").replace("{server}", guild.getName()))
 								.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
 						);
-						bot.getLogListener().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
+						bot.getLogger().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
 					}
 				);
 			} catch (Exception ex) {}
@@ -52,5 +58,20 @@ public class MessageListener extends ListenerAdapter {
 			bot.getDBUtil().verifyCache.addUser(userId, Long.valueOf(steam64Str));
 		}
 	}
+
+
+	private final LogType type = LogType.MESSAGE;
+	
+	@Override
+	public void onMessageUpdate(@NotNull MessageUpdateEvent event) {}
+
+	@Override
+	public void onMessageDelete(@NotNull MessageDeleteEvent event) {}
+
+	@Override
+	public void onMessageBulkDelete(@NotNull MessageBulkDeleteEvent event) {}
+
+	@Override
+	public void onMessageReactionRemoveAll(@NotNull MessageReactionRemoveAllEvent event) {}
 	
 }

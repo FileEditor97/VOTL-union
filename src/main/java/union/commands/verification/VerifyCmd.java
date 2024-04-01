@@ -60,14 +60,14 @@ public class VerifyCmd extends CommandBase {
 		} else {
 			guild.addRoleToMember(member, role).reason(String.format("Manual verification by %s", event.getUser().getName())).queue(
 				success -> {
-					bot.getLogListener().verify.onVerified(member.getUser(), null, guild);
+					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
 					bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
 
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")).build());
 				},
 				failure -> {
 					editError(event, "bot.verification.failed_role");
-					bot.getLogger().info(String.format("Was unable to add verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
+					bot.getAppLogger().info(String.format("Was unable to add verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
 				}
 			);
 		}

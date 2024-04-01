@@ -1,4 +1,4 @@
-package union.utils.message;
+package union.utils.file.lang;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,7 +9,6 @@ import java.util.Objects;
 import union.App;
 import union.objects.Emotes;
 import union.objects.annotation.NotNull;
-import union.utils.file.lang.LangUtil;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;

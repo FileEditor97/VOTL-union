@@ -1,4 +1,4 @@
-package union.utils;
+package union.utils.logs;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -9,9 +9,9 @@ import union.objects.CmdModule;
 import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
+import union.utils.SteamUtil;
 import union.utils.database.managers.CaseManager.CaseData;
-import union.utils.message.LocaleUtil;
-import union.utils.message.SteamUtil;
+import union.utils.file.lang.LocaleUtil;
 import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -25,7 +25,7 @@ import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
-public class LogUtil {
+public class LogEmbedUtil {
 
 	private final LocaleUtil lu;
 
@@ -40,7 +40,7 @@ public class LogUtil {
 	private final int WHITE = 0xFFFFFF;
 	private final int DEFAULT = Constants.COLOR_DEFAULT;
 
-	public LogUtil(LocaleUtil localeUtil) {
+	public LogEmbedUtil(LocaleUtil localeUtil) {
 		this.lu = localeUtil;
 	}
 
@@ -54,6 +54,14 @@ public class LogUtil {
 
 	private EmbedBuilder getEmbed(int color) {
 		return new EmbedBuilder().setColor(color).setTimestamp(ZonedDateTime.now());
+	}
+
+	private EmbedBuilder getEmbed(@NotNull long id) {
+		return getEmbed(DEFAULT, id);
+	}
+
+	private EmbedBuilder getEmbed(@NotNull int color, @NotNull long id) {
+		return new EmbedBuilder().setColor(color).setFooter("ID: "+id).setTimestamp(ZonedDateTime.now());
 	}
 
 	

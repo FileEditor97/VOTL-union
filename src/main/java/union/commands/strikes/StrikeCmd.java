@@ -93,7 +93,7 @@ public class StrikeCmd extends CommandBase {
 		// add strikes
 		Field action = executeStrike(event.getUserLocale(), guild, tm, strikeAmount, caseData.getCaseIdInt());
 		// log
-		bot.getLogListener().mod.onNewCase(guild, tm.getUser(), caseData);
+		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData);
 		// send reply
 		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".success")
@@ -143,10 +143,10 @@ public class StrikeCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), null);
 				CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
 				// log case
-				bot.getLogListener().mod.onNewCase(guild, target.getUser(), caseData);
+				bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 			},
 			failure -> {
-				bot.getLogger().error("Strike punishment execution, Kick member", failure);
+				bot.getAppLogger().error("Strike punishment execution, Kick member", failure);
 			});
 			buffer.append(lu.getLocalized(locale, PunishActions.KICK.getPath()))
 				.append("\n");
@@ -179,10 +179,10 @@ public class StrikeCmd extends CommandBase {
 						guild.getIdLong(), reason, Instant.now(), durationCopy);
 					CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
 					// log case
-					bot.getLogListener().mod.onNewCase(guild, target.getUser(), caseData);
+					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 				},
 				failure -> {
-					bot.getLogger().error("Strike punishment execution, Ban member", failure);
+					bot.getAppLogger().error("Strike punishment execution, Ban member", failure);
 				});
 				buffer.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
 					.append(" "+lu.getLocalized(locale, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, locale, duration)+"\n");
@@ -210,10 +210,10 @@ public class StrikeCmd extends CommandBase {
 						guild.getIdLong(), reason, Instant.now(), durationCopy);
 					CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
 					// log case
-					bot.getLogListener().mod.onNewCase(guild, target.getUser(), caseData);
+					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 				},
 				failure -> {
-					bot.getLogger().error("Strike punishment execution, Mute member", failure);
+					bot.getAppLogger().error("Strike punishment execution, Mute member", failure);
 				});
 				buffer.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
 					.append(" "+lu.getLocalized(locale, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, locale, duration)+"\n");
@@ -230,10 +230,10 @@ public class StrikeCmd extends CommandBase {
 					// Apply action, result will be in logs
 					guild.removeRoleFromMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
 						// log action
-						bot.getLogListener().role.onRoleRemoved(guild, bot.JDA.getSelfUser(), target.getUser(), role);
+						bot.getLogger().role.onRoleRemoved(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
 					failure -> {
-						bot.getLogger().error("Strike punishment execution, Remove role", failure);
+						bot.getAppLogger().error("Strike punishment execution, Remove role", failure);
 					});
 					buffer.append(lu.getLocalized(locale, PunishActions.REMOVE_ROLE.getPath()))
 						.append(" "+role.getName()+"\n");
@@ -251,10 +251,10 @@ public class StrikeCmd extends CommandBase {
 					// Apply action, result will be in logs
 					guild.addRoleToMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
 						// log action
-						bot.getLogListener().role.onRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role);
+						bot.getLogger().role.onRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
 					failure -> {
-						bot.getLogger().error("Strike punishment execution, Add role", failure);
+						bot.getAppLogger().error("Strike punishment execution, Add role", failure);
 					});
 					buffer.append(lu.getLocalized(locale, PunishActions.ADD_ROLE.getPath()))
 						.append(" "+role.getName()+"\n");

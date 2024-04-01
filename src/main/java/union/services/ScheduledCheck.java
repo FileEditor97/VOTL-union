@@ -32,8 +32,14 @@ import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.api.utils.TimeUtil;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
+
 
 public class ScheduledCheck {
+
+	private final Logger logger = (Logger) LoggerFactory.getLogger(ScheduledCheck.class);
 
 	private final App bot;
 	private final DBUtil db;
@@ -94,12 +100,12 @@ public class ScheduledCheck {
 					return;
 				}
 				bot.getTicketUtil().closeTicket(channelId, null, "Autoclosure", failure -> {
-					bot.getLogger().error("Failed to delete ticket channel, either already deleted or unknown error", failure);
+					logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 					db.ticket.setRequestStatus(channelId, -1L);
 				});
 			});
 		} catch (Throwable t) {
-			bot.getLogger().error("Exception caught during tickets checks.", t);
+			logger.error("Exception caught during tickets checks.", t);
 		}
 	}
 
@@ -120,21 +126,21 @@ public class ScheduledCheck {
 					try {
 						role.delete().reason("Role expired").queue();
 					} catch (InsufficientPermissionException | HierarchyException ex) {
-						bot.getLogger().warn("Was unable to delete temporary role '%s' during scheduled check.".formatted(roleId), ex);
+						logger.warn("Was unable to delete temporary role '%s' during scheduled check.".formatted(roleId), ex);
 					}
 					db.tempRole.removeRole(roleId);
 				} else {
 					String userId = (String) data.get("userId");
 					role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
-						bot.getLogger().warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
+						logger.warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
 					});
 					db.tempRole.remove(roleId, userId);
 					// Log
-					bot.getLogListener().role.onTempRoleAutoRemoved(role.getGuild(), userId, role);
+					bot.getLogger().role.onTempRoleAutoRemoved(role.getGuild(), userId, role);
 				}
 			});
 		} catch (Throwable t) {
-			bot.getLogger().error("Exception caught during expired roles check.", t);
+			logger.error("Exception caught during expired roles check.", t);
 		}
 	}
 
@@ -190,7 +196,7 @@ public class ScheduledCheck {
 				}
 			};
 		} catch (Throwable t) {
-			bot.getLogger().error("Exception caught during expired warns check.", t);
+			logger.error("Exception caught during expired warns check.", t);
 		}
 	}
 
@@ -258,13 +264,13 @@ public class ScheduledCheck {
 					guild.retrieveMemberById(account.getLeft()).queue(member -> {
 						if (!member.getRoles().contains(role)) return;
 						guild.removeRoleFromMember(member, role).reason("Autocheck: Account unlinked").queue(success -> {
-							bot.getLogListener().verify.onUnverified(member.getUser(), account.getRight(), guild, "Autocheck: Account unlinked");
+							bot.getLogger().verify.onUnverified(member.getUser(), account.getRight(), guild, "Autocheck: Account unlinked");
 						});
 					}, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
 				});
 			});
 		} catch (Throwable t) {
-			bot.getLogger().error("Exception caught during verify checking.", t);
+			logger.error("Exception caught during verify checking.", t);
 		}
 	}
 
@@ -280,8 +286,8 @@ public class ScheduledCheck {
 			Guild guild = bot.JDA.getGuildById(caseData.getGuildId());
 			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
 			guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
-				s -> bot.getLogListener().mod.onAutoUnban(caseData, guild),
-				f -> bot.getLogger().warn("Exception at unban attempt", f.getMessage())
+				s -> bot.getLogger().mod.onAutoUnban(caseData, guild),
+				f -> logger.warn("Exception at unban attempt", f.getMessage())
 			);
 			db.cases.setInactive(caseData.getCaseIdInt());
 		});
@@ -291,7 +297,7 @@ public class ScheduledCheck {
 		try {
 			db.alerts.removePoint();
 		} catch (Throwable t) {
-			bot.getLogger().error("Exception caught during points removal.", t);
+			logger.error("Exception caught during points removal.", t);
 		}
 	}
 	

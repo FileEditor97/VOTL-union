@@ -47,9 +47,9 @@ public class TicketUtil {
 
 				String authorId = db.ticket.getUserId(channelId);
 
-				bot.getLogListener().ticket.onClose(guild, channel, userClosed, authorId);
+				bot.getLogger().ticket.onClose(guild, channel, userClosed, authorId);
 			}, failure -> {
-				bot.getLogger().error("Error while closing ticket, unable to delete", failure);
+				bot.getAppLogger().error("Error while closing ticket, unable to delete", failure);
 				closeHandle.accept(failure);
 			});
 		} else {
@@ -63,14 +63,14 @@ public class TicketUtil {
 
 						bot.JDA.retrieveUserById(authorId).queue(user -> {
 							user.openPrivateChannel().queue(pm -> {
-								MessageEmbed embed = bot.getLogUtil().ticketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
+								MessageEmbed embed = bot.getLogEmbedUtil().ticketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
 								pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 							});
 						});
 
-						bot.getLogListener().ticket.onClose(guild, channel, userClosed, authorId, file);
+						bot.getLogger().ticket.onClose(guild, channel, userClosed, authorId, file);
 					}, failure -> {
-						bot.getLogger().error("Error while closing ticket, unable to delete", failure);
+						bot.getAppLogger().error("Error while closing ticket, unable to delete", failure);
 						closeHandle.accept(failure);
 					});
 				},
@@ -99,7 +99,7 @@ public class TicketUtil {
 			.build()
 		).setEphemeral(true).queue();
 		// Log
-		bot.getLogListener().ticket.onCreate(event.getGuild(), channel, event.getUser());
+		bot.getLogger().ticket.onCreate(event.getGuild(), channel, event.getUser());
 	}
 
 }

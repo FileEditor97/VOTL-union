@@ -95,7 +95,7 @@ public class BanCmd extends CommandBase {
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".ban_success")
 							.replace("{user_tag}", tu.getName())
-							.replace("{duration}", lu.getText(event, "logger_embed.permanently"))
+							.replace("{duration}", lu.getText(event, "misc.permanently"))
 							.replace("{reason}", reason))
 						.build();
 					// log ban
@@ -190,10 +190,7 @@ public class BanCmd extends CommandBase {
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".ban_success")
 						.replace("{user_tag}", tu.getName())
-						.replace("{duration}", duration.isZero() ? lu.getText(event, "logger_embed.permanently") : 
-							lu.getText(event, "logger_embed.temporary")
-								.formatted(TimeUtil.formatTime(Instant.now().plus(duration), true))
-						)
+						.replace("{duration}", TimeUtil.formatDuration(lu, event.getUserLocale(), Instant.now(), duration))
 						.replace("{reason}", reason))
 					.build();
 				// log ban

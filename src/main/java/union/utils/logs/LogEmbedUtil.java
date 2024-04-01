@@ -156,8 +156,7 @@ public class LogEmbedUtil {
 			.setReason(caseData.getReason())
 			.setId(caseData.getTargetId());
 		if (!caseData.getDuration().isNegative())
-			builder.addField("duration", caseData.getDuration().isZero() ? localized(locale, "permanently") : 
-			 localized(locale, "temporary").formatted(TimeUtil.formatTime(caseData.getTimeEnd(), false)));
+			builder.addField("duration", TimeUtil.formatDuration(lu, locale, caseData.getTimeStart(), caseData.getDuration()));
 		return builder;
 	}
 
@@ -170,8 +169,6 @@ public class LogEmbedUtil {
 	public MessageEmbed banEmbed(DiscordLocale locale, CaseData caseData, String userIcon) {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_DARK)
-			.addField("duration", caseData.getDuration().isZero() ? localized(locale, "permanently") : 
-				localized(locale, "temporary").formatted(TimeUtil.formatTime(caseData.getTimeEnd(), false)))
 			.build();
 	}
 
@@ -294,8 +291,7 @@ public class LogEmbedUtil {
 	//  Duration
 	@NotNull
 	public MessageEmbed durationChangedEmbed(DiscordLocale locale, CaseData caseData, long modId, String newTime) {
-		String oldTime = caseData.getDuration().isZero() ? localized(locale, "permanently") : localized(locale, "temporary")
-			.formatted(TimeUtil.formatTime(caseData.getTimeEnd(), false));
+		String oldTime = TimeUtil.formatDuration(lu, locale, caseData.getTimeStart(), caseData.getDuration());
 		return new LogEmbedBuilder(locale)
 			.setHeader("change.duration", caseData.getCaseId(), caseData.getTargetTag())
 			.setDescription("> %s\n\n🔴 ~~%s~~\n🟢 %s".formatted(lu.getLocalized(locale, caseData.getCaseType().getPath()), oldTime, newTime))

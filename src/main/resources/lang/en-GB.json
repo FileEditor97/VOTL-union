@@ -57,6 +57,8 @@
 			"days": "days",
 			"weeks": "weeks"
 		},
+		"permanently": "permanently",
+		"temporary": "until %s",
 		"ban_expired": "Temporary ban expired"
 	},
 	"modules": {
@@ -116,8 +118,6 @@
 		"master": "Master server",
 		"enforcer": "Done by",
 		"duration": "Duration",
-		"permanently": "permanently",
-		"temporary": "until %s",
 		"success": "Success rate",
 		"case": "Case %s | %s | %s",
 		"reason": "Reason",

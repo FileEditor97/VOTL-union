@@ -1,6 +1,7 @@
 package union.utils.message;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Optional;
@@ -158,6 +159,13 @@ public class TimeUtil {
 			);
 		}
 		return "";
+	}
+
+	public static String formatDuration(LocaleUtil lu, DiscordLocale locale, Instant startTime, Duration duration) {
+		return duration.isZero() ?
+			lu.getLocalized(locale, "misc.permanently")
+			:
+			lu.getLocalized(locale, "misc.temporary").formatted(formatTime(startTime.plus(duration), false));
 	}
 
 }

@@ -153,7 +153,7 @@
 		},
 		"group": {
 			"admin": "Action by",
-			"title": "Group '{group_name}' (#{group_id})",
+			"title": "Group '%s' (#%s)",
 			"master": "Main server's ID: ",
 			"guild": "Implicated server",
 			"created": "Created new Group",
@@ -169,12 +169,9 @@
 			"oldname": "Previous Group's name"
 		},
 		"audit": {
-			"group_id": "Group ID: #%d",
-			"admin": "Action by",
 			"banned": "User was banned in %s",
 			"unbanned": "User was unbanned in %s",
 			"default": "Action performed in %s",
-			"reason": "Reason",
 			"leave_guild": "Helper bot left server %s",
 			"guild_id": "Server ID",
 			"alert": "Misconduct detected in '%s'!",
@@ -186,17 +183,16 @@
 			"attempt": "User attempted verification | %s",
 			"steam": "Steam account",
 			"discord": "Discord account",
-			"reason": "Reason",
 			"blacklisted": "Blacklisted in group #%d",
 			"playtime": "Playtime is %s of required %s"
 		},
 		"ticket": {
 			"closed_title": "Ticket Closed",
-			"closed_value": "Ticket Name: {name}\nClosed By: {closed}\nCreated By: {created}\nClaimed By: {claimed}\n\nPlease see the attachment for the transcript.",
-			"closed_pm": "Please see attached transcript for your recent ticket at **{guild}**.\n\n**Closed By**: {closed}\n**Close date**: {time}\n**Close Reason**: {reason}",
+			"closed_value": "Ticket Name: {name}\nClosed By: {closed}\nCreated By: {created}\nClaimed By: {claimed}\n\n*If available, ticket's transcript is attached to this message.*",
+			"closed_pm": "Ticket closed at **{guild}** server.\n\n**Closed By**: {closed}\n**Close date**: {time}\n**Close Reason**: {reason}\n\n*If available, ticket's transcript is attached to this message.*",
 			"autoclosed": "No response, autoclosed",
 			"unclaimed": "UnClaimed",
-			"roles_title": "Roles issued | {ticket}",
+			"roles_title": "Roles issued | %s",
 			"roles": "Assigned roles",
 			"created": "Ticket Created",
 			"name": "Ticket's name"
@@ -231,7 +227,8 @@
 			"temp_added": "Role added temporary to user",
 			"temp_updated": "Temporary role updated for user",
 			"temp_removed": "Temporaty role removed from user",
-			"guild": "Target server"
+			"guild": "Target server",
+			"checkchild": "Role's members checked for presence in required server"
 		},
 		"blacklist": {
 			"added": "Blacklisted | %s",

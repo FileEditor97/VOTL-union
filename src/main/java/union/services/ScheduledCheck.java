@@ -136,7 +136,7 @@ public class ScheduledCheck {
 					});
 					db.tempRole.remove(roleId, userId);
 					// Log
-					bot.getLogger().role.onTempRoleAutoRemoved(role.getGuild(), userId, role);
+					bot.getLogger().role.onTempRoleAutoRemoved(role.getGuild(), castLong(userId), role);
 				}
 			});
 		} catch (Throwable t) {

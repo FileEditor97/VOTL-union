@@ -175,24 +175,24 @@ public class LoggingUtil {
 		private final LogType type = LogType.ROLE;
 
 		public void onApproved(Member member, Member admin, Guild guild, List<Role> roles, String ticketId) {
-			sendLog(guild, type, () -> logUtil.rolesApprovedEmbed(guild.getLocale(), ticketId, member.getAsMention(), member.getId(),
-				roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getAsMention()));
+			sendLog(guild, type, () -> logUtil.rolesApprovedEmbed(guild.getLocale(), ticketId, member.getIdLong(),
+				roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getIdLong()));
 		}
 
 		public void onCheckRank(Guild guild, User admin, Role role, String rankName) {
-			sendLog(guild, type, () -> logUtil.checkRankEmbed(guild.getLocale(), admin.getId(), role.getId(), rankName));
+			sendLog(guild, type, () -> logUtil.checkRankEmbed(guild.getLocale(), admin.getIdLong(), role.getIdLong(), rankName));
 		}
 
 		public void onRoleAdded(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getId(), target.getId(), target.getAvatarUrl(), role.getId()));
+			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getAvatarUrl(), role.getIdLong()));
 		}
 
 		public void onRoleRemoved(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getId(), target.getId(), target.getAvatarUrl(), role.getId()));
+			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getAvatarUrl(), role.getIdLong()));
 		}
 
 		public void onRoleRemovedAll(Guild guild, User mod, Role role) {
-			sendLog(guild, type, () -> logUtil.roleRemovedAllEmbed(guild.getLocale(), mod.getId(), role.getId()));
+			sendLog(guild, type, () -> logUtil.roleRemovedAllEmbed(guild.getLocale(), mod.getIdLong(), role.getIdLong()));
 		}
 
 		public void onTempRoleAdded(Guild guild, User mod, User target, Role role, Duration duration) {
@@ -207,12 +207,12 @@ public class LoggingUtil {
 			sendLog(guild, type, () -> logUtil.tempRoleUpdatedEmbed(guild.getLocale(), mod, target, role, until));
 		}
 
-		public void onTempRoleAutoRemoved(Guild guild, String targetId, Role role) {
+		public void onTempRoleAutoRemoved(Guild guild, Long targetId, Role role) {
 			sendLog(guild, type, () -> logUtil.tempRoleAutoRemovedEmbed(guild.getLocale(), targetId, role));
 		}
 
 		public void onRoleCheckChildGuild(Guild guild, User admin, Role role, Guild targetGuild) {
-			sendLog(guild, type, () -> logUtil.checkRoleChildGuild(guild.getLocale(), admin.getId(), role.getId(), targetGuild.getName(), targetGuild.getId()));
+			sendLog(guild, type, () -> logUtil.checkRoleChildGuild(guild.getLocale(), admin.getIdLong(), role.getIdLong(), targetGuild.getName(), targetGuild.getIdLong()));
 		}
 	}
 
@@ -337,19 +337,19 @@ public class LoggingUtil {
 		private final LogType type = LogType.VERIFICATION;
 
 		public void onVerified(User user, Long steam64, Guild guild) {
-			sendLog(guild, type, () -> logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
+			sendLog(guild, type, () -> logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				(steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64)
 			);
 		}
 
 		public void onUnverified(User user, Long steam64, Guild guild, String reason) {
-			sendLog(guild, type, () -> logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
+			sendLog(guild, type, () -> logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				(steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64, reason)
 			);
 		}
 
 		public void onVerifiedAttempt(User user, Long steam64, Guild guild, String reason) {
-			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
+			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				steam64, reason)
 			);
 		}

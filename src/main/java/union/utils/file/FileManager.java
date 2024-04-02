@@ -172,32 +172,29 @@ public class FileManager {
 		return text;
 	}
 	
-	public boolean getBoolean(String name, String path){
+	@Nullable
+	public Boolean getBoolean(String name, String path){
 		File file = files.get(name);
 		
-		if(file == null)
-			return false;
+		if (file == null) return null;
 		
 		try {
-			Object res = JsonPath.using(CONF).parse(file).read("$." + path);
+			Boolean res = JsonPath.using(CONF).parse(file).read("$." + path);
 			
-			if (res == null || res.equals(null))
-				return false;
-				
-			return true;
+			return res;
 		} catch (FileNotFoundException ex) {
 			logger.error("Couldn't find file {}.json", name);
 		} catch (IOException ex) {
 			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
 		}
-		return false;
+		return null;
 	}
 
 	@NotNull
 	public List<String> getStringList(String name, String path){
 		File file = files.get(name);
 		
-		if(file == null) {
+		if (file == null) {
 			logger.error("Couldn't find file {}.json", name);
 			return Collections.emptyList();
 		}

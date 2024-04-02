@@ -18,25 +18,25 @@ public class MessageUtil {
 	private final Random random;
 	private final LocaleUtil lu;
 
-	private final DecimalFormat decimalFormat = new DecimalFormat("# ### ###");
+	private static final DecimalFormat decimalFormat = new DecimalFormat("# ### ###");
 
-	private final Pattern rolePattern = Pattern.compile("<@&(\\d+)>", Pattern.CASE_INSENSITIVE);
+	private static final Pattern rolePattern = Pattern.compile("<@&(\\d+)>", Pattern.CASE_INSENSITIVE);
 
 	public MessageUtil(LocaleUtil localeUtil) {
 		this.random = new Random();
 		this.lu = localeUtil;
 	}
 
-	public String capitalize(final String str) {
+	public static String capitalize(final String str) {
 		if (str == null || str.length() == 0) {
 			return "";
 		}
 
 		final String s0 = str.substring(0, 1).toUpperCase();
-		return s0 + str.substring(1);
+		return s0 + str.substring(1).toLowerCase();
 	}
 
-	public List<String> getIdsFromString(String text) {
+	public static List<String> getIdsFromString(String text) {
 		List<String> ids = new ArrayList<>();
 		if (text.contains("+")) ids.add("0");
 
@@ -96,7 +96,7 @@ public class MessageUtil {
 		return replaceLast(builder.toString(), ", ", " "+lu.getText("misc.and")+" ");
 	}
 
-	public String replaceLast(String input, String target, String replacement) {
+	public static String replaceLast(String input, String target, String replacement) {
 		if (!input.contains(target))
 			return input;
 
@@ -106,11 +106,11 @@ public class MessageUtil {
 		return builder.toString();
 	}
 
-	public String formatNumber(long number) {
+	public static String formatNumber(long number) {
 		return decimalFormat.format(number);
 	}
 
-	private String escapeAll(String name) {
+	private static String escapeAll(String name) {
 		return name.replace("*", "\\*")
 			.replace("_", "\\_")
 			.replace("`", "\\`")

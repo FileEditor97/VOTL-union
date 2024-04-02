@@ -15,8 +15,6 @@
  */
 package union.base.command;
 
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-
 /**
  * An implementable "Listener" that can be added to a {@link CommandClient}.
  *
@@ -108,16 +106,6 @@ public interface CommandListener {
 	 * @param menu  The ContextMenu that was triggered
 	 */
 	default void onTerminatedUserContextMenu(UserContextMenuEvent event, UserContextMenu menu) {}
-
-	/**
-	 * Called when a {@link MessageReceivedEvent} is caught by the Client Listener's.
-	 *
-	 * <p>In other words, this catches all <b>non-command</b> MessageReceivedEvents allowing
-	 * you to handle them without implementation of another listener.
-	 *
-	 * @param event A MessageReceivedEvent that wasn't used to call a Command
-	 */
-	default void onNonCommandMessage(MessageReceivedEvent event) {}
 
 	/**
 	 * Called when a {@link union.base.command.SlashCommand SlashCommand}

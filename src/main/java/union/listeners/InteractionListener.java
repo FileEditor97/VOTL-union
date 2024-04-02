@@ -467,7 +467,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonRoleSelectionOther(ButtonInteractionEvent event) {
 		List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
-		List<String> roleIds = bot.getMessageUtil().getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
+		List<String> roleIds = MessageUtil.getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 		if (roleIds.contains("0"))
 			roleIds.remove("0");
 		else
@@ -570,7 +570,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		// Check if user has selected any role
 		List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
-		List<String> roleIds = bot.getMessageUtil().getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
+		List<String> roleIds = MessageUtil.getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 		if (roleIds.isEmpty()) {
 			sendError(event, "bot.ticketing.listener.request_none");
 			return;
@@ -1313,7 +1313,7 @@ public class InteractionListener extends ListenerAdapter {
 			event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 
 			List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
-			List<String> roleIds = bot.getMessageUtil().getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
+			List<String> roleIds = MessageUtil.getIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 			event.getSelectedOptions().forEach(option -> {
 				String value = option.getValue();
 				if (!roleIds.contains(value)) roleIds.add(value);

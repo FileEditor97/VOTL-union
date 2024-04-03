@@ -123,4 +123,8 @@ public class MessageUtil {
 		return text;
 	}
 
+	public static String formatKey(String text) {
+		return capitalize(text).replace("_", " ");
+	}
+
 }

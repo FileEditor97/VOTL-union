@@ -20,6 +20,7 @@ import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
+import net.dv8tion.jda.api.audit.AuditLogKey;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -36,12 +37,14 @@ public class LoggingUtil {
 	private final DBUtil db;
 	private final LogEmbedUtil logUtil;
 
-	public final ModerationLogs mod = new ModerationLogs();
-	public final RoleLogs role = new RoleLogs();
-	public final GroupLogs group = new GroupLogs();
+	public final ModerationLogs mod =	new ModerationLogs();
+	public final RoleLogs role =		new RoleLogs();
+	public final GroupLogs group =		new GroupLogs();
 	public final VerificationLogs verify = new VerificationLogs();
-	public final TicketLogs ticket = new TicketLogs();
-	public final GuildLogs guild = new GuildLogs();
+	public final TicketLogs ticket =	new TicketLogs();
+	public final ServerLogs server =	new ServerLogs();
+	public final ChannelLogs channel =	new ChannelLogs();
+	public final MemberLogs member =	new MemberLogs();
 
 	public LoggingUtil(App bot) {
 		this.bot = bot;
@@ -168,6 +171,13 @@ public class LoggingUtil {
 			sendLog(master, type, () -> logUtil.blacklistRemovedEmbed(master.getLocale(), mod, target,
 				steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
 		}
+
+		/* public void onUserBan(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.channelCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		} */
 	}
 
 	// Roles actions
@@ -213,6 +223,30 @@ public class LoggingUtil {
 
 		public void onRoleCheckChildGuild(Guild guild, User admin, Role role, Guild targetGuild) {
 			sendLog(guild, type, () -> logUtil.checkRoleChildGuild(guild.getLocale(), admin.getIdLong(), role.getIdLong(), targetGuild.getName(), targetGuild.getIdLong()));
+		}
+
+		public void onRoleCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getNewValue();
+
+			sendLog(guild, type, () -> logUtil.roleCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onRoleDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getOldValue();
+
+			sendLog(guild, type, () -> logUtil.roleDeleted(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onRoleUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = guild.getRoleById(id).getName();
+
+			sendLog(guild, type, () -> logUtil.roleUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
 		}
 	}
 
@@ -379,8 +413,8 @@ public class LoggingUtil {
 	}
 
 	// Server actions
-	public class GuildLogs {
-		private final LogType type = LogType.GUILD;
+	public class ServerLogs {
+		private final LogType type = LogType.SERVER;
 
 		public void onAccessAdded(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
 			sendLog(guild, type, () -> logUtil.accessAdded(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
@@ -397,6 +431,125 @@ public class LoggingUtil {
 		public void onModuleDisabled(Guild guild, User mod, CmdModule module) {
 			sendLog(guild, type, () -> logUtil.moduleDisabled(guild.getLocale(), mod, module));
 		}
+
+		public void onGuildUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = guild.getIdLong();
+			final String name = guild.getName();
+
+			sendLog(guild, type, () -> logUtil.guildUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onEmojiCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.emojiCreate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onEmojiUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.emojiUpdate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onEmojiDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.emojiDelete(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onStickerCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.stickerCreate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onStickerUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.stickerUpdate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onStickerDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.stickerDelete(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
 	}
 
+	// Channel actions
+	public class ChannelLogs {
+		private final LogType type = LogType.CHANNEL;
+
+		public void onChannelCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.CHANNEL_NAME).getNewValue();
+
+			sendLog(guild, type, () -> logUtil.channelCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onChannelDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.CHANNEL_NAME).getOldValue();
+
+			sendLog(guild, type, () -> logUtil.channelDeleted(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onChannelUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = guild.getGuildChannelById(id).getName();
+
+			sendLog(guild, type, () -> logUtil.channelUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onOverrideCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.overrideCreate(guild.getLocale(), id, entry, entry.getUserIdLong()));
+		}
+
+		public void onOverrideUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.overrideUpdate(guild.getLocale(), id, entry, entry.getUserIdLong()));
+		}
+
+		public void onOverrideDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.overrideDelete(guild.getLocale(), id, entry, entry.getUserIdLong()));
+		}
+	}
+
+	// Member actions
+	public class MemberLogs {
+		private final LogType type = LogType.MEMBER;
+
+		public void onNickChange(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.nickChange(guild.getLocale(), id, entry.getChanges().values()));
+		}
+
+		public void onRoleChange(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.rolesChange(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+	}
 }

@@ -65,25 +65,6 @@ public class App {
 
 	public final String VERSION = Optional.ofNullable(App.class.getPackage().getImplementationVersion()).map(ver -> "v"+ver).orElse("DEVELOPMENT");
 
-	private final Set<GatewayIntent> intents = Set.of(
-		GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
-		GatewayIntent.GUILD_INVITES,
-		GatewayIntent.GUILD_MEMBERS,
-		GatewayIntent.GUILD_MESSAGES,
-		GatewayIntent.GUILD_MODERATION,
-		GatewayIntent.GUILD_VOICE_STATES,
-		GatewayIntent.GUILD_WEBHOOKS,
-		GatewayIntent.MESSAGE_CONTENT,
-		GatewayIntent.GUILD_MESSAGE_REACTIONS
-	);
-	private final Set<CacheFlag> cacheFlags = Set.of(
-		CacheFlag.EMOJI,
-		CacheFlag.MEMBER_OVERRIDES,
-		CacheFlag.STICKER,
-		CacheFlag.ROLE_TAGS,
-		CacheFlag.VOICE_STATE
-	);
-
 	public final JDA JDA;
 	public final EventWaiter WAITER;
 	private final CommandClient commandClient;
@@ -95,10 +76,9 @@ public class App {
 	private final InteractionListener interactionListener;
 	private final VoiceListener voiceListener;
 	private final MessageListener messageListener;
-	private final ChannelListener channelListener;
 	private final MemberListener memberListener;
 	private final ModerationListener moderationListener;
-	private final RoleListener roleListener;
+	private final AuditListener auditListener;
 
 	private final LoggingUtil logUtil;
 	
@@ -141,11 +121,10 @@ public class App {
 		guildListener		= new GuildListener(this);
 		interactionListener	= new InteractionListener(this, WAITER);
 		voiceListener		= new VoiceListener(this);
-		messageListener	= new MessageListener(this);
-		channelListener		= new ChannelListener();
+		messageListener		= new MessageListener(this);
 		memberListener		= new MemberListener(this);
 		moderationListener	= new ModerationListener(this);
-		roleListener		= new RoleListener();
+		auditListener		= new AuditListener(dbUtil, logUtil);
 
 		scheduledExecutor	= new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 		scheduledCheck		= new ScheduledCheck(this);
@@ -233,13 +212,40 @@ public class App {
 		// Build
 		acListener = new AutoCompleteListener(commandClient, dbUtil);
 
-		JDABuilder mainBuilder = JDABuilder.createLight(fileManager.getString("config", "bot-token"))
-			.setEnabledIntents(intents)
+		final Set<GatewayIntent> intents = Set.of(
+			GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+			GatewayIntent.GUILD_INVITES,
+			GatewayIntent.GUILD_MEMBERS,
+			GatewayIntent.GUILD_MESSAGES,
+			GatewayIntent.GUILD_MODERATION,
+			GatewayIntent.GUILD_VOICE_STATES,
+			GatewayIntent.GUILD_WEBHOOKS,
+			GatewayIntent.MESSAGE_CONTENT,
+			GatewayIntent.GUILD_MESSAGE_REACTIONS
+		);
+		final Set<CacheFlag> enabledCacheFlags = Set.of(
+			CacheFlag.EMOJI,
+			CacheFlag.MEMBER_OVERRIDES,
+			CacheFlag.STICKER,
+			CacheFlag.ROLE_TAGS,
+			CacheFlag.VOICE_STATE
+		);
+		final Set<CacheFlag> disabledCacheFlags = Set.of(
+			CacheFlag.ACTIVITY,
+			CacheFlag.CLIENT_STATUS,
+			CacheFlag.ONLINE_STATUS,
+			CacheFlag.SCHEDULED_EVENTS
+		);
+
+		JDABuilder mainBuilder = JDABuilder.create(fileManager.getString("config", "bot-token"), intents)
 			.setMemberCachePolicy(MemberCachePolicy.ALL)	// cache all members
 			.setChunkingFilter(ChunkingFilter.ALL)		// chunk all guilds
-			.enableCache(cacheFlags)
-			.addEventListeners(commandClient, WAITER, acListener, interactionListener, channelListener,
-			 guildListener, memberListener, messageListener, moderationListener, roleListener, voiceListener);
+			.enableCache(enabledCacheFlags)
+			.disableCache(disabledCacheFlags)
+			.addEventListeners(
+				commandClient, WAITER, acListener, auditListener, interactionListener,
+				guildListener, memberListener, messageListener, moderationListener, voiceListener
+			);
 
 		JDA tempJda = null;
 

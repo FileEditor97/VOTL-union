@@ -15,14 +15,14 @@ public enum LogType {
 	MODERATION("moderation"),
 	GROUP("groups"),
 	VERIFICATION("verify"),
-	TICKET("ticket"),
-	ROLE("role"),
-	GUILD("guild"),
-	MESSAGE("message"),
-	MEMBER("member"),
+	TICKET("tickets"),
+	ROLE("roles"),
+	SERVER("server"),
+	MESSAGE("messages"),
+	MEMBER("members"),
 	VOICE("voice"),
-	CHANNEL("channel"),
-	INVITE("invite"),
+	CHANNEL("channels"),
+	//INVITE("invite"),
 	OTHER("other");
 
 	private final String name;

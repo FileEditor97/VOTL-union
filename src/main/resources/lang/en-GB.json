@@ -238,46 +238,53 @@
 		}
 	},
 	"logger": {
+		"enforcer": "Done by",
+		"reason": "Reason",
 		"moderation": {
 			"name": "Moderation logs",
+			"kick": "Member kicked | %s",
 			"ban": "Member banned | %s",
 			"unban": "Ban removed | %s",
 			"timeout": "Member timed out | %s",
 			"remove_timeout": "Timeout removed | %s"
 		},
-		"group": {
+		"groups": {
 			"name": "Group logs"
 		},
 		"verify": {
 			"name": "Verification logs"
 		},
-		"ticket": {
+		"tickets": {
 			"name": "Ticket logs"
 		},
-		"role": {
+		"roles": {
 			"name": "Role logs",
 			"create": "Role created | %s",
 			"update": "Role updated | %s",
 			"delete": "Role deleted | %s"
 		},
-		"guild": {
+		"server": {
 			"name": "Server logs",
 			"update": "Guild settings updated",
-			"emoji": "Emoji updated"
+			"emoji_create": "Emoji created",
+			"emoji_update": "Emoji updated",
+			"emoji_delete": "Emoji deleted",
+			"sticker_create": "Sticker created",
+			"sticker_update": "Sticker updated",
+			"sticker_delete": "Sticker deleted"
 		},
-		"message": {
+		"messages": {
 			"name": "Message logs",
 			"delete": "Message deleted",
 			"bulk_delete": "Bulk messages deleted",
 			"update": "Message updated"
 		},
-		"member": {
+		"members": {
 			"name": "Member logs",
 			"join": "Member joined | %s",
 			"leave": "Member left | %s",
-			"role_update": "Member's role updated | %s",
-			"name_change": "Member changed nickname",
-			"kick": "Member kicked | %s"
+			"role_change": "Member's role changed",
+			"name_change": "Member changed nickname"
 		},
 		"voice": {
 			"name": "Voice logs",
@@ -285,11 +292,14 @@
 			"leave": "Left voice channel | %s",
 			"switch": "Switched voice channel | %s"
 		},
-		"channel": {
+		"channels": {
 			"name": "Channel logs",
 			"create": "Channel created | %s",
 			"update": "Channel updated | %s",
-			"delete": "Channel deleted | %s"
+			"delete": "Channel deleted | %s",
+			"override_create": "Permission overwrite created",
+			"override_update": "Permission overwrite updated",
+			"override_delete": "Permission overwrite deleted"
 		},
 		"invite": {
 			"name": "Invite logs",
@@ -298,6 +308,39 @@
 		"other": {
 			"name": "Audit logs",
 			"audit": "Audit logs"
+		},
+		"keys": {
+			"name": "Name",
+			"type": "Type",
+			"region": "Region",
+			"topic": "Channel topic",
+			"bitrate": "Bitrate",
+			"user_limit": "User limit",
+			"nsfw": "NSFW",
+			"rate_limit_per_user": "Slowmode",
+			"color": "Color",
+			"hoist": "Hoisted",
+			"mentionable": "Mentionable",
+			"afk_channel_id": "AFK channel",
+			"afk_timeout": "AFK timeout",
+			"explicit_content_filter": "Explicit content filter",
+			"icon_hash": "Server icon",
+			"mfa_level": "MFA level",
+			"default_message_notifications": "Message notifications",
+			"owner_id": "Owner",
+			"splash_hash": "Splash image",
+			"system_channel_id": "System messages channel",
+			"rules_channel_id": "Rules channel",
+			"public_updates_channel_id": "Community updates channel",
+			"description": "Description",
+			"nick": "Nickname",
+			"add_roles": "Roles assigned",
+			"remove_roles": "Roles removed",
+			"add_permissions": "Granted permissions",
+			"remove_permissions": "Removed permissions",
+			"permission_overwrites": "Channel overwrites",
+			"allow": "Allowed",
+			"deny": "Denied"
 		}
 	},
 	"bot": {

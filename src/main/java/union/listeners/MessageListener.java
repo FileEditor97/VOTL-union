@@ -2,7 +2,6 @@ package union.listeners;
 
 import union.App;
 import union.objects.annotation.NotNull;
-import union.objects.logs.LogType;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -59,8 +58,6 @@ public class MessageListener extends ListenerAdapter {
 		}
 	}
 
-
-	private final LogType type = LogType.MESSAGE;
 	
 	@Override
 	public void onMessageUpdate(@NotNull MessageUpdateEvent event) {}

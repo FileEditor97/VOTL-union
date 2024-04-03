@@ -6,7 +6,6 @@ import java.util.List;
 
 import union.App;
 import union.objects.annotation.NotNull;
-import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -14,8 +13,6 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateAvatarEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -29,8 +26,6 @@ public class MemberListener extends ListenerAdapter {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
 	}
-	
-	private final LogType type = LogType.MEMBER;
 	
 	@Override
 	public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
@@ -87,11 +82,5 @@ public class MemberListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildMemberUpdateAvatar(@NotNull GuildMemberUpdateAvatarEvent event) {}
-
-	@Override
-	public void onGuildMemberRoleAdd(@NotNull GuildMemberRoleAddEvent event) {}
-
-	@Override
-	public void onGuildMemberRoleRemove(@NotNull GuildMemberRoleRemoveEvent event) {}
 	
 }

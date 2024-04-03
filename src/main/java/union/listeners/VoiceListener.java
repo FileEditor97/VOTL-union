@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 
 import union.App;
 import union.objects.annotation.NotNull;
-import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 import union.utils.file.lang.LocaleUtil;
 
@@ -21,8 +20,6 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class VoiceListener extends ListenerAdapter {
-
-	private final LogType type = LogType.VOICE;
 	
 	private final DBUtil dbUtil;
 	private final LocaleUtil lu;

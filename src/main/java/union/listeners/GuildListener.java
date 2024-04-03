@@ -6,17 +6,8 @@ import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.events.emoji.EmojiAddedEvent;
-import net.dv8tion.jda.api.events.emoji.EmojiRemovedEvent;
-import net.dv8tion.jda.api.events.emoji.update.EmojiUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
-import net.dv8tion.jda.api.events.guild.update.GuildUpdateIconEvent;
-import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
-import net.dv8tion.jda.api.events.sticker.GuildStickerAddedEvent;
-import net.dv8tion.jda.api.events.sticker.GuildStickerRemovedEvent;
-import net.dv8tion.jda.api.events.sticker.update.GuildStickerUpdateDescriptionEvent;
-import net.dv8tion.jda.api.events.sticker.update.GuildStickerUpdateNameEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class GuildListener extends ListenerAdapter {
@@ -90,35 +81,5 @@ public class GuildListener extends ListenerAdapter {
 
 		bot.getAppLogger().info("Automatically removed guild '%s'(%s) from db.".formatted(event.getGuild().getName(), guildId));
 	}
-
-
-	private final LogType type = LogType.GUILD;
-
-	@Override
-	public void onGuildUpdateIcon(@NotNull GuildUpdateIconEvent event) {}
-
-	@Override
-	public void onGuildUpdateName(@NotNull GuildUpdateNameEvent event) {}
-
-	@Override
-	public void onEmojiAdded(@NotNull EmojiAddedEvent event) {}
-
-	@Override
-	public void onEmojiRemoved(@NotNull EmojiRemovedEvent event) {}
-
-	@Override
-	public void onEmojiUpdateName(@NotNull EmojiUpdateNameEvent event) {}
-
-	@Override
-	public void onGuildStickerAdded(@NotNull GuildStickerAddedEvent event) {}
-
-	@Override
-	public void onGuildStickerRemoved(@NotNull GuildStickerRemovedEvent event) {}
-
-	@Override
-	public void onGuildStickerUpdateName(@NotNull GuildStickerUpdateNameEvent event) {}
-
-	@Override
-	public void onGuildStickerUpdateDescription(@NotNull GuildStickerUpdateDescriptionEvent event) {}
 
 }

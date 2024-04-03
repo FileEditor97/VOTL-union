@@ -3,7 +3,6 @@ package union.listeners;
 import union.App;
 import union.objects.CaseType;
 import union.objects.annotation.NotNull;
-import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 
@@ -21,8 +20,6 @@ public class ModerationListener extends ListenerAdapter {
 		//this.bot = bot;
 		this.db = bot.getDBUtil();
 	}
-	
-	private final LogType type = LogType.MODERATION;
 
 	@Override
 	public void onGuildBan(@NotNull GuildBanEvent event) {}

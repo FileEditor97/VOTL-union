@@ -1,5 +1,8 @@
 package union.utils.logs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.stream.Collectors;
 
 import union.App;
 import union.base.command.SlashCommandEvent;
+import union.listeners.MessageListener.MessageData;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.annotation.NotNull;
@@ -26,6 +30,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -45,6 +50,7 @@ public class LoggingUtil {
 	public final ServerLogs server =	new ServerLogs();
 	public final ChannelLogs channel =	new ChannelLogs();
 	public final MemberLogs member =	new MemberLogs();
+	public final MessageLogs message =	new MessageLogs();
 
 	public LoggingUtil(App bot) {
 		this.bot = bot;
@@ -172,12 +178,19 @@ public class LoggingUtil {
 				steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
 		}
 
-		/* public void onUserBan(AuditLogEntry entry) {
+		public void onUserBan(AuditLogEntry entry, User target) {
 			final Guild guild = entry.getGuild();
-			final long id = entry.getTargetIdLong();
+			final long modId = entry.getUserIdLong();
 
-			sendLog(guild, type, () -> logUtil.channelCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
-		} */
+			sendLog(guild, type, () -> logUtil.userBanEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
+
+		public void onUserUnban(AuditLogEntry entry, User target) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userUnbanEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
 	}
 
 	// Roles actions
@@ -523,7 +536,7 @@ public class LoggingUtil {
 			final Guild guild = entry.getGuild();
 			final long id = entry.getTargetIdLong();
 
-			sendLog(guild, type, () -> logUtil.overrideUpdate(guild.getLocale(), id, entry, entry.getUserIdLong()));
+			sendLog(guild, type, () -> logUtil.overrideUpdate(guild.getLocale(), id, entry, entry.getUserIdLong(), guild.getId()));
 		}
 
 		public void onOverrideDelete(AuditLogEntry entry) {
@@ -538,11 +551,10 @@ public class LoggingUtil {
 	public class MemberLogs {
 		private final LogType type = LogType.MEMBER;
 
-		public void onNickChange(AuditLogEntry entry) {
-			final Guild guild = entry.getGuild();
-			final long id = entry.getTargetIdLong();
+		public void onNickChange(Member target, String oldNick, String newNick) {
+			final Guild guild = target.getGuild();
 
-			sendLog(guild, type, () -> logUtil.nickChange(guild.getLocale(), id, entry.getChanges().values()));
+			sendLog(guild, type, () -> logUtil.memberNickUpdate(guild.getLocale(), target.getUser(), oldNick, newNick));
 		}
 
 		public void onRoleChange(AuditLogEntry entry) {
@@ -550,6 +562,69 @@ public class LoggingUtil {
 			final long id = entry.getTargetIdLong();
 
 			sendLog(guild, type, () -> logUtil.rolesChange(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onJoined(Member member) {
+			final Guild guild = member.getGuild();
+
+			sendLog(guild, type, () -> logUtil.memberJoin(guild.getLocale(), member));
+		}
+
+		public void onLeft(Guild guild, Member cachedMember, User user) {
+			sendLog(guild, type, () -> logUtil.memberLeave(guild.getLocale(), cachedMember, user, cachedMember!=null ? cachedMember.getRoles() : List.of()));
+		}
+	}
+
+	// Message actions
+	public class MessageLogs {
+		private final LogType type = LogType.MESSAGE;
+
+		public void onMessageUpdate(Member author, GuildChannel channel, long messageId, MessageData oldData, MessageData newData) {
+			final Guild guild = author.getGuild();
+
+			sendLog(guild, type, () -> logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData));
+		}
+
+		public void onMessageDelete(GuildChannel channel, long messageId, MessageData data, Long modId) {
+			final Guild guild = channel.getGuild();
+
+			sendLog(guild, type, () -> logUtil.messageDelete(guild.getLocale(), channel.getIdLong(), messageId, data, modId));
+		}
+
+		public void onMessageBulkDelete(GuildChannel channel, String count, List<MessageData> messages, Long modId) {
+			final Guild guild = channel.getGuild();
+			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
+			if (client == null) return;
+
+			if (!messages.isEmpty()) {
+				FileUpload fileUpload = uploadContent(messages, channel.getIdLong());
+				if (fileUpload != null) {
+					client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId))
+						.addFiles(uploadContent(messages, channel.getIdLong()))
+						.queue();
+					return;
+				}	
+			}
+			client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId)).queue();				
+		}
+
+		private FileUpload uploadContent(List<MessageData> messages, long channelId) {
+			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				baos.write("Channel ID: %s\n\n".formatted(channelId).getBytes());
+				for (MessageData data : messages) {
+					baos.write("[%s (%s)]:\n".formatted(data.getAuthorName(), data.getAuthorId()).getBytes());
+					if (data.getAttachment() != null)
+						baos.write("[Attachement: %s]\n".formatted(data.getAttachment().getFileName()).getBytes());
+					baos.write(data.getContent().getBytes());
+					baos.write("\n\n-------===-------\n\n".getBytes());
+				}
+				return FileUpload.fromData(new ByteArrayInputStream(baos.toByteArray()), channelId+"_"+Instant.now().toEpochMilli()+".txt");
+			} catch (IOException ex) {
+				bot.getAppLogger().error("Error at bulk deleted messages content upload.", ex);
+				return null;
+			}
+			
 		}
 	}
 }

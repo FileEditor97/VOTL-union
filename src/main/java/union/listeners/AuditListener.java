@@ -21,7 +21,6 @@ public class AuditListener extends ListenerAdapter {
 	@Override
 	public void onGuildAuditLogEntryCreate(GuildAuditLogEntryCreateEvent event) {
 		AuditLogEntry entry = event.getEntry();
-		System.out.println(entry.getChanges()); // TODO
 		switch (entry.getType()) {
 			case CHANNEL_CREATE -> {
 				// check if enabled log
@@ -118,12 +117,6 @@ public class AuditListener extends ListenerAdapter {
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.SERVER)) return;
 				
 				logger.server.onStickerDelete(entry);
-			}
-			case MEMBER_UPDATE -> {
-				// check if enabled log
-				if (!db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) return;
-				
-				logger.member.onNickChange(entry);
 			}
 			case MEMBER_ROLE_UPDATE -> {
 				// check if enabled log

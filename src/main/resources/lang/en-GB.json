@@ -112,47 +112,75 @@
 		"autoclose_cancel": "The automated close on this ticket has been cancelled."
 	},
 	"logger_embed": {
-		"user": "User",
-		"mod": "Moderator",
-		"target": "Target",
-		"master": "Master server",
+		"verify": {
+			"blacklisted": "Blacklisted in group #%d",
+			"playtime": "Playtime is %s of required %s"
+		},
+		"pm": {
+			"banned_temp": "You were banned from %s server for %s. | %s",
+			"banned": "You were permanently banned from %s server. | %s",
+			"kicked": "You were kicked from %s server. | %s",
+			"muted": "You were timed out in %s server. | %s",
+			"strike": "You received %s in %s server. | %s",
+			"strike1": "one warning",
+			"strike2": "two warnings",
+			"strike3": "three warnings",
+			"button_strikes": "View active strikes",
+			"appeal": "\nAppeal this action by following this link:\n> %s"
+		}
+	},
+	"logger": {
 		"enforcer": "Done by",
-		"duration": "Duration",
-		"success": "Success rate",
-		"case": "Case %s | %s | %s",
+		"target": "Target",
 		"reason": "Reason",
-		"ban": {
-			"short_title": "Ban info",
-			"short_info": "*Username:* `{username}`\n*Ban reason:* `{reason}`",
-			"title_synced": "Synced Ban | %s"
+		"duration": "Duration",
+		"moderation": {
+			"name": "Moderation logs",
+			"mod": "Moderator",
+			"case": "Case %s | %s | %s",
+			"success": "Success rate",
+			"kick": "Member kicked | %s",
+			"timeout": "Member timed out | %s",
+			"remove_timeout": "Timeout removed | %s",
+			"kick_sync": "Synced Kick | %s",
+			"ban": {
+				"title": "Member banned | %s",
+				"short_title": "Ban info",
+				"short_info": "*Username:* `{username}`\n*Ban reason:* `{reason}`",
+				"sync": "Synced Ban | %s"
+			},
+			"unban": {
+				"title": "Ban removed | %s",
+				"ban_reason": "Banned for",
+				"title_expired": "Ban expired | %s",
+				"sync": "Synced Unban | %s"
+			},
+			"mute": {
+				"short_title": "Mute info",
+				"short_info": "*Username:* `{username}`\n*Is timed out until:* `{until}`"
+			},
+			"unmute": {
+				"mute_reason": "Muted for"
+			},
+			"strike": {
+				"cleared": "Strikes cleared | %s",
+				"deleted": "Strike deleted | %s",
+				"amount": "Amount",
+				"case": "Case ID"
+			},
+			"change": {
+				"reason": "Case %s | Reason changed | %s",
+				"duration": "Case %s | Duration changed | %s"
+			},
+			"blacklist": {
+				"added": "Blacklisted | %s",
+				"removed": "Removed from blacklist | %s",
+				"steam": "SteamID",
+				"group": "Group"
+			}
 		},
-		"unban": {
-			"ban_reason": "Banned for",
-			"title_synced": "Synced Unban | %s",
-			"title_expired": "Ban expired | %s"
-		},
-		"kick": {
-			"title_synced": "Synced Kick | %s"
-		},
-		"mute": {
-			"short_title": "Mute info",
-			"short_info": "*Username:* `{username}`\n*Is timed out until:* `{until}`"
-		},
-		"unmute": {
-			"mute_reason": "Muted for"
-		},
-		"change": {
-			"reason": "Case %s | Reason changed | %s",
-			"duration": "Case %s | Duration changed | %s"
-		},
-		"strike": {
-			"cleared": "Strikes cleared | %s",
-			"deleted": "Strike deleted | %s",
-			"amount": "Amount",
-			"case": "Case ID"
-		},
-		"group": {
-			"admin": "Action by",
+		"groups": {
+			"name": "Group logs",
 			"title": "Group '%s' (#%s)",
 			"master": "Main server's ID: ",
 			"guild": "Implicated server",
@@ -168,25 +196,16 @@
 			"renamed": "Group was renamed",
 			"oldname": "Previous Group's name"
 		},
-		"audit": {
-			"banned": "User was banned in %s",
-			"unbanned": "User was unbanned in %s",
-			"default": "Action performed in %s",
-			"leave_guild": "Helper bot left server %s",
-			"guild_id": "Server ID",
-			"alert": "Misconduct detected in '%s'!",
-			"action": "Action performed"
-		},
 		"verify": {
+			"name": "Verification logs",
 			"added": "User verified | %s",
 			"removed": "User unverified | %s",
 			"attempt": "User attempted verification | %s",
 			"steam": "Steam account",
-			"discord": "Discord account",
-			"blacklisted": "Blacklisted in group #%d",
-			"playtime": "Playtime is %s of required %s"
+			"discord": "Discord account"
 		},
-		"ticket": {
+		"tickets": {
+			"name": "Ticket logs",
 			"closed_title": "Ticket Closed",
 			"closed_value": "Ticket Name: {name}\nClosed By: {closed}\nCreated By: {created}\nClaimed By: {claimed}\n\n*If available, ticket's transcript is attached to this message.*",
 			"closed_pm": "Ticket closed at **{guild}** server.\n\n**Closed By**: {closed}\n**Close date**: {time}\n**Close Reason**: {reason}\n\n*If available, ticket's transcript is attached to this message.*",
@@ -195,30 +214,13 @@
 			"roles_title": "Roles issued | %s",
 			"roles": "Assigned roles",
 			"created": "Ticket Created",
-			"name": "Ticket's name"
-		},
-		"pm": {
-			"banned_temp": "You were banned from %s server for %s. | %s",
-			"banned": "You were permanently banned from %s server. | %s",
-			"kicked": "You were kicked from %s server. | %s",
-			"muted": "You were timed out in %s server. | %s",
-			"strike": "You received %s in %s server. | %s",
-			"strike1": "one warning",
-			"strike2": "two warnings",
-			"strike3": "three warnings",
-			"button_strikes": "View active strikes",
-			"appeal": "\nAppeal this action by following this link:\n> %s"
-		},
-		"guild": {
-			"access_added": "Access granted to target",
-			"access_removed": "Access removed from target",
-			"access_level": "Access level",
-			"module": "Module",
-			"module_enabled": "Module enabled",
-			"module_disabled": "Module disabled"
+			"ticket_name": "Ticket's name"
 		},
 		"roles": {
-			"checkrank": "Role's members checked for required rank",
+			"name": "Role logs",
+			"create": "Role created | %s",
+			"update": "Role updated | %s",
+			"delete": "Role deleted | %s",
 			"rank": "Rank",
 			"role": "Role",
 			"added": "Role added to user",
@@ -228,40 +230,8 @@
 			"temp_updated": "Temporary role updated for user",
 			"temp_removed": "Temporaty role removed from user",
 			"guild": "Target server",
-			"checkchild": "Role's members checked for presence in required server"
-		},
-		"blacklist": {
-			"added": "Blacklisted | %s",
-			"removed": "Removed from blacklist | %s",
-			"steam": "SteamID",
-			"group": "Group"
-		}
-	},
-	"logger": {
-		"enforcer": "Done by",
-		"reason": "Reason",
-		"moderation": {
-			"name": "Moderation logs",
-			"kick": "Member kicked | %s",
-			"ban": "Member banned | %s",
-			"unban": "Ban removed | %s",
-			"timeout": "Member timed out | %s",
-			"remove_timeout": "Timeout removed | %s"
-		},
-		"groups": {
-			"name": "Group logs"
-		},
-		"verify": {
-			"name": "Verification logs"
-		},
-		"tickets": {
-			"name": "Ticket logs"
-		},
-		"roles": {
-			"name": "Role logs",
-			"create": "Role created | %s",
-			"update": "Role updated | %s",
-			"delete": "Role deleted | %s"
+			"checkchild": "Role's members checked for presence in required server",
+			"checkrank": "Role's members checked for required rank"
 		},
 		"server": {
 			"name": "Server logs",
@@ -271,20 +241,34 @@
 			"emoji_delete": "Emoji deleted",
 			"sticker_create": "Sticker created",
 			"sticker_update": "Sticker updated",
-			"sticker_delete": "Sticker deleted"
+			"sticker_delete": "Sticker deleted",
+			"access_added": "Access granted to target",
+			"access_removed": "Access removed from target",
+			"access_level": "Access level",
+			"module": "Module",
+			"module_enabled": "Module enabled",
+			"module_disabled": "Module disabled"
 		},
 		"messages": {
 			"name": "Message logs",
 			"delete": "Message deleted",
 			"bulk_delete": "Bulk messages deleted",
-			"update": "Message updated"
+			"update": "Message updated",
+			"channel": "Channel",
+			"author": "Author",
+			"content": "Content",
+			"old_content": "Previous content",
+			"new_content": "New content",
+			"count": "Message count"
 		},
 		"members": {
 			"name": "Member logs",
 			"join": "Member joined | %s",
 			"leave": "Member left | %s",
 			"role_change": "Member's role changed",
-			"name_change": "Member changed nickname"
+			"nick_change": "Member changed nickname | %s",
+			"roles": "Roles",
+			"joined_at": "Joined at"
 		},
 		"voice": {
 			"name": "Voice logs",
@@ -304,6 +288,15 @@
 		"invite": {
 			"name": "Invite logs",
 			"sent": "Invite sent"
+		},
+		"helper": {
+			"banned": "User was banned in %s",
+			"unbanned": "User was unbanned in %s",
+			"default": "Action performed in %s",
+			"leave_guild": "Helper bot left server %s",
+			"guild_id": "Server ID",
+			"alert": "Misconduct detected in '%s'!",
+			"action": "Action performed"
 		},
 		"other": {
 			"name": "Audit logs",
@@ -340,7 +333,8 @@
 			"remove_permissions": "Removed permissions",
 			"permission_overwrites": "Channel overwrites",
 			"allow": "Allowed",
-			"deny": "Denied"
+			"deny": "Denied",
+			"communication_disabled_until": "Timeout"
 		}
 	},
 	"bot": {

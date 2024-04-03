@@ -6,6 +6,7 @@ import java.util.List;
 
 import union.App;
 import union.objects.annotation.NotNull;
+import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -13,7 +14,6 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
-import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateAvatarEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -29,6 +29,10 @@ public class MemberListener extends ListenerAdapter {
 	
 	@Override
 	public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
+		// Log
+		if (db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) {
+			bot.getLogger().member.onJoined(event.getMember());
+		}
 		// Checks cache on local DB, if user is verified, gives out the role
 		long userId = event.getUser().getIdLong();
 		
@@ -59,6 +63,10 @@ public class MemberListener extends ListenerAdapter {
 	
 	@Override
 	public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
+		// Log
+		if (db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) {
+			bot.getLogger().member.onLeft(event.getGuild(), event.getMember(), event.getUser());
+		}
 		// When user leaves guild, check if there are any records in DB that would be better to remove.
 		// This does not consider clearing User DB, when bot leaves guild.
 		String guildId = event.getGuild().getId();
@@ -78,9 +86,13 @@ public class MemberListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onGuildMemberUpdateNickname(@NotNull GuildMemberUpdateNicknameEvent event) {}
+	public void onGuildMemberUpdateNickname(@NotNull GuildMemberUpdateNicknameEvent event) {
+		if (db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) {
+			bot.getLogger().member.onNickChange(event.getMember(), event.getOldValue(), event.getNewValue());
+		}
+	}
 
-	@Override
-	public void onGuildMemberUpdateAvatar(@NotNull GuildMemberUpdateAvatarEvent event) {}
+	/* @Override
+	public void onGuildMemberUpdateAvatar(@NotNull GuildMemberUpdateAvatarEvent event) {} */
 	
 }

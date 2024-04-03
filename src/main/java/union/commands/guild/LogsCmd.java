@@ -1,8 +1,11 @@
 package union.commands.guild;
 
+import static union.utils.CastUtil.castLong;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import union.App;
 import union.base.command.SlashCommand;
@@ -23,8 +26,10 @@ import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Icon.IconType;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 
 public class LogsCmd extends CommandBase {
 	
@@ -32,7 +37,8 @@ public class LogsCmd extends CommandBase {
 		super(bot);
 		this.name = "logs";
 		this.path = "bot.guild.logs";
-		this.children = new SlashCommand[]{new Enable(bot), new Disable(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Enable(bot), new Disable(bot), new View(bot),
+			new AddException(bot), new RemoveException(bot), new ViewException(bot)};
 		this.accessLevel = CmdAccessLevel.ADMIN;
 		this.category = CmdCategory.GUILD;
 	}
@@ -52,6 +58,7 @@ public class LogsCmd extends CommandBase {
 				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
 					.setChannelTypes(ChannelType.TEXT)
 			);
+			this.subcommandGroup = new SubcommandGroupData("manage", lu.getText("bot.guild.logs.manage.help"));
 		}
 
 		@Override
@@ -108,12 +115,13 @@ public class LogsCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "disable";
-			this.path = "bot.guild.logs.disable";
+			this.path = "bot.guild.logs.manage.disable";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), true)
 					.addChoice("All logs", "all")
 					.addChoices(LogType.asChoices(lu))
 			);
+			this.subcommandGroup = new SubcommandGroupData("manage", lu.getText("bot.guild.logs.manage.help"));
 		}
 
 		@Override
@@ -161,7 +169,8 @@ public class LogsCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "view";
-			this.path = "bot.guild.logs.view";
+			this.path = "bot.guild.logs.manage.view";
+			this.subcommandGroup = new SubcommandGroupData("manage", lu.getText("bot.guild.logs.manage.help"));
 		}
 
 		@Override
@@ -186,6 +195,99 @@ public class LogsCmd extends CommandBase {
 				builder.appendDescription("%s - %s\n".formatted(lu.getText(event, type.getPathName()), text));
 			});
 
+			editHookEmbed(event, builder.build());
+		}
+	}
+
+	private class AddException extends SlashCommand {
+		public AddException(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "add";
+			this.path = "bot.guild.logs.exceptions.add";
+			this.options = List.of(
+				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
+			);
+			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+			GuildChannel channel = event.optGuildChannel("channel");
+			if (channel == null) {
+				editError(event, path+".not_found");
+				return;
+			}
+			long guildId = event.getGuild().getIdLong();
+			if (bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), channel.getIdLong())) {
+				editError(event, path+".already", "Channel: "+channel.getAsMention());
+				return;
+			}
+			bot.getDBUtil().logExceptions.addException(guildId, channel.getIdLong());
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(channel.getAsMention()))
+				.build()
+			);
+		}
+	}
+
+	private class RemoveException extends SlashCommand {
+		public RemoveException(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "add";
+			this.path = "bot.guild.logs.exceptions.remove";
+			this.options = List.of(
+				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)
+			);
+			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+			Long targetId;
+			try {
+				targetId = castLong(event.optString("id"));
+				if (targetId == null) throw new NumberFormatException("Value is empty or Null.");
+			} catch (NumberFormatException ex) {
+				editError(event, path+".not_found", ex.getMessage());
+				return;
+			}
+			long guildId = event.getGuild().getIdLong();
+			if (!bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), targetId)) {
+				editError(event, path+".not_found", "Provided ID: "+targetId);
+				return;
+			}
+			bot.getDBUtil().logExceptions.addException(guildId, targetId);
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted("'"+targetId+"'"))
+				.build()
+			);
+		}
+	}
+
+	private class ViewException extends SlashCommand {
+		public ViewException(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "view";
+			this.path = "bot.guild.logs.exceptions.view";
+			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+			Set<Long> targets = bot.getDBUtil().logExceptions.getExceptions(event.getGuild().getIdLong());
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
+				.setTitle(lu.getText(path+".title"));
+			if (targets.isEmpty()) {
+				builder.setDescription(lu.getText(event, path+".none"));
+			} else {
+				targets.forEach(id -> builder.appendDescription("<#%s> (%<s)\n".formatted(id)));
+			}
 			editHookEmbed(event, builder.build());
 		}
 	}

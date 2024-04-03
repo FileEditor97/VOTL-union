@@ -612,36 +612,69 @@
 			},
 			"logs": {
 				"help": "Log server events",
-				"enable": {
-					"help": "Enable logging",
-					"usage": "enable <Type> <#Channel>",
-					"type": {
-						"name": "type",
-						"help": "Select event type"
+				"manage": {
+					"help": "Manage logging channels",
+					"enable": {
+						"help": "Enable logging",
+						"usage": "manage enable <Type> <#Channel>",
+						"type": {
+							"name": "type",
+							"help": "Select event type"
+						},
+						"channel": {
+							"name": "channel",
+							"help": "Select channel where to log actions"
+						},
+						"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+						"as_log": "This channel is selected as a log channel for %s events.",
+						"done": "Successfully set %s for logging %s!"
 					},
-					"channel": {
-						"name": "channel",
-						"help": "Select channel where to log actions"
+					"disable": {
+						"help": "Disable logging",
+						"usage": "manage disable <Type>",
+						"type": {
+							"name": "type",
+							"help": "Select event type"
+						},
+						"done_all": "Disabled logging for all events!",
+						"done": "Disabled logging for %s events!"
 					},
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
-					"as_log": "This channel is selected as a log channel for %s events.",
-					"done": "Successfully set %s for logging %s!"
+					"view": {
+						"help": "View logging settings",
+						"usage": "manage view",
+						"title": "Currently logging",
+						"none": "**None**\n\n*Use `/logs enable` to setup logging*"
+					}
 				},
-				"disable": {
-					"help": "Disable logging",
-					"usage": "disable <Type>",
-					"type": {
-						"name": "type",
-						"help": "Select event type"
+				"exceptions": {
+					"help": "Manage logging exceptions",
+					"add": {
+						"help": "Exclude channel from logging",
+						"usage": "exceptions add <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select channel"
+						},
+						"not_found": "Channel not found or can't be selected.",
+						"already": "Channel is already excluded from logging.",
+						"done": "Done! Channel %s excluded from future logging (deleted message and other)."
 					},
-					"done_all": "Disabled logging for all events!",
-					"done": "Disabled logging for %s events!"
-				},
-				"view": {
-					"help": "View logging settings",
-					"usage": "view",
-					"title": "Currently logging",
-					"none": "**None**\n\n*Use `/logs enable` to setup logging*"
+					"remove": {
+						"help": "Exclude channel from logging",
+						"usage": "exceptions add <#Channel>",
+						"id": {
+							"name": "id",
+							"help": "Enter target's (channel) ID"
+						},
+						"not_found": "Selected channel is not in the exceptions list.",
+						"done": "Done! Target %s will be logged."
+					},
+					"view": {
+						"help": "View logging exceptions",
+						"usage": "exceptions view",
+						"title": "Excluded channels",
+						"none": "*None*"
+					}
 				}
 			},
 			"autopunish": {

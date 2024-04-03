@@ -51,7 +51,7 @@ public class LogsCmd extends CommandBase {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
 			this.name = "enable";
-			this.path = "bot.guild.logs.enable";
+			this.path = "bot.guild.logs.manage.enable";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), true)
 					.addChoices(LogType.asChoices(lu)),
@@ -236,7 +236,7 @@ public class LogsCmd extends CommandBase {
 		public RemoveException(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "add";
+			this.name = "remove";
 			this.path = "bot.guild.logs.exceptions.remove";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)

@@ -143,22 +143,20 @@ public class TimeUtil {
 		return buffer.toString();
 	}
 
-	public static String formatTime(TemporalAccessor time, Boolean full) {
-		if (time != null) {
-			if (full) {
-				return String.format(
-					"%s (%s)",
-					TimeFormat.DATE_TIME_SHORT.format(time),
-					TimeFormat.RELATIVE.format(time)
-				);
-			}
+	public static String formatTime(TemporalAccessor time, boolean full) {
+		if (time == null) return "";
+		if (full) {
 			return String.format(
-				"%s %s",
-				TimeFormat.DATE_SHORT.format(time),
-				TimeFormat.TIME_SHORT.format(time)
+				"%s (%s)",
+				TimeFormat.DATE_TIME_SHORT.format(time),
+				TimeFormat.RELATIVE.format(time)
 			);
 		}
-		return "";
+		return String.format(
+			"%s %s",
+			TimeFormat.DATE_SHORT.format(time),
+			TimeFormat.TIME_SHORT.format(time)
+		);
 	}
 
 	public static String formatDuration(LocaleUtil lu, DiscordLocale locale, Instant startTime, Duration duration) {

@@ -9,6 +9,7 @@ import java.util.Objects;
 import union.App;
 import union.objects.Emotes;
 import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -70,6 +71,11 @@ public class LocaleUtil {
 			.replace("{target}", targetReplacement)
 			.replace("{targets}", targetReplacement)
 		);
+	}
+
+	@Nullable
+	public String getLocalizedNullable(DiscordLocale locale, String path) {
+		return langUtil.getNullableString(locale, path);
 	}
 
 	@NotNull

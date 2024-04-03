@@ -18,6 +18,8 @@ public class GuildLogsManager extends LiteDBBase {
 	// Cache
 	private final FixedCache<Long, LogSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
 	private final LogSettings blankSettings = new LogSettings();
+
+	private final Set<String> logColumns = LogType.getAllNames();
 	
 	public GuildLogsManager(ConnectionUtil cu) {
 		super(cu, "logWebhooks");
@@ -60,7 +62,7 @@ public class GuildLogsManager extends LiteDBBase {
 	}
 
 	private Map<String, Object> getData(long guildId) {
-		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), LogType.getAllNames());
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), logColumns);
 	}
 
 	private void invalidateCache(long guildId) {
@@ -93,6 +95,10 @@ public class GuildLogsManager extends LiteDBBase {
 
 		public Set<WebhookData> getWebhooks() {
 			return new HashSet<>(logs.values());
+		}
+
+		public boolean enabled(LogType type) {
+			return logs.containsKey(type);
 		}
 
 		public boolean isEmpty() {

@@ -1,5 +1,6 @@
 package union.commands.guild;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,8 @@ import union.utils.exception.CheckException;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.entities.Icon.IconType;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -79,7 +82,8 @@ public class LogsCmd extends CommandBase {
 						webhook.delete(oldData.getToken()).reason("Log disabled").queue();
 					});
 				}
-				channel.createWebhook(lu.getText(type.getPathName())).reason("By "+event.getUser().getName()).queue(webhook -> {
+				Icon icon = Icon.from(new URL(Constants.AVATAR_URL).openStream(), IconType.PNG);
+				channel.createWebhook(lu.getText(type.getPathName())).setAvatar(icon).reason("By "+event.getUser().getName()).queue(webhook -> {
 					// Add to DB
 					WebhookData data = new WebhookData(channel.getIdLong(), webhook.getIdLong(), webhook.getToken());
 					bot.getDBUtil().logs.setLogWebhook(type, event.getGuild().getIdLong(), data);
@@ -168,7 +172,7 @@ public class LogsCmd extends CommandBase {
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".title"));
 
-			LogSettings settings = bot.getDBUtil().logs.getSettings(guild.getIdLong());
+			LogSettings settings = bot.getDBUtil().getLogSettings(guild);
 			if (settings == null || settings.isEmpty()) {
 				editHookEmbed(event, builder
 					.setDescription(lu.getText(event, path+".none"))

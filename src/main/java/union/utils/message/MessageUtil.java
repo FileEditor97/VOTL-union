@@ -32,8 +32,7 @@ public class MessageUtil {
 			return "";
 		}
 
-		final String s0 = str.substring(0, 1).toUpperCase();
-		return s0 + str.substring(1).toLowerCase();
+		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 	}
 
 	public static List<String> getIdsFromString(String text) {

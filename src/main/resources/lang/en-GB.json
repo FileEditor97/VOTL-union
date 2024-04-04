@@ -130,6 +130,7 @@
 		}
 	},
 	"logger": {
+		"user": "User",
 		"enforcer": "Done by",
 		"target": "Target",
 		"reason": "Reason",
@@ -302,8 +303,8 @@
 			"action": "Action performed"
 		},
 		"other": {
-			"name": "Audit logs",
-			"audit": "Audit logs"
+			"name": "Audit logs (not used!)",
+			"audit": "Audit logs (not used!)"
 		},
 		"keys": {
 			"name": "Name",

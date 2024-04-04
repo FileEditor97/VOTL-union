@@ -151,7 +151,7 @@ public class SqlDBBase {
 	private String quote(Object value) {
 		// Convert to string and replace '(single quote) with ''(2 single quotes) for sql
 		String str = String.valueOf(value);
-		if (str == "NULL") {
+		if (str.equals("NULL")) {
 			return str;
 		}
 		return "'" + String.valueOf(value).replaceAll("'", "''") + "'"; // smt's -> 'smt''s'

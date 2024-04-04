@@ -102,7 +102,14 @@ public class LogEmbedUtil {
 		}
 
 		public LogEmbedBuilder setHeaderIcon(String path, String iconUrl, Object... args) {
-			builder.setAuthor(localized(locale, path).formatted(args), null, iconUrl);
+			try {
+				builder.setAuthor(localized(locale, path).formatted(args), null, iconUrl);
+			} catch(IllegalArgumentException ex) {
+				if (ex.getMessage() != null && ex.getMessage().contains("URL must be a valid"))
+					builder.setAuthor(localized(locale, path).formatted(args));
+				else
+					throw ex;
+			}
 			return this;
 		}
 
@@ -117,7 +124,14 @@ public class LogEmbedUtil {
 		}
 
 		public LogEmbedBuilder setHeaderIcon(LogEvent logEvent, String iconUrl, Object... args) {
-			builder.setAuthor(lu.getLocalized(locale, logEvent.getPath()).formatted(args), null, iconUrl);
+			try {
+				builder.setAuthor(lu.getLocalized(locale, logEvent.getPath()).formatted(args), null, iconUrl);
+			} catch(IllegalArgumentException ex) {
+				if (ex.getMessage() != null && ex.getMessage().contains("URL must be a valid"))
+					builder.setAuthor(lu.getLocalized(locale, logEvent.getPath()).formatted(args));
+				else
+					throw ex;
+			}
 			return this;
 		}
 
@@ -140,7 +154,7 @@ public class LogEmbedUtil {
 		}
 
 		public LogEmbedBuilder setEnforcer(Long userId) {
-			return addField("enforcer", userId == null ? "-" : "<@"+userId+">");
+			return setEnforcer(userId == null ? "-" : "<@"+userId+">");
 		}
 
 		public LogEmbedBuilder setEnforcer(String userMention) {
@@ -998,7 +1012,6 @@ public class LogEmbedUtil {
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, RED_LIGHT)
 			.setHeaderIcon(LogEvent.MEMBER_LEAVE, user.getEffectiveAvatarUrl(), user.getName())
 			.setDescription("<@%s> (%<s)".formatted(user.getId()))
-			.addField("", guildIconLink)
 			.setId(user.getId());
 		if (!roles.isEmpty()) {
 			String text = roles.stream().map(Role::getName).collect(Collectors.joining(", "));
@@ -1020,10 +1033,10 @@ public class LogEmbedUtil {
 			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, newData.getAuthorId()));
 		String oldContent = oldData==null ? "<Unknown>" : oldData.getContent();
 		if (!newData.getContent().equals(oldContent)) {
-			builder.setDescription(localized(locale, "messages.old_content")+"\n```"+MessageUtil.limitString(oldContent, 2000)+"\n```\n")
-				.appendDescription(localized(locale, "messages.new_content")+"\n```"+MessageUtil.limitString(newData.getContent(), 2000)+"\n```");
+			builder.addField("messages.old_content", MessageUtil.limitString(oldContent, 2000), false)
+				.addField("messages.new_content", MessageUtil.limitString(newData.getContent(), 2000), false);
 		} else if (oldData!=null && oldData.getAttachment() != null && newData.getAttachment() == null) {
-			builder.setDescription("Removed attachement: "+oldData.getAttachment().getFileName());
+			builder.setDescription("Removed Attachement: "+oldData.getAttachment().getFileName());
 		} else {
 			builder.setDescription("Unknown change (image or else)");
 		}
@@ -1042,16 +1055,16 @@ public class LogEmbedUtil {
 		}
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, RED_LIGHT)
 			.setHeader(LogEvent.MESSAGE_DELETE)
-			.addField("messages.author", "<@%s>".formatted(data.getAuthorId()))
-			.addField("messages.channel", "<#%s>".formatted(channelId))
 			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, data.getAuthorId()));
 		if (!data.getContent().isBlank()) {
-			builder.setDescription(localized(locale, "messages.content")+"\n```"+MessageUtil.limitString(data.getContent(), 4000)+"\n```");
+			builder.addField("messages.content", MessageUtil.limitString(data.getContent(), 2000), false);
 		}
 		if (data.getAttachment() != null) {
-			builder.appendDescription("[Attachement: %s]".formatted(data.getAttachment().getFileName()))
+			builder.setDescription("[Attachement: %s]".formatted(data.getAttachment().getFileName()))
 				.setImage(data.getAttachment().getUrl());
 		}
+		builder.addField("messages.author", "<@%s>".formatted(data.getAuthorId()))
+			.addField("messages.channel", "<#%s>".formatted(channelId));
 		if (modId != null) {
 			builder.setMod(modId);
 		}

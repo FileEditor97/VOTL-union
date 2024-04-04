@@ -63,7 +63,7 @@ public class TimeUtil {
 	 * use both duration(h m s) and period(w d).
 	 */
 	public static Duration stringToDuration(String text, boolean allowSeconds) throws FormatterException {
-		if (text == null || text.isEmpty() || text == "0") {
+		if (text == null || text.isEmpty() || text.equals("0")) {
 			return Duration.ZERO;
 		}
 

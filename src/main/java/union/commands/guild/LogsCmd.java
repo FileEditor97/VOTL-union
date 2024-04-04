@@ -130,7 +130,7 @@ public class LogsCmd extends CommandBase {
 			long guildId = event.getGuild().getIdLong();
 
 			String input = event.optString("type");
-			if (input == "all") {
+			if (input.equals("all")) {
 				// Delete all logging webhooks
 				LogSettings settings = bot.getDBUtil().logs.getSettings(guildId);
 				if (!settings.isEmpty()) {

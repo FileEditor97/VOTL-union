@@ -13,8 +13,9 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.SteamUtil;
 import union.utils.message.MessageUtil;
-import union.utils.message.SteamUtil;
+
 import static union.utils.CastUtil.castLong;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -115,7 +116,7 @@ public class BlacklistCmd extends CommandBase {
 				if (bot.getDBUtil().blacklist.inGroupUser(groupId, user.getIdLong())) {
 					bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong());
 					// Log into master
-					bot.getLogListener().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
+					bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
 					// Reply
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_user").formatted(user.getAsMention(), user.getId(), groupId))
@@ -143,7 +144,7 @@ public class BlacklistCmd extends CommandBase {
 				if (bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
 					bot.getDBUtil().blacklist.removeSteam64(groupId, steam64);
 					// Log into master
-					bot.getLogListener().mod.onBlacklistRemoved(event.getUser(), null, steam64, groupId);
+					bot.getLogger().mod.onBlacklistRemoved(event.getUser(), null, steam64, groupId);
 					// Reply
 					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_steam").formatted(SteamUtil.convertSteam64toSteamID(steam64), groupId))

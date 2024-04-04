@@ -148,7 +148,7 @@ public class AccessCmd extends CommandBase {
 			bot.getDBUtil().access.addRole(guildId, roleId, level);
 
 			// Log
-			bot.getLogListener().server.onAccessAdded(guild, event.getUser(), null, role, level);
+			bot.getLogger().server.onAccessAdded(guild, event.getUser(), null, role, level);
 			// Send reply
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.role.done")
@@ -194,7 +194,7 @@ public class AccessCmd extends CommandBase {
 			bot.getDBUtil().access.removeRole(roleId);
 
 			// Log
-			bot.getLogListener().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
+			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
 			// Send reply
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.role.done")
@@ -246,7 +246,7 @@ public class AccessCmd extends CommandBase {
 			bot.getDBUtil().access.addUser(guildId, userId, CmdAccessLevel.OPERATOR);
 			
 			// Log
-			bot.getLogListener().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
+			bot.getLogger().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
 			// Send reply
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.operator.done").replace("{user}", member.getAsMention()))
@@ -291,7 +291,7 @@ public class AccessCmd extends CommandBase {
 			bot.getDBUtil().access.removeUser(guildId, userId);
 
 			// Log
-			bot.getLogListener().server.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
+			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
 			// Send reply
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.operator.done").replace("{user}", user.getAsMention()))

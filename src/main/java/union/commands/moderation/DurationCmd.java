@@ -45,9 +45,9 @@ public class DurationCmd extends CommandBase {
 			return;
 		}
 
-		final Duration duration;
+		Duration newDuration;
 		try {
-			duration = TimeUtil.stringToDuration(event.optString("time"), false);
+			newDuration = TimeUtil.stringToDuration(event.optString("time"), false);
 		} catch (FormatterException ex) {
 			editError(event, ex.getPath());
 			return;
@@ -59,14 +59,14 @@ public class DurationCmd extends CommandBase {
 		}
 
 		if (caseData.getCaseType().equals(CaseType.MUTE)) {
-			if (duration.isZero()) {
+			if (newDuration.isZero()) {
 				editError(event, "errors.error", "Duration must be larger than 1 minute");
 				return;
 			}
 			event.getGuild().retrieveMemberById(caseData.getTargetId()).queue(target -> {
-				if (caseData.getTimeStart().plus(duration).isAfter(Instant.now())) {
+				if (caseData.getTimeStart().plus(newDuration).isAfter(Instant.now())) {
 					// time out member for new time
-					target.timeoutUntil(caseData.getTimeStart().plus(duration)).reason("Duration change by "+event.getUser().getName()).queue();
+					target.timeoutUntil(caseData.getTimeStart().plus(newDuration)).reason("Duration change by "+event.getUser().getName()).queue();
 				} else {
 					// time will be expired, remove time out
 					target.removeTimeout();
@@ -74,15 +74,14 @@ public class DurationCmd extends CommandBase {
 				}
 			});
 		}
-		bot.getDBUtil().cases.updateDuration(caseId, duration);
+		bot.getDBUtil().cases.updateDuration(caseId, newDuration);
 		
-		String newTime = duration.isZero() ? lu.getText(event, "logger_embed.permanently") : lu.getText(event, "logger_embed.temporary")
-			.formatted(TimeUtil.formatTime(caseData.getTimeStart().plus(duration), false));
+		String newTime = TimeUtil.formatDuration(lu, event.getUserLocale(), caseData.getTimeStart(), newDuration);
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{duration}", newTime))
 			.build();
 		editHookEmbed(event, embed);
 
-		bot.getLogListener().mod.onChangeDuration(event, caseData, event.getMember(), newTime);
+		bot.getLogger().mod.onChangeDuration(event, caseData, event.getMember(), newTime);
 	}
 }

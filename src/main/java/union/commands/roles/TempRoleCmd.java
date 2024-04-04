@@ -116,7 +116,7 @@ public class TempRoleCmd extends CommandBase {
 			guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
 				bot.getDBUtil().tempRole.add(guild.getId(), roleId, userId, delete, until);
 				// Log
-				bot.getLogListener().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), role, duration);
+				bot.getLogger().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), role, duration);
 				// Send reply
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
@@ -169,7 +169,7 @@ public class TempRoleCmd extends CommandBase {
 
 			bot.getDBUtil().tempRole.remove(role.getId(), member.getId());
 			// Log
-			bot.getLogListener().role.onTempRoleRemoved(event.getGuild(), event.getUser(), member.getUser(), role);
+			bot.getLogger().role.onTempRoleRemoved(event.getGuild(), event.getUser(), member.getUser(), role);
 			// Send reply
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
@@ -231,7 +231,7 @@ public class TempRoleCmd extends CommandBase {
 
 			bot.getDBUtil().tempRole.updateTime(role.getId(), member.getId(), until);
 			// Log
-			bot.getLogListener().role.onTempRoleUpdated(event.getGuild(), event.getUser(), member.getUser(), role, until);
+			bot.getLogger().role.onTempRoleUpdated(event.getGuild(), event.getUser(), member.getUser(), role, until);
 			// Send reply
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())

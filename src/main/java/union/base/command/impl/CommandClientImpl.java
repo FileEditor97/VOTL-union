@@ -19,7 +19,6 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -43,7 +42,6 @@ import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -52,7 +50,6 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
@@ -350,10 +347,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 	@Override
 	public void onEvent(@NotNull GenericEvent event)
 	{
-		if(event instanceof MessageReceivedEvent)
-			onMessageReceived((MessageReceivedEvent)event);
-
-		else if(event instanceof SlashCommandInteractionEvent)
+		if(event instanceof SlashCommandInteractionEvent)
 			onSlashCommand((SlashCommandInteractionEvent)event);
 
 		else if(event instanceof MessageContextInteractionEvent)
@@ -363,9 +357,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 
 		else if (event instanceof CommandAutoCompleteInteractionEvent)
 			onCommandAutoComplete((CommandAutoCompleteInteractionEvent)event);
-
-		else if(event instanceof MessageDeleteEvent && usesLinkedDeletion())
-			onMessageDelete((MessageDeleteEvent) event);
 
 		else if(event instanceof ReadyEvent)
 			onReady((ReadyEvent)event);
@@ -501,16 +492,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 		}
 	}
 
-	private void onMessageReceived(MessageReceivedEvent event)
-	{
-		// Return if it's a bot
-		if(event.getAuthor().isBot())
-			return;
-
-		if(listener != null)
-			listener.onNonCommandMessage(event);
-	}
-
 	private void onSlashCommand(SlashCommandInteractionEvent event)
 	{
 		// this will be null if it's not a command
@@ -628,59 +609,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 			uses.put(menu.getName(), uses.getOrDefault(menu.getName(), 0) + 1);
 			menu.run(menuEvent);
 			// Command is done
-		}
-	}
-
-	private void onMessageDelete(MessageDeleteEvent event)
-	{
-		// Check we are in a guild since there is no guild specific event now
-		if (!event.isFromGuild()) return;
-
-		// We don't need to cover whether or not this client usesLinkedDeletion() because
-		// that is checked in onEvent(Event) before this is even called.
-		synchronized(linkMap)
-		{
-			if(linkMap.contains(event.getMessageIdLong()))
-			{
-				Set<Message> messages = linkMap.get(event.getMessageIdLong());
-				if(messages.size()>1 && event.getGuild().getSelfMember()
-						.hasPermission(event.getChannel().asTextChannel(), Permission.MESSAGE_MANAGE))
-					event.getChannel().asTextChannel().deleteMessages(messages).queue(unused -> {}, ignored -> {});
-				else if(messages.size()>0)
-					messages.forEach(m -> m.delete().queue(unused -> {}, ignored -> {}));
-			}
-		}
-	}
-
-	/**
-	 * <b>DO NOT USE THIS!</b>
-	 *
-	 * <p>This is a method necessary for linking a bot's response messages
-	 * to their corresponding call message ID.
-	 * <br><b>Using this anywhere in your code can and will break your bot.</b>
-	 *
-	 * @param  callId
-	 *         The ID of the call Message
-	 * @param  message
-	 *         The Message to link to the ID
-	 */
-	public void linkIds(long callId, Message message)
-	{
-		// We don't use linked deletion, so we don't do anything.
-		if(!usesLinkedDeletion())
-			return;
-
-		synchronized(linkMap)
-		{
-			Set<Message> stored = linkMap.get(callId);
-			if(stored != null)
-				stored.add(message);
-			else
-			{
-				stored = new HashSet<>();
-				stored.add(message);
-				linkMap.add(callId, stored);
-			}
 		}
 	}
 

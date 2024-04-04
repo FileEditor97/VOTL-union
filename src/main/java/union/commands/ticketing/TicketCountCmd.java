@@ -46,7 +46,6 @@ public class TicketCountCmd extends CommandBase {
 			if (beforeDate != null) beforeTime = LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
 		} catch (Exception ex) {
 			createError(event, path+".failed_parse", ex.getMessage());
-			System.out.println(ex);
 			return;
 		}
 

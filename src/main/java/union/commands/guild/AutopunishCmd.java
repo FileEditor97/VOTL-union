@@ -110,7 +110,7 @@ public class AutopunishCmd extends CommandBase {
 				actions.add(PunishActions.BAN);
 				data.add("t"+duration.getSeconds());
 				buffer.append(lu.getText(event, path+".vban").formatted(duration.isZero() ?
-					lu.getText(event, "logger_embed.permanently") :
+					lu.getText(event, "misc.permanently") :
 					lu.getText(event, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)
 				));
 			}

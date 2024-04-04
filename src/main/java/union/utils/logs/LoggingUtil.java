@@ -1,5 +1,8 @@
-package union.listeners;
+package union.utils.logs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -9,62 +12,58 @@ import java.util.stream.Collectors;
 
 import union.App;
 import union.base.command.SlashCommandEvent;
+import union.listeners.MessageListener.MessageData;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.LogChannels;
 import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
-import union.utils.LogUtil;
+import union.objects.logs.LogType;
+import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
-import union.utils.message.SteamUtil;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
+import net.dv8tion.jda.api.audit.AuditLogKey;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.requests.IncomingWebhookClientImpl;
 
-public class LogListener {
+public class LoggingUtil {
 	
 	private final App bot;
 	private final DBUtil db;
-	private final LogUtil logUtil;
+	private final LogEmbedUtil logUtil;
 
-	public final Moderation mod = new Moderation();
-	public final Roles role = new Roles();
-	public final Groups group = new Groups();
-	public final Verification verify = new Verification();
-	public final Tickets ticket = new Tickets();
-	public final Server server = new Server();
+	public final ModerationLogs mod =	new ModerationLogs();
+	public final RoleLogs role =		new RoleLogs();
+	public final GroupLogs group =		new GroupLogs();
+	public final VerificationLogs verify = new VerificationLogs();
+	public final TicketLogs ticket =	new TicketLogs();
+	public final ServerLogs server =	new ServerLogs();
+	public final ChannelLogs channel =	new ChannelLogs();
+	public final MemberLogs member =	new MemberLogs();
+	public final MessageLogs message =	new MessageLogs();
+	public final VoiceLogs voice =		new VoiceLogs();
 
-	public LogListener(App bot) {
+	public LoggingUtil(App bot) {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
-		this.logUtil = bot.getLogUtil();
+		this.logUtil = bot.getLogEmbedUtil();
 	}
 
-	/* @Deprecated
-	private TextChannel getLogChannel(LogChannels type, Guild guild) {
-		return Optional.ofNullable(db.guild.getLogChannel(type, guild.getId())).map(guild::getTextChannelById).orElse(null);
-	}
-
-	@Deprecated
-	private TextChannel getLogChannel(LogChannels type, long guildId) {
-		return Optional.ofNullable(db.guild.getLogChannel(type, String.valueOf(guildId))).map(bot.JDA::getTextChannelById).orElse(null);
-	} */
-
-	private IncomingWebhookClientImpl getWebhookClient(LogChannels type, Guild guild) {
+	private IncomingWebhookClientImpl getWebhookClient(LogType type, Guild guild) {
 		return bot.getGuildLogger().getWebhookClient(guild, type);
 	}
 
-	private void sendLog(Guild guild, LogChannels type, Supplier<MessageEmbed> embedSupplier) {
+	private void sendLog(Guild guild, LogType type, Supplier<MessageEmbed> embedSupplier) {
 		bot.getGuildLogger().sendMessageEmbed(guild, type, embedSupplier);
 	}
 
@@ -72,30 +71,9 @@ public class LogListener {
 		webhookClient.sendMessageEmbeds(embed).queue();
 	}
 
-	/* @Deprecated
-	private void sendLog(TextChannel channel, MessageEmbed embed) {
-		try {
-			channel.sendMessageEmbeds(embed).queue();
-		} catch (InsufficientPermissionException | IllegalArgumentException ex) {
-			return;
-		}
-	}
-
-	@Deprecated
-	private void sendLog(LogChannels type, Guild guild, MessageEmbed embed) {
-		TextChannel channel = getLogChannel(type, guild);
-		if (channel == null) return;
-
-		try {
-			channel.sendMessageEmbeds(embed).queue();
-		} catch (InsufficientPermissionException | IllegalArgumentException ex) {
-			return;
-		}
-	} */
-
 	// Moderation actions
-	public class Moderation {
-		private final LogChannels type = LogChannels.MODERATION;
+	public class ModerationLogs {
+		private final LogType type = LogType.MODERATION;
 
 		public void onNewCase(Guild guild, User target, CaseData caseData) {
 			onNewCase(guild, target, caseData, null);
@@ -106,7 +84,7 @@ public class LogListener {
 			if (client == null) return;
 
 			if (caseData == null) {
-				bot.getLogger().warn("Unknown case provided with interaction");
+				bot.getAppLogger().warn("Unknown case provided with interaction");
 				return;
 			}
 
@@ -157,7 +135,7 @@ public class LogListener {
 
 		public void onChangeReason(SlashCommandEvent event, CaseData caseData, Member moderator, String newReason) {
 			if (caseData == null) {
-				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
+				bot.getAppLogger().warn("Unknown case provided with interaction ", event.getName());
 				return;
 			}
 
@@ -166,7 +144,7 @@ public class LogListener {
 
 		public void onChangeDuration(SlashCommandEvent event, CaseData caseData, Member moderator, String newTime) {
 			if (caseData == null) {
-				bot.getLogger().warn("Unknown case provided with interaction ", event.getName());
+				bot.getAppLogger().warn("Unknown case provided with interaction ", event.getName());
 				return;
 			}
 
@@ -200,31 +178,45 @@ public class LogListener {
 			sendLog(master, type, () -> logUtil.blacklistRemovedEmbed(master.getLocale(), mod, target,
 				steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
 		}
+
+		public void onUserBan(AuditLogEntry entry, User target) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userBanEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
+
+		public void onUserUnban(AuditLogEntry entry, User target) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userUnbanEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
 	}
 
 	// Roles actions
-	public class Roles {
-		private final LogChannels type = LogChannels.ROLES;
+	public class RoleLogs {
+		private final LogType type = LogType.ROLE;
 
 		public void onApproved(Member member, Member admin, Guild guild, List<Role> roles, String ticketId) {
-			sendLog(guild, type, () -> logUtil.rolesApprovedEmbed(guild.getLocale(), ticketId, member.getAsMention(), member.getId(),
-				roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getAsMention()));
+			sendLog(guild, type, () -> logUtil.rolesApprovedEmbed(guild.getLocale(), ticketId, member.getIdLong(),
+				roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getIdLong()));
 		}
 
 		public void onCheckRank(Guild guild, User admin, Role role, String rankName) {
-			sendLog(guild, type, () -> logUtil.checkRankEmbed(guild.getLocale(), admin.getId(), role.getId(), rankName));
+			sendLog(guild, type, () -> logUtil.checkRankEmbed(guild.getLocale(), admin.getIdLong(), role.getIdLong(), rankName));
 		}
 
 		public void onRoleAdded(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getId(), target.getId(), target.getAvatarUrl(), role.getId()));
+			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getAvatarUrl(), role.getIdLong()));
 		}
 
 		public void onRoleRemoved(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getId(), target.getId(), target.getAvatarUrl(), role.getId()));
+			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getAvatarUrl(), role.getIdLong()));
 		}
 
 		public void onRoleRemovedAll(Guild guild, User mod, Role role) {
-			sendLog(guild, type, () -> logUtil.roleRemovedAllEmbed(guild.getLocale(), mod.getId(), role.getId()));
+			sendLog(guild, type, () -> logUtil.roleRemovedAllEmbed(guild.getLocale(), mod.getIdLong(), role.getIdLong()));
 		}
 
 		public void onTempRoleAdded(Guild guild, User mod, User target, Role role, Duration duration) {
@@ -239,18 +231,42 @@ public class LogListener {
 			sendLog(guild, type, () -> logUtil.tempRoleUpdatedEmbed(guild.getLocale(), mod, target, role, until));
 		}
 
-		public void onTempRoleAutoRemoved(Guild guild, String targetId, Role role) {
+		public void onTempRoleAutoRemoved(Guild guild, Long targetId, Role role) {
 			sendLog(guild, type, () -> logUtil.tempRoleAutoRemovedEmbed(guild.getLocale(), targetId, role));
 		}
 
 		public void onRoleCheckChildGuild(Guild guild, User admin, Role role, Guild targetGuild) {
-			sendLog(guild, type, () -> logUtil.checkRoleChildGuild(guild.getLocale(), admin.getId(), role.getId(), targetGuild.getName(), targetGuild.getId()));
+			sendLog(guild, type, () -> logUtil.checkRoleChildGuild(guild.getLocale(), admin.getIdLong(), role.getIdLong(), targetGuild.getName(), targetGuild.getIdLong()));
+		}
+
+		public void onRoleCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getNewValue();
+
+			sendLog(guild, type, () -> logUtil.roleCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onRoleDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getOldValue();
+
+			sendLog(guild, type, () -> logUtil.roleDeleted(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onRoleUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = guild.getRoleById(id).getName();
+
+			sendLog(guild, type, () -> logUtil.roleUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
 		}
 	}
 
 	// Group actions
-	public class Groups {
-		private final LogChannels type = LogChannels.GROUPS;
+	public class GroupLogs {
+		private final LogType type = LogType.GROUP;
 
 		public void onCreation(SlashCommandEvent event, Integer groupId, String name) {
 			sendLog(event.getGuild(), type, () -> logUtil.groupCreatedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), event.getGuild().getIdLong(),
@@ -365,31 +381,31 @@ public class LogListener {
 	}
 
 	// Verification actions
-	public class Verification {
-		private final LogChannels type = LogChannels.VERIFICATION;
+	public class VerificationLogs {
+		private final LogType type = LogType.VERIFICATION;
 
 		public void onVerified(User user, Long steam64, Guild guild) {
-			sendLog(guild, type, () -> logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
+			sendLog(guild, type, () -> logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				(steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64)
 			);
 		}
 
 		public void onUnverified(User user, Long steam64, Guild guild, String reason) {
-			sendLog(guild, type, () -> logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
+			sendLog(guild, type, () -> logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				(steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64, reason)
 			);
 		}
 
 		public void onVerifiedAttempt(User user, Long steam64, Guild guild, String reason) {
-			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getId(), user.getEffectiveAvatarUrl(),
+			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				steam64, reason)
 			);
 		}
 	}
 
 	// Tickets actions
-	public class Tickets {
-		private final LogChannels type = LogChannels.TICKETS;
+	public class TicketLogs {
+		private final LogType type = LogType.TICKET;
 
 		public void onCreate(Guild guild, GuildMessageChannel messageChannel, User author) {
 			sendLog(guild, type, () -> logUtil.ticketCreatedEmbed(guild.getLocale(), messageChannel, author));
@@ -411,8 +427,8 @@ public class LogListener {
 	}
 
 	// Server actions
-	public class Server {
-		private final LogChannels type = LogChannels.SERVER;
+	public class ServerLogs {
+		private final LogType type = LogType.SERVER;
 
 		public void onAccessAdded(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
 			sendLog(guild, type, () -> logUtil.accessAdded(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
@@ -429,6 +445,204 @@ public class LogListener {
 		public void onModuleDisabled(Guild guild, User mod, CmdModule module) {
 			sendLog(guild, type, () -> logUtil.moduleDisabled(guild.getLocale(), mod, module));
 		}
+
+		public void onGuildUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = guild.getIdLong();
+			final String name = guild.getName();
+
+			sendLog(guild, type, () -> logUtil.guildUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onEmojiCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.emojiCreate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onEmojiUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.emojiUpdate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onEmojiDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.emojiDelete(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onStickerCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.stickerCreate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onStickerUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.stickerUpdate(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onStickerDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.stickerDelete(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
 	}
 
+	// Channel actions
+	public class ChannelLogs {
+		private final LogType type = LogType.CHANNEL;
+
+		public void onChannelCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.CHANNEL_NAME).getNewValue();
+
+			sendLog(guild, type, () -> logUtil.channelCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onChannelDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.CHANNEL_NAME).getOldValue();
+
+			sendLog(guild, type, () -> logUtil.channelDeleted(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onChannelUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = guild.getGuildChannelById(id).getName();
+
+			sendLog(guild, type, () -> logUtil.channelUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onOverrideCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.overrideCreate(guild.getLocale(), id, entry, entry.getUserIdLong()));
+		}
+
+		public void onOverrideUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.overrideUpdate(guild.getLocale(), id, entry, entry.getUserIdLong(), guild.getId()));
+		}
+
+		public void onOverrideDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.overrideDelete(guild.getLocale(), id, entry, entry.getUserIdLong()));
+		}
+	}
+
+	// Member actions
+	public class MemberLogs {
+		private final LogType type = LogType.MEMBER;
+
+		public void onNickChange(Member target, String oldNick, String newNick) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.memberNickUpdate(guild.getLocale(), target.getUser(), oldNick, newNick));
+		}
+
+		public void onRoleChange(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+
+			sendLog(guild, type, () -> logUtil.rolesChange(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
+		}
+
+		public void onJoined(Member member) {
+			final Guild guild = member.getGuild();
+
+			sendLog(guild, type, () -> logUtil.memberJoin(guild.getLocale(), member));
+		}
+
+		public void onLeft(Guild guild, Member cachedMember, User user) {
+			sendLog(guild, type, () -> logUtil.memberLeave(guild.getLocale(), cachedMember, user, cachedMember!=null ? cachedMember.getRoles() : List.of()));
+		}
+	}
+
+	// Voice actions
+	public class VoiceLogs {
+		private final LogType type = LogType.VOICE;
+
+		public void onVoiceMute(Member target, boolean isMuted, Long modId) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.voiceMute(guild.getLocale(), target.getIdLong(), target.getUser().getName(), target.getEffectiveAvatarUrl(), isMuted, modId));
+		}
+
+		public void onVoiceDeafen(Member target, boolean isDeafen, Long modId) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.voiceDeafen(guild.getLocale(), target.getIdLong(), target.getUser().getName(), target.getEffectiveAvatarUrl(), isDeafen, modId));
+		}
+	}
+
+	// Message actions
+	public class MessageLogs {
+		private final LogType type = LogType.MESSAGE;
+
+		public void onMessageUpdate(Member author, GuildChannel channel, long messageId, MessageData oldData, MessageData newData) {
+			final Guild guild = author.getGuild();
+
+			sendLog(guild, type, () -> logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData));
+		}
+
+		public void onMessageDelete(GuildChannel channel, long messageId, MessageData data, Long modId) {
+			final Guild guild = channel.getGuild();
+
+			sendLog(guild, type, () -> logUtil.messageDelete(guild.getLocale(), channel.getIdLong(), messageId, data, modId));
+		}
+
+		public void onMessageBulkDelete(GuildChannel channel, String count, List<MessageData> messages, Long modId) {
+			final Guild guild = channel.getGuild();
+			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
+			if (client == null) return;
+
+			if (!messages.isEmpty()) {
+				FileUpload fileUpload = uploadContent(messages, channel.getIdLong());
+				if (fileUpload != null) {
+					client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId))
+						.addFiles(uploadContent(messages, channel.getIdLong()))
+						.queue();
+					return;
+				}	
+			}
+			client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId)).queue();				
+		}
+
+		private FileUpload uploadContent(List<MessageData> messages, long channelId) {
+			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				baos.write("Channel ID: %s\n\n".formatted(channelId).getBytes());
+				for (MessageData data : messages) {
+					baos.write("[%s (%s)]:\n".formatted(data.getAuthorName(), data.getAuthorId()).getBytes());
+					if (data.getAttachment() != null)
+						baos.write("[Attachement: %s]\n".formatted(data.getAttachment().getFileName()).getBytes());
+					baos.write(data.getContent().getBytes());
+					baos.write("\n\n-------===-------\n\n".getBytes());
+				}
+				return FileUpload.fromData(new ByteArrayInputStream(baos.toByteArray()), channelId+"_"+Instant.now().toEpochMilli()+".txt");
+			} catch (IOException ex) {
+				bot.getAppLogger().error("Error at bulk deleted messages content upload.", ex);
+				return null;
+			}
+			
+		}
+	}
 }

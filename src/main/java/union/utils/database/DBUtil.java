@@ -23,6 +23,7 @@ import union.utils.database.managers.GroupManager;
 import union.utils.database.managers.GuildLogsManager;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildVoiceManager;
+import union.utils.database.managers.LogExceptionManager;
 import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.StrikeManager;
 import union.utils.database.managers.TempRoleManager;
@@ -37,6 +38,7 @@ import union.utils.database.managers.VerifyCacheManager;
 import union.utils.database.managers.VerifySettingsManager;
 import union.utils.database.managers.VoiceChannelManager;
 import union.utils.database.managers.WebhookManager;
+import union.utils.database.managers.GuildLogsManager.LogSettings;
 import union.utils.database.managers.GuildSettingsManager.GuildSettings;
 import union.utils.database.managers.TicketSettingsManager.TicketSettings;
 import union.utils.database.managers.VerifySettingsManager.VerifySettings;
@@ -76,6 +78,7 @@ public class DBUtil {
 	public final BlacklistManager blacklist;
 	public final AlertsManager alerts;
 	public final GuildLogsManager logs;
+	public final LogExceptionManager logExceptions;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -124,6 +127,7 @@ public class DBUtil {
 		blacklist = new BlacklistManager(connectionUtil);
 		alerts = new AlertsManager(connectionUtil);
 		logs = new GuildLogsManager(connectionUtil);
+		logExceptions = new LogExceptionManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
@@ -141,6 +145,10 @@ public class DBUtil {
 
 	public GuildSettings getGuildSettings(long guildId) {
 		return guildSettings.getSettings(guildId);
+	}
+
+	public LogSettings getLogSettings(Guild guild) {
+		return logs.getSettings(guild.getIdLong());
 	}
 
 	public TicketSettings getTicketSettings(Guild guild) {

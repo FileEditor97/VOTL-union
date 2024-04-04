@@ -1,6 +1,7 @@
 package union.utils.message;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Optional;
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 
 import union.objects.annotation.Nullable;
 import union.utils.exception.FormatterException;
+import union.utils.file.lang.LocaleUtil;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.utils.TimeFormat;
@@ -141,22 +143,27 @@ public class TimeUtil {
 		return buffer.toString();
 	}
 
-	public static String formatTime(TemporalAccessor time, Boolean full) {
-		if (time != null) {
-			if (full) {
-				return String.format(
-					"%s (%s)",
-					TimeFormat.DATE_TIME_SHORT.format(time),
-					TimeFormat.RELATIVE.format(time)
-				);
-			}
+	public static String formatTime(TemporalAccessor time, boolean full) {
+		if (time == null) return "";
+		if (full) {
 			return String.format(
-				"%s %s",
-				TimeFormat.DATE_SHORT.format(time),
-				TimeFormat.TIME_SHORT.format(time)
+				"%s (%s)",
+				TimeFormat.DATE_TIME_SHORT.format(time),
+				TimeFormat.RELATIVE.format(time)
 			);
 		}
-		return "";
+		return String.format(
+			"%s %s",
+			TimeFormat.DATE_SHORT.format(time),
+			TimeFormat.TIME_SHORT.format(time)
+		);
+	}
+
+	public static String formatDuration(LocaleUtil lu, DiscordLocale locale, Instant startTime, Duration duration) {
+		return duration.isZero() ?
+			lu.getLocalized(locale, "misc.permanently")
+			:
+			lu.getLocalized(locale, "misc.temporary").formatted(formatTime(startTime.plus(duration), false));
 	}
 
 }

@@ -58,7 +58,7 @@ public class ClearStrikesCmd extends CommandBase {
 		// Set all strikes cases inactive
 		bot.getDBUtil().cases.setInactiveStrikeCases(guildId, tu.getIdLong());
 		// Log
-		bot.getLogListener().mod.onStrikesCleared(event, tu);
+		bot.getLogger().mod.onStrikesCleared(event, tu);
 		// Reply
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setColor(Constants.COLOR_SUCCESS)

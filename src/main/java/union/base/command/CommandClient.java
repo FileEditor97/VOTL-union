@@ -63,10 +63,6 @@ import java.util.concurrent.ScheduledExecutorService;
  *                      CommandClientBuilder#setEmojis(String, String, String)} that are not unicode emojis or that do
  *                      not match the custom emote format specified in {@link Emoji#getFormatted()} ()
  *                      Emote#getAsMention()} (IE: {@code <:EmoteName:EmoteID>}).
- *
- *         <p><b>5)</b> Avoid using {@link union.base.command.impl.CommandClientImpl#linkIds(long,
- *                      net.dv8tion.jda.api.entities.Message)}. This will create errors and has no real purpose outside
- *                      of it's current usage.
  */
 public interface CommandClient
 {

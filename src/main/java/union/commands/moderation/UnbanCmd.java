@@ -68,7 +68,7 @@ public class UnbanCmd extends CommandBase {
 					if (bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
 						// User is Operator+, remove blacklist
 						bot.getDBUtil().blacklist.removeUser(groupId, tu.getIdLong());
-						bot.getLogListener().mod.onBlacklistRemoved(event.getUser(), tu, null, groupId);
+						bot.getLogger().mod.onBlacklistRemoved(event.getUser(), tu, null, groupId);
 					} else {
 						// User is not Operator+, reject unban
 						editError(event, path+".blacklisted", "Group ID : "+groupId);
@@ -85,7 +85,7 @@ public class UnbanCmd extends CommandBase {
 			// perform unban
 			guild.unban(tu).reason(reason).queue();
 			// log unban
-			bot.getLogListener().mod.onNewCase(guild, tu, unbanData, banData != null ? banData.getReason() : ban.getReason());
+			bot.getLogger().mod.onNewCase(guild, tu, unbanData, banData != null ? banData.getReason() : ban.getReason());
 
 			// reply and ask for unban sync
 			event.getHook().editOriginalEmbeds(

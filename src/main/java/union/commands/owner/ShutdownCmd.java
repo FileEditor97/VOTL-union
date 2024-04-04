@@ -27,7 +27,7 @@ public class ShutdownCmd extends CommandBase {
 		event.getJDA().getPresence().setPresence(OnlineStatus.IDLE, Activity.competing("Shutting down..."));
 		Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.getLogger().info("Shutting down"));
 		Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.getJDA().shutdown());
-		bot.getLogger().info("Shutting down, by '%s'".formatted(event.getUser().getName()));
+		bot.getAppLogger().info("Shutting down, by '%s'".formatted(event.getUser().getName()));
 		event.getJDA().shutdown();
 	}
 }

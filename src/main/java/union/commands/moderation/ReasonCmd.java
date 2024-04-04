@@ -47,6 +47,6 @@ public class ReasonCmd extends CommandBase {
 			.build()
 		);
 
-		bot.getLogListener().mod.onChangeReason(event, caseData, event.getMember(), newReason);
+		bot.getLogger().mod.onChangeReason(event, caseData, event.getMember(), newReason);
 	}
 }

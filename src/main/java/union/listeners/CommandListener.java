@@ -16,7 +16,7 @@ import union.base.command.SlashCommandEvent;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
 import union.objects.constants.Constants;
-import union.utils.message.LocaleUtil;
+import union.utils.file.lang.LocaleUtil;
 import union.utils.message.MessageUtil;
 
 public class CommandListener implements union.base.command.CommandListener {

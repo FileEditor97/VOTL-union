@@ -87,7 +87,7 @@ public class GroupCmd extends CommandBase {
 			
 			bot.getDBUtil().group.create(guildId, groupName, appealGuildId);
 			Integer groupId = bot.getDBUtil().group.getIncrement();
-			bot.getLogListener().group.onCreation(event, groupId, groupName);
+			bot.getLogger().group.onCreation(event, groupId, groupName);
 
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(
@@ -131,7 +131,7 @@ public class GroupCmd extends CommandBase {
 			String groupName = bot.getDBUtil().group.getName(groupId);
 
 			bot.getDBUtil().group.deleteGroup(groupId);
-			bot.getLogListener().group.onDeletion(event, groupId, groupName);
+			bot.getLogger().group.onDeletion(event, groupId, groupName);
 
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(
@@ -204,11 +204,11 @@ public class GroupCmd extends CommandBase {
 					return;
 				} else {
 					bot.getDBUtil().group.add(groupId, targetId, canManage);
-					bot.getLogListener().group.onGuildAdded(event, groupId, groupName, targetId, guild.getName());
+					bot.getLogger().group.onGuildAdded(event, groupId, groupName, targetId, guild.getName());
 				}
 			} else {
 				bot.getDBUtil().group.add(groupId, targetId, canManage);
-				bot.getLogListener().group.onGuildAdded(event, groupId, groupName, targetId, guild.getName());
+				bot.getLogger().group.onGuildAdded(event, groupId, groupName, targetId, guild.getName());
 			}
 
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -285,7 +285,7 @@ public class GroupCmd extends CommandBase {
 
 						bot.getDBUtil().group.remove(groupId, targetId);
 						if (targetGuild != null)
-							bot.getLogListener().group.onGuildRemoved(event, targetGuild, groupId, groupName);
+							bot.getLogger().group.onGuildRemoved(event, targetGuild, groupId, groupName);
 
 						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setDescription(lu.getText(event, path+".done").replace("{guild_name}", Optional.ofNullable(targetGuild.getName()).orElse("*Unknown*")).replace("{group_name}", groupName))
@@ -335,7 +335,7 @@ public class GroupCmd extends CommandBase {
 			String newName = event.optString("name");
 
 			bot.getDBUtil().group.rename(groupId, newName);
-			bot.getLogListener().group.onRenamed(event, oldName, groupId, newName);
+			bot.getLogger().group.onRenamed(event, oldName, groupId, newName);
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(
@@ -511,10 +511,12 @@ public class GroupCmd extends CommandBase {
 				Integer groupSize = bot.getDBUtil().group.countMembers(groupId);
 
 				EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
-					.setAuthor(lu.getText(event, "logger_embed.group.title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
-					.setDescription(lu.getText(event, path+".embed_value").replace("{guild_name}", masterName)
-					.replace("{guild_id}", ownerId.toString()).replace("{size}", groupSize.toString())
-					.replace("{is_shared}", Emotes.CROSS_C.getEmote()));
+					.setAuthor(lu.getText(event, "logger.groups.title").formatted(groupName, groupId))
+					.setDescription(lu.getText(event, path+".embed_value")
+						.replace("{guild_name}", masterName)
+						.replace("{guild_id}", ownerId.toString()).replace("{size}", groupSize.toString())
+						.replace("{is_shared}", Emotes.CROSS_C.getEmote())
+					);
 				createReplyEmbed(event, builder.build());
 			} else {
 				// No options provided - reply with all groups that this guild is connected

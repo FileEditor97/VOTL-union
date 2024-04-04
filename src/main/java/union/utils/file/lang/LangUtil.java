@@ -3,6 +3,7 @@ package union.utils.file.lang;
 import java.util.List;
 
 import union.objects.annotation.NotNull;
+import union.objects.annotation.Nullable;
 import union.utils.file.FileManager;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -21,6 +22,16 @@ public final class LangUtil {
 				return fileManager.getString(locale.getLocale(), path);
 			default: //en
 				return fileManager.getString("en-GB", path);
+		}
+	}
+
+	@Nullable
+	public String getNullableString(DiscordLocale locale, String path) {
+		switch (locale) {
+			case RUSSIAN:
+				return fileManager.getNullableString(locale.getLocale(), path);
+			default: //en
+				return fileManager.getNullableString("en-GB", path);
 		}
 	}
 

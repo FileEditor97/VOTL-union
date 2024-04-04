@@ -25,7 +25,6 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.slf4j.LoggerFactory;
 
 import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 
@@ -134,8 +133,10 @@ public class FileManager {
 	@NotNull
 	public String getString(String name, String path) {
 		String result = getNullableString(name, path);
-		if (result == null)
+		if (result == null) {
+			logger.warn("Couldn't find \"{}\" in file {}.json", path, name);
 			return path;
+		}
 		return result;
 	}
 	
@@ -155,15 +156,11 @@ public class FileManager {
 
 			text = JsonPath.using(CONF).parse(file).read("$." + path);
 
-			if (text == null || text.isBlank())
-				throw new KeyIsNull(path);
+			if (text != null && text.isBlank()) text = null;
 		
 		} catch (FileNotFoundException ex) {
 			logger.error("Couldn't find file {}.json", name);
 			text = "FILE ERROR: file not found";
-		} catch (KeyIsNull | InvalidPathException ex) {
-			logger.warn("Couldn't find \"{}\" in file {}.json", path, name);
-			text = null;
 		} catch (IOException ex) {
 			logger.error("Couldn't process file {}.json", name, ex);
 			text = "FILE ERROR: IO exception";
@@ -172,32 +169,29 @@ public class FileManager {
 		return text;
 	}
 	
-	public boolean getBoolean(String name, String path){
+	@Nullable
+	public Boolean getBoolean(String name, String path){
 		File file = files.get(name);
 		
-		if(file == null)
-			return false;
+		if (file == null) return null;
 		
 		try {
-			Object res = JsonPath.using(CONF).parse(file).read("$." + path);
+			Boolean res = JsonPath.using(CONF).parse(file).read("$." + path);
 			
-			if (res == null || res.equals(null))
-				return false;
-				
-			return true;
+			return res;
 		} catch (FileNotFoundException ex) {
 			logger.error("Couldn't find file {}.json", name);
 		} catch (IOException ex) {
 			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
 		}
-		return false;
+		return null;
 	}
 
 	@NotNull
 	public List<String> getStringList(String name, String path){
 		File file = files.get(name);
 		
-		if(file == null) {
+		if (file == null) {
 			logger.error("Couldn't find file {}.json", name);
 			return Collections.emptyList();
 		}

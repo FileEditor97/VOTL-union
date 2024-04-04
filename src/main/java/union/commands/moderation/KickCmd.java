@@ -102,7 +102,7 @@ public class KickCmd extends CommandBase {
 				guild.getIdLong(), reason, Instant.now(), null);
 			CaseData kickData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
 			// log ban
-			bot.getLogListener().mod.onNewCase(guild, tm.getUser(), kickData);
+			bot.getLogger().mod.onNewCase(guild, tm.getUser(), kickData);
 
 			// reply and ask for kick sync
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)

@@ -111,13 +111,13 @@ public class CheckServerCmd extends CommandBase {
 							try {
 								if (!future.isCompletedExceptionally() && future.get().equals(true)) removed++;
 							} catch (InterruptedException | ExecutionException ex) {
-								bot.getLogger().error("At CheckServerCmd\n", ex);
+								bot.getAppLogger().error("At CheckServerCmd\n", ex);
 								editError(event, "errors.unknown", ex.getLocalizedMessage());
 							}
 						}
 
 						// Log
-						bot.getLogListener().role.onRoleCheckChildGuild(guild, event.getUser(), role, targetGuild);
+						bot.getLogger().role.onRoleCheckChildGuild(guild, event.getUser(), role, targetGuild);
 						// Send reply
 						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
 							.replace("{role}", role.getName()).replace("{count}", removed.toString())

@@ -272,7 +272,7 @@ public class VoiceCmd extends CommandBase {
 		bot.getDBUtil().user.setName(userId, name);
 
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, "bot.voice.name.done").replace("{value}", name))
+			.setDescription(lu.getText(event, "bot.voice.voice.name.done").replace("{value}", name))
 			.build()
 		);
 
@@ -331,7 +331,7 @@ public class VoiceCmd extends CommandBase {
 		bot.getDBUtil().user.setLimit(userId, limit);
 
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, "bot.voice.limit.done").replace("{value}", limit.toString()))
+			.setDescription(lu.getText(event, "bot.voice.voice.limit.done").replace("{value}", limit.toString()))
 			.build()
 		);
 	}
@@ -588,7 +588,7 @@ public class VoiceCmd extends CommandBase {
 				overrides.remove(vc.getPermissionOverride(guild.getBotRole())); // removes bot's role
 				overrides.remove(vc.getPermissionOverride(guild.getPublicRole())); // removes @everyone role
 			} catch (NullPointerException ex) {
-				bot.getLogger().warn("PermsCmd null pointer at role override remove");
+				bot.getAppLogger().warn("PermsCmd null pointer at role override remove");
 			}
 			
 			if (overrides.isEmpty()) {
@@ -609,7 +609,7 @@ public class VoiceCmd extends CommandBase {
 				overrides.remove(vc.getPermissionOverride(author)); // removes user
 				overrides.remove(vc.getPermissionOverride(guild.getSelfMember())); // removes bot
 			} catch (NullPointerException ex) {
-				bot.getLogger().warn("PermsCmd null pointer at member override remove");
+				bot.getAppLogger().warn("PermsCmd null pointer at member override remove");
 			}
 
 			EmbedBuilder embedBuilder2 = embedBuilder;

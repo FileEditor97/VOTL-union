@@ -74,7 +74,7 @@ public class RoleCmd extends CommandBase {
 			
 			guild.addRoleToMember(member, role).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
 				// Log
-				bot.getLogListener().role.onRoleAdded(guild, event.getUser(), member.getUser(), role);
+				bot.getLogger().role.onRoleAdded(guild, event.getUser(), member.getUser(), role);
 				// Send reply
 				createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
 					.setColor(Constants.COLOR_SUCCESS)
@@ -122,7 +122,7 @@ public class RoleCmd extends CommandBase {
 			
 			guild.removeRoleFromMember(member, role).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
 				// Log
-				bot.getLogListener().role.onRoleRemoved(guild, event.getUser(), member.getUser(), role);
+				bot.getLogger().role.onRoleRemoved(guild, event.getUser(), member.getUser(), role);
 				// Send reply
 				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getName()).replace("{user}", member.getEffectiveName()))
@@ -194,7 +194,7 @@ public class RoleCmd extends CommandBase {
 								if (!future.isCompletedExceptionally()) removed++;
 							}
 							// Log
-							bot.getLogListener().role.onRoleRemovedAll(guild, event.getUser(), role);
+							bot.getLogger().role.onRoleRemovedAll(guild, event.getUser(), role);
 							// Send reply
 							editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
 								.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())

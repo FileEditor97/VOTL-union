@@ -12,7 +12,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
-import union.utils.message.SteamUtil;
+import union.utils.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -107,7 +107,7 @@ public class CheckRankCmd extends CommandBase {
 						}
 
 						// Log
-						bot.getLogListener().role.onCheckRank(guild, event.getUser(), role, requiredRank);
+						bot.getLogger().role.onCheckRank(guild, event.getUser(), role, requiredRank);
 						// Send reply
 						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
 							.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())

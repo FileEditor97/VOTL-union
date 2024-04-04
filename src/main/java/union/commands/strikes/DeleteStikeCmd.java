@@ -114,7 +114,7 @@ public class DeleteStikeCmd extends CommandBase {
 		if (!caseData.isActive()) {
 			msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Case is not active (strike can't be removed)"))
 				.setComponents().queue();
-			bot.getLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
+			bot.getAppLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
 			return;
 		}
 
@@ -174,7 +174,7 @@ public class DeleteStikeCmd extends CommandBase {
 		if (!caseData.isActive()) {
 			msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Case is not active (strike can't be removed)"))
 				.setComponents().queue();
-			bot.getLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
+			bot.getAppLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
 			return;
 		}
 
@@ -201,7 +201,7 @@ public class DeleteStikeCmd extends CommandBase {
 			);
 		}
 		// Log
-		bot.getLogListener().mod.onStrikeDeleted(event, tu, caseId, removeAmount, activeAmount);
+		bot.getLogger().mod.onStrikeDeleted(event, tu, caseId, removeAmount, activeAmount);
 		// Reply
 		msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(removeAmount, activeAmount, caseData.getReason(), tu.getName()))

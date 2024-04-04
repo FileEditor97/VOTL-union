@@ -272,7 +272,7 @@ public class VoiceCmd extends CommandBase {
 		bot.getDBUtil().user.setName(userId, name);
 
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, "bot.voice.name.done").replace("{value}", name))
+			.setDescription(lu.getText(event, "bot.voice.voice.name.done").replace("{value}", name))
 			.build()
 		);
 
@@ -331,7 +331,7 @@ public class VoiceCmd extends CommandBase {
 		bot.getDBUtil().user.setLimit(userId, limit);
 
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, "bot.voice.limit.done").replace("{value}", limit.toString()))
+			.setDescription(lu.getText(event, "bot.voice.voice.limit.done").replace("{value}", limit.toString()))
 			.build()
 		);
 	}

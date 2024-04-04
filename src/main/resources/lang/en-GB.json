@@ -274,7 +274,10 @@
 			"name": "Voice logs",
 			"join": "Joined voice channel | %s",
 			"leave": "Left voice channel | %s",
-			"switch": "Switched voice channel | %s"
+			"switch": "Switched voice channel | %s",
+			"change": "Voice status change | %",
+			"mute": "Muted",
+			"deaf": "Deafen"
 		},
 		"channels": {
 			"name": "Channel logs",

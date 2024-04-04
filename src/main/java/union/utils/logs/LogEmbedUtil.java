@@ -1071,6 +1071,31 @@ public class LogEmbedUtil {
 		return builder.build();
 	}
 
+	// Voice
+	@NotNull
+	public MessageEmbed voiceMute(DiscordLocale locale, long userId, String userName, String userIcon, boolean isMuted, Long modId) {
+		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
+			.setHeaderIcon(LogEvent.VC_CHANGE, userIcon, userName)
+			.setDescription("**"+localized(locale, "voice.mute")+"**: "+(isMuted?Constants.SUCCESS:Constants.FAILURE))
+			.setFooter("User ID: %s".formatted(userId));
+		if (modId != null) {
+			builder.setMod(modId);
+		}
+		return builder.build();
+	}
+
+	@NotNull
+	public MessageEmbed voiceDeafen(DiscordLocale locale, long userId, String userName, String userIcon, boolean isDeafen, Long modId) {
+		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
+			.setHeaderIcon(LogEvent.VC_CHANGE, userIcon, userName)
+			.setDescription("**"+localized(locale, "voice.deaf")+"**: "+(isDeafen?Constants.SUCCESS:Constants.FAILURE))
+			.setFooter("User ID: %s".formatted(userId));
+		if (modId != null) {
+			builder.setMod(modId);
+		}
+		return builder.build();
+	}
+
 
 
 	// TOOL
@@ -1185,7 +1210,7 @@ public class LogEmbedUtil {
 				.append("Permissions: `"+perms.stream().map(Permission::getName).collect(Collectors.joining(", ")))
 				.append("`\n");
 		});
-		return buffer.append("\n").toString();
+		return buffer.append("").toString();
 	}
 
 	private String parseRolePermissions(DiscordLocale locale, AuditLogChange change) {

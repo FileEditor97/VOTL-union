@@ -51,6 +51,7 @@ public class LoggingUtil {
 	public final ChannelLogs channel =	new ChannelLogs();
 	public final MemberLogs member =	new MemberLogs();
 	public final MessageLogs message =	new MessageLogs();
+	public final VoiceLogs voice =		new VoiceLogs();
 
 	public LoggingUtil(App bot) {
 		this.bot = bot;
@@ -572,6 +573,23 @@ public class LoggingUtil {
 
 		public void onLeft(Guild guild, Member cachedMember, User user) {
 			sendLog(guild, type, () -> logUtil.memberLeave(guild.getLocale(), cachedMember, user, cachedMember!=null ? cachedMember.getRoles() : List.of()));
+		}
+	}
+
+	// Voice actions
+	public class VoiceLogs {
+		private final LogType type = LogType.VOICE;
+
+		public void onVoiceMute(Member target, boolean isMuted, Long modId) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.voiceMute(guild.getLocale(), target.getIdLong(), target.getUser().getName(), target.getEffectiveAvatarUrl(), isMuted, modId));
+		}
+
+		public void onVoiceDeafen(Member target, boolean isDeafen, Long modId) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.voiceDeafen(guild.getLocale(), target.getIdLong(), target.getUser().getName(), target.getEffectiveAvatarUrl(), isDeafen, modId));
 		}
 	}
 

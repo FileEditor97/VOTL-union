@@ -29,6 +29,7 @@ public enum LogEvent {
 	//VC_JOIN("join", LogType.VOICE),
 	//VC_LEAVE("leave", LogType.VOICE),
 	//VC_SWITCH("switch", LogType.VOICE),
+	VC_CHANGE("change", LogType.VOICE),
 	MESSAGE_DELETE("delete", LogType.MESSAGE),
 	MESSAGE_BULK_DELETE("bulk_delete", LogType.MESSAGE),
 	MESSAGE_UPDATE("update", LogType.MESSAGE),

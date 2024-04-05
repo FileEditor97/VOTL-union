@@ -31,7 +31,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 public class MessageListener extends ListenerAdapter {
 
 	// Cache
-	FixedCache<Long, MessageData> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE*20); // messageId, message
+	FixedCache<Long, MessageData> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE*60); // messageId, message
 
 	private final App bot;
 	
@@ -41,7 +41,7 @@ public class MessageListener extends ListenerAdapter {
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
-		if (event.getAuthor().isBot() || !event.isFromGuild()) return;
+		if (event.getAuthor().isBot() || !event.isFromGuild()) return; //ignore bots and Private messages
 		
 		// cache message if not exception channel
 		final Guild guild = event.getGuild();
@@ -149,7 +149,7 @@ public class MessageListener extends ListenerAdapter {
 			.limit(1)
 			.queue(list -> {
 				if (list.isEmpty()) {
-					bot.getLogger().message.onMessageBulkDelete(event.getChannel(), "Unknown", messages, null);
+					bot.getLogger().message.onMessageBulkDelete(event.getChannel(), String.valueOf(messageIds.size()), messages, null);
 				} else {
 					AuditLogEntry entry = list.get(0);
 					String count = entry.getOption(AuditLogOption.COUNT);
@@ -193,6 +193,10 @@ public class MessageListener extends ListenerAdapter {
 
 		public String getAuthorName() {
 			return authorName;
+		}
+
+		public boolean isEmpty() {
+			return content.isBlank() && attachment == null;
 		}
 	}
 	

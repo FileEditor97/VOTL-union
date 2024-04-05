@@ -242,6 +242,7 @@ public class App {
 			.setChunkingFilter(ChunkingFilter.ALL)		// chunk all guilds
 			.enableCache(enabledCacheFlags)
 			.disableCache(disabledCacheFlags)
+			.setBulkDeleteSplittingEnabled(false)
 			.addEventListeners(
 				commandClient, WAITER, acListener, auditListener, interactionListener,
 				guildListener, memberListener, messageListener, moderationListener, voiceListener
@@ -249,8 +250,8 @@ public class App {
 
 		JDA tempJda = null;
 
-		Integer retries = 4; // how many times will it try to build
-		Integer cooldown = 8; // in seconds; cooldown amount, will doubles after each retry
+		int retries = 4; // how many times will it try to build
+		int cooldown = 8; // in seconds; cooldown amount, will doubles after each retry
 		while (true) {
 			try {
 				tempJda = mainBuilder.build();

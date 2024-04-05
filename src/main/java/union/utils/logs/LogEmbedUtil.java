@@ -1046,25 +1046,22 @@ public class LogEmbedUtil {
 
 	@NotNull
 	public MessageEmbed messageDelete(DiscordLocale locale, long channelId, long messageId, MessageData data, Long modId) {
-		if (data == null) {
-			return new LogEmbedBuilder(locale, RED_LIGHT)
-				.setHeader(LogEvent.MESSAGE_DELETE)
-				.addField("messages.channel", "<#%s>".formatted(channelId))
-				.setFooter("Message ID: %s".formatted(messageId))
-				.build();
-		}
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, RED_LIGHT)
-			.setHeader(LogEvent.MESSAGE_DELETE)
-			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, data.getAuthorId()));
-		if (!data.getContent().isBlank()) {
-			builder.addField("messages.content", MessageUtil.limitString(data.getContent(), 2000), false);
+			.setHeader(LogEvent.MESSAGE_DELETE);
+		if (data == null) {
+			builder.setFooter("Message ID: %s".formatted(messageId));
+		} else {
+			if (!data.getContent().isBlank()) {
+				builder.addField("messages.content", MessageUtil.limitString(data.getContent(), 2000), false);
+			}
+			if (data.getAttachment() != null) {
+				builder.setDescription("[Attachement: %s]".formatted(data.getAttachment().getFileName()))
+					.setImage(data.getAttachment().getUrl());
+			}
+			builder.addField("messages.author", "<@%s>".formatted(data.getAuthorId()))
+				.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, data.getAuthorId()));
 		}
-		if (data.getAttachment() != null) {
-			builder.setDescription("[Attachement: %s]".formatted(data.getAttachment().getFileName()))
-				.setImage(data.getAttachment().getUrl());
-		}
-		builder.addField("messages.author", "<@%s>".formatted(data.getAuthorId()))
-			.addField("messages.channel", "<#%s>".formatted(channelId));
+		builder.addField("messages.channel", "<#%s>".formatted(channelId));
 		if (modId != null) {
 			builder.setMod(modId);
 		}

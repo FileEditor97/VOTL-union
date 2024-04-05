@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.slf4j.LoggerFactory;
 
 import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 
@@ -161,8 +162,11 @@ public class FileManager {
 		} catch (FileNotFoundException ex) {
 			logger.error("Couldn't find file {}.json", name);
 			text = "FILE ERROR: file not found";
+		} catch (InvalidPathException ex) {
+			logger.error("Invalid path '{}'\n{}", path, ex.getMessage());
+			text = "PATH ERROR: invalid";
 		} catch (IOException ex) {
-			logger.error("Couldn't process file {}.json", name, ex);
+			logger.error("Couldn't process file {}.json\n{}", name, ex.getMessage());
 			text = "FILE ERROR: IO exception";
 		}
 

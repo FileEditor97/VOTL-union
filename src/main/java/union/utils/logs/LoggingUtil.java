@@ -605,6 +605,7 @@ public class LoggingUtil {
 
 		public void onMessageDelete(GuildChannel channel, long messageId, MessageData data, Long modId) {
 			final Guild guild = channel.getGuild();
+			if ((data == null || data.isEmpty()) && modId == null) return;
 
 			sendLog(guild, type, () -> logUtil.messageDelete(guild.getLocale(), channel.getIdLong(), messageId, data, modId));
 		}
@@ -631,6 +632,7 @@ public class LoggingUtil {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				baos.write("Channel ID: %s\n\n".formatted(channelId).getBytes());
 				for (MessageData data : messages) {
+					if (data.isEmpty()) continue;
 					baos.write("[%s (%s)]:\n".formatted(data.getAuthorName(), data.getAuthorId()).getBytes());
 					if (data.getAttachment() != null)
 						baos.write("[Attachement: %s]\n".formatted(data.getAttachment().getFileName()).getBytes());

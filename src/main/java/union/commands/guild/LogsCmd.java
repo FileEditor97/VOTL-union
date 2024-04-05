@@ -260,7 +260,7 @@ public class LogsCmd extends CommandBase {
 				editError(event, path+".not_found", "Provided ID: "+targetId);
 				return;
 			}
-			bot.getDBUtil().logExceptions.addException(guildId, targetId);
+			bot.getDBUtil().logExceptions.removeException(guildId, targetId);
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted("'"+targetId+"'"))
 				.build()

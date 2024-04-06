@@ -41,6 +41,8 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+import com.github.difflib.text.DiffRow;
+import com.github.difflib.text.DiffRowGenerator;
 import com.jayway.jsonpath.JsonPath;
 
 public class LogEmbedUtil {
@@ -1037,23 +1039,27 @@ public class LogEmbedUtil {
 	// Message
 	@NotNull
 	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, MessageData oldData, MessageData newData) {
+		long timeStart = System.currentTimeMillis();
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
 			.setHeader(LogEvent.MESSAGE_UPDATE)
 			.setDescription("[View Message](https://discord.com/channels/%s/%s/%s)\n".formatted(member.getGuild().getId(), channelId, messageId))
-			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, newData.getAuthorId()));
-		String oldContent = oldData==null ? "*<Unknown>*" : oldData.getContent();
-		if (!newData.getContent().equals(oldContent)) {
-			builder.addField("messages.old_content", MessageUtil.limitString(oldContent, 1020), false)
-				.addField("messages.new_content", MessageUtil.limitString(newData.getContent(), 1020), false);
-		} else if (oldData!=null && oldData.getAttachment() != null && newData.getAttachment() == null) {
-			builder.appendDescription("Removed Attachement: "+oldData.getAttachment().getFileName());
-		} else {
-			builder.appendDescription("Unknown change (image or else)");
-		}
-		return builder.addField("messages.author", "<@%s>".formatted(newData.getAuthorId()))
+			.addField("messages.author", "<@%s>".formatted(newData.getAuthorId()))
 			.addField("messages.channel", "<#%s>".formatted(channelId))
-			.build();
+			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, newData.getAuthorId()));
+		if (oldData != null && newData != null) {
+			if (oldData.getAttachment() != null && newData.getAttachment() == null) {
+				builder.appendDescription("Removed Attachment: "+oldData.getAttachment().getFileName()+"\n\n");
+			}
+			String diff = getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
+			if (diff != null) {
+				builder.appendDescription("**"+localized(locale, "messages.content")+"**: ```diff\n")
+					.appendDescription(MessageUtil.limitString(diff, 1600))
+					.appendDescription("\n```");
+			}
+		}
 
+		System.out.println(System.currentTimeMillis() - timeStart); // TODO
+		return builder.build();
 	}
 
 	@NotNull
@@ -1063,12 +1069,13 @@ public class LogEmbedUtil {
 		if (data == null) {
 			builder.setFooter("Message ID: %s".formatted(messageId));
 		} else {
-			if (!data.getContent().isBlank()) {
-				builder.addField("messages.content", MessageUtil.limitString(data.getContent(), 1020), false);
-			}
 			if (data.getAttachment() != null) {
-				builder.setDescription("[Attachement: %s]".formatted(data.getAttachment().getFileName()))
+				builder.appendDescription("[Attachment: %s]".formatted(data.getAttachment().getFileName()))
 					.setImage(data.getAttachment().getUrl());
+			}
+			if (!data.getContent().isBlank()) {
+				builder.appendDescription("**"+localized(locale, "messages.content")+"**: \n")
+					.appendDescription(MessageUtil.limitString(data.getContentEscaped(), 1000));
 			}
 			builder.addField("messages.author", "<@%s>".formatted(data.getAuthorId()))
 				.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, data.getAuthorId()));
@@ -1340,6 +1347,39 @@ public class LogEmbedUtil {
 		if (addedPerms.isEmpty() && removedPerms.isEmpty()) return null;
 		return Pair.of(removedPerms, addedPerms);
 
+	}
+
+	// Updated message content difference
+	@Nullable
+	private String getDiffContent(@NotNull String oldContent, @NotNull String newContent) {
+		if (oldContent.equals(newContent)) return null;
+		DiffRowGenerator generator = DiffRowGenerator.create()
+			.showInlineDiffs(true)
+			.inlineDiffByWord(true)
+			.ignoreWhiteSpaces(true)
+			.newTag(f -> "")
+			.oldTag(f -> "")
+			.build();
+		List<DiffRow> rows = generator.generateDiffRows(
+			List.of(oldContent.split("\\n")),
+			List.of(newContent.split("\\n"))
+		);
+		
+		StringBuffer diff = new StringBuffer();
+		for (DiffRow row : rows) {
+			switch (row.getTag()) {
+				case INSERT -> diff.append("+ "+row.getNewLine());
+				case DELETE -> diff.append("- "+row.getOldLine());
+				case CHANGE -> {
+					diff.append("- "+row.getOldLine())
+						.append("\n")
+						.append("+ "+row.getNewLine());
+				}
+				default -> diff.append(" "+row.getOldLine());
+			}
+			diff.append("\n");
+		}
+		return diff.toString();
 	}
 
 }

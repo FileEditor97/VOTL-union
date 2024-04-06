@@ -29,6 +29,8 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import net.dv8tion.jda.api.utils.MarkdownSanitizer;
+import net.dv8tion.jda.api.utils.MarkdownSanitizer.SanitizationStrategy;
 
 public class MessageListener extends ListenerAdapter {
 
@@ -197,6 +199,15 @@ public class MessageListener extends ListenerAdapter {
 		public String getContent() {
 			return content;
 		}
+
+		public String getContentStripped() {
+			return MarkdownSanitizer.sanitize(content);
+		}
+
+		public String getContentEscaped() {
+			return MarkdownSanitizer.sanitize(content, SanitizationStrategy.ESCAPE);
+		}
+
 
 		public Attachment getAttachment() {
 			return attachment;

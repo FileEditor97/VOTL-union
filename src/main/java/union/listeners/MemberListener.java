@@ -1,5 +1,6 @@
 package union.listeners;
 
+import java.time.OffsetDateTime;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,8 @@ import union.objects.annotation.NotNull;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 
+import net.dv8tion.jda.api.audit.ActionType;
+import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -65,7 +68,23 @@ public class MemberListener extends ListenerAdapter {
 	public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
 		// Log
 		if (db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) {
-			bot.getLogger().member.onLeft(event.getGuild(), event.getMember(), event.getUser());
+			event.getGuild().retrieveAuditLogs()
+				.type(ActionType.KICK)
+				.limit(1)
+				.queue(list -> {
+					if (!list.isEmpty()) {
+						AuditLogEntry entry = list.get(0);
+						if (!entry.getUser().equals(event.getJDA().getSelfUser()) && entry.getTargetIdLong() == event.getUser().getIdLong()
+							&& entry.getTimeCreated().isAfter(OffsetDateTime.now().minusSeconds(15))) {
+							bot.getLogger().mod.onUserKick(entry, event.getUser());
+						}
+					}
+					bot.getLogger().member.onLeft(event.getGuild(), event.getMember(), event.getUser());
+				},
+				failure -> {
+					bot.getAppLogger().warn("Unable to retrieve audit log for member kick.", failure);
+					bot.getLogger().member.onLeft(event.getGuild(), event.getMember(), event.getUser());
+				});
 		}
 		// When user leaves guild, check if there are any records in DB that would be better to remove.
 		// This does not consider clearing User DB, when bot leaves guild.

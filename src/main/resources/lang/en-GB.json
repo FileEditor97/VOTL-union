@@ -140,10 +140,8 @@
 			"mod": "Moderator",
 			"case": "Case %s | %s | %s",
 			"success": "Success rate",
-			"kick": "Member kicked | %s",
 			"timeout": "Member timed out | %s",
 			"remove_timeout": "Timeout removed | %s",
-			"kick_sync": "Synced Kick | %s",
 			"ban": {
 				"title": "Member banned | %s",
 				"short_title": "Ban info",
@@ -155,6 +153,10 @@
 				"ban_reason": "Banned for",
 				"title_expired": "Ban expired | %s",
 				"sync": "Synced Unban | %s"
+			},
+			"kick": {
+				"title": "Member kicked | %s",
+				"sync": "Synced Kick | %s"
 			},
 			"mute": {
 				"short_title": "Mute info",

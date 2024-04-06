@@ -311,13 +311,24 @@ public class LogEmbedUtil {
 	@NotNull
 	public MessageEmbed helperKickEmbed(DiscordLocale locale, Integer groupId, User target, String reason, int success, int max) {
 		return new LogEmbedBuilder(locale, RED_DARK)
-			.setHeaderIcon("moderation.kick_sync", target.getEffectiveAvatarUrl(), target.getName())
+			.setHeaderIcon("moderation.kick.sync", target.getEffectiveAvatarUrl(), target.getName())
 			.setUser(target.getIdLong())
 			.setReason(reason)
 			.addField("moderation.success", success+"/"+max)
 			.setFooter("Group ID: "+groupId)
 			.build();
 	}
+
+	@NotNull
+	public MessageEmbed userKickEmbed(DiscordLocale locale, User target, String reason, long modId) {
+		return new LogEmbedBuilder(locale, RED_DARK)
+			.setHeaderIcon(LogEvent.KICK, target.getName(), target.getEffectiveAvatarUrl())
+			.setUser(target.getIdLong())
+			.setReason(reason)
+			.setMod(modId)
+			.setId(target.getId())
+			.build();
+	} 
 
 	//  Mute
 	@NotNull

@@ -21,7 +21,7 @@ public enum LogEvent {
 	MEMBER_LEAVE("leave", LogType.MEMBER),
 	MEMBER_ROLE_CHANGE("role_change", LogType.MEMBER),
 	MEMBER_NICK_CHANGE("nick_change", LogType.MEMBER),
-	//MEMBER_KICK("kick", LogType.MEMBER), // Add to MEMBER_LEAVE check for kick/ban
+	KICK("kick.title", LogType.MODERATION),
 	BAN("ban.title", LogType.MODERATION),
 	UNBAN("unban.title", LogType.MODERATION),
 	TIMEOUT("timeout", LogType.MODERATION),

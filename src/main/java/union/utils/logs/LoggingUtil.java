@@ -192,6 +192,13 @@ public class LoggingUtil {
 
 			sendLog(guild, type, () -> logUtil.userUnbanEmbed(guild.getLocale(), target, entry.getReason(), modId));
 		}
+
+		public void onUserKick(AuditLogEntry entry, User target) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userKickEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
 	}
 
 	// Roles actions

@@ -1033,8 +1033,8 @@ public class LogEmbedUtil {
 			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, newData.getAuthorId()));
 		String oldContent = oldData==null ? "<Unknown>" : oldData.getContent();
 		if (!newData.getContent().equals(oldContent)) {
-			builder.addField("messages.old_content", MessageUtil.limitString(oldContent, 2000), false)
-				.addField("messages.new_content", MessageUtil.limitString(newData.getContent(), 2000), false);
+			builder.addField("messages.old_content", MessageUtil.limitString(oldContent, 1020), false)
+				.addField("messages.new_content", MessageUtil.limitString(newData.getContent(), 1020), false);
 		} else if (oldData!=null && oldData.getAttachment() != null && newData.getAttachment() == null) {
 			builder.setDescription("Removed Attachement: "+oldData.getAttachment().getFileName());
 		} else {
@@ -1052,7 +1052,7 @@ public class LogEmbedUtil {
 			builder.setFooter("Message ID: %s".formatted(messageId));
 		} else {
 			if (!data.getContent().isBlank()) {
-				builder.addField("messages.content", MessageUtil.limitString(data.getContent(), 2000), false);
+				builder.addField("messages.content", MessageUtil.limitString(data.getContent(), 1020), false);
 			}
 			if (data.getAttachment() != null) {
 				builder.setDescription("[Attachement: %s]".formatted(data.getAttachment().getFileName()))

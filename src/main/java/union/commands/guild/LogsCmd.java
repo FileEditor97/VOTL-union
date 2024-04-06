@@ -26,7 +26,7 @@ import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Icon.IconType;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
@@ -206,7 +206,8 @@ public class LogsCmd extends CommandBase {
 			this.name = "add";
 			this.path = "bot.guild.logs.exceptions.add";
 			this.options = List.of(
-				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
+				new OptionData(OptionType.CHANNEL, "target", lu.getText(path+".target.help"), true)
+					.setChannelTypes(ChannelType.TEXT, ChannelType.CATEGORY)
 			);
 			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));
 		}
@@ -214,21 +215,35 @@ public class LogsCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
-			GuildChannel channel = event.optGuildChannel("channel");
-			if (channel == null) {
-				editError(event, path+".not_found");
-				return;
-			}
+			GuildChannelUnion channelUnion = event.optChannel("target");
 			long guildId = event.getGuild().getIdLong();
-			if (bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), channel.getIdLong())) {
-				editError(event, path+".already", "Channel: "+channel.getAsMention());
-				return;
+			switch (channelUnion.getType()) {
+				case TEXT -> {
+					if (bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), channelUnion.getIdLong())) {
+						editError(event, path+".already", "Channel: "+channelUnion.getAsMention());
+						return;
+					}
+				}
+				case CATEGORY -> {
+					if (bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), channelUnion.getIdLong())) {
+						editError(event, path+".already", "Category: "+channelUnion.getName());
+						return;
+					}
+				}
+				default -> {
+					editError(event, path+".not_found");
+					return;
+				}
 			}
-			bot.getDBUtil().logExceptions.addException(guildId, channel.getIdLong());
+			bot.getDBUtil().logExceptions.addException(guildId, channelUnion.getIdLong());
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").formatted(channel.getAsMention()))
+				.setDescription(lu.getText(event, path+".done").formatted(channelUnion.getName()))
 				.build()
 			);
+
+			
+			
+			
 		}
 	}
 

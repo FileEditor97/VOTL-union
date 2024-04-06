@@ -19,6 +19,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Message.Attachment;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -90,6 +92,12 @@ public class MessageListener extends ListenerAdapter {
 
 		final long guildId = event.getGuild().getIdLong();
 		if (bot.getDBUtil().logExceptions.isException(guildId, event.getChannel().getIdLong())) return;
+		if (event.getChannel().getType().equals(ChannelType.TEXT)) {
+			Category parentCategory = event.getChannel().asTextChannel().getParentCategory();
+			if (parentCategory != null) {
+				if (bot.getDBUtil().logExceptions.isException(guildId, parentCategory.getIdLong())) return;
+			}
+		}
 		
 		final long messageId = event.getMessageIdLong();
 		MessageData oldData = cache.get(messageId);
@@ -109,7 +117,14 @@ public class MessageListener extends ListenerAdapter {
 		MessageData data = cache.get(messageId);
 		if (data != null) cache.pull(messageId);
 
-		if (bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), event.getChannel().getIdLong())) return;
+		final long guildId = event.getGuild().getIdLong();
+		if (bot.getDBUtil().logExceptions.isException(guildId, event.getChannel().getIdLong())) return;
+		if (event.getChannel().getType().equals(ChannelType.TEXT)) {
+			Category parentCategory = event.getChannel().asTextChannel().getParentCategory();
+			if (parentCategory != null) {
+				if (bot.getDBUtil().logExceptions.isException(guildId, parentCategory.getIdLong())) return;
+			}
+		}
 
 		event.getGuild().retrieveAuditLogs()
 			.type(ActionType.MESSAGE_DELETE)

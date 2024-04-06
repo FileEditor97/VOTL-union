@@ -616,10 +616,10 @@ public class LoggingUtil {
 			if (client == null) return;
 
 			if (!messages.isEmpty()) {
-				FileUpload fileUpload = uploadContent(messages, channel.getIdLong());
+				FileUpload fileUpload = uploadContentBulk(messages, channel.getIdLong());
 				if (fileUpload != null) {
 					client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId))
-						.addFiles(uploadContent(messages, channel.getIdLong()))
+						.addFiles(uploadContentBulk(messages, channel.getIdLong()))
 						.queue();
 					return;
 				}	
@@ -627,7 +627,7 @@ public class LoggingUtil {
 			client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId)).queue();				
 		}
 
-		private FileUpload uploadContent(List<MessageData> messages, long channelId) {
+		private FileUpload uploadContentBulk(List<MessageData> messages, long channelId) {
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				baos.write("Channel ID: %s\n\n".formatted(channelId).getBytes());

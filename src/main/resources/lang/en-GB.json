@@ -649,28 +649,28 @@
 					"add": {
 						"help": "Exclude channel from logging",
 						"usage": "exceptions add <#Channel>",
-						"channel": {
-							"name": "channel",
-							"help": "Select channel"
+						"target": {
+							"name": "target",
+							"help": "Select channel or category"
 						},
-						"not_found": "Channel not found or can't be selected.",
-						"already": "Channel is already excluded from logging.",
-						"done": "Done! Channel %s excluded from future logging (deleted message and other)."
+						"not_found": "Channel or Category not found or can't be selected.",
+						"already": "Target is already excluded from logging.",
+						"done": "Done! Target `%s` excluded from future logging (deleted messages)."
 					},
 					"remove": {
-						"help": "Exclude channel from logging",
-						"usage": "exceptions add <#Channel>",
+						"help": "Remove target from logging exception",
+						"usage": "exceptions remove <ID>",
 						"id": {
 							"name": "id",
-							"help": "Enter target's (channel) ID"
+							"help": "Enter target's (channel/category) ID"
 						},
-						"not_found": "Selected channel is not in the exceptions list.",
-						"done": "Done! Target %s will be logged."
+						"not_found": "Selected target is not in the exceptions list.",
+						"done": "Done! Target `%s` will be logged."
 					},
 					"view": {
 						"help": "View logging exceptions",
 						"usage": "exceptions view",
-						"title": "Excluded channels",
+						"title": "Excluded channels/categories",
 						"none": "*None*"
 					}
 				}

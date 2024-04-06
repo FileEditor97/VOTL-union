@@ -1039,19 +1039,20 @@ public class LogEmbedUtil {
 	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, MessageData oldData, MessageData newData) {
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
 			.setHeader(LogEvent.MESSAGE_UPDATE)
-			.addField("messages.author", "<@%s>".formatted(newData.getAuthorId()))
-			.addField("messages.channel", "<#%s>".formatted(channelId))
+			.setDescription("[View Message](https://discord.com/channels/%s/%s/%s)\n".formatted(member.getGuild().getId(), channelId, messageId))
 			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, newData.getAuthorId()));
-		String oldContent = oldData==null ? "<Unknown>" : oldData.getContent();
+		String oldContent = oldData==null ? "*<Unknown>*" : oldData.getContent();
 		if (!newData.getContent().equals(oldContent)) {
 			builder.addField("messages.old_content", MessageUtil.limitString(oldContent, 1020), false)
 				.addField("messages.new_content", MessageUtil.limitString(newData.getContent(), 1020), false);
 		} else if (oldData!=null && oldData.getAttachment() != null && newData.getAttachment() == null) {
-			builder.setDescription("Removed Attachement: "+oldData.getAttachment().getFileName());
+			builder.appendDescription("Removed Attachement: "+oldData.getAttachment().getFileName());
 		} else {
-			builder.setDescription("Unknown change (image or else)");
+			builder.appendDescription("Unknown change (image or else)");
 		}
-		return builder.build();
+		return builder.addField("messages.author", "<@%s>".formatted(newData.getAuthorId()))
+			.addField("messages.channel", "<#%s>".formatted(channelId))
+			.build();
 
 	}
 

@@ -43,6 +43,7 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 import com.github.difflib.text.DiffRow;
 import com.github.difflib.text.DiffRowGenerator;
+import com.github.difflib.text.DiffRow.Tag;
 import com.jayway.jsonpath.JsonPath;
 
 public class LogEmbedUtil {
@@ -1039,7 +1040,6 @@ public class LogEmbedUtil {
 	// Message
 	@NotNull
 	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, MessageData oldData, MessageData newData) {
-		long timeStart = System.currentTimeMillis();
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
 			.setHeader(LogEvent.MESSAGE_UPDATE)
 			.setDescription("[View Message](https://discord.com/channels/%s/%s/%s)\n".formatted(member.getGuild().getId(), channelId, messageId))
@@ -1058,7 +1058,6 @@ public class LogEmbedUtil {
 			}
 		}
 
-		System.out.println(System.currentTimeMillis() - timeStart); // TODO
 		return builder.build();
 	}
 
@@ -1366,7 +1365,23 @@ public class LogEmbedUtil {
 		);
 		
 		StringBuffer diff = new StringBuffer();
-		for (DiffRow row : rows) {
+		boolean skipped = false;
+		final int size = rows.size();
+		for (int i = 0; i<size; i++) {
+			DiffRow row = rows.get(i);
+			if (row.getTag().equals(Tag.EQUAL)) {
+				if ((i+1 >= size || rows.get(i+1).getTag().equals(Tag.EQUAL))
+					&& (i-1 < 0 || rows.get(i-1).getTag().equals(Tag.EQUAL)))
+				{
+					skipped = true;
+					continue;
+				}
+			}
+			if (skipped) {
+				diff.append(" ...\n");
+				skipped = false;
+			}
+
 			switch (row.getTag()) {
 				case INSERT -> diff.append("+ "+row.getNewLine());
 				case DELETE -> diff.append("- "+row.getOldLine());

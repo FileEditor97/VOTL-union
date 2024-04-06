@@ -30,7 +30,6 @@ import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
-import net.dv8tion.jda.api.utils.MarkdownSanitizer.SanitizationStrategy;
 
 public class MessageListener extends ListenerAdapter {
 
@@ -205,9 +204,8 @@ public class MessageListener extends ListenerAdapter {
 		}
 
 		public String getContentEscaped() {
-			return MarkdownSanitizer.sanitize(content, SanitizationStrategy.ESCAPE);
+			return MarkdownSanitizer.escape(content);
 		}
-
 
 		public Attachment getAttachment() {
 			return attachment;

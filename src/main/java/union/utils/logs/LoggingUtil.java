@@ -1,6 +1,5 @@
 package union.utils.logs;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -669,7 +668,7 @@ public class LoggingUtil {
 				baos.write("\n\n------- NEW MESSAGE\n\n".getBytes());
 				baos.write(newData.getContent().getBytes(StandardCharsets.UTF_8));
 
-				return FileUpload.fromData(new ByteArrayInputStream(baos.toByteArray()), messageId+"-"+Instant.now().toEpochMilli()+".txt");
+				return FileUpload.fromData(baos.toByteArray(), messageId+"-"+Instant.now().toEpochMilli()+".txt");
 			} catch (IOException ex) {
 				bot.getAppLogger().error("Error at updated message content upload.", ex);
 				return null;
@@ -685,7 +684,7 @@ public class LoggingUtil {
 				baos.write("------- CONTENT\n\n".getBytes());
 				baos.write(data.getContent().getBytes(StandardCharsets.UTF_8));
 
-				return FileUpload.fromData(new ByteArrayInputStream(baos.toByteArray()), messageId+"-"+Instant.now().toEpochMilli()+".txt");
+				return FileUpload.fromData(baos.toByteArray(), messageId+"-"+Instant.now().toEpochMilli()+".txt");
 			} catch (IOException ex) {
 				bot.getAppLogger().error("Error at deleted message content upload.", ex);
 				return null;
@@ -704,7 +703,7 @@ public class LoggingUtil {
 					baos.write(data.getContent().getBytes(StandardCharsets.UTF_8));
 					baos.write("\n\n-------===-------\n\n".getBytes());
 				}
-				return FileUpload.fromData(new ByteArrayInputStream(baos.toByteArray()), channelId+"-"+Instant.now().toEpochMilli()+".txt");
+				return FileUpload.fromData(baos.toByteArray(), channelId+"-"+Instant.now().toEpochMilli()+".txt");
 			} catch (IOException ex) {
 				bot.getAppLogger().error("Error at bulk deleted messages content upload.", ex);
 				return null;

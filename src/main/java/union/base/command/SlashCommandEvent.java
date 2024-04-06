@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
@@ -195,6 +196,35 @@ public class SlashCommandEvent extends SlashCommandInteractionEvent {
 			return defaultValue;
 
 		return getOption(key, defaultValue, optionMapping -> optionMapping.getAsChannel().asStandardGuildChannel());
+	}
+
+	/**
+	 * Gets the provided Option Key as a guild's {@link GuildChannelUnion Channel} value, or returns {@code null} if the option cannot be found.
+	 * <br>This will <b>always</b> return null when the SlashCommandEvent was not executed in a Guild.
+	 *
+	 * @param key   The option we want
+	 * @return The provided option, or null if the option is not present
+	 */
+	@Nullable
+	public GuildChannelUnion optChannel(@NotNull String key) {
+		return optChannel(key, null);
+	}
+
+	/**
+	 * Gets the provided Option Key as a guild's {@link GuildChannelUnion Channel} value, or returns the default one if the option cannot be found.
+	 * <br>This will <b>always</b> return the default value when the SlashCommandEvent was not executed in a Guild.
+	 *
+	 * @param key          The option we want
+	 * @param defaultValue Nullable default value used in the absence of the option value
+	 * @return The provided option, or the default value if the option is not present
+	 */
+	@Nullable
+	@Contract("_, !null -> !null")
+	public GuildChannelUnion optChannel(@NotNull String key, @Nullable GuildChannelUnion defaultValue) {
+		if (!isFromGuild())
+			return defaultValue;
+
+		return getOption(key, defaultValue, optionMapping -> optionMapping.getAsChannel());
 	}
 
 	/**

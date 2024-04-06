@@ -1,8 +1,8 @@
 package union.utils.logs;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -191,6 +191,13 @@ public class LoggingUtil {
 			final long modId = entry.getUserIdLong();
 
 			sendLog(guild, type, () -> logUtil.userUnbanEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
+
+		public void onUserKick(AuditLogEntry entry, User target) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userKickEmbed(guild.getLocale(), target, entry.getReason(), modId));
 		}
 	}
 
@@ -598,16 +605,37 @@ public class LoggingUtil {
 		private final LogType type = LogType.MESSAGE;
 
 		public void onMessageUpdate(Member author, GuildChannel channel, long messageId, MessageData oldData, MessageData newData) {
-			final Guild guild = author.getGuild();
+			final Guild guild = channel.getGuild();
+			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
+			if (client == null) return;
 
-			sendLog(guild, type, () -> logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData));
+			if (oldData == null || newData == null) return;
+
+			FileUpload fileUpload = uploadContentUpdate(oldData, newData, messageId);
+			if (fileUpload != null) {
+				client.sendMessageEmbeds(logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData))
+					.addFiles(fileUpload)
+					.queue();
+				return;
+			}
+			client.sendMessageEmbeds(logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData)).queue();
 		}
 
 		public void onMessageDelete(GuildChannel channel, long messageId, MessageData data, Long modId) {
 			final Guild guild = channel.getGuild();
+			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
+			if (client == null) return;
+
 			if ((data == null || data.isEmpty()) && modId == null) return;
 
-			sendLog(guild, type, () -> logUtil.messageDelete(guild.getLocale(), channel.getIdLong(), messageId, data, modId));
+			FileUpload fileUpload = uploadContent(data, messageId);
+			if (fileUpload != null) {
+				client.sendMessageEmbeds(logUtil.messageDelete(guild.getLocale(), channel.getIdLong(), messageId, data, modId))
+					.addFiles(fileUpload)
+					.queue();
+				return;
+			}
+			client.sendMessageEmbeds(logUtil.messageDelete(guild.getLocale(), channel.getIdLong(), messageId, data, modId)).queue();
 		}
 
 		public void onMessageBulkDelete(GuildChannel channel, String count, List<MessageData> messages, Long modId) {
@@ -616,18 +644,54 @@ public class LoggingUtil {
 			if (client == null) return;
 
 			if (!messages.isEmpty()) {
-				FileUpload fileUpload = uploadContent(messages, channel.getIdLong());
+				FileUpload fileUpload = uploadContentBulk(messages, channel.getIdLong());
 				if (fileUpload != null) {
 					client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId))
-						.addFiles(uploadContent(messages, channel.getIdLong()))
+						.addFiles(fileUpload)
 						.queue();
 					return;
 				}	
 			}
-			client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId)).queue();				
+			client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId)).queue();			
 		}
 
-		private FileUpload uploadContent(List<MessageData> messages, long channelId) {
+		private FileUpload uploadContentUpdate(MessageData oldData, MessageData newData, long messageId) {
+			if (oldData.getContent().isBlank() || newData.getContent().isBlank()) return null;
+			if (newData.getContent().equals(oldData.getContent())) return null;
+			if (oldData.getContent().length()+oldData.getContent().length() < 1000) return null;
+			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				baos.write("[%s (%s)]\n".formatted(newData.getAuthorName(), newData.getAuthorId()).getBytes());
+
+				baos.write("------- OLD MESSAGE\n\n".getBytes());
+				baos.write(oldData.getContent().getBytes(StandardCharsets.UTF_8));
+				baos.write("\n\n------- NEW MESSAGE\n\n".getBytes());
+				baos.write(newData.getContent().getBytes(StandardCharsets.UTF_8));
+
+				return FileUpload.fromData(baos.toByteArray(), messageId+"-"+Instant.now().toEpochMilli()+".txt");
+			} catch (IOException ex) {
+				bot.getAppLogger().error("Error at updated message content upload.", ex);
+				return null;
+			}
+		}
+
+		private FileUpload uploadContent(MessageData data, long messageId) {
+			if (data.getContent().length() < 1000) return null;
+			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				baos.write("[%s (%s)]\n".formatted(data.getAuthorName(), data.getAuthorId()).getBytes());
+
+				baos.write("------- CONTENT\n\n".getBytes());
+				baos.write(data.getContent().getBytes(StandardCharsets.UTF_8));
+
+				return FileUpload.fromData(baos.toByteArray(), messageId+"-"+Instant.now().toEpochMilli()+".txt");
+			} catch (IOException ex) {
+				bot.getAppLogger().error("Error at deleted message content upload.", ex);
+				return null;
+			}
+		}
+
+		private FileUpload uploadContentBulk(List<MessageData> messages, long channelId) {
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				baos.write("Channel ID: %s\n\n".formatted(channelId).getBytes());
@@ -635,16 +699,16 @@ public class LoggingUtil {
 					if (data.isEmpty()) continue;
 					baos.write("[%s (%s)]:\n".formatted(data.getAuthorName(), data.getAuthorId()).getBytes());
 					if (data.getAttachment() != null)
-						baos.write("[Attachement: %s]\n".formatted(data.getAttachment().getFileName()).getBytes());
-					baos.write(data.getContent().getBytes());
+						baos.write("[Attachment: %s]\n".formatted(data.getAttachment().getFileName()).getBytes(StandardCharsets.UTF_8));
+					baos.write(data.getContent().getBytes(StandardCharsets.UTF_8));
 					baos.write("\n\n-------===-------\n\n".getBytes());
 				}
-				return FileUpload.fromData(new ByteArrayInputStream(baos.toByteArray()), channelId+"_"+Instant.now().toEpochMilli()+".txt");
+				return FileUpload.fromData(baos.toByteArray(), channelId+"-"+Instant.now().toEpochMilli()+".txt");
 			} catch (IOException ex) {
 				bot.getAppLogger().error("Error at bulk deleted messages content upload.", ex);
 				return null;
 			}
-			
 		}
 	}
+
 }

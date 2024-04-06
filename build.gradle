@@ -37,6 +37,8 @@ dependencies {
 	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'		// mariaDB (MySQL) database
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
 	implementation 'org.jsoup:jsoup:1.17.2'							// HTML tools
+	// https://mvnrepository.com/artifact/io.github.java-diff-utils/java-diff-utils
+	implementation 'io.github.java-diff-utils:java-diff-utils:4.12'
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy

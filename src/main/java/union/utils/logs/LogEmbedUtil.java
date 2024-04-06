@@ -253,7 +253,7 @@ public class LogEmbedUtil {
 	@NotNull
 	public MessageEmbed userBanEmbed(DiscordLocale locale, User target, String reason, long modId) {
 		return new LogEmbedBuilder(locale, RED_DARK)
-			.setHeaderIcon(LogEvent.BAN, target.getName(), target.getEffectiveAvatarUrl())
+			.setHeaderIcon(LogEvent.BAN, target.getEffectiveAvatarUrl(), target.getName())
 			.setUser(target.getIdLong())
 			.setReason(reason)
 			.setMod(modId)
@@ -295,7 +295,7 @@ public class LogEmbedUtil {
 	@NotNull
 	public MessageEmbed userUnbanEmbed(DiscordLocale locale, User target, String reason, long modId) {
 		return new LogEmbedBuilder(locale, AMBER_DARK)
-			.setHeaderIcon(LogEvent.UNBAN, target.getName(), target.getEffectiveAvatarUrl())
+			.setHeaderIcon(LogEvent.UNBAN, target.getEffectiveAvatarUrl(), target.getName())
 			.setUser(target.getIdLong())
 			.setReason(reason)
 			.setMod(modId)
@@ -325,7 +325,7 @@ public class LogEmbedUtil {
 	@NotNull
 	public MessageEmbed userKickEmbed(DiscordLocale locale, User target, String reason, long modId) {
 		return new LogEmbedBuilder(locale, RED_DARK)
-			.setHeaderIcon(LogEvent.KICK, target.getName(), target.getEffectiveAvatarUrl())
+			.setHeaderIcon(LogEvent.KICK, target.getEffectiveAvatarUrl(), target.getName())
 			.setUser(target.getIdLong())
 			.setReason(reason)
 			.setMod(modId)
@@ -1069,7 +1069,7 @@ public class LogEmbedUtil {
 			builder.setFooter("Message ID: %s".formatted(messageId));
 		} else {
 			if (data.getAttachment() != null) {
-				builder.appendDescription("[Attachment: %s]".formatted(data.getAttachment().getFileName()))
+				builder.appendDescription("[Attachment: %s]\n".formatted(data.getAttachment().getFileName()))
 					.setImage(data.getAttachment().getUrl());
 			}
 			if (!data.getContent().isBlank()) {

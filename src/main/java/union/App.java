@@ -220,8 +220,7 @@ public class App {
 			GatewayIntent.GUILD_MODERATION,
 			GatewayIntent.GUILD_VOICE_STATES,
 			GatewayIntent.GUILD_WEBHOOKS,
-			GatewayIntent.MESSAGE_CONTENT,
-			GatewayIntent.GUILD_MESSAGE_REACTIONS
+			GatewayIntent.MESSAGE_CONTENT
 		);
 		final Set<CacheFlag> enabledCacheFlags = Set.of(
 			CacheFlag.EMOJI,

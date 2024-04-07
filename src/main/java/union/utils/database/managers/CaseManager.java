@@ -147,17 +147,13 @@ public class CaseManager extends LiteDBBase {
 	
 
 	public static class CaseData {
-		private final Integer caseId;
+		private final int caseId;
 		private final CaseType type;
-		private final Long targetId;
-		private final String targetTag;
-		private final Long modId;
-		private final String modTag;
-		private final Long guildId;
-		private final String reason;
+		private final Long targetId, modId, guildId;
+		private final String targetTag, modTag, reason;
 		private final Instant timeStart;
 		private final Duration duration;
-		private final Boolean active;
+		private final boolean active;
 
 		public CaseData(Map<String, Object> map) {
 			this.caseId = (Integer) map.get("caseId");
@@ -176,7 +172,7 @@ public class CaseManager extends LiteDBBase {
 		public String getCaseId() {
 			return String.valueOf(caseId);
 		}
-		public Integer getCaseIdInt() {
+		public int getCaseIdInt() {
 			return caseId;
 		}
 		public CaseType getCaseType() {
@@ -213,7 +209,7 @@ public class CaseManager extends LiteDBBase {
 			return duration;
 		}
 
-		public Boolean isActive() {
+		public boolean isActive() {
 			return active;
 		}
 

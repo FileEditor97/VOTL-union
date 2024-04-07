@@ -1356,6 +1356,7 @@ public class LogEmbedUtil {
 			.showInlineDiffs(true)
 			.inlineDiffByWord(true)
 			.ignoreWhiteSpaces(true)
+			.lineNormalizer(f -> f)
 			.newTag(f -> "")
 			.oldTag(f -> "")
 			.build();

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
@@ -36,7 +35,6 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
-import union.base.utils.FixedSizeCache;
 import union.base.utils.SafeIdUtil;
 import union.objects.annotation.NotNull;
 
@@ -44,7 +42,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
@@ -87,7 +84,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 	private final boolean manualUpsert;
 	private final HashMap<String,OffsetDateTime> cooldowns;
 	private final HashMap<String,Integer> uses;
-	private final FixedSizeCache<Long, Set<Message>> linkMap;
 	private final boolean shutdownAutomatically;
 	private final String helpWord;
 	private final ScheduledExecutorService executor;
@@ -97,8 +93,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 
 	public CommandClientImpl(String ownerId, Function<MessageReceivedEvent, Boolean> commandPreProcessFunction, Activity activity, OnlineStatus status, String serverInvite,
 							 ArrayList<SlashCommand> slashCommands, ArrayList<ContextMenu> contextMenus, String forcedGuildId, String[] devGuildIds, boolean manualUpsert,
-							 boolean shutdownAutomatically, String helpWord, ScheduledExecutorService executor,
-							 int linkedCacheSize)
+							 boolean shutdownAutomatically, String helpWord, ScheduledExecutorService executor)
 	{
 		Checks.check(ownerId != null, "Owner ID was set null or not set! Please provide an User ID to register as the owner!");
 
@@ -121,7 +116,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 		this.manualUpsert = manualUpsert;
 		this.cooldowns = new HashMap<>();
 		this.uses = new HashMap<>();
-		this.linkMap = linkedCacheSize>0 ? new FixedSizeCache<>(linkedCacheSize) : null;
 		this.shutdownAutomatically = shutdownAutomatically;
 		this.helpWord = helpWord==null ? "help" : helpWord;
 		this.executor = executor==null ? Executors.newSingleThreadScheduledExecutor() : executor;
@@ -331,11 +325,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 	public String getHelpWord()
 	{
 		return helpWord;
-	}
-
-	@Override
-	public boolean usesLinkedDeletion() {
-		return linkMap != null;
 	}
 
 	@Override

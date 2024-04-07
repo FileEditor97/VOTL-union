@@ -327,21 +327,6 @@ public interface CommandClient
 	String getHelpWord();
 
 	/**
-	 * Gets whether this CommandClient uses linked deletion.
-	 *
-	 * <p>Linking calls is the basic principle of pairing bot responses with their calling
-	 * {@link net.dv8tion.jda.api.entities.Message Message}s.
-	 * <br>Using this with a basic function such as deletion, this causes bots to delete their
-	 * Messages as a response to the calling Message being deleted.
-	 *
-	 * @return {@code true} if the bot uses linked deletion, {@code false} otherwise.
-	 *
-	 * @see    union.base.command.CommandClientBuilder#setLinkedCacheSize(int)
-	 *         CommandClientBuilder#setLinkedCacheSize(int)
-	 */
-	boolean usesLinkedDeletion();
-
-	/**
 	 * Shuts down internals of the Command Client, such as the threadpool and guild settings manager
 	 */
 	void shutdown();

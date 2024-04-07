@@ -61,7 +61,7 @@ javadoc {
 // jar's Manifest
 jar {
 	manifest {
-		attributes 'Implementation-Title': 'VOTL bot',
+		attributes 'Implementation-Title': 'VOTL-union bot',
 				   'Implementation-Version': version,
 				   'Implementation-Vendor': 'FiLe group',
 				   'Main-Class': group

@@ -51,7 +51,6 @@ public class CommandClientBuilder
 	private boolean shutdownAutomatically = true;
 	private String helpWord;
 	private ScheduledExecutorService executor;
-	private int linkedCacheSize = 0;
 
 	/**
 	 * Builds a {@link union.base.command.impl.CommandClientImpl CommandClientImpl}
@@ -64,7 +63,7 @@ public class CommandClientBuilder
 	{
 		CommandClient client = new CommandClientImpl(ownerId, commandPreProcessFunction, activity, status, serverInvite,
 													 new ArrayList<>(slashCommands), new ArrayList<>(contextMenus), forcedGuildId, devGuildIds, manualUpsert,
-													 shutdownAutomatically, helpWord, executor, linkedCacheSize);
+													 shutdownAutomatically, helpWord, executor);
 		if(listener!=null)
 			client.setListener(listener);
 		return client;
@@ -345,29 +344,6 @@ public class CommandClientBuilder
 	public CommandClientBuilder setShutdownAutomatically(boolean shutdownAutomatically)
 	{
 		this.shutdownAutomatically = shutdownAutomatically;
-		return this;
-	}
-
-	/**
-	 * Sets the internal size of the client's {@link com.jagrosh.jdautilities.commons.utils.FixedSizeCache FixedSizeCache}
-	 * used for caching and pairing the bot's response {@link net.dv8tion.jda.api.entities.Message Message}s with
-	 * the calling Message's ID.
-	 *
-	 * <p>Higher cache size means that decay of cache contents will most likely occur later, allowing the deletion of
-	 * responses when the call is deleted to last for a longer duration. However this also means larger memory usage.
-	 *
-	 * <p>Setting {@code 0} or negative will cause the client to not use linked caching <b>at all</b>.
-	 *
-	 * @param  linkedCacheSize
-	 *         The maximum number of paired responses that can be cached, or {@code <1} if the
-	 *         built {@link union.base.command.CommandClient CommandClient}
-	 *         will not use linked caching.
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setLinkedCacheSize(int linkedCacheSize)
-	{
-		this.linkedCacheSize = linkedCacheSize;
 		return this;
 	}
 }

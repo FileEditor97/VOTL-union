@@ -138,7 +138,7 @@ public class TicketTagManager extends LiteDBBase {
 	}
 
 	public static class Tag {
-		private final Integer tagType;
+		private final Integer tagType; // 0 - Thread, 1 - Channel
 		private final String buttonText;
 		private final String ticketName;
 		private final ButtonStyle buttonStyle;

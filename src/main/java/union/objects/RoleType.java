@@ -1,5 +1,8 @@
 package union.objects;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum RoleType {
 	ASSIGN(0, "role_type.assign"),
 	TOGGLE(1, "role_type.toggle"),
@@ -7,6 +10,14 @@ public enum RoleType {
 
 	private final Integer type;
 	private final String path;
+
+	private static final Map<Integer, RoleType> BY_TYPE = new HashMap<Integer, RoleType>();
+
+	static {
+		for (RoleType rt : RoleType.values()) {
+			BY_TYPE.put(rt.getType(), rt);
+		}
+	}
 
 	RoleType(Integer type, String path) {
 		this.type = type;
@@ -24,5 +35,9 @@ public enum RoleType {
 	@Override
 	public String toString() {
 		return this.name().toLowerCase();
+	}
+
+	public static RoleType byType(int type) {
+		return BY_TYPE.get(type);
 	}
 }

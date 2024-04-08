@@ -53,6 +53,4 @@ public class WebhookLogger {
 		return new IncomingWebhookClientImpl(data.getWebhookId(), data.getToken(), guild.getJDA());
 	}
 
-	
-
 }

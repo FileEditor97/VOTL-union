@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 public class MessageUtil {
 
-	private final Random random;
+	private static final Random random = new Random();
 	private final LocaleUtil lu;
 
 	private static final DecimalFormat decimalFormat = new DecimalFormat("# ### ###");
@@ -23,7 +23,6 @@ public class MessageUtil {
 	private static final Pattern rolePattern = Pattern.compile("<@&(\\d+)>", Pattern.CASE_INSENSITIVE);
 
 	public MessageUtil(LocaleUtil localeUtil) {
-		this.random = new Random();
 		this.lu = localeUtil;
 	}
 
@@ -35,7 +34,7 @@ public class MessageUtil {
 		return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
 	}
 
-	public static List<String> getIdsFromString(String text) {
+	public static List<String> getRoleIdsFromString(String text) {
 		List<String> ids = new ArrayList<>();
 		if (text.contains("+")) ids.add("0");
 
@@ -47,7 +46,7 @@ public class MessageUtil {
 		return ids;
 	}
 
-	public Color getColor(String input) {
+	public static Color getColor(String input) {
 		input = input.toLowerCase();
 		if (!input.equals("random") && !(input.length() == 6 || input.contains(",")))
 			return null;

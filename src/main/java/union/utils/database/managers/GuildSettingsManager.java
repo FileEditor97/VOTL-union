@@ -106,7 +106,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		}
 
 		public GuildSettings(Map<String, Object> data) {
-			this.color = Integer.decode((String) data.getOrDefault("color", Constants.COLOR_DEFAULT.toString()));
+			this.color = Integer.decode((String) data.getOrDefault("color", Constants.COLOR_DEFAULT));
 			this.lastWebhookId = castLong(data.getOrDefault("lastWebhookId", null));
 			this.appealLink = (String) data.getOrDefault("appealLink", null);
 			this.reportChannelId = castLong(data.getOrDefault("reportChannelId", null));

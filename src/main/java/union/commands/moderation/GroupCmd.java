@@ -555,5 +555,3 @@ public class GroupCmd extends CommandBase {
 	}
 
 }
-
-

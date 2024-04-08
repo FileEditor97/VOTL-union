@@ -22,6 +22,7 @@ import union.objects.constants.Constants;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.utils.FileUpload;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class GenerateListCmd extends CommandBase {
@@ -45,10 +46,8 @@ public class GenerateListCmd extends CommandBase {
 
 		event.deferReply(true).queue();
 
-		JSONObject result = new JSONObject();
-		for (Integer i = 0; i < commands.size(); i++) {
-			SlashCommand cmd = commands.get(i);
-
+		JSONArray commandArray = new JSONArray();
+		for (SlashCommand cmd : commands) {
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("name", cmd.getName())
 				.put("description", getText(cmd.getHelpPath()))
@@ -74,14 +73,14 @@ public class GenerateListCmd extends CommandBase {
 				jsonObject.put("usage", getText(cmd.getUsagePath()));
 			}
 			
-			result.put(i.toString(), jsonObject);
+			commandArray.put(jsonObject);
 		}
 
 		File file = new File(Constants.DATA_PATH + "commands.json");
 		try {
 			file.createNewFile();
 			FileWriter writer = new FileWriter(file, Charset.forName("utf-8"));
-			writer.write(result.toString());
+			writer.write(commandArray.toString());
 			writer.flush();
 			writer.close();
 			event.getHook().editOriginalAttachments(FileUpload.fromData(file, "commands.json")).queue(hook -> file.delete());

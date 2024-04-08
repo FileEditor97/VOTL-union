@@ -169,7 +169,7 @@ public class RolesSetupCmd extends CommandBase {
 						new Choice("2", 2),
 						new Choice("3", 3)
 					)),
-				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"), false)
+				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"))
 					.setMaxLength(40)
 			);
 		}
@@ -193,8 +193,7 @@ public class RolesSetupCmd extends CommandBase {
 				String description = event.optString("description");
 				if (description.toLowerCase().equals("null")) description = null;
 
-				Integer oldType = bot.getDBUtil().role.getType(role.getId());
-				if (oldType.equals(RoleType.TOGGLE.getType())) {
+				if (bot.getDBUtil().role.isToggleable(role.getId())) {
 					if (description == null) {
 						description = role.getName();
 						response.append(lu.getText(event, path+".default_description"));

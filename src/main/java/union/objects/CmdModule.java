@@ -18,12 +18,10 @@ public enum CmdModule {
 	private final String path;
 	private final int value;
 
-	public static final Set<CmdModule> ALL = new HashSet<CmdModule>();
 	private static final Map<Integer, CmdModule> BY_VALUE = new HashMap<Integer, CmdModule>();
 
 	static {
 		for (CmdModule ct : CmdModule.values()) {
-			ALL.add(ct);
 			BY_VALUE.put(ct.getValue(), ct);
 		}
 	}

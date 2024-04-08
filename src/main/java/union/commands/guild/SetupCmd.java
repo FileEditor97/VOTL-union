@@ -15,6 +15,7 @@ import union.objects.CmdModule;
 import union.objects.Emotes;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -64,7 +65,7 @@ public class SetupCmd extends CommandBase {
 			long guildId = event.getGuild().getIdLong();
 			String text = event.optString("color");
 
-			Color color = bot.getMessageUtil().getColor(text);
+			Color color = MessageUtil.getColor(text);
 			if (color == null) {
 				createError(event, path+".no_color");
 				return;

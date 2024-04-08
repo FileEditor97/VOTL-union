@@ -174,7 +174,7 @@ public class DBUtil {
 	public Integer getResourcesDBVersion() {
 		Integer version = 0;
 		try {
-			File tempFile = File.createTempFile("locale-", ".json");
+			File tempFile = File.createTempFile("local-", ".tmp");
 			if (!fileManager.export(getClass().getResourceAsStream("/server.db"), tempFile.toPath())) {
 				logger.error("Failed to write temp file {}!", tempFile.getName());
 				return version;

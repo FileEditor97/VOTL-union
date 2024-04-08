@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 public final class LangUtil {
 
 	private final FileManager fileManager;
+	
 	public LangUtil(FileManager fileManager) {
 		this.fileManager = fileManager;
 	}

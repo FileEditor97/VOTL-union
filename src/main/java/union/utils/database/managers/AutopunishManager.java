@@ -16,25 +16,25 @@ public class AutopunishManager extends LiteDBBase {
 		super(cu, "autopunish");
 	}
 
-	public void addAction(Long guildId, Integer atStrikeCount, List<PunishActions> actions, String data) {
+	public void addAction(long guildId, int atStrikeCount, List<PunishActions> actions, String data) {
 		execute("INSERT INTO %s(guildId, strike, actions, data) VALUES (%d, %d, %d, %s)".formatted(table, guildId, atStrikeCount, PunishActions.encodeActions(actions), quote(data)));
 	}
 
-	public void removeAction(Long guildId, Integer atStrikeCount) {
+	public void removeAction(long guildId, int atStrikeCount) {
 		execute("DELETE FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount));
 	}
 
-	public void removeGuild(Long guildId) {
+	public void removeGuild(long guildId) {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public Pair<Integer, String> getAction(Long guildId, Integer atStrikeCount) {
+	public Pair<Integer, String> getAction(long guildId, int atStrikeCount) {
 		Map<String, Object> data = selectOne("SELECT actions, data FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount), Set.of("actions", "data"));
 		if (data == null) return null;
 		return Pair.of((Integer) data.get("actions"), (String) data.getOrDefault("data", ""));
 	}
 
-	public List<Map<String, Object>> getAllActions(Long guildId) {
+	public List<Map<String, Object>> getAllActions(long guildId) {
 		return select("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), Set.of("strike", "actions", "data"));
 	}
 	

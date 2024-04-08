@@ -16,12 +16,12 @@ public class StrikeManager extends LiteDBBase {
 		super(cu, "strikeExpire");
 	}
 
-	public void addStrikes(Long guildId, Long userId, Instant expireAfter, Integer count, String caseInfo) {
-		execute("INSERT INTO %s(guildId, userId, expireAfter, count, data) VALUES (%d, %d, %d, %d, %s) ON CONFLICT(guildId, userId) DO UPDATE SET count=count+%d, data=data || ';' || %s"
-			.formatted(table, guildId, userId, expireAfter.getEpochSecond(), count, quote(caseInfo), count, quote(caseInfo)));
+	public void addStrikes(long guildId, long userId, Instant expireAfter, int count, String caseInfo) {
+		execute("INSERT INTO %s(guildId, userId, expireAfter, count, data) VALUES (%d, %d, %d, %d, %s) ON CONFLICT(guildId, userId) DO UPDATE SET count=count+%5$d, data=data || ';' || %6$s"
+			.formatted(table, guildId, userId, expireAfter.getEpochSecond(), count, quote(caseInfo)));
 	}
 
-	public Integer getStrikeCount(Long guildId, Long userId) {
+	public Integer getStrikeCount(long guildId, long userId) {
 		return selectOne("SELECT count FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId), "count", Integer.class);
 	}
 
@@ -29,27 +29,27 @@ public class StrikeManager extends LiteDBBase {
 		return select("SELECT * FROM %s WHERE (expireAfter<%d)".formatted(table, time.getEpochSecond()), Set.of("guildId", "userId", "count", "data"));
 	}
 
-	public Pair<Integer, String> getData(Long guildId, Long userId) {
+	public Pair<Integer, String> getData(long guildId, long userId) {
 		Map<String, Object> data = selectOne("SELECT count, data FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId), Set.of("count", "data"));
 		if (data == null) return null;
 		return Pair.of((Integer) data.get("count"), (String) data.getOrDefault("data", ""));
 	}
 
-	public Pair<Integer, Integer> getDataCountAndDate(Long guildId, Long userId) {
+	public Pair<Integer, Integer> getDataCountAndDate(long guildId, long userId) {
 		Map<String, Object> data = selectOne("SELECT count, expireAfter FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId), Set.of("count", "expireAfter"));
 		if (data == null) return null;
 		return Pair.of((Integer) data.get("count"), (Integer) data.get("expireAfter"));
 	}
 
-	public void removeStrike(Long guildId, Long userId, Instant expireAfter, Integer amount, String newData) {
+	public void removeStrike(long guildId, long userId, Instant expireAfter, int amount, String newData) {
 		execute("UPDATE %s SET expireAfter=%d, count=count-%d, data=%s WHERE (guildId=%d AND userId=%d)".formatted(table, expireAfter.getEpochSecond(), amount, quote(newData), guildId, userId));
 	}
 
-	public void removeGuildUser(Long guildId, Long userId) {
+	public void removeGuildUser(long guildId, long userId) {
 		execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId));
 	}
 
-	public void removeGuild(Long guildId) {
+	public void removeGuild(long guildId) {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 	

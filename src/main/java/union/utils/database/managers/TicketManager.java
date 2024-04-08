@@ -20,17 +20,17 @@ public class TicketManager extends LiteDBBase {
 	 */
 
 	// add new ticket
-	public void addRoleTicket(Integer ticketId, String userId, String guildId, String channelId, String roleIds) {
+	public void addRoleTicket(int ticketId, String userId, String guildId, String channelId, String roleIds) {
 		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, roleIds) VALUES (%d, %s, %s, %s, 0, %s)"
 			.formatted(table, ticketId, userId, guildId, channelId, quote(roleIds)));
 	}
 
-	public void addTicket(Integer ticketId, String userId, String guildId, String channelId, Integer tagId) {
+	public void addTicket(int ticketId, String userId, String guildId, String channelId, int tagId) {
 		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId) VALUES (%d, %s, %s, %s, %d)".formatted(table, ticketId, userId, guildId, channelId, tagId));
 	}
 
 	// get last ticket's ID
-	public int lastIdByTag(String guildId, Integer tagId) {
+	public int lastIdByTag(String guildId, int tagId) {
 		Integer data = selectOne("SELECT ticketId FROM %s WHERE (guildId=%s AND tagId=%d) ORDER BY ticketId DESC LIMIT 1"
 			.formatted(table, guildId, tagId), "ticketId", Integer.class);
 		return data == null ? 0 : data;
@@ -64,7 +64,7 @@ public class TicketManager extends LiteDBBase {
 		return data==null ? false : data==0;
 	}
 
-	public String getOpenedChannel(String userId, String guildId, Integer tagId) {
+	public String getOpenedChannel(String userId, String guildId, int tagId) {
 		return selectOne("SELECT channelId FROM %s WHERE (userId=%s AND guildId=%s AND tagId=%s AND closed=0)".formatted(table, userId, guildId, tagId),
 			"channelId", String.class);
 	}
@@ -74,7 +74,7 @@ public class TicketManager extends LiteDBBase {
 			"channelId", String.class);
 	}
 
-	public int countOpenedByUser(String userId, String guildId, Integer tagId) {
+	public int countOpenedByUser(String userId, String guildId, int tagId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (userId=%s AND guildId=%s AND tagId=%s AND closed=0)".formatted(table, userId, guildId, tagId));
 	}
 
@@ -130,7 +130,7 @@ public class TicketManager extends LiteDBBase {
 	 * @param channelId Ticket's channel ID
 	 * @param closeRequested Time in epoch seconds
 	 */
-	public void setRequestStatus(String channelId, Long closeRequested) {
+	public void setRequestStatus(String channelId, long closeRequested) {
 		execute("UPDATE %s SET closeRequested=%d WHERE (channelId=%s)".formatted(table, closeRequested, channelId));
 	}
 

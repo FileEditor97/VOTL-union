@@ -51,6 +51,4 @@ public class LogExceptionManager extends LiteDBBase {
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
-
-	
 }

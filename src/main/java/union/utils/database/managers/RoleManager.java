@@ -76,8 +76,10 @@ public class RoleManager extends LiteDBBase {
 		return selectOne("SELECT description FROM %s WHERE (roleId=%s)".formatted(table, roleId), "description", String.class);
 	}
 
-	public Integer getType(String roleId) {
-		return selectOne("SELECT type FROM %s WHERE (roleId=%s)".formatted(table, roleId), "type", Integer.class);
+	public RoleType getType(String roleId) {
+		Integer data = selectOne("SELECT type FROM %s WHERE (roleId=%s)".formatted(table, roleId), "type", Integer.class);
+		if (data == null) return null;
+		return RoleType.byType(data);
 	}
 
 	public Integer getRow(String roleId) {
@@ -103,8 +105,8 @@ public class RoleManager extends LiteDBBase {
 	}
 
 	public boolean isToggleable(String roleId) {
-		Integer type = getType(roleId);
-		return type==null ? false : type==RoleType.TOGGLE.getType();
+		RoleType type = getType(roleId);
+		return type==null ? false : type.equals(RoleType.TOGGLE);
 	}
 
 	public boolean existsRole(String roleId) {

@@ -91,24 +91,24 @@ public class LoggingUtil {
 			MessageEmbed embed = null;
 			switch (caseData.getCaseType()) {
 				case BAN:
-					embed = logUtil.banEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
+					embed = logUtil.banEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 					break;
 				case UNBAN:
 					embed = logUtil.unbanEmbed(guild.getLocale(), caseData, oldReason);
 					break;
 				case MUTE:
-					embed = logUtil.muteEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
+					embed = logUtil.muteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 					break;
 				case UNMUTE:
-					embed = logUtil.unmuteEmbed(guild.getLocale(), caseData, target.getAvatarUrl(), oldReason);
+					embed = logUtil.unmuteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), oldReason);
 					break;
 				case KICK:
-					embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
+					embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 					break;
 				case STRIKE_1:
 				case STRIKE_2:
 				case STRIKE_3:
-					embed = logUtil.strikeEmbed(guild.getLocale(), caseData, target.getAvatarUrl());
+					embed = logUtil.strikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 					break;
 				case BLACKLIST:
 					embed = null;
@@ -215,11 +215,11 @@ public class LoggingUtil {
 		}
 
 		public void onRoleAdded(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getAvatarUrl(), role.getIdLong()));
+			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), role.getIdLong()));
 		}
 
 		public void onRoleRemoved(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getAvatarUrl(), role.getIdLong()));
+			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), role.getIdLong()));
 		}
 
 		public void onRoleRemovedAll(Guild guild, User mod, Role role) {

@@ -1,5 +1,6 @@
 package union.commands.guild;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +57,7 @@ public class ModuleCmd extends CommandBase {
 
 			StringBuilder builder = new StringBuilder();
 			Set<CmdModule> disabled = getModules(guildId, false);
-			for (CmdModule sModule : CmdModule.ALL) {
+			for (CmdModule sModule : CmdModule.values()) {
 				builder.append(format(lu.getText(event, sModule.getPath()), disabled.contains(sModule)))
 					.append("\n");
 			}
@@ -229,7 +230,7 @@ public class ModuleCmd extends CommandBase {
 	private Set<CmdModule> getModules(long guildId, boolean on) {
 		Set<CmdModule> disabled = bot.getDBUtil().getGuildSettings(guildId).getDisabledModules();
 		if (on) {
-			Set<CmdModule> modules = new HashSet<>(CmdModule.ALL);
+			Set<CmdModule> modules = new HashSet<>(Arrays.asList(CmdModule.values()));
 			modules.removeAll(disabled);
 			return modules;
 		} else

@@ -26,13 +26,13 @@ dependencies {
 		exclude module: 'opus-java'
 	}
 	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-	implementation 'ch.qos.logback:logback-classic:1.5.3'			// Logging (required by JDA)
+	implementation 'ch.qos.logback:logback-classic:1.5.5'			// Logging (required by JDA)
 
 	// Tools
 	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
 	implementation 'com.jayway.jsonpath:json-path:2.9.0'			// json path-er
 	// https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-	implementation 'org.xerial:sqlite-jdbc:3.45.2.0'				// sqlite database
+	implementation 'org.xerial:sqlite-jdbc:3.45.3.0'				// sqlite database
 	// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
 	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'		// mariaDB (MySQL) database
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
@@ -42,16 +42,11 @@ dependencies {
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
-	implementation 'org.apache.groovy:groovy:4.0.20'				// Groovy - code evaluation
+	implementation 'org.apache.groovy:groovy:4.0.21'				// Groovy - code evaluation
 
 	// Chewtils commands
 	// https://mvnrepository.com/artifact/org.json/json
 	implementation 'org.json:json:20240303'
-}
-
-// Changes builded libraries directory from 'libs' to 'lib'
-sourceSets {
-	libsDirName = 'lib'
 }
 
 javadoc {

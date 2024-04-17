@@ -131,7 +131,7 @@ public class CaseManager extends LiteDBBase {
 	public Map<Integer, Integer> countCasesByMod(long guildId, long modId) {
 		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d) GROUP BY type"
 			.formatted(table, guildId, modId), Set.of("type", "cc"));
-		if (data.isEmpty()) return null;
+		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
 	}
 

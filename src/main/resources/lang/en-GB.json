@@ -1364,14 +1364,17 @@
 					"name": "user",
 					"help": "Select user"
 				},
-				"empty": "No statistics for 30 days.",
-				"title": "Moderation statistics\n7 days | 30 days",
-				"mutes": "Mutes",
-				"kicks": "Kicks",
-				"bans": "Bans",
-				"strikes": "Strikes",
+				"empty": "No statistics for this user.",
+				"title": "Moderation statistics",
+				"seven": "7 days",
+				"thirty": "30 days",
+				"all": "All time",
+				"mutes": "Mute",
+				"kicks": "Kick",
+				"bans": "Ban",
+				"strikes": "Strike",
 				"roles": "Roles",
-				"total": "**Total**"
+				"total": "Total"
 			},
 			"blacklist": {
 				"help": "Manage group's blacklist",

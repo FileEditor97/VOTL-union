@@ -122,6 +122,12 @@ public class TicketManager extends LiteDBBase {
 			.formatted(table, guildId, modId, afterTime.getEpochSecond(), tagType));
 	}
 
+	public int countTicketsByMod(String guildId, String modId, boolean roleTag) {
+		String tagType = roleTag ? "tagId=0" : "tagId>=1";
+		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND modId=%s AND %s)"
+			.formatted(table, guildId, modId, tagType));
+	}
+
 	/**
 	 * Close requested:<p>
 	 *  0 - not requested;

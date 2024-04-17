@@ -5,14 +5,14 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import union.objects.CaseType;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
-import static union.utils.CastUtil.castLong;
+import static union.utils.CastUtil.getOrDefault;
+import static union.utils.CastUtil.requireNonNull;
 
 public class CaseManager extends LiteDBBase {
 
@@ -156,17 +156,17 @@ public class CaseManager extends LiteDBBase {
 		private final boolean active;
 
 		public CaseData(Map<String, Object> map) {
-			this.caseId = (Integer) map.get("caseId");
-			this.type = CaseType.byType((Integer) map.get("type"));
-			this.targetId = castLong(map.get("targetId"));
-			this.targetTag = (String) map.get("targetTag");
-			this.modId = Optional.ofNullable(map.get("modId")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L);
-			this.modTag = (String) map.get("modTag");
-			this.guildId = castLong(map.get("guildId"));
-			this.reason = (String) map.get("reason");
-			this.timeStart = Instant.ofEpochSecond(Optional.ofNullable(map.get("timeStart")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));
-			this.duration = Duration.ofSeconds(Optional.ofNullable(map.get("duration")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));
-			this.active = ((Integer) map.get("active")) == 1;
+			this.caseId = requireNonNull(map.get("caseId"));
+			this.type = CaseType.byType(requireNonNull(map.get("type")));
+			this.targetId = requireNonNull(map.get("targetId"));
+			this.targetTag = getOrDefault(map.get("targetTag"), null);
+			this.modId = getOrDefault(map.get("modId"), 0L);
+			this.modTag = getOrDefault(map.get("modTag"), null);
+			this.guildId = requireNonNull(map.get("guildId"));
+			this.reason = getOrDefault(map.get("reason"), null);
+			this.timeStart = Instant.ofEpochSecond(getOrDefault(map.get("timeStart"), 0L));
+			this.duration = Duration.ofSeconds(getOrDefault(map.get("duration"), 0L));
+			this.active = ((Integer) requireNonNull(map.get("active"))) == 1;
 		}
 
 		public String getCaseId() {

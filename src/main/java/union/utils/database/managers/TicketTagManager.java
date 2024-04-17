@@ -1,5 +1,8 @@
 package union.utils.database.managers;
 
+import static union.utils.CastUtil.getOrDefault;
+import static union.utils.CastUtil.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -138,7 +141,7 @@ public class TicketTagManager extends LiteDBBase {
 	}
 
 	public static class Tag {
-		private final Integer tagType; // 0 - Thread, 1 - Channel
+		private final int tagType; // 0 - Thread, 1 - Channel
 		private final String buttonText;
 		private final String ticketName;
 		private final ButtonStyle buttonStyle;
@@ -148,14 +151,14 @@ public class TicketTagManager extends LiteDBBase {
 		private final String supportRoles;
 
 		public Tag(Map<String, Object> map) {
-			this.tagType = (Integer) map.get("tagType");
-			this.buttonText = (String) map.get("buttonText");
-			this.ticketName = (String) map.get("ticketName");
-			this.buttonStyle = ButtonStyle.fromKey((Integer) map.getOrDefault("buttonStyle", 0));
+			this.tagType = requireNonNull(map.get("tagType"));
+			this.buttonText = requireNonNull(map.get("buttonText"));
+			this.ticketName = requireNonNull(map.get("ticketName"));
+			this.buttonStyle = ButtonStyle.fromKey(getOrDefault(map.get("buttonStyle"), 0));
 			this.emoji = Optional.ofNullable((String) map.get("emoji")).map(Emoji::fromFormatted).orElse(null);
-			this.location = (String) map.get("location");
-			this.message = setNewline((String) map.get("message"));
-			this.supportRoles = (String) map.get("supportRoles");
+			this.location = getOrDefault(map.get("location"), null);
+			this.message = setNewline(getOrDefault(map.get("message"), null));
+			this.supportRoles = getOrDefault(map.get("supportRoles"), null);
 		}
 		
 		private String setNewline(String text) {
@@ -175,10 +178,10 @@ public class TicketTagManager extends LiteDBBase {
 		}
 
 		public static Button createButton(Map<String, Object> map) {
-			Integer tagId = (Integer) map.get("tagId");
-			String buttonText = (String) map.get("buttonText");
-			ButtonStyle style = ButtonStyle.fromKey((int) map.get("buttonStyle"));
-			Emoji emoji = Optional.ofNullable(map.get("emoji")).map(data -> Emoji.fromFormatted((String) data)).orElse(null);
+			int tagId = requireNonNull(map.get("tagId"));
+			String buttonText = requireNonNull(map.get("buttonText"));
+			ButtonStyle style = ButtonStyle.fromKey(requireNonNull(map.get("buttonStyle")));
+			Emoji emoji = Optional.ofNullable((String) map.get("emoji")).map(Emoji::fromFormatted).orElse(null);
 			return new ButtonImpl("tag:"+tagId, buttonText, style, null, false, emoji);
 		}
 
@@ -186,7 +189,7 @@ public class TicketTagManager extends LiteDBBase {
 			return ticketName;
 		}
 
-		public Integer getTagType() {
+		public int getTagType() {
 			return tagType;
 		}
 

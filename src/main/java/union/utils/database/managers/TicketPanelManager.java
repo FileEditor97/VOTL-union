@@ -1,5 +1,8 @@
 package union.utils.database.managers;
 
+import static union.utils.CastUtil.getOrDefault;
+import static union.utils.CastUtil.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -107,10 +110,10 @@ public class TicketPanelManager extends LiteDBBase {
 		private final String footer;
 
 		public Panel(Map<String, Object> map) {
-			this.title = (String) map.get("title");
-			this.description = setNewline((String) map.get("description"));
-			this.image = (String) map.get("image");
-			this.footer = setNewline((String) map.get("footer"));
+			this.title = requireNonNull(map.get("title"));
+			this.description = setNewline(getOrDefault(map.get("description"), null));
+			this.image = getOrDefault(map.get("image"), null);
+			this.footer = setNewline(getOrDefault(map.get("footer"), null));
 		}
 		
 		private String setNewline(String text) {

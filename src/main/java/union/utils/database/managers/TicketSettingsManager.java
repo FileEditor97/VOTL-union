@@ -1,9 +1,10 @@
 package union.utils.database.managers;
 
+import static union.utils.CastUtil.getOrDefault;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import union.objects.constants.Constants;
@@ -87,13 +88,13 @@ public class TicketSettingsManager extends LiteDBBase {
 		}
 
 		public TicketSettings(Map<String, Object> data) {
-			this.autocloseTime = Optional.ofNullable((Integer) data.get("autocloseTime")).orElse(0);
-			this.autocloseLeft = Optional.ofNullable((Integer) data.get("autocloseLeft")).orElse(0) == 1;
-			this.otherRole = Optional.ofNullable((Integer) data.get("otherRole")).orElse(1) == 1;
+			this.autocloseTime = getOrDefault(data.get("autocloseTime"), 0);
+			this.autocloseLeft = getOrDefault(data.get("autocloseLeft"), 0) == 1;
+			this.otherRole = getOrDefault(data.get("otherRole"), 0) == 1;
 			this.rowText = List.of(
-				Optional.ofNullable((String) data.get("rowName1")).orElse("Select roles"),
-				Optional.ofNullable((String) data.get("rowName2")).orElse("Select roles"),
-				Optional.ofNullable((String) data.get("rowName3")).orElse("Select roles")
+				getOrDefault(data.get("rowName1"), "Select roles"),
+				getOrDefault(data.get("rowName2"), "Select roles"),
+				getOrDefault(data.get("rowName3"), "Select roles")
 			);
 		}
 

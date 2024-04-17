@@ -27,6 +27,7 @@ import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
 import union.utils.CheckUtil;
+import union.utils.ModerationUtil;
 import union.utils.TicketUtil;
 import union.utils.WebhookAppender;
 import union.utils.database.DBUtil;
@@ -93,6 +94,7 @@ public class App {
 	private final LogEmbedUtil logEmbedUtil;
 	private final TicketUtil ticketUtil;
 	private final WebhookLogger webhookLogger;
+	private final ModerationUtil moderationUtil;
 
 	public App() {
 
@@ -116,6 +118,7 @@ public class App {
 		logEmbedUtil = new LogEmbedUtil(localeUtil);
 		logUtil		= new LoggingUtil(this);
 		webhookLogger = new WebhookLogger(dbUtil);
+		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
 
 		WAITER				= new EventWaiter();
 		guildListener		= new GuildListener(this);
@@ -324,6 +327,10 @@ public class App {
  
 	public WebhookLogger getGuildLogger() {
 		return webhookLogger;
+	}
+
+	public ModerationUtil getModerationUtil() {
+		return moderationUtil;
 	}
 
 	public Helper getHelper() {

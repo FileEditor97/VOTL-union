@@ -15,6 +15,7 @@ import union.objects.CmdModule;
 import union.objects.Emotes;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
 import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -40,7 +41,7 @@ public class SetupCmd extends CommandBase {
 		this.path = "bot.guild.setup";
 		this.children = new SlashCommand[]{new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), new Anticrash(bot),
 			new VoiceCreate(bot), new VoiceSelect(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot),
-			new Strikes(bot)
+			new Strikes(bot), new InformLevel(bot)
 		};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -394,6 +395,49 @@ public class SetupCmd extends CommandBase {
 				.build());
 		}
 
+	}
+
+	private class InformLevel extends SlashCommand {
+		public InformLevel(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "dm_inform";
+			this.path = "bot.guild.setup.dm_inform";
+			this.options = List.of(
+				new OptionData(OptionType.STRING, "action", lu.getText(path+".action.help"), true)
+					.addChoice("Ban", "ban")
+					.addChoice("Kick", "kick")
+					.addChoice("Mute", "mute")
+					.addChoice("Strike", "strike")
+					.addChoice("Delstrike", "delstrike"),
+				new OptionData(OptionType.INTEGER, "level", lu.getText(path+".level.help"), true)
+					.addChoices(ModerationInformLevel.asChoices(lu))
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+			long guildId = event.getGuild().getIdLong();
+
+			String action = event.optString("action");
+			ModerationInformLevel informLevel = ModerationInformLevel.byLevel(event.optInteger("level"));
+			switch (action) {
+				case "ban" -> bot.getDBUtil().guildSettings.setInformBanLevel(guildId, informLevel);
+				case "kick" -> bot.getDBUtil().guildSettings.setInformKickLevel(guildId, informLevel);
+				case "mute" -> bot.getDBUtil().guildSettings.setInformMuteLevel(guildId, informLevel);
+				case "strike" -> bot.getDBUtil().guildSettings.setInformStrikeLevel(guildId, informLevel);
+				case "delstrike" -> bot.getDBUtil().guildSettings.setInformDelstrikeLevel(guildId, informLevel);
+				default -> {
+					editError(event, path+".unknown", action);
+					return;
+				}
+			}
+
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(action, lu.getText(event, informLevel.getPath())))
+				.build());
+		}
 	}
 
 }

@@ -20,7 +20,6 @@ import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
 import union.utils.message.TimeUtil;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -28,7 +27,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -45,7 +43,7 @@ public class BanCmd extends CommandBase {
 			new OptionData(OptionType.STRING, "time", lu.getText(path+".time.help")),
 			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help")).setMaxLength(400),
 			new OptionData(OptionType.BOOLEAN, "delete", lu.getText(path+".delete.help")),
-			new OptionData(OptionType.BOOLEAN, "dm", lu.getText(path+".dm.help"))
+			new OptionData(OptionType.BOOLEAN, "can_appeal", lu.getText(path+".can_appeal.help"))
 		);
 		this.botPermissions = new Permission[]{Permission.BAN_MEMBERS};
 		this.category = CmdCategory.MODERATION;
@@ -160,21 +158,11 @@ public class BanCmd extends CommandBase {
 				}
 			}
 
-			if (event.optBoolean("dm", true)) {
-				tu.openPrivateChannel().queue(pm -> {
-					DiscordLocale locale = guild.getLocale();
-					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
-					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-						.setDescription(duration.isZero() ? 
-							lu.getLocalized(locale, "logger_embed.pm.banned").formatted(guild.getName(), reason)
-							:
-							lu.getLocalized(locale, "logger_embed.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, duration), reason)
-						)
-						.appendDescription(link != null ? lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link) : "")
-						.build();
-					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-				});
-			}
+			tu.openPrivateChannel().queue(pm -> {
+				MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.BAN, guild, reason, duration, mod.getUser(), event.optBoolean("can_appeal", true));
+				if (embed == null) return;
+				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			});
 
 			guild.ban(tu, (event.optBoolean("delete", true) ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
 				// fail-safe check if has expirable ban (to prevent auto unban)

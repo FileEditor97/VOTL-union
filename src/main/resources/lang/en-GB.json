@@ -117,16 +117,24 @@
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
-			"banned_temp": "You were banned from %s server for %s. | %s",
-			"banned": "You were permanently banned from %s server. | %s",
-			"kicked": "You were kicked from %s server. | %s",
-			"muted": "You were timed out in %s server. | %s",
-			"strike": "You received %s in %s server. | %s",
+			"banned_temp": "You were banned from %s server for {time}.",
+			"banned_perm": "You were permanently banned from %s server.",
+			"banned": "You were banned from %s server.",
+			"kicked": "You were kicked from %s server.",
+			"muted": "You were timed out in %s server.",
+			"strike": "You received %s in %s server.",
 			"strike1": "one warning",
 			"strike2": "two warnings",
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
+			"delstrike": "%s strike(s) removed in %s server by moderation.",
 			"appeal": "\nAppeal this action by following this link:\n> %s"
+		},
+		"inform": {
+			"0": "Do not dm offender",
+			"1": "Send server and action",
+			"2": "Send server, action, reason and duration",
+			"3": "Send server, action, reason, duration and moderator"
 		}
 	},
 	"logger": {
@@ -504,6 +512,20 @@
 						"help": "Enter time in days, after which strikes expires"
 					},
 					"done": "Experation time set to %d days."
+				},
+				"dm_inform": {
+					"help": "Set what information is sent to offender when action is performed",
+					"usage": "dm_inform <action> <level>",
+					"action": {
+						"name": "action",
+						"help": "Select action"
+					},
+					"level": {
+						"name": "level",
+						"help": "Select what information will be sent"
+					},
+					"unknown": "Unknown action received.",
+					"done": "On `%s` action - %s"
 				}
 			},
 			"module": {
@@ -988,9 +1010,9 @@
 					"name": "delete",
 					"help": "Delete messages past 10 hours? (true)"
 				},
-				"dm": {
-					"name": "dm",
-					"help": "Send user DM informing about the ban? (true)"
+				"can_appeal": {
+					"name": "can_appeal",
+					"help": "Can user appeal this action? (true)"
 				},
 				"no_reason": "*Not provided*",
 				"not_found": "User not found or input error",

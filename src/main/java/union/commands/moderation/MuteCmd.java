@@ -18,7 +18,6 @@ import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
 import union.utils.message.TimeUtil;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -106,9 +105,8 @@ public class MuteCmd extends CommandBase {
 			
 			tm.timeoutFor(duration).reason(reason).queue(done -> {
 				tm.getUser().openPrivateChannel().queue(pm -> {
-					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-						.setDescription(lu.getLocalized(guild.getLocale(), "logger_embed.pm.muted").formatted(guild.getName(), reason))
-						.build();
+					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.MUTE, guild, reason, duration, mod.getUser(), false);
+					if (embed == null) return;
 					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 

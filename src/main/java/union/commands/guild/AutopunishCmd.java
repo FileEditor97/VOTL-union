@@ -78,10 +78,10 @@ public class AutopunishCmd extends CommandBase {
 			
 			List<PunishActions> actions = new ArrayList<>();
 			List<String> data = new ArrayList<>();
-			StringBuffer buffer = new StringBuffer(lu.getText(event, path+".title").formatted(strikeCount));
+			StringBuilder builder = new StringBuilder(lu.getText(event, path+".title").formatted(strikeCount));
 			if (event.optBoolean("kick", false)) {
 				actions.add(PunishActions.KICK);
-				buffer.append(lu.getText(event, path+".vkick"));
+				builder.append(lu.getText(event, path+".vkick"));
 			}
 			if (event.hasOption("mute")) {
 				Duration duration;
@@ -97,7 +97,7 @@ public class AutopunishCmd extends CommandBase {
 				}
 				actions.add(PunishActions.MUTE);
 				data.add("t"+duration.getSeconds());
-				buffer.append(lu.getText(event, path+".vmute").formatted(TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
+				builder.append(lu.getText(event, path+".vmute").formatted(TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
 			}
 			if (event.hasOption("ban")) {
 				Duration duration;
@@ -109,7 +109,7 @@ public class AutopunishCmd extends CommandBase {
 				}
 				actions.add(PunishActions.BAN);
 				data.add("t"+duration.getSeconds());
-				buffer.append(lu.getText(event, path+".vban").formatted(duration.isZero() ?
+				builder.append(lu.getText(event, path+".vban").formatted(duration.isZero() ?
 					lu.getText(event, "misc.permanently") :
 					lu.getText(event, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)
 				));
@@ -122,7 +122,7 @@ public class AutopunishCmd extends CommandBase {
 				}
 				actions.add(PunishActions.REMOVE_ROLE);
 				data.add("rr"+role.getId());
-				buffer.append(lu.getText(event, path+".vremove").formatted(role.getName()));
+				builder.append(lu.getText(event, path+".vremove").formatted(role.getName()));
 			}
 			if (event.hasOption("add-role")) {
 				Role role = event.optRole("add-role");
@@ -132,7 +132,7 @@ public class AutopunishCmd extends CommandBase {
 				}
 				actions.add(PunishActions.ADD_ROLE);
 				data.add("ar"+role.getId());
-				buffer.append(lu.getText(event, path+".vadd").formatted(role.getName()));
+				builder.append(lu.getText(event, path+".vadd").formatted(role.getName()));
 			}
 
 			if (actions.isEmpty()) {
@@ -141,7 +141,7 @@ public class AutopunishCmd extends CommandBase {
 			}
 
 			bot.getDBUtil().autopunish.addAction(event.getGuild().getIdLong(), strikeCount, actions, String.join(";", data));
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setColor(Constants.COLOR_SUCCESS).setDescription(buffer.toString()).build());
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setColor(Constants.COLOR_SUCCESS).setDescription(builder.toString()).build());
 		}
 
 	}
@@ -212,18 +212,18 @@ public class AutopunishCmd extends CommandBase {
 				return;
 			}
 
-			StringBuffer buffer = new StringBuffer();
+			StringBuilder builder = new StringBuilder();
 			list.forEach(map -> {
 				Integer strikeCount = (Integer) map.get("strike");
 				List<PunishActions> actions = PunishActions.decodeActions((Integer) map.get("actions"));
 				if (actions.isEmpty()) return;
 				String data = (String) map.getOrDefault("data", "");
 
-				buffer.append("`%2d` ".formatted(strikeCount));
+				builder.append("`%2d` ".formatted(strikeCount));
 				actions.forEach(action -> {
 					switch (action) {
 						case KICK:
-							buffer.append(lu.getText(event, action.getPath()));
+						builder.append(lu.getText(event, action.getPath()));
 							break;
 						case MUTE:
 						case BAN:
@@ -233,7 +233,7 @@ public class AutopunishCmd extends CommandBase {
 							} catch (NumberFormatException ex) {
 								break;
 							}
-							buffer.append("%s (%s)".formatted(lu.getText(event, action.getPath()), TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
+							builder.append("%s (%s)".formatted(lu.getText(event, action.getPath()), TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
 							break;
 						case REMOVE_ROLE:
 						case ADD_ROLE:
@@ -243,18 +243,18 @@ public class AutopunishCmd extends CommandBase {
 							} catch (NumberFormatException ex) {
 								break;
 							}
-							buffer.append("%s (<@&%d>)".formatted(lu.getText(event, action.getPath()), roleId));
+							builder.append("%s (<@&%d>)".formatted(lu.getText(event, action.getPath()), roleId));
 							break;
 						default:
 							break;
 					}
-					buffer.append(" ");
+					builder.append(" ");
 				});
-				buffer.append("\n");
+				builder.append("\n");
 			});
 
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed()
-				.setDescription(buffer.toString())
+				.setDescription(builder.toString())
 				.build());
 		}
 		

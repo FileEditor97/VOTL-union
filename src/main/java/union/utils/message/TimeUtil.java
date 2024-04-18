@@ -100,23 +100,36 @@ public class TimeUtil {
 			return "0 seconds";
 		}
 
-		StringBuffer buffer = new StringBuffer();
-		Long days = duration.toDaysPart();
+		StringBuilder builder = new StringBuilder();
+
+		long days = duration.toDaysPart();
 		if (days >= 7) {
 			Integer weeks = Math.floorMod(days, 7);
-			buffer.append(weeks+" weeks ");
+			builder.append(weeks+" weeks");
 			days -= weeks*7;
 		}
-		if (days > 0) buffer.append(duration.toDays()+" days ");
+		if (days > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append(days).append(" days");
+		}
 		
-		Integer value = duration.toHoursPart();
-		if (value > 0) buffer.append(value+" hours ");
+		int value = duration.toHoursPart();
+		if (value > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append(value).append(" hours");
+		}
 		value = duration.toMinutesPart();
-		if (value > 0) buffer.append(value+" minutes ");
+		if (value > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append(value).append(" minutes");
+		}
 		value = duration.toSecondsPart();
-		if (value > 0) buffer.append(value+" seconds");
+		if (value > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append(value).append(" seconds");
+		}
 
-		return buffer.toString();
+		return builder.toString();
 	}
 
 	public static String durationToLocalizedString(LocaleUtil lu, DiscordLocale locale, Duration duration) {
@@ -124,23 +137,35 @@ public class TimeUtil {
 			return "0 %s".formatted(lu.getLocalized(locale, "misc.time.seconds"));
 		}
 
-		StringBuffer buffer = new StringBuffer();
-		Long days = duration.toDaysPart();
+		StringBuilder builder = new StringBuilder();
+		long days = duration.toDaysPart();
 		if (days >= 7L) {
-			Long weeks = Math.floorDiv(days, 7L);
-			buffer.append("%s %s ".formatted(weeks, lu.getLocalized(locale, "misc.time.weeks")));
-			days = Math.floorMod(days, 7L);
+			long weeks = Math.floorDiv(days, 7L);
+			builder.append("%s %s".formatted(weeks, lu.getLocalized(locale, "misc.time.weeks")));
+			days -= weeks*7;
 		}
-		if (days > 0) buffer.append("%s %s ".formatted(days, lu.getLocalized(locale, "misc.time.days")));
+		if (days > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append("%s %s".formatted(days, lu.getLocalized(locale, "misc.time.days")));
+		} 
 		
-		Integer value = duration.toHoursPart();
-		if (value > 0) buffer.append("%s %s ".formatted(value, lu.getLocalized(locale, "misc.time.hours")));
+		int value = duration.toHoursPart();
+		if (value > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.hours")));
+		}
 		value = duration.toMinutesPart();
-		if (value > 0) buffer.append("%s %s ".formatted(value, lu.getLocalized(locale, "misc.time.minutes")));
+		if (value > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.minutes")));
+		}
 		value = duration.toSecondsPart();
-		if (value > 0) buffer.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.seconds")));
+		if (value > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			builder.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.seconds")));
+		}
 
-		return buffer.toString();
+		return builder.toString();
 	}
 
 	public static String formatTime(TemporalAccessor time, boolean full) {

@@ -155,47 +155,21 @@ public class InteractionListener extends ListenerAdapter {
 			if (buttonId.startsWith("role")) {
 				String action = buttonId.split(":")[1];
 				switch (action) {
-					case "start_request":
-						runButtonInteraction(event, Cooldown.BUTTON_ROLE_SHOW, () -> buttonRoleShowSelection(event));
-						break;
-					case "other":
-						runButtonInteraction(event, Cooldown.BUTTON_ROLE_OTHER, () -> buttonRoleSelectionOther(event));
-						break;
-					case "clear":
-						runButtonInteraction(event, Cooldown.BUTTON_ROLE_CLEAR, () -> buttonRoleSelectionClear(event));
-						break;
-					case "remove":
-						runButtonInteraction(event, Cooldown.BUTTON_ROLE_REMOVE, () -> buttonRoleRemove(event));
-						break;
-					case "toggle":
-						runButtonInteraction(event, Cooldown.BUTTON_ROLE_TOGGLE, () -> buttonRoleToggle(event));
-						break;
-					default:
-						break;
+					case "start_request" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_SHOW, () -> buttonRoleShowSelection(event));
+					case "other" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_OTHER, () -> buttonRoleSelectionOther(event));
+					case "clear" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_CLEAR, () -> buttonRoleSelectionClear(event));
+					case "remove" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_REMOVE, () -> buttonRoleRemove(event));
+					case "toggle" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TOGGLE, () -> buttonRoleToggle(event));
 				}
 			} else if (buttonId.startsWith("ticket")) {
 				String action = buttonId.split(":")[1];
 				switch (action) {
-					case "role_create":
-						runButtonInteraction(event, Cooldown.BUTTON_ROLE_TICKET, () -> buttonRoleTicketCreate(event));
-						break;
-					case "role_approve":
-						runButtonInteraction(event, Cooldown.BUTTON_ROLE_APPROVE, () -> buttonRoleTicketApprove(event));
-						break;
-					case "close":
-						runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLOSE, () -> buttonTicketClose(event));
-						break;
-					case "cancel":
-						runButtonInteraction(event, Cooldown.BUTTON_TICKET_CANCEL, () -> buttonTicketCloseCancel(event));
-						break;
-					case "claim":
-						runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLAIM, () -> buttonTicketClaim(event));
-						break;
-					case "unclaim":
-						runButtonInteraction(event, Cooldown.BUTTON_TICKET_UNCLAIM, () -> buttonTicketUnclaim(event));
-						break;
-					default:
-						break;
+					case "role_create" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TICKET, () -> buttonRoleTicketCreate(event));
+					case "role_approve" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_APPROVE, () -> buttonRoleTicketApprove(event));
+					case "close" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLOSE, () -> buttonTicketClose(event));
+					case "cancel" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CANCEL, () -> buttonTicketCloseCancel(event));
+					case "claim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLAIM, () -> buttonTicketClaim(event));
+					case "unclaim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_UNCLAIM, () -> buttonTicketUnclaim(event));
 				}
 			} else if (buttonId.startsWith("tag")) {
 				runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
@@ -217,38 +191,16 @@ public class InteractionListener extends ListenerAdapter {
 				if (vc == null) return;
 				String action = buttonId.split(":")[1];
 				switch (action) {
-					case "lock":
-						runButtonInteraction(event, null, () -> buttonVoiceLock(event, vc));
-						break;
-					case "unlock":
-						runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
-						break;
-					case "ghost":
-						runButtonInteraction(event, null, () -> buttonVoiceGhost(event, vc));
-						break;
-					case "unghost":
-						runButtonInteraction(event, null, () -> buttonVoiceUnghost(event, vc));
-						break;
-					/* case "name":
-						runButtonInteraction(event, null, () -> buttonVoiceName(event));
-						break;
-					case "limit":
-						runButtonInteraction(event, null, () -> buttonVoiceLimit(event));
-						break; */
-					case "permit":
-						runButtonInteraction(event, null, () -> buttonVoicePermit(event));
-						break;
-					case "reject":
-						runButtonInteraction(event, null, () -> buttonVoiceReject(event));
-						break;
-					case "perms":
-						runButtonInteraction(event, null, () -> buttonVoicePerms(event, vc));
-						break;
-					case "delete":
-						runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
-						break;
-					default:
-						break;
+					case "lock" -> runButtonInteraction(event, null, () -> buttonVoiceLock(event, vc));
+					case "unlock" -> runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
+					case "ghost" -> runButtonInteraction(event, null, () -> buttonVoiceGhost(event, vc));
+					case "unghost" -> runButtonInteraction(event, null, () -> buttonVoiceUnghost(event, vc));
+					//case "name" -> runButtonInteraction(event, null, () -> buttonVoiceName(event));
+					//case "limit" -> runButtonInteraction(event, null, () -> buttonVoiceLimit(event));
+					case "permit" -> runButtonInteraction(event, null, () -> buttonVoicePermit(event));
+					case "reject" -> runButtonInteraction(event, null, () -> buttonVoiceReject(event));
+					case "perms" -> runButtonInteraction(event, null, () -> buttonVoicePerms(event, vc));
+					case "delete" -> runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
 				}
 			} else if (buttonId.startsWith("blacklist")) {
 				runButtonInteraction(event, null, () -> buttonBlacklist(event));

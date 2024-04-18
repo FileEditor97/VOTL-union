@@ -59,7 +59,7 @@ public class SqlDBBase {
 	protected List<Map<String, String>> select(final String table, final List<String> selectKeys, final List<String> condKeys, final List<String> condValuesInp) {
 		List<String> condValues = condValuesInp.stream().map(value -> quote(value)).toList();
 
-		StringBuffer sql = new StringBuffer("SELECT "); //* FROM "+table+" WHERE ";
+		StringBuilder sql = new StringBuilder("SELECT "); //* FROM "+table+" WHERE ";
 
 		for (int i = 0; i < selectKeys.size(); i++) {
 			if (i > 0) {

@@ -76,7 +76,7 @@ public class RoleCmd extends CommandBase {
 				// Log
 				bot.getLogger().role.onRoleAdded(guild, event.getUser(), member.getUser(), role);
 				// Send reply
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
+				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed()
 					.setColor(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getName()).replace("{user}", member.getEffectiveName()))
 					.build());
@@ -124,7 +124,7 @@ public class RoleCmd extends CommandBase {
 				// Log
 				bot.getLogger().role.onRoleRemoved(guild, event.getUser(), member.getUser(), role);
 				// Send reply
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getName()).replace("{user}", member.getEffectiveName()))
 					.build());
 			}, failure -> {

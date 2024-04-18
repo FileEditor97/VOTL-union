@@ -92,11 +92,11 @@ public class HelpCmd extends CommandBase {
 	}
 
 	private String getUsageText(DiscordLocale locale, SlashCommand command) {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		if (command.getChildren().length > 0) {
 			String base = command.getName();
 			for (SlashCommand child : command.getChildren()) {
-				buffer.append(
+				builder.append(
 					lu.getLocalized(locale, "bot.help.command_info.usage_child")
 						.replace("{base}", base)
 						.replace("{usage}", lu.getLocalized(locale, child.getUsagePath()))
@@ -104,9 +104,9 @@ public class HelpCmd extends CommandBase {
 					).append("\n");
 			}
 		} else {
-			buffer.append(lu.getLocalized(locale, "bot.help.command_info.usage_value").replace("{usage}", lu.getLocalized(locale, command.getUsagePath()))).append("\n");
+			builder.append(lu.getLocalized(locale, "bot.help.command_info.usage_value").replace("{usage}", lu.getLocalized(locale, command.getUsagePath()))).append("\n");
 		}
-		return buffer.toString().substring(0, Math.min(1024, buffer.length()));
+		return builder.toString().substring(0, Math.min(1024, builder.length()));
 	}
 
 	private void sendHelp(SlashCommandEvent event, String filCat) {

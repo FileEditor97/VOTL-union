@@ -70,7 +70,7 @@ public class ModLogsCmd extends CommandBase {
 				.append(lu.getLocalized(locale, path+".target").formatted(c.getTargetTag(), c.getTargetId()))
 				.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()));
 			if (!c.getDuration().isNegative())
-				buffer.append(TimeUtil.formatDuration(lu, locale, c.getTimeStart(), c.getDuration()));
+				buffer.append(lu.getLocalized(locale, path+".duration").formatted(TimeUtil.formatDuration(lu, locale, c.getTimeStart(), c.getDuration())));
 			buffer.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
 
 			builder.addField((c.isActive() ? "🟥" : "⬜" ) + " " + lu.getLocalized(locale, path+".case").formatted(c.getCaseIdInt()), buffer.toString(), false);

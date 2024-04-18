@@ -91,17 +91,20 @@ public class BanCmd extends CommandBase {
 					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 					// create embed
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getText(event, path+".ban_success")
-							.replace("{user_tag}", tu.getName())
-							.replace("{duration}", lu.getText(event, "misc.permanently"))
-							.replace("{reason}", reason))
+						.setDescription(lu.getGuildText(event, path+".success")
+							.formatted(TimeUtil.formatDuration(lu, event.getGuildLocale(), Instant.now(), duration)))
+						.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tu.getName(), tu.getAsMention()), true)
+						.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+						.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
 						.build();
 					// log ban
 					bot.getLogger().mod.onNewCase(guild, tu, newBanData);
 
 					// reply and add blacklist button
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
-						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
+						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
 					).queue();
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
@@ -129,7 +132,9 @@ public class BanCmd extends CommandBase {
 					.build();
 				// reply and add blacklist button
 				event.getHook().editOriginalEmbeds(embed).setActionRow(
-					Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
+					Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+					Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+					Button.secondary("sync_kick:"+tu.getId(), "Group kick")
 				).queue();
 			}
 		},

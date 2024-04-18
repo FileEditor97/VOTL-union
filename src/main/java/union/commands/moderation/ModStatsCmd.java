@@ -16,7 +16,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -39,7 +39,11 @@ public class ModStatsCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-		Member mod = event.optMember("user", event.getMember());
+		User mod = event.optUser("user", event.getUser());
+		if (mod == null) {
+			editError(event, path+".no_user");
+			return;
+		}
 		long guildId = event.getGuild().getIdLong();
 
 		Map<Integer, Integer> countTotal = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong());
@@ -56,7 +60,7 @@ public class ModStatsCmd extends CommandBase {
 		final int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(7, ChronoUnit.DAYS), true);
 
 		EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setAuthor(mod.getUser().getName(), null, mod.getEffectiveAvatarUrl())
+			.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())
 			.setTitle(lu.getText(event, path+".title"))
 			.setFooter("ID: "+mod.getId())
 			.setTimestamp(Instant.now());

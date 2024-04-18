@@ -123,7 +123,10 @@ public class InteractionListener extends ListenerAdapter {
 		function.run();
 	}
 
-	private final List<String> acceptableButtons = List.of("verify", "role", "ticket", "tag", "invites", "delete", "voice", "blacklist", "strikes", "unban_sync");
+	private final List<String> acceptableButtons = List.of(
+		"verify", "role", "ticket", "tag", "invites",
+		"delete", "voice", "blacklist", "strikes", "sync_"
+	);
 
 	private boolean isAcceptedId(final String id) {
 		for (String match : acceptableButtons) {

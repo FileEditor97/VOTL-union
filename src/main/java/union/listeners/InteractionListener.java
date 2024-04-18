@@ -79,6 +79,7 @@ public class InteractionListener extends ListenerAdapter {
 	private final EventWaiter waiter;
 
 	private final List<Permission> AdminPerms = List.of(Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES);
+	private final int MAX_GROUP_SELECT = 1;
 
 	public InteractionListener(App bot, EventWaiter waiter) {
 		this.bot = bot;
@@ -195,8 +196,6 @@ public class InteractionListener extends ListenerAdapter {
 					case "unlock" -> runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
 					case "ghost" -> runButtonInteraction(event, null, () -> buttonVoiceGhost(event, vc));
 					case "unghost" -> runButtonInteraction(event, null, () -> buttonVoiceUnghost(event, vc));
-					//case "name" -> runButtonInteraction(event, null, () -> buttonVoiceName(event));
-					//case "limit" -> runButtonInteraction(event, null, () -> buttonVoiceLimit(event));
 					case "permit" -> runButtonInteraction(event, null, () -> buttonVoicePermit(event));
 					case "reject" -> runButtonInteraction(event, null, () -> buttonVoiceReject(event));
 					case "perms" -> runButtonInteraction(event, null, () -> buttonVoicePerms(event, vc));
@@ -204,8 +203,12 @@ public class InteractionListener extends ListenerAdapter {
 				}
 			} else if (buttonId.startsWith("blacklist")) {
 				runButtonInteraction(event, null, () -> buttonBlacklist(event));
-			} else if (buttonId.startsWith("unban_sync")) {
-				runButtonInteraction(event, null, () -> buttonUnbanSync(event));
+			} else if (buttonId.startsWith("sync_unban")) {
+				runButtonInteraction(event, null, () -> buttonSyncUnban(event));
+			} else if (buttonId.startsWith("sync_ban")) {
+				runButtonInteraction(event, null, () -> buttonSyncBan(event));
+			} else if (buttonId.startsWith("sync_kick")) {
+				runButtonInteraction(event, null, () -> buttonSyncKick(event));
 			} else if (buttonId.startsWith("strikes")) {
 				runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
 			}
@@ -884,22 +887,6 @@ public class InteractionListener extends ListenerAdapter {
 		sendSuccess(event, "bot.voice.listener.panel.unghost");
 	}
 
-	/* private void buttonVoiceName(ButtonInteractionEvent event) {
-		TextInput textInput = TextInput.create("name", lu.getText(event, "bot.voice.listener.panel.name_label"), TextInputStyle.SHORT)
-			.setPlaceholder("{user}'s channel")
-			.setMaxLength(100)
-			.build();
-		event.getHook().replyModal(Modal.create("voice:name", lu.getText(event, "bot.voice.listener.panel.modal")).addActionRow(textInput).build()).queue();
-	}
-
-	private void buttonVoiceLimit(ButtonInteractionEvent event) {
-		TextInput textInput = TextInput.create("limit", lu.getText(event, "bot.voice.listener.panel.limit_label"), TextInputStyle.SHORT)
-			.setPlaceholder("0 / 99")
-			.setRequiredRange(1, 2)
-			.build();
-		event.replyModal(Modal.create("voice:limit", lu.getText(event, "bot.voice.listener.panel.modal")).addActionRow(textInput).build()).queue();
-	} */
-
 	private void buttonVoicePermit(ButtonInteractionEvent event) {
 		String text = lu.getText(event, "bot.voice.listener.panel.permit_label");
 		event.getHook().sendMessage(text).addActionRow(EntitySelectMenu.create("voice:permit", SelectTarget.USER, SelectTarget.ROLE).setMaxValues(10).build()).setEphemeral(true).queue();
@@ -1058,7 +1045,7 @@ public class InteractionListener extends ListenerAdapter {
 			.addOptions(groupIds.stream().map(groupId ->
 				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
 			).collect(Collectors.toList()))
-			.setMaxValues(1)
+			.setMaxValues(MAX_GROUP_SELECT)
 			.build();
 
 		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
@@ -1100,7 +1087,76 @@ public class InteractionListener extends ListenerAdapter {
 		});
 	}
 
-	private void buttonUnbanSync(ButtonInteractionEvent event) {
+	private void buttonSyncBan(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		if (bot.getHelper() == null) {
+			sendError(event, "errors.no_helper");
+			return;
+		}
+
+		String userId = event.getComponentId().split(":")[1];
+		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
+		if (caseData == null || !caseData.getDuration().isZero()) {
+			sendError(event, "bot.moderation.sync.expired");
+			return;
+		}
+
+		long guildId = event.getGuild().getIdLong();
+		List<Integer> groupIds = new ArrayList<Integer>();
+		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
+		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
+		if (groupIds.isEmpty()) {
+			sendError(event, "bot.moderation.sync.no_groups");
+			return;
+		}
+
+		MessageEmbed embed = bot.getEmbedUtil().getEmbed()
+			.setColor(Constants.COLOR_WARNING)
+			.setDescription(lu.getText(event, "bot.moderation.sync.ban.title"))
+			.build();
+		StringSelectMenu menu = StringSelectMenu.create("groupId")
+			.setPlaceholder(lu.getText(event, "bot.moderation.sync.select"))
+			.addOptions(groupIds.stream().map(groupId ->
+				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
+			).collect(Collectors.toList()))
+			.setMaxValues(MAX_GROUP_SELECT)
+			.build();
+
+		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
+			waiter.waitForEvent(
+				StringSelectInteractionEvent.class,
+				e -> e.getMessageId().equals(msg.getId()),
+				selectEvent -> {
+					selectEvent.deferEdit().queue();
+					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
+
+					event.getJDA().retrieveUserById(userId).queue(user -> {
+						selected.forEach(groupId -> bot.getHelper().runBan(groupId, event.getGuild(), user, caseData.getReason()));
+						// Reply
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.sync.ban.done"))
+							.build())
+						.setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
+				},
+				20,
+				TimeUnit.SECONDS,
+				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
+			);
+		});
+	}
+
+	private void buttonSyncUnban(ButtonInteractionEvent event) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
 			sendError(event, "errors.interaction.no_access");
 			return;
@@ -1116,7 +1172,7 @@ public class InteractionListener extends ListenerAdapter {
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) {
-			sendError(event, "bot.moderation.sync.unban.no_groups");
+			sendError(event, "bot.moderation.sync.no_groups");
 			return;
 		}
 
@@ -1125,11 +1181,11 @@ public class InteractionListener extends ListenerAdapter {
 			.setDescription(lu.getText(event, "bot.moderation.sync.unban.title"))
 			.build();
 		StringSelectMenu menu = StringSelectMenu.create("groupId")
-			.setPlaceholder(lu.getText(event, "bot.moderation.sync.unban.value"))
+			.setPlaceholder(lu.getText(event, "bot.moderation.sync.select"))
 			.addOptions(groupIds.stream().map(groupId ->
 				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
 			).collect(Collectors.toList()))
-			.setMaxValues(1)
+			.setMaxValues(MAX_GROUP_SELECT)
 			.build();
 
 		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
@@ -1147,7 +1203,7 @@ public class InteractionListener extends ListenerAdapter {
 								bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
 							}
 	
-							bot.getHelper().runUnban(groupId, event.getGuild(), user, "Sync group unban");
+							bot.getHelper().runUnban(groupId, event.getGuild(), user, "Sync group unban, by "+event.getUser().getName());
 						});
 
 						// Reply
@@ -1159,7 +1215,76 @@ public class InteractionListener extends ListenerAdapter {
 					},
 					failure -> {
 						selectEvent.getHook().editOriginalEmbeds(
-							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.unban.no_user", failure.getMessage())
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
+				},
+				20,
+				TimeUnit.SECONDS,
+				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
+			);
+		});
+	}
+
+	private void buttonSyncKick(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		if (bot.getHelper() == null) {
+			sendError(event, "errors.no_helper");
+			return;
+		}
+
+		String userId = event.getComponentId().split(":")[1];
+		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
+		if (caseData == null || !caseData.getDuration().isZero()) {
+			sendError(event, "bot.moderation.sync.expired");
+			return;
+		}
+
+		long guildId = event.getGuild().getIdLong();
+		List<Integer> groupIds = new ArrayList<Integer>();
+		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
+		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
+		if (groupIds.isEmpty()) {
+			sendError(event, "bot.moderation.sync.no_groups");
+			return;
+		}
+
+		MessageEmbed embed = bot.getEmbedUtil().getEmbed()
+			.setColor(Constants.COLOR_WARNING)
+			.setDescription(lu.getText(event, "bot.moderation.sync.kick.title"))
+			.build();
+		StringSelectMenu menu = StringSelectMenu.create("groupId")
+			.setPlaceholder(lu.getText(event, "bot.moderation.sync.select"))
+			.addOptions(groupIds.stream().map(groupId ->
+				SelectOption.of(bot.getDBUtil().group.getName(groupId), groupId.toString()).withDescription("ID: "+groupId)
+			).collect(Collectors.toList()))
+			.setMaxValues(MAX_GROUP_SELECT)
+			.build();
+
+		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
+			waiter.waitForEvent(
+				StringSelectInteractionEvent.class,
+				e -> e.getMessageId().equals(msg.getId()),
+				selectEvent -> {
+					selectEvent.deferEdit().queue();
+					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
+
+					event.getJDA().retrieveUserById(userId).queue(user -> {
+						selected.forEach(groupId -> bot.getHelper().runKick(groupId, event.getGuild(), user, caseData.getReason()));
+						// Reply
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.sync.kick.done"))
+							.build())
+						.setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
 						).setComponents().queue();
 					});
 				},
@@ -1204,57 +1329,7 @@ public class InteractionListener extends ListenerAdapter {
 				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))
 				.build()
 			).queue();
-		}/*  else if (modalId.startsWith("voice")) {
-			if (!event.getMember().getVoiceState().inAudioChannel()) {
-				replyError(event, "bot.voice.listener.not_in_voice");
-				return;
-			}
-			String channelId = db.voice.getChannel(event.getUser().getId());
-			if (channelId == null) {
-				replyError(event, "errors.no_channel");
-				return;
-			}
-			VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
-			if (vc == null) return;
-			String userId = event.getUser().getId();
-			String action = modalId.split(":")[1];
-			if (action.equals("name")) {
-				String name = event.getValue("name").getAsString();
-				name = name.replace("{user}", event.getMember().getEffectiveName());
-				vc.getManager().setName(name.substring(0, Math.min(100, name.length()))).queue();
-
-				if (!bot.getDBUtil().user.exists(userId)) bot.getDBUtil().user.add(userId);
-				bot.getDBUtil().user.setName(userId, name);
-
-				event.replyEmbeds( 
-					bot.getEmbedUtil().getEmbed(event)
-						.setDescription(lu.getText(event, "bot.voice.listener.panel.name_done").replace("{name}", name))
-						.build()
-				).setEphemeral(true).queue();
-			} else if (action.equals("limit")) {
-				Integer limit;
-				try {
-					limit = Integer.parseInt(event.getValue("limit").getAsString());
-				} catch (NumberFormatException ex) {
-					event.deferEdit().queue();
-					return;
-				}
-				if (limit < 0 || limit > 99) {
-					event.deferEdit().queue();
-					return;
-				}
-				vc.getManager().setUserLimit(limit).queue();
-				
-				if (!bot.getDBUtil().user.exists(userId)) bot.getDBUtil().user.add(userId);
-				bot.getDBUtil().user.setLimit(userId, limit);
-
-				event.replyEmbeds( 
-					bot.getEmbedUtil().getEmbed(event)
-						.setDescription(lu.getText(event, "bot.voice.listener.panel.limit_done").replace("{limit}", limit.toString()))
-						.build()
-				).setEphemeral(true).queue();
-			}
-		} */
+		}
 	}
 
 	@Override

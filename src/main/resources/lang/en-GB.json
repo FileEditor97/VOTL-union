@@ -1174,13 +1174,6 @@
 			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",
-				"unban": {
-					"no_groups": "This server can't manage any group.",
-					"title": "Unban user in Group's servers. Select groups below.",
-					"value": "Select group/-s",
-					"no_user": "Unknown user.",
-					"done": "Unban sync in progress! Results will be posted in logs channel."
-				},
 				"kick": {
 					"help": "Sync kick with Group servers",
 					"usage": "kick <@User | ID> <Group>",
@@ -1198,7 +1191,20 @@
 					"no_group": "Couldn't find Group by entered ID.",
 					"embed_title": "Are you sure you want to kick this user from all Group servers?",
 					"button_confirm": "YES",
-					"done": "Kick sync in progress! Results will be posted in logs channel."
+					"done": "Kick sync in progress! Results will be posted in logs channel.",
+					"title": "**Kick user from all Group's servers.**"
+				},
+				"no_groups": "This server can't manage any group.",
+				"select": "Select group/-s",
+				"no_user": "Unknown user.",
+				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
+				"ban": {
+					"title": "**Ban this user in all Group's servers?**\n{EMOTE_WARNING} *This does not adds the user to the group's blacklist.*",
+					"done": "Ban sync in progress! Results will be posted in logs channel."
+				},
+				"unban": {
+					"title": "**Unban user in all Group's servers.**\n*Some bans may fail if user is blacklisted.*",
+					"done": "Unban sync in progress! Results will be posted in logs channel."
 				}
 			},
 			"case": {

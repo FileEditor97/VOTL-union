@@ -187,7 +187,9 @@ public class BanCmd extends CommandBase {
 				// if permanent - add button to blacklist target
 				if (duration.isZero())
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
-						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
+						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
 					).queue();
 				else
 					event.getHook().editOriginalEmbeds(embed).queue();

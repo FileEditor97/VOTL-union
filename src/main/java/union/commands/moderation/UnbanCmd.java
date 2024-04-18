@@ -95,7 +95,7 @@ public class UnbanCmd extends CommandBase {
 						.replace("{reason}", reason))
 					.build()
 			).setActionRow(
-				Button.primary("unban_sync:"+tu.getId(), "Sync unban").withEmoji(Emoji.fromUnicode("🆑"))
+				Button.primary("sync_unban:"+tu.getId(), "Sync unban").withEmoji(Emoji.fromUnicode("🆑"))
 			).queue();
 		},
 		failure -> {
@@ -106,7 +106,7 @@ public class UnbanCmd extends CommandBase {
 						.replace("{user_tag}", tu.getName()))
 					.build()
 			).setActionRow(
-				Button.primary("unban_sync:"+tu.getId(), "Sync unban").withEmoji(Emoji.fromUnicode("🆑"))
+				Button.primary("sync_unban:"+tu.getId(), "Sync unban").withEmoji(Emoji.fromUnicode("🆑"))
 			).queue();
 		});
 	}

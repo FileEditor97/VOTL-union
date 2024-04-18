@@ -117,20 +117,20 @@
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
-			"banned_temp": "You were banned from %s server for {time}.",
-			"banned_perm": "You were permanently banned from %s server.",
-			"banned": "You were banned from %s server.",
-			"kicked": "You were kicked from %s server.",
-			"muted": "You were timed out in %s server.",
-			"strike": "You received %s in %s server.",
+			"banned_temp": "You were banned from {guild} server for {time}.",
+			"banned_perm": "You were permanently banned from {guild} server.",
+			"banned": "You were banned from {guild} server.",
+			"kicked": "You were kicked from {guild} server.",
+			"muted": "You were timed out in {guild} server.",
+			"strike": "You received %s in {guild} server.",
 			"strike1": "one warning",
 			"strike2": "two warnings",
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
-			"delstrike": "%s strike(s) removed in %s server by moderation.",
+			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
 			"appeal": "\nAppeal this action by following this link:\n> %s",
 			"reason_mute": "Last *mute*'s reason was changed by server's %s moderation.",
-			"reason_strike": "Last *strike*'s reason was changed by server's %s moderation."
+			"reason_strike": "Last *warning*'s reason was changed by server's %s moderation."
 		},
 		"inform": {
 			"0": "Do not dm offender",

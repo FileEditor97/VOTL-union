@@ -57,14 +57,15 @@ public class ModerationUtil {
 				level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
 				if (level == 0) return null;
 				text = lu.getLocalized(locale, "logger_embed.pm.strike").formatted(
-					lu.getLocalized(locale, "logger_embed.pm.strike"+(type.getType()-20))
+					lu.getLocalized(locale, "logger_embed.pm.strike"+(type.getType()-20)),
+					"%s"
 				);
 			}
 			default -> {
 				return null;
 			}
 		}
-
+		
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 			.setDescription(formatText(text, guild, level >= 2 ? reason : null, level >= 2 ? duration : null, level >= 3 ? mod : null));
 		if (type.equals(CaseType.BAN)) {
@@ -81,7 +82,7 @@ public class ModerationUtil {
 		int level = dbUtil.getGuildSettings(guild).getInformDelstrike().getLevel();
 		if (level == 0) return null;
 		String text = lu.getLocalized(guild.getLocale(), "logger_embed.pm.delstrike").formatted(amount);
-		return new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+		return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
 			.setDescription(formatText(text, guild, null, null, level >= 3 ? mod : null))
 			.build();
 	}
@@ -106,7 +107,7 @@ public class ModerationUtil {
 
 	private String formatText(String text, Guild guild, String reason, Duration duration, User mod) {
 		String newText = (duration == null) ? text : text.replace("{time}", TimeUtil.durationToLocalizedString(lu, guild.getLocale(), duration));
-		StringBuilder builder = new StringBuilder(newText.formatted(guild.getName()));
+		StringBuilder builder = new StringBuilder(newText.replace("{guild}", guild.getName()));
 		if (reason != null) builder.append(" | ").append(reason);
 		if (mod != null) builder.append("\n\\- ").append(mod.getGlobalName());
 		return builder.toString();

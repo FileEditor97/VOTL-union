@@ -1,5 +1,8 @@
 package union.utils.database.managers;
 
+import static union.utils.CastUtil.getOrDefault;
+import static union.utils.CastUtil.requireNonNull;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -11,8 +14,6 @@ import java.util.stream.Collectors;
 import union.objects.CaseType;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
-import static union.utils.CastUtil.getOrDefault;
-import static union.utils.CastUtil.requireNonNull;
 
 public class CaseManager extends LiteDBBase {
 

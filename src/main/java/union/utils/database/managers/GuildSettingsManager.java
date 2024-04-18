@@ -18,6 +18,7 @@ import union.objects.constants.Constants;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import static union.utils.CastUtil.getOrDefault;
+import static union.utils.CastUtil.resolveOrDefault;
 
 public class GuildSettingsManager extends LiteDBBase {
 
@@ -145,7 +146,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		}
 
 		public GuildSettings(Map<String, Object> data) {
-			this.color = getOrDefault(data.get("color"), Constants.COLOR_DEFAULT);
+			this.color = resolveOrDefault(data.get("color"), obj -> Integer.decode(obj.toString()), Constants.COLOR_DEFAULT);
 			this.lastWebhookId = getOrDefault(data.get("lastWebhookId"), null);
 			this.appealLink = getOrDefault(data.get("appealLink"), null);
 			this.reportChannelId = getOrDefault(data.get("reportChannelId"), null);

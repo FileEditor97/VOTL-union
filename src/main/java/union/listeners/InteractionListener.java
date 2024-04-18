@@ -1308,7 +1308,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
 			.setDescription(lu.getText(event, "bot.moderation.strikes_embed").formatted(strikeData.getLeft(), TimeFormat.RELATIVE.atInstant(time)))
 			.build()
-		).queue();
+		).setEphemeral(true).queue();
 	}
 
 	@Override

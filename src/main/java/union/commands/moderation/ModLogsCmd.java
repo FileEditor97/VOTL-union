@@ -62,17 +62,15 @@ public class ModLogsCmd extends CommandBase {
 
 		DiscordLocale locale = event.getUserLocale();
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setTitle(lu.getLocalized(locale, path+".title").formatted(tu.getName(), page, pages));
+			.setTitle(lu.getLocalized(locale, path+".title").formatted(tu.getName(), page, pages))
+			.setFooter(lu.getLocalized(locale, path+".footer"));
 		cases.forEach(c -> {
 			StringBuffer buffer = new StringBuffer()
-				.append(lu.getLocalized(locale, path+".type").formatted(lu.getLocalized(locale, c.getCaseType().getPath())))
+				.append("> `"+lu.getLocalized(locale, c.getCaseType().getPath())+"`\n")
 				.append(lu.getLocalized(locale, path+".target").formatted(c.getTargetTag(), c.getTargetId()))
 				.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()));
 			if (!c.getDuration().isNegative())
-				buffer.append(lu.getLocalized(locale, path+".duration").formatted(c.getDuration().isZero() ?
-					lu.getLocalized(locale, path+".permanent") :
-					TimeUtil.durationToLocalizedString(lu, locale, c.getDuration())
-				));
+				buffer.append(lu.getLocalized(locale, path+".duration").formatted(TimeUtil.formatDuration(lu, locale, c.getTimeStart(), c.getDuration())));
 			buffer.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
 
 			builder.addField((c.isActive() ? "🟥" : "⬜" ) + " " + lu.getLocalized(locale, path+".case").formatted(c.getCaseIdInt()), buffer.toString(), false);

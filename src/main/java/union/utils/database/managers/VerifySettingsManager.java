@@ -1,14 +1,14 @@
 package union.utils.database.managers;
 
+import static union.utils.CastUtil.getOrDefault;
+
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import union.objects.constants.Constants;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
-import static union.utils.CastUtil.castLong;
 
 import net.dv8tion.jda.api.entities.Guild;
 
@@ -85,11 +85,11 @@ public class VerifySettingsManager extends LiteDBBase {
 			this.minimumPlaytime = -1;
 		}
 
-		public VerifySettings(Map<String, Object> data) {
-			this.roleId = castLong(data.getOrDefault("roleId", null));
-			this.mainText = (String) data.getOrDefault("mainText", null);
-			this.checkEnabled = Optional.ofNullable((int) data.get("checkEnabled")).orElse(0) == 1;
-			this.minimumPlaytime = Optional.ofNullable((int) data.get("minimumPlaytime")).orElse(-1);
+		public VerifySettings(Map<String, Object> map) {
+			this.roleId = getOrDefault(map.get("roleId"), null);
+			this.mainText = getOrDefault(map.get("mainText"), null);
+			this.checkEnabled = getOrDefault(map.get("checkEnabled"), 0) == 1;
+			this.minimumPlaytime = getOrDefault(map.get("minimumPlaytime"), -1);
 		}
 
 		public Long getRoleId() {

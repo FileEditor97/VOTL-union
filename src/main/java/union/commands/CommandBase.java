@@ -27,11 +27,11 @@ public abstract class CommandBase extends SlashCommand {
 		event.reply(data).setEphemeral(true).queue();
 	}
 
-	public final void createReply(SlashCommandEvent event, Boolean ephemeral, @NotNull String msg) {
+	public final void createReply(SlashCommandEvent event, boolean ephemeral, @NotNull String msg) {
 		event.reply(msg).setEphemeral(true).queue();
 	}
 
-	public final void createReply(SlashCommandEvent event, Boolean ephemeral, @NotNull MessageCreateData data) {
+	public final void createReply(SlashCommandEvent event, boolean ephemeral, @NotNull MessageCreateData data) {
 		event.reply(data).setEphemeral(ephemeral).queue();
 	}
 
@@ -39,7 +39,7 @@ public abstract class CommandBase extends SlashCommand {
 		event.deferReply(true).addEmbeds(embeds).queue();
 	}
 
-	public final void createReplyEmbed(SlashCommandEvent event, Boolean ephemeral, @NotNull MessageEmbed... embeds) {
+	public final void createReplyEmbed(SlashCommandEvent event, boolean ephemeral, @NotNull MessageEmbed... embeds) {
 		event.deferReply(ephemeral).addEmbeds(embeds).queue();
 	}
 
@@ -53,11 +53,11 @@ public abstract class CommandBase extends SlashCommand {
 	}
 
 	// PermError
-	public final void createPermError(SlashCommandEvent event, Permission perm, Boolean self) {
+	public final void createPermError(SlashCommandEvent event, Permission perm, boolean self) {
 		createReply(event, bot.getEmbedUtil().createPermError(event, perm, self));
 	}
 
-	public final void createPermError(SlashCommandEvent event, TextChannel channel, Permission perm, Boolean self) {
+	public final void createPermError(SlashCommandEvent event, TextChannel channel, Permission perm, boolean self) {
 		createReply(event, bot.getEmbedUtil().createPermError(event, channel, perm, self));
 	}
 	
@@ -85,11 +85,11 @@ public abstract class CommandBase extends SlashCommand {
 	}
 
 	// PermError
-	public final void editPermError(SlashCommandEvent event, Permission perm, Boolean self) {
+	public final void editPermError(SlashCommandEvent event, Permission perm, boolean self) {
 		editHook(event, MessageEditData.fromCreateData(bot.getEmbedUtil().createPermError(event, perm, self)));
 	}
 
-	public final void editPermError(SlashCommandEvent event, TextChannel channel, Permission perm, Boolean self) {
+	public final void editPermError(SlashCommandEvent event, TextChannel channel, Permission perm, boolean self) {
 		editHook(event, MessageEditData.fromCreateData(bot.getEmbedUtil().createPermError(event, channel, perm, self)));
 	}
 }

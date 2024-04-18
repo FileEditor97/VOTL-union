@@ -16,7 +16,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -39,36 +39,69 @@ public class ModStatsCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-		Member mod = event.optMember("user", event.getMember());
+		User mod = event.optUser("user", event.getUser());
+		if (mod == null) {
+			editError(event, path+".no_user");
+			return;
+		}
 		long guildId = event.getGuild().getIdLong();
 
-		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(30, ChronoUnit.DAYS));
-		int roles30 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(30, ChronoUnit.DAYS), true);
-		if (count30.isEmpty() && roles30==0) {
+		Map<Integer, Integer> countTotal = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong());
+		final int rolesTotal = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), true);
+		if (countTotal.isEmpty() && rolesTotal==0) {
 			editError(event, path+".empty");
 			return;
 		}
 
-		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(7, ChronoUnit.DAYS));
-		int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(7, ChronoUnit.DAYS), true);
+		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(30, ChronoUnit.DAYS));
+		final int roles30 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(30, ChronoUnit.DAYS), true);
 
-		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setAuthor(mod.getUser().getName(), null, mod.getEffectiveAvatarUrl())
+		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(7, ChronoUnit.DAYS));
+		final int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(7, ChronoUnit.DAYS), true);
+
+		EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+			.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())
 			.setTitle(lu.getText(event, path+".title"))
 			.setFooter("ID: "+mod.getId())
 			.setTimestamp(Instant.now());
 
-		int strikes7 = count7.getOrDefault(CaseType.STRIKE_1.getType(), 0)+count7.getOrDefault(CaseType.STRIKE_2.getType(), 0)+count7.getOrDefault(CaseType.STRIKE_3.getType(), 0);
-		int strikes30 = count30.getOrDefault(CaseType.STRIKE_1.getType(), 0)+count30.getOrDefault(CaseType.STRIKE_2.getType(), 0)+count30.getOrDefault(CaseType.STRIKE_3.getType(), 0);
+		StringBuilder builder = new StringBuilder("```\n#         ")
+			.append(lu.getText(event, path+".seven")).append(" | ")
+			.append(lu.getText(event, path+".thirty")).append(" | ")
+			.append(lu.getText(event, path+".all")).append("\n");
+		final int length7 = lu.getText(event, path+".seven").length();
+		final int length30 = lu.getText(event, path+".thirty").length();
 
-		builder.addField(lu.getText(event, path+".strikes"), "%2d | %d".formatted(strikes7, strikes30), true)
-			.addField(lu.getText(event, path+".mutes"), "%2d | %d".formatted(count7.getOrDefault(CaseType.MUTE.getType(), 0), count30.getOrDefault(CaseType.MUTE.getType(), 0)), true)
-			.addField(lu.getText(event, path+".kicks"), "%2d | %d".formatted(count7.getOrDefault(CaseType.KICK.getType(), 0), count30.getOrDefault(CaseType.KICK.getType(), 0)), true)
-			.addField(lu.getText(event, path+".bans"), "%2d | %d".formatted(count7.getOrDefault(CaseType.BAN.getType(), 0), count30.getOrDefault(CaseType.BAN.getType(), 0)), true)
-			.addField(lu.getText(event, path+".roles"), "%2d | %d".formatted(roles7, roles30), true)
-			.addBlankField(true)
-			.addField(lu.getText(event, path+".total"), "%2d | %d".formatted(count7.values().stream().reduce(0, Integer::sum)+roles7, count30.values().stream().reduce(0, Integer::sum)+roles30), false);
-		
-		editHookEmbed(event, builder.build());
+		builder.append(buildLine(lu.getText(event, path+".strikes"), countStrikes(count7), countStrikes(count30), countStrikes(countTotal), length7, length30))
+			.append(buildLine(lu.getText(event, path+".mutes"), getCount(count7, CaseType.MUTE), getCount(count30, CaseType.MUTE), getCount(countTotal, CaseType.MUTE), length7, length30))
+			.append(buildLine(lu.getText(event, path+".kicks"), getCount(count7, CaseType.KICK), getCount(count30, CaseType.KICK), getCount(countTotal, CaseType.KICK), length7, length30))
+			.append(buildLine(lu.getText(event, path+".bans"), getCount(count7, CaseType.BAN), getCount(count30, CaseType.BAN), getCount(countTotal, CaseType.BAN), length7, length30))
+			.append(buildTotal(lu.getText(event, path+".total"), getTotal(count7), getTotal(count30), getTotal(countTotal), length7, length30))
+			.append("\n")
+			.append(buildLine(lu.getText(event, path+".roles"), roles7, roles30, rolesTotal, length7, length30))
+			.append("```");
+
+		editHookEmbed(event, embedBuilder.setDescription(builder.toString()).build());
 	}
+
+	private String buildLine(String text, int count7, int count30, int countTotal, int length7, int length30) {
+		return String.format("%-9s %-"+length7+"s | %-"+length30+"s | %s\n", text, count7, count30, countTotal);
+	}
+
+	private String buildTotal(String text, int count7, int count30, int countTotal, int length7, int length30) {
+		return String.format("%-9s %-"+length7+"s | %-"+length30+"s | %s\n", "-"+text+"-", count7, count30, countTotal);
+	}
+
+	private int countStrikes(Map<Integer, Integer> data) {
+		return getCount(data, CaseType.STRIKE_1)+getCount(data, CaseType.STRIKE_2)+getCount(data, CaseType.STRIKE_3);
+	}
+
+	private int getTotal(Map<Integer, Integer> data) {
+		return data.values().stream().reduce(0, Integer::sum);
+	}
+
+	private int getCount(Map<Integer, Integer> data, CaseType type) {
+		return data.getOrDefault(type.getType(), 0);
+	}
+
 }

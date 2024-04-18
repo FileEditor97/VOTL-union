@@ -76,16 +76,14 @@ public class StrikeCmd extends CommandBase {
 		Integer strikeAmount = event.optInteger("severity", 1);
 		CaseType type = CaseType.byType(20 + strikeAmount);
 
+		Member mod = event.getMember();
 		tm.getUser().openPrivateChannel().queue(pm -> {
 			Button button = Button.secondary("strikes:"+guild.getId(), lu.getLocalized(guild.getLocale(), "logger_embed.pm.button_strikes"));
-			MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-				.setDescription(lu.getLocalized(guild.getLocale(), "logger_embed.pm.strike")
-					.formatted(lu.getLocalized(guild.getLocale(), "logger_embed.pm.strike"+strikeAmount), guild.getName(), reason))
-				.build();
+			MessageEmbed embed = bot.getModerationUtil().getDmEmbed(type, guild, reason, null, mod.getUser(), false);
+			if (embed == null) return;
 			pm.sendMessageEmbeds(embed).addActionRow(button).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 		});
-
-		Member mod = event.getMember();
+		
 		// add info to db
 		bot.getDBUtil().cases.add(type, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
 			guild.getIdLong(), reason, Instant.now(), null);
@@ -96,10 +94,11 @@ public class StrikeCmd extends CommandBase {
 		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData);
 		// send reply
 		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".success")
-				.replace("{user_tag}", tm.getUser().getName())
-				.replace("{type}", lu.getText(event, type.getPath()))
-				.replace("{reason}", reason));
+			.setDescription(lu.getGuildText(event, path+".success")
+				.formatted(lu.getGuildText(event, type.getPath())))
+			.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tm.getUser().getName(), tm.getAsMention()), true)
+			.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+			.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false);
 		if (action != null) builder.addField(action);
 
 		editHookEmbed(event, builder.build());
@@ -131,9 +130,8 @@ public class StrikeCmd extends CommandBase {
 			String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 			// Send PM to user
 			target.getUser().openPrivateChannel().queue(pm -> {
-				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-					.setDescription(lu.getLocalized(guild.getLocale(), "logger_embed.pm.kicked").formatted(guild.getName(), reason))
-					.build();
+				MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.KICK, guild, reason, null, null, false);
+				if (embed == null) return;
 				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 			});
 
@@ -161,15 +159,8 @@ public class StrikeCmd extends CommandBase {
 				Duration durationCopy = duration;
 				// Send PM to user
 				target.getUser().openPrivateChannel().queue(pm -> {
-					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
-					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-						.setDescription(durationCopy.isZero() ? 
-							lu.getLocalized(locale, "logger_embed.pm.banned").formatted(guild.getName(), reason)
-							:
-							lu.getLocalized(locale, "logger_embed.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, durationCopy), reason)
-						)
-						.appendDescription(link != null ? lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link) : "")
-						.build();
+					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.BAN, guild, reason, durationCopy, null, true);
+					if (embed == null) return;
 					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
@@ -197,9 +188,8 @@ public class StrikeCmd extends CommandBase {
 				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 				// Send PM to user
 				target.getUser().openPrivateChannel().queue(pm -> {
-					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-						.setDescription(lu.getLocalized(guild.getLocale(), "logger_embed.pm.muted").formatted(guild.getName(), reason))
-						.build();
+					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.MUTE, guild, reason, null, null, false);
+					if (embed == null) return;
 					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 

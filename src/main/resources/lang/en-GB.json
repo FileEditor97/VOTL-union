@@ -117,16 +117,26 @@
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
-			"banned_temp": "You were banned from %s server for %s. | %s",
-			"banned": "You were permanently banned from %s server. | %s",
-			"kicked": "You were kicked from %s server. | %s",
-			"muted": "You were timed out in %s server. | %s",
-			"strike": "You received %s in %s server. | %s",
+			"banned_temp": "You were banned from {guild} server for {time}.",
+			"banned_perm": "You were permanently banned from {guild} server.",
+			"banned": "You were banned from {guild} server.",
+			"kicked": "You were kicked from {guild} server.",
+			"muted": "You were timed out in {guild} server.",
+			"strike": "You received %s in {guild} server.",
 			"strike1": "one warning",
 			"strike2": "two warnings",
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
-			"appeal": "\nAppeal this action by following this link:\n> %s"
+			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
+			"appeal": "\nAppeal this action by following this link:\n> %s",
+			"reason_mute": "Last *mute*'s reason was changed by server's %s moderation.",
+			"reason_strike": "Last *warning*'s reason was changed by server's %s moderation."
+		},
+		"inform": {
+			"0": "Do not dm offender",
+			"1": "Send server and action",
+			"2": "Send server, action, reason and duration",
+			"3": "Send server, action, reason, duration and moderator"
 		}
 	},
 	"logger": {
@@ -504,6 +514,20 @@
 						"help": "Enter time in days, after which strikes expires"
 					},
 					"done": "Experation time set to %d days."
+				},
+				"dm_inform": {
+					"help": "Set what information is sent to offender when action is performed",
+					"usage": "dm_inform <action> <level>",
+					"action": {
+						"name": "action",
+						"help": "Select action"
+					},
+					"level": {
+						"name": "level",
+						"help": "Select what information will be sent"
+					},
+					"unknown": "Unknown action received.",
+					"done": "On `%s` action - %s"
 				}
 			},
 			"module": {
@@ -988,9 +1012,9 @@
 					"name": "delete",
 					"help": "Delete messages past 10 hours? (true)"
 				},
-				"dm": {
-					"name": "dm",
-					"help": "Send user DM informing about the ban? (true)"
+				"can_appeal": {
+					"name": "can_appeal",
+					"help": "Can user appeal this action? (true)"
 				},
 				"no_reason": "*Not provided*",
 				"not_found": "User not found or input error",
@@ -999,7 +1023,7 @@
 				"already_temp": "Mentioned user is already temporary banned on this server.\n** See `/case {id}`**\n\n*You can change that ban duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"ban_abort": "Could not ban mentioned member.",
-				"ban_success": "**{user_tag} was banned {duration}.** | {reason}"
+				"success": "\uD83D\uDD28 **User was banned %s.**"
 			},
 			"unban": {
 				"help": "Unban banned user on this server",
@@ -1016,7 +1040,7 @@
 				"not_found": "User not found or input error",
 				"not_self": "You can't interact with yourself or me",
 				"no_ban": "Specified user is not banned in this server",
-				"unban_success": "**{user_tag} was unbanned.** | {reason}"
+				"success": "\uD83D\uDE4C **User was unbanned.**"
 			},
 			"kick": {
 				"help": "Kick user from this server",
@@ -1038,7 +1062,7 @@
 				"not_self": "You can't kick yourself or me... (for good)",
 				"kick_abort": "Could not kick mentioned member.",
 				"higher_access": "Mentioned member has higher access than you do.",
-				"kick_success": "**{user_tag} was kicked.** | {reason}",
+				"success": "\uD83D\uDC5F **User was kicked.**",
 				"sync": {
 					"title": "**Sync this kick?**\nSelect groups bellow.",
 					"value": "Select group/-s",
@@ -1066,7 +1090,7 @@
 				"already_muted": "Mentioned user is already timed out.\n** See `/case {id}`**\n\n*You can change duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"abort": "Could not time out mentioned user.",
-				"success": "**{user_tag} was timed out {duration}.** | {reason}"
+				"success": "\uD83D\uDD07 **User was timed out %s.**"
 			},
 			"unmute": {
 				"help": "Unmute a member",
@@ -1083,7 +1107,7 @@
 				"not_found": "Member not found or input error",
 				"not_muted": "Mentioned user is not muted/timed out.",
 				"abort": "Could not unmute mentioned user.",
-				"success": "**{user_tag} was unmuted.** | {reason}"
+				"success": "\uD83D\uDD0A **User was unmuted.**"
 			},
 			"strike": {
 				"help": "Strike a member",
@@ -1105,7 +1129,7 @@
 				},
 				"not_found": "Member not found or input error",
 				"not_self": "You can't select yourself or the bot.",
-				"success": "**{user_tag} received {type}.** | {reason}",
+				"success": "\uD83D\uDEA9 **User received %s.**",
 				"autopunish_title": "Applying punishment for %d strikes",
 				"autopunish_reason": "Autopunish: user has %d active strikes",
 				"for": "for"
@@ -1152,13 +1176,6 @@
 			},
 			"sync": {
 				"help": "Sync moderation action with Group servers",
-				"unban": {
-					"no_groups": "This server can't manage any group.",
-					"title": "Unban user in Group's servers. Select groups below.",
-					"value": "Select group/-s",
-					"no_user": "Unknown user.",
-					"done": "Unban sync in progress! Results will be posted in logs channel."
-				},
 				"kick": {
 					"help": "Sync kick with Group servers",
 					"usage": "kick <@User | ID> <Group>",
@@ -1176,7 +1193,20 @@
 					"no_group": "Couldn't find Group by entered ID.",
 					"embed_title": "Are you sure you want to kick this user from all Group servers?",
 					"button_confirm": "YES",
-					"done": "Kick sync in progress! Results will be posted in logs channel."
+					"done": "Kick sync in progress! Results will be posted in logs channel.",
+					"title": "**Kick user from all Group's servers.**"
+				},
+				"no_groups": "This server can't manage any group.",
+				"select": "Select group/-s",
+				"no_user": "Unknown user.",
+				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
+				"ban": {
+					"title": "**Ban this user in all Group's servers?**\n{EMOTE_WARNING} *This does not adds the user to the group's blacklist.*",
+					"done": "Ban sync in progress! Results will be posted in logs channel."
+				},
+				"unban": {
+					"title": "**Unban user in all Group's servers.**\n*Some bans may fail if user is blacklisted.*",
+					"done": "Unban sync in progress! Results will be posted in logs channel."
 				}
 			},
 			"case": {
@@ -1200,6 +1230,7 @@
 					"help": "Enter new reason"
 				},
 				"not_found": "Could not find case by specified ID",
+				"not_active": "Specified case is not active and can't be edited.",
 				"done": "Successfully changed Case `{id}` reason to:\n`{reason}`"
 			},
 			"duration": {
@@ -1349,12 +1380,12 @@
 				"no_perms": "You can't view others logs",
 				"empty": "No logs found for that user.",
 				"title": "Modlogs for %s (Page %d of %d)",
-				"case": "**Case %d**",
-				"type": "**Type:** %s\n",
-				"target": "**User:** %s (%d)\n",
-				"mod": "**Moderator:** %s\n",
+				"footer": "\uD83D\uDFE5 - Active\n\u2B1C - Inactive",
+				"case": "**Case #`%d`**",
+				"target": "**User:** `%s (%d)`\n",
+				"mod": "**Moderator:** `%s`\n",
 				"duration": "**Duration:** %s\n",
-				"reason": "**Reason:** %s\n",
+				"reason": "**Reason:** `%s`\n",
 				"permanent": "permanent"
 			},
 			"modstats": {
@@ -1364,14 +1395,18 @@
 					"name": "user",
 					"help": "Select user"
 				},
-				"empty": "No statistics for 30 days.",
-				"title": "Moderation statistics\n7 days | 30 days",
-				"mutes": "Mutes",
-				"kicks": "Kicks",
-				"bans": "Bans",
-				"strikes": "Strikes",
+				"no_user": "User not found.",
+				"empty": "No statistics for this user.",
+				"title": "Moderation statistics",
+				"seven": "7 days",
+				"thirty": "30 days",
+				"all": "All time",
+				"mutes": "Mute",
+				"kicks": "Kick",
+				"bans": "Ban",
+				"strikes": "Strike",
 				"roles": "Roles",
-				"total": "**Total**"
+				"total": "Total"
 			},
 			"blacklist": {
 				"help": "Manage group's blacklist",

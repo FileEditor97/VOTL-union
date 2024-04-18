@@ -103,9 +103,13 @@ public class UnionPlayerManager extends SqlDBBase {
 		}
 	}
 
+	public boolean isServer(long guildId) {
+		return servers.containsKey(guildId);
+	}
+
 	@SuppressWarnings("unchecked")
-	private Map<Long, Map<String, String>> convertMap(@NotNull Map<String, Object> obj) {
-		if (obj.isEmpty()) return Map.of();
+	private Map<Long, Map<String, String>> convertMap(Map<String, Object> obj) {
+		if (obj == null || obj.isEmpty()) return Map.of();
 
 		Map<Long, Map<String, String>> map = new HashMap<Long, Map<String, String>>(obj.size());
 		obj.forEach((k,v) -> {

@@ -60,13 +60,13 @@ public class StrikesCmd extends CommandBase {
 			return;
 		}
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		for (String c : strikesInfoArray) {
 			String[] args = c.split("-");
 			Integer caseId = Integer.valueOf(args[0]);
 			Integer strikeAmount = Integer.valueOf(args[1]);
 			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
-			buffer.append("`%4d` %s | %s - %s\nBy: %s\n".formatted(
+			builder.append("`%5d` %s | %s - %s\nBy: %s\n\n".formatted(
 				caseId,
 				getSquares(strikeAmount, caseData.getCaseType().getType()-20),
 				MessageUtil.limitString(caseData.getReason(), 50),
@@ -77,7 +77,7 @@ public class StrikesCmd extends CommandBase {
 		
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle(lu.getText(event, path+".title").formatted(strikeData.getLeft(), tu.getName(), tu.getId()))
-			.setDescription(buffer.toString())
+			.setDescription(builder.toString())
 			.build()
 		);
 	}

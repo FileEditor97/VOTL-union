@@ -20,7 +20,6 @@ import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.exception.FormatterException;
 import union.utils.message.TimeUtil;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -28,7 +27,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -45,7 +43,7 @@ public class BanCmd extends CommandBase {
 			new OptionData(OptionType.STRING, "time", lu.getText(path+".time.help")),
 			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help")).setMaxLength(400),
 			new OptionData(OptionType.BOOLEAN, "delete", lu.getText(path+".delete.help")),
-			new OptionData(OptionType.BOOLEAN, "dm", lu.getText(path+".dm.help"))
+			new OptionData(OptionType.BOOLEAN, "can_appeal", lu.getText(path+".can_appeal.help"))
 		);
 		this.botPermissions = new Permission[]{Permission.BAN_MEMBERS};
 		this.category = CmdCategory.MODERATION;
@@ -93,17 +91,20 @@ public class BanCmd extends CommandBase {
 					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 					// create embed
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getText(event, path+".ban_success")
-							.replace("{user_tag}", tu.getName())
-							.replace("{duration}", lu.getText(event, "misc.permanently"))
-							.replace("{reason}", reason))
+						.setDescription(lu.getGuildText(event, path+".success")
+							.formatted(TimeUtil.formatDuration(lu, event.getGuildLocale(), Instant.now(), duration)))
+						.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tu.getName(), tu.getAsMention()), true)
+						.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+						.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
 						.build();
 					// log ban
 					bot.getLogger().mod.onNewCase(guild, tu, newBanData);
 
 					// reply and add blacklist button
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
-						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
+						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
 					).queue();
 				} else {
 					// already has expirable ban (show caseID and use /duration to change time)
@@ -131,7 +132,9 @@ public class BanCmd extends CommandBase {
 					.build();
 				// reply and add blacklist button
 				event.getHook().editOriginalEmbeds(embed).setActionRow(
-					Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
+					Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+					Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+					Button.secondary("sync_kick:"+tu.getId(), "Group kick")
 				).queue();
 			}
 		},
@@ -160,21 +163,11 @@ public class BanCmd extends CommandBase {
 				}
 			}
 
-			if (event.optBoolean("dm", true)) {
-				tu.openPrivateChannel().queue(pm -> {
-					DiscordLocale locale = guild.getLocale();
-					String link = bot.getDBUtil().getGuildSettings(guild).getAppealLink();
-					MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-						.setDescription(duration.isZero() ? 
-							lu.getLocalized(locale, "logger_embed.pm.banned").formatted(guild.getName(), reason)
-							:
-							lu.getLocalized(locale, "logger_embed.pm.banned_temp").formatted(guild.getName(), TimeUtil.durationToLocalizedString(lu, locale, duration), reason)
-						)
-						.appendDescription(link != null ? lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link) : "")
-						.build();
-					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-				});
-			}
+			tu.openPrivateChannel().queue(pm -> {
+				MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.BAN, guild, reason, duration, mod.getUser(), event.optBoolean("can_appeal", true));
+				if (embed == null) return;
+				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			});
 
 			guild.ban(tu, (event.optBoolean("delete", true) ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
 				// fail-safe check if has expirable ban (to prevent auto unban)
@@ -188,10 +181,11 @@ public class BanCmd extends CommandBase {
 				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".ban_success")
-						.replace("{user_tag}", tu.getName())
-						.replace("{duration}", TimeUtil.formatDuration(lu, event.getUserLocale(), Instant.now(), duration))
-						.replace("{reason}", reason))
+					.setDescription(lu.getGuildText(event, path+".success")
+						.formatted(TimeUtil.formatDuration(lu, event.getGuildLocale(), Instant.now(), duration)))
+					.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tu.getName(), tu.getAsMention()), true)
+					.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+					.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
 					.build();
 				// log ban
 				bot.getLogger().mod.onNewCase(guild, tu, newBanData);
@@ -199,7 +193,9 @@ public class BanCmd extends CommandBase {
 				// if permanent - add button to blacklist target
 				if (duration.isZero())
 					event.getHook().editOriginalEmbeds(embed).setActionRow(
-						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨"))
+						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
 					).queue();
 				else
 					event.getHook().editOriginalEmbeds(embed).queue();

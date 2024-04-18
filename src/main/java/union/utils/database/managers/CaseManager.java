@@ -1,18 +1,19 @@
 package union.utils.database.managers;
 
+import static union.utils.CastUtil.getOrDefault;
+import static union.utils.CastUtil.requireNonNull;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import union.objects.CaseType;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
-import static union.utils.CastUtil.castLong;
 
 public class CaseManager extends LiteDBBase {
 
@@ -131,7 +132,7 @@ public class CaseManager extends LiteDBBase {
 	public Map<Integer, Integer> countCasesByMod(long guildId, long modId) {
 		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d) GROUP BY type"
 			.formatted(table, guildId, modId), Set.of("type", "cc"));
-		if (data.isEmpty()) return null;
+		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
 	}
 
@@ -149,24 +150,25 @@ public class CaseManager extends LiteDBBase {
 	public static class CaseData {
 		private final int caseId;
 		private final CaseType type;
-		private final Long targetId, modId, guildId;
+		private final long targetId, guildId;
+		private final Long modId;
 		private final String targetTag, modTag, reason;
 		private final Instant timeStart;
 		private final Duration duration;
 		private final boolean active;
 
 		public CaseData(Map<String, Object> map) {
-			this.caseId = (Integer) map.get("caseId");
-			this.type = CaseType.byType((Integer) map.get("type"));
-			this.targetId = castLong(map.get("targetId"));
-			this.targetTag = (String) map.get("targetTag");
-			this.modId = Optional.ofNullable(map.get("modId")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L);
-			this.modTag = (String) map.get("modTag");
-			this.guildId = castLong(map.get("guildId"));
-			this.reason = (String) map.get("reason");
-			this.timeStart = Instant.ofEpochSecond(Optional.ofNullable(map.get("timeStart")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));
-			this.duration = Duration.ofSeconds(Optional.ofNullable(map.get("duration")).map(v -> Long.parseLong(String.valueOf(v))).orElse(0L));
-			this.active = ((Integer) map.get("active")) == 1;
+			this.caseId = requireNonNull(map.get("caseId"));
+			this.type = CaseType.byType(requireNonNull(map.get("type")));
+			this.targetId = requireNonNull(map.get("targetId"));
+			this.targetTag = getOrDefault(map.get("targetTag"), null);
+			this.modId = getOrDefault(map.get("modId"), 0L);
+			this.modTag = getOrDefault(map.get("modTag"), null);
+			this.guildId = requireNonNull(map.get("guildId"));
+			this.reason = getOrDefault(map.get("reason"), null);
+			this.timeStart = Instant.ofEpochSecond(getOrDefault(map.get("timeStart"), 0L));
+			this.duration = Duration.ofSeconds(getOrDefault(map.get("duration"), 0L));
+			this.active = ((Integer) requireNonNull(map.get("active"))) == 1;
 		}
 
 		public String getCaseId() {
@@ -179,7 +181,7 @@ public class CaseManager extends LiteDBBase {
 			return type;
 		}
 
-		public Long getTargetId() {
+		public long getTargetId() {
 			return targetId;
 		}
 		public String getTargetTag() {
@@ -193,7 +195,7 @@ public class CaseManager extends LiteDBBase {
 			return modTag;
 		}
 
-		public Long getGuildId() {
+		public long getGuildId() {
 			return guildId;
 		}
 

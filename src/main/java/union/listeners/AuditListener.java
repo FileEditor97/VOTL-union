@@ -123,6 +123,8 @@ public class AuditListener extends ListenerAdapter {
 			case MEMBER_ROLE_UPDATE -> {
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) return;
+				// Ignore role changes by bot, as bot already logs with role connected changes (except verify and strike)
+				if (entry.getUserIdLong() == event.getJDA().getSelfUser().getIdLong()) return;
 
 				logger.member.onRoleChange(entry);
 			}

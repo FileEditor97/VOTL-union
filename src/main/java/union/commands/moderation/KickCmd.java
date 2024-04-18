@@ -72,16 +72,6 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
-		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
-		if (event.optBoolean("dm", true)) {
-			tm.getUser().openPrivateChannel().queue(pm -> {
-				MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-					.setDescription(lu.getLocalized(guild.getLocale(), "logger_embed.pm.kicked").formatted(guild.getName(), reason))
-					.build();
-				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-			});
-		}
-
 		Member mod = event.getMember();
 		if (!guild.getSelfMember().canInteract(tm)) {
 			editError(event, path+".kick_abort", "Bot can't interact with target member.");
@@ -96,6 +86,15 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
+		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
+		if (event.optBoolean("dm", true)) {
+			tm.getUser().openPrivateChannel().queue(pm -> {
+				MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.KICK, guild, reason, null, mod.getUser(), false);
+				if (embed == null) return;
+				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			});
+		}
+
 		tm.kick().reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
 			// add info to db
 			bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
@@ -106,9 +105,10 @@ public class KickCmd extends CommandBase {
 
 			// reply and ask for kick sync
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".kick_success")
-					.replace("{user_tag}", tm.getUser().getName())
-					.replace("{reason}", reason))
+				.setDescription(lu.getGuildText(event, path+".success"))
+				.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tm.getUser().getName(), tm.getAsMention()), true)
+				.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+				.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
 				.build()
 			).queue(msg -> {
 				buttonSync(event, msg, tm.getUser(), reason);

@@ -21,15 +21,18 @@ import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
@@ -134,6 +137,15 @@ public class DeleteStikeCmd extends CommandBase {
 					1, String.join(";", strikesInfo)
 				);
 			
+			// Send dm
+			tu.openPrivateChannel().queue(pm -> {
+				MessageEmbed embed = bot.getModerationUtil().getDelstrikeEmbed(1, event.getGuild(), event.getUser());
+				if (embed == null) return;
+				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			});
+			// Log
+			bot.getLogger().mod.onStrikeDeleted(event, tu, caseId, 1, activeAmount);
+			// Reply
 			msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done_one").formatted(caseData.getReason(), tu.getName()))
 				.build()
@@ -200,6 +212,12 @@ public class DeleteStikeCmd extends CommandBase {
 				removeAmount, String.join(";", cases)
 			);
 		}
+		// Send dm
+		tu.openPrivateChannel().queue(pm -> {
+			MessageEmbed embed = bot.getModerationUtil().getDelstrikeEmbed(removeAmount, event.getGuild(), event.getUser());
+			if (embed == null) return;
+			pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+		});
 		// Log
 		bot.getLogger().mod.onStrikeDeleted(event, tu, caseId, removeAmount, activeAmount);
 		// Reply

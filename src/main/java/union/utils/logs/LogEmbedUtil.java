@@ -1016,7 +1016,7 @@ public class LogEmbedUtil {
 	public MessageEmbed memberJoin(DiscordLocale locale, Member member) {
 		return new LogEmbedBuilder(locale, GREEN_LIGHT)
 			.setHeaderIcon(LogEvent.MEMBER_JOIN, member.getEffectiveAvatarUrl(), member.getUser().getName())
-			.setDescription("<@%s> (%<s)".formatted(member.getId()))
+			.setDescription("<@%s>".formatted(member.getId()))
 			.setId(member.getId())
 			.build();
 	}
@@ -1025,7 +1025,7 @@ public class LogEmbedUtil {
 	public MessageEmbed memberLeave(DiscordLocale locale, Member cachedMember, User user, List<Role> roles) {
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, RED_LIGHT)
 			.setHeaderIcon(LogEvent.MEMBER_LEAVE, user.getEffectiveAvatarUrl(), user.getName())
-			.setDescription("<@%s> (%<s)".formatted(user.getId()))
+			.setDescription("<@%s>".formatted(user.getId()))
 			.setId(user.getId());
 		if (!roles.isEmpty()) {
 			String text = roles.stream().map(Role::getName).collect(Collectors.joining(", "));
@@ -1384,14 +1384,14 @@ public class LogEmbedUtil {
 			}
 
 			switch (row.getTag()) {
-				case INSERT -> diff.append("+ "+row.getNewLine());
-				case DELETE -> diff.append("- "+row.getOldLine());
+				case INSERT -> diff.append("+ ").append(row.getNewLine());
+				case DELETE -> diff.append("- ").append(row.getOldLine());
 				case CHANGE -> {
-					diff.append("- "+row.getOldLine())
+					diff.append("- ").append(row.getOldLine())
 						.append("\n")
-						.append("+ "+row.getNewLine());
+						.append("+ ").append(row.getNewLine());
 				}
-				default -> diff.append(" "+row.getOldLine());
+				default -> diff.append(" ").append(row.getOldLine());
 			}
 			diff.append("\n");
 		}

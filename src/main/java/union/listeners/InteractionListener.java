@@ -202,13 +202,13 @@ public class InteractionListener extends ListenerAdapter {
 					case "delete" -> runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
 				}
 			} else if (buttonId.startsWith("blacklist")) {
-				runButtonInteraction(event, null, () -> buttonBlacklist(event));
+				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonBlacklist(event));
 			} else if (buttonId.startsWith("sync_unban")) {
 				runButtonInteraction(event, null, () -> buttonSyncUnban(event));
 			} else if (buttonId.startsWith("sync_ban")) {
-				runButtonInteraction(event, null, () -> buttonSyncBan(event));
+				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonSyncBan(event));
 			} else if (buttonId.startsWith("sync_kick")) {
-				runButtonInteraction(event, null, () -> buttonSyncKick(event));
+				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonSyncKick(event));
 			} else if (buttonId.startsWith("strikes")) {
 				runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
 			}
@@ -1472,7 +1472,8 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_TICKET_CREATE(30, CooldownScope.USER),
 		BUTTON_INVITES(10, CooldownScope.USER),
 		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD),
-		BUTTON_SHOW_STRIKES(30, CooldownScope.USER);
+		BUTTON_SHOW_STRIKES(30, CooldownScope.USER),
+		BAN_SYNC_ACTION(10, CooldownScope.CHANNEL);
 
 		private final int time;
 		private final CooldownScope scope;

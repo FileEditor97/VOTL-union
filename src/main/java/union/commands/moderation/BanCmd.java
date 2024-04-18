@@ -176,10 +176,11 @@ public class BanCmd extends CommandBase {
 				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".ban_success")
-						.replace("{user_tag}", tu.getName())
-						.replace("{duration}", TimeUtil.formatDuration(lu, event.getUserLocale(), Instant.now(), duration))
-						.replace("{reason}", reason))
+					.setDescription(lu.getGuildText(event, path+".success")
+						.formatted(TimeUtil.formatDuration(lu, event.getGuildLocale(), Instant.now(), duration)))
+					.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tu.getName(), tu.getAsMention()), true)
+					.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+					.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
 					.build();
 				// log ban
 				bot.getLogger().mod.onNewCase(guild, tu, newBanData);

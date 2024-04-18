@@ -105,9 +105,10 @@ public class KickCmd extends CommandBase {
 
 			// reply and ask for kick sync
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".kick_success")
-					.replace("{user_tag}", tm.getUser().getName())
-					.replace("{reason}", reason))
+				.setDescription(lu.getGuildText(event, path+".success"))
+				.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tm.getUser().getName(), tm.getAsMention()), true)
+				.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+				.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
 				.build()
 			).queue(msg -> {
 				buttonSync(event, msg, tm.getUser(), reason);

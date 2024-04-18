@@ -126,4 +126,9 @@ public class LocaleUtil {
 		return getLocalized(replyCallback.getUserLocale(), path, replyCallback.getUser().getEffectiveName(), targets, format);
 	}
 
+	@NotNull
+	public String getGuildText(IReplyCallback replyCallback, @NotNull String path) {
+		return getLocalized(replyCallback.getGuildLocale(), path);
+	}
+
 }

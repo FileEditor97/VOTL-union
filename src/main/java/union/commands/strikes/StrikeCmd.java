@@ -94,10 +94,11 @@ public class StrikeCmd extends CommandBase {
 		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData);
 		// send reply
 		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".success")
-				.replace("{user_tag}", tm.getUser().getName())
-				.replace("{type}", lu.getText(event, type.getPath()))
-				.replace("{reason}", reason));
+			.setDescription(lu.getGuildText(event, path+".success")
+				.formatted(lu.getGuildText(event, type.getPath())))
+			.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tm.getUser().getName(), tm.getAsMention()), true)
+			.addField(lu.getGuildText(event, "logger.reason"), reason, true)
+			.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false);
 		if (action != null) builder.addField(action);
 
 		editHookEmbed(event, builder.build());

@@ -1021,7 +1021,7 @@
 				"already_temp": "Mentioned user is already temporary banned on this server.\n** See `/case {id}`**\n\n*You can change that ban duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"ban_abort": "Could not ban mentioned member.",
-				"ban_success": "**{user_tag} was banned {duration}.** | {reason}"
+				"success": "\uD83D\uDD28 **User was banned %s.**"
 			},
 			"unban": {
 				"help": "Unban banned user on this server",
@@ -1038,7 +1038,7 @@
 				"not_found": "User not found or input error",
 				"not_self": "You can't interact with yourself or me",
 				"no_ban": "Specified user is not banned in this server",
-				"unban_success": "**{user_tag} was unbanned.** | {reason}"
+				"success": "\uD83D\uDE4C **User was unbanned.**"
 			},
 			"kick": {
 				"help": "Kick user from this server",
@@ -1060,7 +1060,7 @@
 				"not_self": "You can't kick yourself or me... (for good)",
 				"kick_abort": "Could not kick mentioned member.",
 				"higher_access": "Mentioned member has higher access than you do.",
-				"kick_success": "**{user_tag} was kicked.** | {reason}",
+				"success": "\uD83D\uDC5F **User was kicked.**",
 				"sync": {
 					"title": "**Sync this kick?**\nSelect groups bellow.",
 					"value": "Select group/-s",
@@ -1088,7 +1088,7 @@
 				"already_muted": "Mentioned user is already timed out.\n** See `/case {id}`**\n\n*You can change duration using `/duration`*",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"abort": "Could not time out mentioned user.",
-				"success": "**{user_tag} was timed out {duration}.** | {reason}"
+				"success": "\uD83D\uDD07 **User was timed out %s.**"
 			},
 			"unmute": {
 				"help": "Unmute a member",
@@ -1105,7 +1105,7 @@
 				"not_found": "Member not found or input error",
 				"not_muted": "Mentioned user is not muted/timed out.",
 				"abort": "Could not unmute mentioned user.",
-				"success": "**{user_tag} was unmuted.** | {reason}"
+				"success": "\uD83D\uDD0A **User was unmuted.**"
 			},
 			"strike": {
 				"help": "Strike a member",
@@ -1127,7 +1127,7 @@
 				},
 				"not_found": "Member not found or input error",
 				"not_self": "You can't select yourself or the bot.",
-				"success": "**{user_tag} received {type}.** | {reason}",
+				"success": "\uD83D\uDEA9 **User received %s.**",
 				"autopunish_title": "Applying punishment for %d strikes",
 				"autopunish_reason": "Autopunish: user has %d active strikes",
 				"for": "for"

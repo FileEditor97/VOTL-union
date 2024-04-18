@@ -128,7 +128,9 @@
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
 			"delstrike": "%s strike(s) removed in %s server by moderation.",
-			"appeal": "\nAppeal this action by following this link:\n> %s"
+			"appeal": "\nAppeal this action by following this link:\n> %s",
+			"reason_mute": "Last *mute*'s reason was changed by server's %s moderation.",
+			"reason_strike": "Last *strike*'s reason was changed by server's %s moderation."
 		},
 		"inform": {
 			"0": "Do not dm offender",
@@ -1228,6 +1230,7 @@
 					"help": "Enter new reason"
 				},
 				"not_found": "Could not find case by specified ID",
+				"not_active": "Specified case is not active and can't be edited.",
 				"done": "Successfully changed Case `{id}` reason to:\n`{reason}`"
 			},
 			"duration": {

@@ -149,7 +149,8 @@ public class CaseManager extends LiteDBBase {
 	public static class CaseData {
 		private final int caseId;
 		private final CaseType type;
-		private final Long targetId, modId, guildId;
+		private final long targetId, guildId;
+		private final Long modId;
 		private final String targetTag, modTag, reason;
 		private final Instant timeStart;
 		private final Duration duration;
@@ -179,7 +180,7 @@ public class CaseManager extends LiteDBBase {
 			return type;
 		}
 
-		public Long getTargetId() {
+		public long getTargetId() {
 			return targetId;
 		}
 		public String getTargetTag() {
@@ -193,7 +194,7 @@ public class CaseManager extends LiteDBBase {
 			return modTag;
 		}
 
-		public Long getGuildId() {
+		public long getGuildId() {
 			return guildId;
 		}
 

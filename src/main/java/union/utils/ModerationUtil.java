@@ -3,6 +3,7 @@ package union.utils;
 import java.time.Duration;
 
 import union.objects.CaseType;
+import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.database.DBUtil;
@@ -83,6 +84,24 @@ public class ModerationUtil {
 		return new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 			.setDescription(formatText(text, guild, null, null, level >= 3 ? mod : null))
 			.build();
+	}
+
+	@NotNull
+	public MessageEmbed getReasonUpdateEmbed(DiscordLocale locale, Guild guild, CaseType caseType, String oldReason, String newReason) {
+		if (oldReason == null) oldReason = "-";
+		if (caseType.equals(CaseType.MUTE)) {
+			// if is mute
+			return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
+				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_mute").formatted(guild.getName()))
+				.appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
+				.build();
+		} else {
+			// else is strike
+			return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
+				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_strike").formatted(guild.getName()))
+				.appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
+				.build();
+		}
 	}
 
 	private String formatText(String text, Guild guild, String reason, Duration duration, User mod) {

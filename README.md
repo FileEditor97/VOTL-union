@@ -38,5 +38,5 @@
 
 ## Inspiration/Credits
  Thanks to Chew (JDA-Chewtils and Chewbotcca bot) and jagrosh (JDA-Utilities)  
- [PurrBot](github.com/purrbot-site/PurrBot) by Andre_601 (purrbot.site)  
- Inkception for [Discord (JDA) HTML Transcripts](https://github.com/Inkception/discord-html-transcripts)
+ [PurrBot](https://github.com/purrbot-site/PurrBot) by Andre_601 (purrbot.site)  
+ Ryzeon & Inkception for [Discord (JDA) HTML Transcripts](https://github.com/Ryzeon/discord-html-transcripts)

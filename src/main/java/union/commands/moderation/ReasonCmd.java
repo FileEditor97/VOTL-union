@@ -56,7 +56,7 @@ public class ReasonCmd extends CommandBase {
 				// Retrieve user by guild and send dm
 				event.getGuild().retrieveMemberById(caseData.getTargetId()).queue(member -> {
 					member.getUser().openPrivateChannel().queue(pm -> {
-						MessageEmbed embed = bot.getModerationUtil().getReasonUpdateEmbed(event.getGuildLocale(), event.getGuild(), caseData.getCaseType(), caseData.getReason(), newReason);
+						MessageEmbed embed = bot.getModerationUtil().getReasonUpdateEmbed(event.getGuildLocale(), event.getGuild(), caseData.getTimeStart(), caseData.getCaseType(), caseData.getReason(), newReason);
 						pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
 				});
@@ -67,7 +67,7 @@ public class ReasonCmd extends CommandBase {
 				// Retrieve user by guild and send dm
 				event.getGuild().retrieveMemberById(caseData.getTargetId()).queue(member -> {
 					member.getUser().openPrivateChannel().queue(pm -> {
-						MessageEmbed embed = bot.getModerationUtil().getReasonUpdateEmbed(event.getGuildLocale(), event.getGuild(), caseData.getCaseType(), caseData.getReason(), newReason);
+						MessageEmbed embed = bot.getModerationUtil().getReasonUpdateEmbed(event.getGuildLocale(), event.getGuild(), caseData.getTimeStart(), caseData.getCaseType(), caseData.getReason(), newReason);
 						pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
 				});

@@ -129,8 +129,8 @@
 			"button_strikes": "View active strikes",
 			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
 			"appeal": "\nAppeal this action by following this link:\n> %s",
-			"reason_mute": "Last *mute*'s reason was changed by server's %s moderation.",
-			"reason_strike": "Last *warning*'s reason was changed by server's %s moderation."
+			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
+			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s."
 		},
 		"inform": {
 			"0": "Do not dm offender",

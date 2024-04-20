@@ -125,7 +125,7 @@ public class TicketTagManager extends LiteDBBase {
 			Set.of("buttonText", "buttonStyle", "emoji", "tagType", "location", "message", "supportRoles", "ticketName")
 		);
 		if (data==null) return null;
-		return new Tag(data);
+		return new Tag(data, true);
 	}
 
 	public Tag getTagInfo(Integer tagId) {
@@ -133,7 +133,7 @@ public class TicketTagManager extends LiteDBBase {
 			Set.of("tagType", "location", "message", "supportRoles", "ticketName")
 		);
 		if (data==null) return null;
-		return new Tag(data);
+		return new Tag(data, false);
 	}
 
 	private String replaceNewline(final String text) {
@@ -150,15 +150,21 @@ public class TicketTagManager extends LiteDBBase {
 		private final String message;
 		private final String supportRoles;
 
-		public Tag(Map<String, Object> map) {
+		public Tag(Map<String, Object> map, boolean includeButton) {
 			this.tagType = requireNonNull(map.get("tagType"));
-			this.buttonText = requireNonNull(map.get("buttonText"));
 			this.ticketName = requireNonNull(map.get("ticketName"));
-			this.buttonStyle = ButtonStyle.fromKey(getOrDefault(map.get("buttonStyle"), 0));
-			this.emoji = Optional.ofNullable((String) map.get("emoji")).map(Emoji::fromFormatted).orElse(null);
 			this.location = getOrDefault(map.get("location"), null);
 			this.message = setNewline(getOrDefault(map.get("message"), null));
 			this.supportRoles = getOrDefault(map.get("supportRoles"), null);
+			if (includeButton) {
+				this.buttonText = requireNonNull(map.get("buttonText"));
+				this.buttonStyle = ButtonStyle.fromKey(getOrDefault(map.get("buttonStyle"), 0));
+				this.emoji = Optional.ofNullable((String) map.get("emoji")).map(Emoji::fromFormatted).orElse(null);
+			} else {
+				this.buttonText = null;
+				this.buttonStyle = null;
+				this.emoji = null;
+			}
 		}
 		
 		private String setNewline(String text) {

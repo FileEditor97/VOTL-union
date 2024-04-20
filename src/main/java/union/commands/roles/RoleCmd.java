@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import union.App;
 import union.base.command.CooldownScope;
@@ -20,6 +21,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Mentions;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -47,38 +49,55 @@ public class RoleCmd extends CommandBase {
 			this.name = "add";
 			this.path = "bot.roles.role.add";
 			this.options = List.of(
-				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
-				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true)
+				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
+				new OptionData(OptionType.STRING, "roles", lu.getText(path+".roles.help"), true)
 			);
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			Guild guild = Objects.requireNonNull(event.getGuild());
-			// Check role
-			Role role = event.optRole("role");
-			if (role == null) {
-				createError(event, path+".no_role");
+
+			// Get roles
+			Mentions mentions = event.optMentions("roles");
+			if (mentions == null) {
+				editError(event, path+".invalid_args");
 				return;
 			}
-			if (role.isPublicRole() || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
-				createError(event, path+".incorrect_role");
+			List<Role> roles = mentions.getRoles();
+			if (roles.isEmpty()) {
+				editError(event, path+".invalid_args");
 				return;
 			}
+
+			// Check roles
+			Role publicRole = guild.getPublicRole();
+			for (Role role : roles) {
+				if (role.equals(publicRole) || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
+					createError(event, path+".incorrect_role", "Role: "+role.getAsMention());
+					return;
+				}
+			}
+
 			// Check member
 			Member member = event.optMember("user");
 			if (member == null) {
 				createError(event, path+".no_member");
 				return;
 			}
+
+			List<Role> finalRoles = new ArrayList<>();
+			finalRoles.addAll(member.getRoles());
+			finalRoles.addAll(roles);
 			
-			guild.addRoleToMember(member, role).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
+			guild.modifyMemberRoles(member, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
+				String rolesString = roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "));
 				// Log
-				bot.getLogger().role.onRoleAdded(guild, event.getUser(), member.getUser(), role);
+				bot.getLogger().role.onRolesAdded(guild, event.getUser(), member.getUser(), rolesString);
 				// Send reply
 				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed()
 					.setColor(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getName()).replace("{user}", member.getEffectiveName()))
+					.setDescription(lu.getText(event, path+".done").replace("{roles}", rolesString).replace("{user}", member.getEffectiveName()))
 					.build());
 			}, failure -> {
 				createError(event, path+".failed", failure.getMessage());
@@ -95,24 +114,36 @@ public class RoleCmd extends CommandBase {
 			this.name = "remove";
 			this.path = "bot.roles.role.remove";
 			this.options = List.of(
-				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
-				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true)
+				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
+				new OptionData(OptionType.STRING, "roles", lu.getText(path+".roles.help"), true)
 			);
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			Guild guild = Objects.requireNonNull(event.getGuild());
-			// Check role
-			Role role = event.optRole("role");
-			if (role == null) {
-				createError(event, path+".no_role");
+			
+			// Get roles
+			Mentions mentions = event.optMentions("roles");
+			if (mentions == null) {
+				editError(event, path+".invalid_args");
 				return;
 			}
-			if (role.isPublicRole() || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
-				createError(event, path+".incorrect_role");
+			List<Role> roles = mentions.getRoles();
+			if (roles.isEmpty()) {
+				editError(event, path+".invalid_args");
 				return;
 			}
+
+			// Check roles
+			Role publicRole = guild.getPublicRole();
+			for (Role role : roles) {
+				if (role.equals(publicRole) || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
+					createError(event, path+".incorrect_role", "Role: "+role.getAsMention());
+					return;
+				}
+			}
+
 			// Check member
 			Member member = event.optMember("user");
 			if (member == null) {
@@ -120,12 +151,17 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 			
-			guild.removeRoleFromMember(member, role).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
+			List<Role> finalRoles = new ArrayList<>();
+			finalRoles.addAll(member.getRoles());
+			finalRoles.addAll(roles);
+			
+			guild.modifyMemberRoles(member, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
+				String rolesString = roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "));
 				// Log
-				bot.getLogger().role.onRoleRemoved(guild, event.getUser(), member.getUser(), role);
+				bot.getLogger().role.onRolesRemoved(guild, event.getUser(), member.getUser(), rolesString);
 				// Send reply
 				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getName()).replace("{user}", member.getEffectiveName()))
+					.setDescription(lu.getText(event, path+".done").replace("{role}", rolesString).replace("{user}", member.getEffectiveName()))
 					.build());
 			}, failure -> {
 				createError(event, path+".failed", failure.getMessage());

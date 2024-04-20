@@ -449,22 +449,44 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
-	public MessageEmbed roleAddedEmbed(DiscordLocale locale, long modId, long userId, String userUrl, long roleId) {
+	public MessageEmbed roleAddedEmbed(DiscordLocale locale, long modId, long userId, String userUrl, String roleMention) {
 		return new LogEmbedBuilder(locale, GREEN_LIGHT)
 			.setHeaderIcon("roles.added", userUrl)
 			.setUser(userId)
-			.addField("roles.role", "<@&"+roleId+">")
+			.addField("roles.role", roleMention)
 			.setMod(modId)
 			.setId(userId)
 			.build();
 	}
 
 	@NotNull
-	public MessageEmbed roleRemovedEmbed(DiscordLocale locale, long modId, long userId, String userUrl, long roleId) {
+	public MessageEmbed rolesAddedEmbed(DiscordLocale locale, long modId, long userId, String userUrl, String rolesAdded) {
+		return new LogEmbedBuilder(locale, GREEN_LIGHT)
+			.setHeaderIcon("roles.added_m", userUrl)
+			.setUser(userId)
+			.addField("roles.roles", rolesAdded)
+			.setMod(modId)
+			.setId(userId)
+			.build();
+	}
+
+	@NotNull
+	public MessageEmbed roleRemovedEmbed(DiscordLocale locale, long modId, long userId, String userUrl, String roleMention) {
 		return new LogEmbedBuilder(locale, RED_LIGHT)
 			.setHeaderIcon("roles.removed", userUrl)
 			.setUser(userId)
-			.addField("roles.role", "<@&"+roleId+">")
+			.addField("roles.role", roleMention)
+			.setMod(modId)
+			.setId(userId)
+			.build();
+	}
+
+	@NotNull
+	public MessageEmbed rolesRemovedEmbed(DiscordLocale locale, long modId, long userId, String userUrl, String rolesRemoved) {
+		return new LogEmbedBuilder(locale, RED_LIGHT)
+			.setHeaderIcon("roles.removed_m", userUrl)
+			.setUser(userId)
+			.addField("roles.roles", rolesRemoved)
 			.setMod(modId)
 			.setId(userId)
 			.build();

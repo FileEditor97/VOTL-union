@@ -21,19 +21,19 @@ public class Formatter {
     }
 
     // All Message related patterns
-    private static final Pattern STRONG = Pattern.compile("\\*\\*(.+?)\\*\\*");
-    private static final Pattern EM = Pattern.compile("\\*(.+?)\\*|_(.+?)_");
-    private static final Pattern S = Pattern.compile("~~(.+?)~~");
-    private static final Pattern U = Pattern.compile("__(.+?)__");
-    private static final Pattern CODE = Pattern.compile("```(.+?)```");
-    private static final Pattern CODE_1 = Pattern.compile("`(.+?)`");
-    private static final Pattern QUOTE = Pattern.compile("^>{1,3} (.*)$");
-    private static final Pattern MASKED_LINK = Pattern.compile("\\[([^\\[]+)](\\((www|http:|https:)+[^\\s]+[\\w]\\))");
-    private static final Pattern LINK = Pattern.compile("^(?!.*\\[[^]]*]\\([^)]*\\))((www|http:|https:)[^\\s]+[\\w])$");
-    private static final Pattern EMOJI = Pattern.compile("<a?:([a-zA-Z0-9_]+):([0-9]+)>");
+    private static final Pattern STRONG = Pattern.compile("\\*\\*(.+?)\\*\\*"); // Bold
+    private static final Pattern EM = Pattern.compile("\\*(.+?)\\*|_(.+?)_"); // Italics
+    private static final Pattern S = Pattern.compile("~~(.+?)~~"); // Strikethrough
+    private static final Pattern U = Pattern.compile("__(.+?)__"); // Underline
+    private static final Pattern CODE = Pattern.compile("```(.+?)```"); // Multi-line code block
+    private static final Pattern CODE_1 = Pattern.compile("`(.+?)`"); // Code block
+    private static final Pattern QUOTE = Pattern.compile("^>{1,3} (.*)$"); // Quote (one line or multiple)
+    private static final Pattern MASKED_LINK = Pattern.compile("\\[([^\\[]+)](\\((www|http:|https:)+[^\\s]+[\\w]\\))"); // Masked links
+    private static final Pattern LINK = Pattern.compile("^(?!.*\\[[^]]*]\\([^)]*\\))((www|http:|https:)[^\\s]+[\\w])$"); // Link
+    private static final Pattern EMOJI = Pattern.compile("<a?:([a-zA-Z0-9_]+):([0-9]+)>"); // Emoji
 
     // Pattern to detect new lines
-    private static final Pattern NEW_LINE = Pattern.compile("\\r\\n|\\r|\\n|\\u2028|\\u2029");
+    private static final Pattern NEW_LINE = Pattern.compile("\\r\\n|\\r|\\n|\\u2028|\\u2029"); // New line (and it's variants)
 
     public static String formatBytes(long bytes) {
         int unit = 1024;
@@ -73,7 +73,6 @@ public class Formatter {
         matcher = QUOTE.matcher(newText);
         while (matcher.find()) {
             String group = matcher.group();
-
             newText = newText.replace(group,
                     "<span class=\"quote\">" + group.replaceFirst(">>>", "").replaceFirst(">", "") + "</span>");
         }

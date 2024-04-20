@@ -1,6 +1,7 @@
 package union.utils;
 
 import java.time.Duration;
+import java.time.Instant;
 
 import union.objects.CaseType;
 import union.objects.annotation.NotNull;
@@ -88,18 +89,18 @@ public class ModerationUtil {
 	}
 
 	@NotNull
-	public MessageEmbed getReasonUpdateEmbed(DiscordLocale locale, Guild guild, CaseType caseType, String oldReason, String newReason) {
+	public MessageEmbed getReasonUpdateEmbed(DiscordLocale locale, Guild guild, Instant timestamp, CaseType caseType, String oldReason, String newReason) {
 		if (oldReason == null) oldReason = "-";
 		if (caseType.equals(CaseType.MUTE)) {
 			// if is mute
 			return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
-				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_mute").formatted(guild.getName()))
+				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_mute").formatted(guild.getName(), TimeUtil.formatTime(timestamp, false)))
 				.appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
 				.build();
 		} else {
 			// else is strike
 			return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
-				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_strike").formatted(guild.getName()))
+				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_strike").formatted(guild.getName(), TimeUtil.formatTime(timestamp, false)))
 				.appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
 				.build();
 		}

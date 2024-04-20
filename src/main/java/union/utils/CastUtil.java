@@ -12,7 +12,7 @@ public class CastUtil {
 	@SuppressWarnings("unchecked")
 	public static <T> T getOrDefault(Object obj, T defaultObj) {
 		if (obj == null) return defaultObj;
-		if (obj instanceof Long || defaultObj instanceof Long) {
+		if (obj instanceof Long || (defaultObj != null && defaultObj instanceof Long)) {
 			return (T) castLong(obj);
 		}
 		return (T) obj;

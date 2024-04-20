@@ -2190,7 +2190,7 @@
 				"add": {
 					"help": "Add a role to the specified user",
 					"usage": "add <Roles mentions> <@User>",
-					"role": {
+					"roles": {
 						"name": "roles",
 						"help": "Mentions roles"
 					},
@@ -2201,13 +2201,13 @@
 					"invalid_args":"You didn't mention role/-s.",
 					"incorrect_role": "Selected roles can't be added.",
 					"no_member": "Member not found.",
-					"done": "Added roles `{roles}` to {user}",
+					"done": "Added roles {roles} to {user}",
 					"failed": "Unable to add selected roles to the user."
 				},
 				"remove": {
 					"help": "Remove a role from the specified user",
 					"usage": "remove <Roles mentions> <@User>",
-					"role": {
+					"roles": {
 						"name": "roles",
 						"help": "Mentions roles"
 					},
@@ -2218,7 +2218,7 @@
 					"invalid_args":"You didn't mention role/-s.",
 					"incorrect_role": "Selected roles can't be removed.",
 					"no_member": "Member not found.",
-					"done": "Removed roles `{roles}` from {user}",
+					"done": "Removed roles {roles} from {user}",
 					"failed": "Unable to remove selected roles from the user."
 				},
 				"removeall": {

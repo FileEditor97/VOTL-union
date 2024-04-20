@@ -86,7 +86,8 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 
-			List<Role> finalRoles = List.copyOf(member.getRoles());
+			List<Role> finalRoles = new ArrayList<>();
+			finalRoles.addAll(member.getRoles());
 			finalRoles.addAll(roles);
 			
 			guild.modifyMemberRoles(member, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
@@ -150,7 +151,8 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 			
-			List<Role> finalRoles = List.copyOf(member.getRoles());
+			List<Role> finalRoles = new ArrayList<>();
+			finalRoles.addAll(member.getRoles());
 			finalRoles.addAll(roles);
 			
 			guild.modifyMemberRoles(member, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {

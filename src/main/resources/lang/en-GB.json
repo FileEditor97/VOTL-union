@@ -235,9 +235,10 @@
 			"update": "Role updated | %s",
 			"delete": "Role deleted | %s",
 			"rank": "Rank",
+			"roles": "Roles",
 			"role": "Role",
-			"added": "Role added to user",
-			"removed": "Role removed from user",
+			"added_m": "Roles added to the user",
+			"removed_m": "Roles removed from the user",
 			"removed_all": "Role was removed from all users",
 			"temp_added": "Role added temporary to user",
 			"temp_updated": "Temporary role updated for user",
@@ -2188,37 +2189,37 @@
 				"usage": "role",
 				"add": {
 					"help": "Add a role to the specified user",
-					"usage": "add <@Role> <@User>",
+					"usage": "add <Roles mentions> <@User>",
 					"role": {
-						"name": "role",
-						"help": "Select role"
+						"name": "roles",
+						"help": "Mentions roles"
 					},
 					"user": {
 						"name": "user",
 						"help": "Select user"
 					},
-					"no_role": "Provided role not found.",
-					"incorrect_role": "Selected role can't be added.",
+					"invalid_args":"You didn't mention role/-s.",
+					"incorrect_role": "Selected roles can't be added.",
 					"no_member": "Member not found.",
-					"done": "Added role `{role}` to {user}",
-					"failed": "Unable to add selected role to the user."
+					"done": "Added roles `{roles}` to {user}",
+					"failed": "Unable to add selected roles to the user."
 				},
 				"remove": {
 					"help": "Remove a role from the specified user",
-					"usage": "remove <@Role> <@User>",
+					"usage": "remove <Roles mentions> <@User>",
 					"role": {
-						"name": "role",
-						"help": "Select role"
+						"name": "roles",
+						"help": "Mentions roles"
 					},
 					"user": {
 						"name": "user",
 						"help": "Select user"
 					},
-					"no_role": "Provided role not found.",
-					"incorrect_role": "Selected role can't be removed.",
+					"invalid_args":"You didn't mention role/-s.",
+					"incorrect_role": "Selected roles can't be removed.",
 					"no_member": "Member not found.",
-					"done": "Removed role `{role}` from {user}",
-					"failed": "Unable to remove selected role from the user."
+					"done": "Removed roles `{roles}` from {user}",
+					"failed": "Unable to remove selected roles from the user."
 				},
 				"removeall": {
 					"help": "Remove role from all users in the server",

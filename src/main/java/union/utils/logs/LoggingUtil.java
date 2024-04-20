@@ -215,11 +215,19 @@ public class LoggingUtil {
 		}
 
 		public void onRoleAdded(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), role.getIdLong()));
+			sendLog(guild, type, () -> logUtil.roleAddedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), role.getAsMention()));
+		}
+
+		public void onRolesAdded(Guild guild, User mod, User target, String rolesAdded) {
+			sendLog(guild, type, () -> logUtil.rolesAddedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), rolesAdded));
 		}
 
 		public void onRoleRemoved(Guild guild, User mod, User target, Role role) {
-			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), role.getIdLong()));
+			sendLog(guild, type, () -> logUtil.roleRemovedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), role.getAsMention()));
+		}
+
+		public void onRolesRemoved(Guild guild, User mod, User target, String rolesRemoved) {
+			sendLog(guild, type, () -> logUtil.rolesRemovedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), rolesRemoved));
 		}
 
 		public void onRoleRemovedAll(Guild guild, User mod, Role role) {

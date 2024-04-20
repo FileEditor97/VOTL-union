@@ -19,11 +19,11 @@ jobs:
         distribution: 'adopt'
     - name: Gradle Wrapper Validation
       # You may pin to the exact commit or the version.
-      uses: gradle/actions/wrapper-validation@v3.3.0
+      uses: gradle/actions/wrapper-validation@v3.3.1
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3.3.1
     - name: Build with Gradle
-      uses: gradle/actions/setup-gradle@v3.3.0
-      with:
-        arguments: shadowjar
+      run: ./gradlew shadowjar
     - name: Get App Version
       id: get_version
       run: echo "version=$(./gradlew getVersion --console=plain -q --warning-mode=none)" >> $GITHUB_ENV
@@ -31,7 +31,7 @@ jobs:
       with:
         name: Package
         path: |
-          ./build/lib/VOTL-*
+          ./build/libs/VOTL-*
         overwrite: true
     - name: Create Release
       # You may pin to the exact commit or the version.

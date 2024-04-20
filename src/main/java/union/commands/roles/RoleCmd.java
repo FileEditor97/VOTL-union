@@ -153,7 +153,7 @@ public class RoleCmd extends CommandBase {
 			
 			List<Role> finalRoles = new ArrayList<>();
 			finalRoles.addAll(member.getRoles());
-			finalRoles.addAll(roles);
+			finalRoles.removeAll(roles);
 			
 			guild.modifyMemberRoles(member, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
 				String rolesString = roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "));

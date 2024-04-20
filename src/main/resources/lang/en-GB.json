@@ -2188,34 +2188,50 @@
 				"help": "Manage user's roles",
 				"usage": "role",
 				"add": {
-					"help": "Add a role to the specified user",
-					"usage": "add <Roles mentions> <@User>",
-					"roles": {
-						"name": "roles",
-						"help": "Mentions roles"
-					},
+					"help": "Add role/-s to the specified user",
+					"usage": "add <@User> <@Role> [@Role] [@Role]",
 					"user": {
 						"name": "user",
 						"help": "Select user"
 					},
-					"invalid_args":"You didn't mention role/-s.",
+					"role1": {
+						"name": "role1",
+						"help": "Select role"
+					},
+					"role2": {
+						"name": "role2",
+						"help": "Select role"
+					},
+					"role3": {
+						"name": "role3",
+						"help": "Select role"
+					},
+					"invalid_args":"You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be added.",
 					"no_member": "Member not found.",
 					"done": "Added roles {roles} to {user}",
 					"failed": "Unable to add selected roles to the user."
 				},
 				"remove": {
-					"help": "Remove a role from the specified user",
-					"usage": "remove <Roles mentions> <@User>",
-					"roles": {
-						"name": "roles",
-						"help": "Mentions roles"
-					},
+					"help": "Remove role/-s from the specified user",
+					"usage": "remove <@User> <@Role> [@Role] [@Role]",
 					"user": {
 						"name": "user",
 						"help": "Select user"
 					},
-					"invalid_args":"You didn't mention role/-s.",
+					"role1": {
+						"name": "role1",
+						"help": "Select role"
+					},
+					"role2": {
+						"name": "role2",
+						"help": "Select role"
+					},
+					"role3": {
+						"name": "role3",
+						"help": "Select role"
+					},
+					"invalid_args":"You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be removed.",
 					"no_member": "Member not found.",
 					"done": "Removed roles {roles} from {user}",

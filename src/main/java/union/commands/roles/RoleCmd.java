@@ -21,7 +21,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Mentions;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -50,7 +49,9 @@ public class RoleCmd extends CommandBase {
 			this.path = "bot.roles.role.add";
 			this.options = List.of(
 				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
-				new OptionData(OptionType.STRING, "roles", lu.getText(path+".roles.help"), true)
+				new OptionData(OptionType.ROLE, "role1", lu.getText(path+".role1.help"), true),
+				new OptionData(OptionType.ROLE, "role2", lu.getText(path+".role2.help"), false),
+				new OptionData(OptionType.ROLE, "role3", lu.getText(path+".role3.help"), false)
 			);
 		}
 
@@ -59,12 +60,16 @@ public class RoleCmd extends CommandBase {
 			Guild guild = Objects.requireNonNull(event.getGuild());
 
 			// Get roles
-			Mentions mentions = event.optMentions("roles");
-			if (mentions == null) {
-				editError(event, path+".invalid_args");
-				return;
-			}
-			List<Role> roles = mentions.getRoles();
+			List<Role> roles = new ArrayList<>(3);
+			Role role = event.optRole("role1");
+			if (role != null) roles.add(role);
+
+			role = event.optRole("role2");
+			if (role != null) roles.add(role);
+
+			role = event.optRole("role3");
+			if (role != null) roles.add(role);
+
 			if (roles.isEmpty()) {
 				editError(event, path+".invalid_args");
 				return;
@@ -72,9 +77,9 @@ public class RoleCmd extends CommandBase {
 
 			// Check roles
 			Role publicRole = guild.getPublicRole();
-			for (Role role : roles) {
-				if (role.equals(publicRole) || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
-					createError(event, path+".incorrect_role", "Role: "+role.getAsMention());
+			for (Role r : roles) {
+				if (r.equals(publicRole) || r.isManaged() || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
+					createError(event, path+".incorrect_role", "Role: "+r.getAsMention());
 					return;
 				}
 			}
@@ -97,7 +102,7 @@ public class RoleCmd extends CommandBase {
 				// Send reply
 				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed()
 					.setColor(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").replace("{roles}", rolesString).replace("{user}", member.getEffectiveName()))
+					.setDescription(lu.getText(event, path+".done").replace("{roles}", rolesString).replace("{user}", member.getAsMention()))
 					.build());
 			}, failure -> {
 				createError(event, path+".failed", failure.getMessage());
@@ -115,7 +120,9 @@ public class RoleCmd extends CommandBase {
 			this.path = "bot.roles.role.remove";
 			this.options = List.of(
 				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
-				new OptionData(OptionType.STRING, "roles", lu.getText(path+".roles.help"), true)
+				new OptionData(OptionType.ROLE, "role1", lu.getText(path+".role1.help"), true),
+				new OptionData(OptionType.ROLE, "role2", lu.getText(path+".role2.help"), false),
+				new OptionData(OptionType.ROLE, "role3", lu.getText(path+".role3.help"), false)
 			);
 		}
 
@@ -124,12 +131,16 @@ public class RoleCmd extends CommandBase {
 			Guild guild = Objects.requireNonNull(event.getGuild());
 			
 			// Get roles
-			Mentions mentions = event.optMentions("roles");
-			if (mentions == null) {
-				editError(event, path+".invalid_args");
-				return;
-			}
-			List<Role> roles = mentions.getRoles();
+			List<Role> roles = new ArrayList<>(3);
+			Role role = event.optRole("role1");
+			if (role != null) roles.add(role);
+
+			role = event.optRole("role2");
+			if (role != null) roles.add(role);
+
+			role = event.optRole("role3");
+			if (role != null) roles.add(role);
+
 			if (roles.isEmpty()) {
 				editError(event, path+".invalid_args");
 				return;
@@ -137,9 +148,9 @@ public class RoleCmd extends CommandBase {
 
 			// Check roles
 			Role publicRole = guild.getPublicRole();
-			for (Role role : roles) {
-				if (role.equals(publicRole) || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
-					createError(event, path+".incorrect_role", "Role: "+role.getAsMention());
+			for (Role r : roles) {
+				if (r.equals(publicRole) || r.isManaged() || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
+					createError(event, path+".incorrect_role", "Role: "+r.getAsMention());
 					return;
 				}
 			}
@@ -161,7 +172,7 @@ public class RoleCmd extends CommandBase {
 				bot.getLogger().role.onRolesRemoved(guild, event.getUser(), member.getUser(), rolesString);
 				// Send reply
 				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").replace("{role}", rolesString).replace("{user}", member.getEffectiveName()))
+					.setDescription(lu.getText(event, path+".done").replace("{role}", rolesString).replace("{user}", member.getAsMention()))
 					.build());
 			}, failure -> {
 				createError(event, path+".failed", failure.getMessage());

@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import net.dv8tion.jda.api.entities.*;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
@@ -31,14 +32,7 @@ import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Mentions;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
-import net.dv8tion.jda.api.entities.PermissionOverride;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
@@ -71,6 +65,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+@SuppressWarnings("DataFlowIssue")
 public class InteractionListener extends ListenerAdapter {
 
 	private final App bot;
@@ -108,7 +103,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path)).build()).setEphemeral(true).queue();
 	}
 
-	// Check for cooldown parametrs, if exists - check if cooldown active, else apply it
+	// Check for cooldown parameters, if exists - check if cooldown active, else apply it
 	private void runButtonInteraction(ButtonInteractionEvent event, @Nullable Cooldown cooldown, @NotNull Runnable function) {
 		if (cooldown != null) {
 			String key = getCooldownKey(cooldown, event);
@@ -217,7 +212,7 @@ public class InteractionListener extends ListenerAdapter {
 			}
 		} catch(Throwable t) {
 			// Logs throwable and trys to respond to the user with the error
-			// Thrown errors are not user's error, but code's fault as such things should be catched earlier and replied properly
+			// Thrown errors are not user's error, but code's fault as such things should be caught earlier and replied properly
 			bot.getAppLogger().error("ButtonInteraction Exception", t);
 			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
 				.setTitle(lu.getLocalized(event.getUserLocale(), "errors.title"))
@@ -252,7 +247,7 @@ public class InteractionListener extends ListenerAdapter {
 						bot.getLogger().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
 					}
 				);
-			} catch (Exception ex) {}
+			} catch (Exception ignored) {}
 			return false;
 		} else {
 			// add user to local database
@@ -307,22 +302,22 @@ public class InteractionListener extends ListenerAdapter {
 			}
 			// Check if user has required playtime
 			try {
-				final int minumumPlaytime = db.getVerifySettings(guild).getMinimumPlaytime();
-				if (minumumPlaytime > -1) {
+				final int minimumPlaytime = db.getVerifySettings(guild).getMinimumPlaytime();
+				if (minimumPlaytime > -1) {
 					final Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), SteamUtil.convertSteam64toSteamID(steam64));
 					// if user has not joined at least once
 					if (playtime == null) {
 						sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
 						bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
-							lu.getText(event, "logger_embed.verify.playtime").formatted("none", minumumPlaytime));
+							lu.getText(event, "logger_embed.verify.playtime").formatted("none", minimumPlaytime));
 						return;
 					}
 					// if user doesn't have minimum playtime required
 					final long played = Math.floorDiv(playtime, 3600);
-					if (played < minumumPlaytime) {
-						sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minumumPlaytime, steam64));
+					if (played < minimumPlaytime) {
+						sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minimumPlaytime, steam64));
 						bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
-							lu.getText(event, "logger_embed.verify.playtime").formatted(played, minumumPlaytime));
+							lu.getText(event, "logger_embed.verify.playtime").formatted(played, minimumPlaytime));
 						return;
 					}
 				}
@@ -339,7 +334,7 @@ public class InteractionListener extends ListenerAdapter {
 				},
 				failure -> {
 					sendError(event, "bot.verification.failed_role");
-					bot.getAppLogger().warn("Was unable to add verify role to user in "+guild.getName()+"("+guild.getId()+")", failure);
+					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
 				});
 		} else {
 			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
@@ -406,7 +401,7 @@ public class InteractionListener extends ListenerAdapter {
 	private ActionRow createRoleRow(final Guild guild, int row) {
 		List<Map<String, Object>> assignRoles = bot.getDBUtil().role.getAssignableByRow(guild.getId(), row);
 		if (assignRoles.isEmpty()) return null;
-		List<SelectOption> options = new ArrayList<SelectOption>();
+		List<SelectOption> options = new ArrayList<>();
 		for (Map<String, Object> data : assignRoles) {
 			if (options.size() >= 25) break;
 			String roleId = (String) data.getOrDefault("roleId", "0");
@@ -450,10 +445,10 @@ public class InteractionListener extends ListenerAdapter {
 		Guild guild = event.getGuild();
 		List<Role> currentRoles = event.getMember().getRoles();
 
-		List<Role> allRoles = new ArrayList<Role>();
+		List<Role> allRoles = new ArrayList<>();
 		db.role.getAssignable(guild.getId()).forEach(data -> allRoles.add(guild.getRoleById(data.get("roleId").toString())));
 		db.role.getCustom(guild.getId()).forEach(data -> allRoles.add(guild.getRoleById(data.get("roleId").toString())));
-		List<Role> roles = allRoles.stream().filter(role -> currentRoles.contains(role)).collect(Collectors.toList());
+		List<Role> roles = allRoles.stream().filter(currentRoles::contains).toList();
 		if (roles.isEmpty()) {
 			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.no_assigned")).setEphemeral(true).queue();
 			return;
@@ -473,7 +468,7 @@ public class InteractionListener extends ListenerAdapter {
 					List<Role> remove = actionEvent.getSelectedOptions().stream().map(option -> guild.getRoleById(option.getValue())).toList();
 					guild.modifyMemberRoles(event.getMember(), null, remove).reason("User request").queue(done -> {
 						msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed()
-							.setDescription(lu.getText(event, "bot.ticketing.listener.remove_done").replace("{roles}", remove.stream().map(role -> role.getAsMention()).collect(Collectors.joining(", "))))
+							.setDescription(lu.getText(event, "bot.ticketing.listener.remove_done").replace("{roles}", remove.stream().map(Role::getAsMention).collect(Collectors.joining(", "))))
 							.setColor(Constants.COLOR_SUCCESS)
 							.build()
 						).setComponents().queue();
@@ -536,15 +531,15 @@ public class InteractionListener extends ListenerAdapter {
 		// Check if bot is able to give selected roles
 		boolean otherRole = roleIds.contains("0");
 		List<Role> memberRoles = event.getMember().getRoles();
-		List<Role> add = roleIds.stream().filter(option -> !option.equals("0")).map(option -> guild.getRoleById(option))
+		List<Role> add = roleIds.stream().filter(option -> !option.equals("0")).map(guild::getRoleById)
 			.filter(role -> role != null && !memberRoles.contains(role)).toList();
 		if (!otherRole && add.isEmpty()) {
 			sendError(event, "bot.ticketing.listener.request_empty");
 			return;
 		}
 
-		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, 0);
-		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId.toString(), true).setInvitable(false).queue(
+		int ticketId = 1 + db.ticket.lastIdByTag(guildId, 0);
+		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ Integer.toString(ticketId), true).setInvitable(false).queue(
 			channel -> {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
 				
@@ -553,8 +548,8 @@ public class InteractionListener extends ListenerAdapter {
 				channel.sendMessage(mentions.toString()).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
 				
 				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
-				String rolesString = String.join(" ", add.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), (otherRole ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other") : ""));
-				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(str -> str != null).distinct().collect(Collectors.joining("\n- ", "- ", ""));
+				String rolesString = String.join(" ", add.stream().map(Role::getAsMention).collect(Collectors.joining(" ")), (otherRole ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other") : ""));
+				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(Objects::nonNull).distinct().collect(Collectors.joining("\n- ", "- ", ""));
 				MessageEmbed embed = new EmbedBuilder().setColor(db.getGuildSettings(guild).getColor())
 					.setDescription(String.format("SteamID\n> %s\n%s\n> %s\n\n%s, %s\n%s\n\n%s",
 						(steam64 == null ? "None" : SteamUtil.convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
@@ -600,7 +595,7 @@ public class InteractionListener extends ListenerAdapter {
 		String userId = db.ticket.getUserId(channelId);
 
 		guild.retrieveMemberById(userId).queue(member -> {
-			List<Role> roles = db.ticket.getRoleIds(channelId).stream().map(id -> guild.getRoleById(id)).filter(role -> role != null).toList();
+			List<Role> roles = db.ticket.getRoleIds(channelId).stream().map(guild::getRoleById).filter(Objects::nonNull).toList();
 			String ticketId = db.ticket.getTicketId(channelId);
 			if (roles.isEmpty()) {
 				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
@@ -620,7 +615,7 @@ public class InteractionListener extends ListenerAdapter {
 					member.getUser().openPrivateChannel().queue(dm -> {
 						Button showInvites = Button.secondary("invites:"+guild.getId(), lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.invites.button"));
 						dm.sendMessage(lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.role_dm")
-							.replace("{roles}", roles.stream().map(role -> role.getName()).collect(Collectors.joining(" | ")))
+							.replace("{roles}", roles.stream().map(Role::getName).collect(Collectors.joining(" | ")))
 							.replace("{server}", guild.getName())
 							.replace("{id}", ticketId)
 							.replace("{mod}", event.getMember().getEffectiveName())
@@ -646,7 +641,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown")).build()).queue(msg -> {
 			bot.getTicketUtil().closeTicket(channelId, event.getUser(), (db.ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support"), failure -> {
 				msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed", failure.getMessage())).queue();
-				bot.getAppLogger().error("Couldn't close ticket with channelID:"+channelId, failure);
+				bot.getAppLogger().error("Couldn't close ticket with channelID: {}", channelId, failure);
 			});
 		});
 	}
@@ -718,7 +713,7 @@ public class InteractionListener extends ListenerAdapter {
 	// Tag, create ticket
 	private void buttonTagCreateTicket(ButtonInteractionEvent event) {
 		String guildId = event.getGuild().getId();
-		Integer tagId = Integer.valueOf(event.getComponentId().split(":")[1]);
+		int tagId = Integer.parseInt(event.getComponentId().split(":")[1]);
 
 		String channelId = db.ticket.getOpenedChannel(event.getMember().getId(), guildId, tagId);
 		if (channelId != null) {
@@ -749,7 +744,7 @@ public class InteractionListener extends ListenerAdapter {
 			.map(text -> text.replace("{username}", user.getName()).replace("{tag_username}", user.getAsMention()))
 			.orElse("Ticket's controls");
 		
-		Integer ticketId = 1 + db.ticket.lastIdByTag(guildId, tagId);
+		int ticketId = 1 + db.ticket.lastIdByTag(guildId, tagId);
 		String ticketName = (tag.getTicketName()+ticketId).replace("{username}", user.getName());
 		if (tag.getTagType() == 1) {
 			// Thread ticket
@@ -770,7 +765,7 @@ public class InteractionListener extends ListenerAdapter {
 			}
 
 			ChannelAction<TextChannel> action = category.createTextChannel(ticketName).clearPermissionOverrides();
-			for (String roleId : supportRoles) action = action.addRolePermissionOverride(Long.valueOf(roleId), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null);
+			for (String roleId : supportRoles) action = action.addRolePermissionOverride(Long.parseLong(roleId), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null);
 			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
 				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
 				.queue(channel -> {
@@ -1031,7 +1026,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		long guildId = event.getGuild().getIdLong();
-		List<Integer> groupIds = new ArrayList<Integer>();
+		List<Integer> groupIds = new ArrayList<>();
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) {
@@ -1109,7 +1104,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		long guildId = event.getGuild().getIdLong();
-		List<Integer> groupIds = new ArrayList<Integer>();
+		List<Integer> groupIds = new ArrayList<>();
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) {
@@ -1171,7 +1166,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		long guildId = event.getGuild().getIdLong();
-		List<Integer> groupIds = new ArrayList<Integer>();
+		List<Integer> groupIds = new ArrayList<>();
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) {
@@ -1197,7 +1192,7 @@ public class InteractionListener extends ListenerAdapter {
 				e -> e.getMessageId().equals(msg.getId()),
 				selectEvent -> {
 					selectEvent.deferEdit().queue();
-					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();;
+					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(event.getComponentId().split(":")[1]).queue(user -> {
 						selected.forEach(groupId -> {
@@ -1248,7 +1243,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		long guildId = event.getGuild().getIdLong();
-		List<Integer> groupIds = new ArrayList<Integer>();
+		List<Integer> groupIds = new ArrayList<>();
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) {
@@ -1300,7 +1295,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	// Strikes
 	private void buttonShowStrikes(ButtonInteractionEvent event) {
-		Long guildId = Long.valueOf(event.getComponentId().split(":")[1]);
+		long guildId = Long.parseLong(event.getComponentId().split(":")[1]);
 		Pair<Integer, Integer> strikeData = bot.getDBUtil().strike.getDataCountAndDate(guildId, event.getUser().getIdLong());
 		if (strikeData == null) {
 			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.no_strikes")).build()).queue();
@@ -1320,7 +1315,7 @@ public class InteractionListener extends ListenerAdapter {
 		String modalId = event.getModalId();
 
 		if (modalId.equals("vfpanel")) {
-			if (event.getValues().size() == 0) {
+			if (event.getValues().isEmpty()) {
 				sendError(event, "errors.interaction.no_values");
 				return;
 			}
@@ -1392,7 +1387,7 @@ public class InteractionListener extends ListenerAdapter {
 				}
 
 				List<String> mentionStrings = new ArrayList<>();
-				String text = "";
+				String text;
 
 				VoiceChannelManager manager = vc.getManager();
 				
@@ -1525,14 +1520,12 @@ public class InteractionListener extends ListenerAdapter {
 			.replace("{time}", Integer.toString(remaining))
 		);
 		CooldownScope cooldownScope = cooldown.getScope();
-		if (cooldownScope.equals(CooldownScope.USER))
-			{}
-		else if (cooldownScope.equals(CooldownScope.USER_GUILD) && event.getGuild()==null)
-			front.append(" " + lu.getLocalized(event.getUserLocale(), CooldownScope.USER_CHANNEL.getErrorPath()));
+		if (cooldownScope.equals(CooldownScope.USER_GUILD) && event.getGuild()==null)
+			front.append(" ").append(lu.getLocalized(event.getUserLocale(), CooldownScope.USER_CHANNEL.getErrorPath()));
 		else if (cooldownScope.equals(CooldownScope.GUILD) && event.getGuild()==null)
-			front.append(" " + lu.getLocalized(event.getUserLocale(), CooldownScope.CHANNEL.getErrorPath()));
+			front.append(" ").append(lu.getLocalized(event.getUserLocale(), CooldownScope.CHANNEL.getErrorPath()));
 		else
-			front.append(" " + lu.getLocalized(event.getUserLocale(), cooldownScope.getErrorPath()));
+			front.append(" ").append(lu.getLocalized(event.getUserLocale(), cooldownScope.getErrorPath()));
 
 		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));
 	}

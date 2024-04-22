@@ -83,7 +83,7 @@ public class FileManager {
 
 		File file = new File(external);
 		
-		String[] split = external.contains("/") ? external.split(File.separator) : external.split(Pattern.quote(File.separator));
+		String[] split = external.contains("/") ? external.split(Constants.SEPAR) : external.split(Pattern.quote(Constants.SEPAR));
 
 		try {
 			if (!file.exists()) {

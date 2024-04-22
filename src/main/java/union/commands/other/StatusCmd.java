@@ -64,7 +64,7 @@ public class StatusCmd extends CommandBase {
 			.setTimestamp(event.getClient().getStartTime())
 			.build();
 		
-		createReplyEmbed(event, event.isFromGuild() ? !event.optBoolean("show", false) : false, embed);
+		createReplyEmbed(event, event.isFromGuild() && !event.optBoolean("show", false), embed);
 	}
 
 }

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /* 
- * Access is distributed throught 0-10 integer levels, where
+ * Access is distributed through 0-10 integer levels, where
  * 10 - highest (bot developer)
  * 0 - lowest (public access)
  */

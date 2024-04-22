@@ -81,7 +81,7 @@ public class MessageListener extends ListenerAdapter {
 			} catch (Exception ex) {}
 		} else {
 			// add user to local database
-			bot.getDBUtil().verifyCache.addUser(userId, Long.valueOf(steam64Str));
+			bot.getDBUtil().verifyCache.addUser(userId, Long.parseLong(steam64Str));
 		}
 	}
 
@@ -180,7 +180,7 @@ public class MessageListener extends ListenerAdapter {
 	@Override
 	public void onMessageReactionRemoveAll(@NotNull MessageReactionRemoveAllEvent event) {}
 
-	public class MessageData {
+	public static class MessageData {
 		private final String content, authorName;
 		private final Attachment attachment;
 		private final long authorId;

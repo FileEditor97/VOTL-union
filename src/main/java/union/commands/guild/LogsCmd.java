@@ -85,9 +85,8 @@ public class LogsCmd extends CommandBase {
 			try {
 				WebhookData oldData = bot.getDBUtil().logs.getLogWebhook(type, event.getGuild().getIdLong());
 				if (oldData != null) {
-					event.getJDA().retrieveWebhookById(oldData.getWebhookId()).queue(webhook -> {
-						webhook.delete(oldData.getToken()).reason("Log disabled").queue();
-					});
+					event.getJDA().retrieveWebhookById(oldData.getWebhookId())
+							.queue(webhook -> webhook.delete(oldData.getToken()).reason("Log disabled").queue());
 				}
 				Icon icon = Icon.from(new URL(Constants.AVATAR_URL).openStream(), IconType.PNG);
 				channel.createWebhook(lu.getText(type.getPathName())).setAvatar(icon).reason("By "+event.getUser().getName()).queue(webhook -> {
@@ -135,9 +134,8 @@ public class LogsCmd extends CommandBase {
 				LogSettings settings = bot.getDBUtil().logs.getSettings(guildId);
 				if (!settings.isEmpty()) {
 					for (WebhookData data : settings.getWebhooks()) {
-						event.getJDA().retrieveWebhookById(data.getWebhookId()).queue(webhook -> {
-							webhook.delete(data.getToken()).reason("Log disabled").queue();
-						});
+						event.getJDA().retrieveWebhookById(data.getWebhookId())
+								.queue(webhook -> webhook.delete(data.getToken()).reason("Log disabled").queue());
 					}
 				}
 				// Remove guild from db
@@ -151,9 +149,8 @@ public class LogsCmd extends CommandBase {
 				LogType type = LogType.of(input);
 				WebhookData data = bot.getDBUtil().logs.getLogWebhook(type, guildId);
 				if (data != null) {
-					event.getJDA().retrieveWebhookById(data.getWebhookId()).queue(webhook -> {
-						webhook.delete(data.getToken()).reason("Log disabled").queue();
-					});
+					event.getJDA().retrieveWebhookById(data.getWebhookId())
+							.queue(webhook -> webhook.delete(data.getToken()).reason("Log disabled").queue());
 				}
 				bot.getDBUtil().logs.removeLogWebhook(type, guildId);
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)

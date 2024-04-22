@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import union.App;
 import union.objects.annotation.NotNull;
@@ -42,7 +43,7 @@ public class MemberListener extends ListenerAdapter {
 		if (db.verifyCache.isVerified(userId)) {
 			Guild guild = event.getGuild();
 			// Check if user is blacklisted
-			List<Integer> groupIds = new ArrayList<Integer>();
+			List<Integer> groupIds = new ArrayList<>();
 			groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
 			groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
 			Long cachedSteam64 = db.verifyCache.getSteam64(userId);
@@ -58,9 +59,9 @@ public class MemberListener extends ListenerAdapter {
 			Role role = guild.getRoleById(roleId);
 			if (role == null) return;
 
-			guild.addRoleToMember(event.getUser(), role).reason(cachedSteam64 == null ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64).queue(success -> {
-				bot.getLogger().verify.onVerified(event.getUser(), cachedSteam64, guild);
-			});
+			guild.addRoleToMember(event.getUser(), role)
+					.reason(cachedSteam64 == null ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64)
+					.queue(success -> bot.getLogger().verify.onVerified(event.getUser(), cachedSteam64, guild));
 		}
 	}
 	
@@ -74,7 +75,7 @@ public class MemberListener extends ListenerAdapter {
 				.queue(list -> {
 					if (!list.isEmpty()) {
 						AuditLogEntry entry = list.get(0);
-						if (!entry.getUser().equals(event.getJDA().getSelfUser()) && entry.getTargetIdLong() == event.getUser().getIdLong()
+						if (!Objects.equals(entry.getUser(), event.getJDA().getSelfUser()) && entry.getTargetIdLong() == event.getUser().getIdLong()
 							&& entry.getTimeCreated().isAfter(OffsetDateTime.now().minusSeconds(15))) {
 							bot.getLogger().mod.onUserKick(entry, event.getUser());
 						}
@@ -96,7 +97,7 @@ public class MemberListener extends ListenerAdapter {
 		}
 		db.user.remove(event.getUser().getIdLong());
 		if (db.getTicketSettings(event.getGuild()).autocloseLeftEnabled()) {
-			db.ticket.getOpenedChannel(userId, guildId).stream().forEach(channelId -> {
+			db.ticket.getOpenedChannel(userId, guildId).forEach(channelId -> {
 				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
 				GuildChannel channel = event.getGuild().getGuildChannelById(channelId);
 				if (channel != null) channel.delete().reason("Author left").queue();
@@ -112,6 +113,7 @@ public class MemberListener extends ListenerAdapter {
 	}
 
 	/* @Override
+	 * TODO
 	public void onGuildMemberUpdateAvatar(@NotNull GuildMemberUpdateAvatarEvent event) {} */
 	
 }

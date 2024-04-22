@@ -23,14 +23,14 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildJoin(@NotNull GuildJoinEvent event) {
 		String guildId = event.getGuild().getId();
-		bot.getAppLogger().info("Joined guild '"+event.getGuild().getName()+"'("+guildId+")");
+        bot.getAppLogger().info("Joined guild '{}'({})", event.getGuild().getName(), guildId);
 	}
 
 	@Override
 	public void onGuildLeave(@NotNull GuildLeaveEvent event) {
 		String guildId = event.getGuild().getId();
 		long guildIdLong = event.getGuild().getIdLong();
-		bot.getAppLogger().info("Left guild '%s'(%s)".formatted(event.getGuild().getName(), guildId));
+		bot.getAppLogger().info("Left guild '{}'({})", event.getGuild().getName(), guildId);
 
 		// Deletes every information connected to this guild from bot's DB (except ban tables)
 		// May be dangerous, but provides privacy
@@ -45,7 +45,7 @@ public class GuildListener extends ListenerAdapter {
 				bot.getGuildLogger().sendMessageEmbed(master, LogType.GROUP,
 					() -> bot.getLogEmbedUtil().groupOwnerLeftEmbed(master.getLocale(), masterId, masterIcon, guildName, guildIdLong, groupId, groupName)
 				);
-			} catch (Exception ex) {}
+			} catch (Exception ignored) {}
 		}
 		for (Integer groupId : db.group.getOwnedGroups(guildIdLong)) {
 			String groupName = db.group.getName(groupId);
@@ -57,7 +57,7 @@ public class GuildListener extends ListenerAdapter {
 					bot.getGuildLogger().sendMessageEmbed(member, LogType.GROUP,
 						() -> bot.getLogEmbedUtil().groupMemberDeletedEmbed(member.getLocale(), guildIdLong, ownerIcon, groupId, groupName)
 					);
-				} catch (Exception ex) {}
+				} catch (Exception ignored) {}
 			}
 			db.group.clearGroup(groupId);
 		}

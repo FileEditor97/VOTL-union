@@ -332,7 +332,7 @@ public class App {
 		try {
 			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
 			helper.getLogger().info("Helper started");
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			instance.logger.info("Was unable to start helper");
 			helper = null;
 		}

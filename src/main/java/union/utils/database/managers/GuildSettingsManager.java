@@ -226,7 +226,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		private final int level;
 		private final String path;
 
-		private static final Map<Integer, ModerationInformLevel> BY_LEVEL = new HashMap<Integer, ModerationInformLevel>();
+		private static final Map<Integer, ModerationInformLevel> BY_LEVEL = new HashMap<>();
 
 		static {
 			for (ModerationInformLevel informLevel : ModerationInformLevel.values()) {

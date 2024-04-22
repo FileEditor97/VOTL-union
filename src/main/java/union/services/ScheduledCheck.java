@@ -28,13 +28,12 @@ import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.ErrorResponse;
-import net.dv8tion.jda.api.utils.TimeFormat;
-import net.dv8tion.jda.api.utils.TimeUtil;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import union.utils.message.TimeUtil;
 
 
 public class ScheduledCheck {
@@ -53,13 +52,9 @@ public class ScheduledCheck {
 
 	// each 10-15 minutes
 	public void timedChecks() {
-		CompletableFuture.runAsync(() -> {
-			checkTicketStatus();
-		}).thenRunAsync(() -> {
-			checkExpiredTempRoles();
-		}).thenRunAsync(() -> {
-			checkExpiredStrikes();
-		});
+		CompletableFuture.runAsync(this::checkTicketStatus)
+				.thenRunAsync(this::checkExpiredTempRoles)
+				.thenRunAsync(this::checkExpiredStrikes);
 	}
 
 	private void checkTicketStatus() {
@@ -74,7 +69,7 @@ public class ScheduledCheck {
 				int autocloseTime = db.getTicketSettings(channel.getGuild()).getAutocloseTime();
 				if (autocloseTime == 0) return;
 
-				if (TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {
+				if (net.dv8tion.jda.api.utils.TimeUtil.getTimeCreated(channel.getLatestMessageIdLong()).isBefore(OffsetDateTime.now().minusHours(autocloseTime))) {
 					Guild guild = channel.getGuild();
 					UserSnowflake user = User.fromId(db.ticket.getUserId(channelId));
 					Instant closeTime = Instant.now().plus(CLOSE_AFTER_DELAY, ChronoUnit.HOURS);
@@ -83,7 +78,7 @@ public class ScheduledCheck {
 						.setColor(db.getGuildSettings(guild).getColor())
 						.setDescription(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.ticketing.listener.close_auto")
 							.replace("{user}", user.getAsMention())
-							.replace("{time}", TimeFormat.RELATIVE.atInstant(closeTime).toString()))
+							.replace("{time}", TimeUtil.formatTime(closeTime, false)))
 						.build();
 					Button close = Button.primary("ticket:close", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.close"));
 					Button cancel = Button.secondary("ticket:cancel", bot.getLocaleUtil().getLocalized(guild.getLocale(), "ticket.cancel"));
@@ -168,11 +163,11 @@ public class ScheduledCheck {
 					if (!cases[0].isEmpty()) {
 						String[] caseInfo = cases[0].split("-");
 						String caseId = caseInfo[0];
-						Integer newCount = Integer.valueOf(caseInfo[1]) - 1;
+						int newCount = Integer.parseInt(caseInfo[1]) - 1;
 
-						StringBuffer newData = new StringBuffer();
+						StringBuilder newData = new StringBuilder();
 						if (newCount > 0) {
-							newData.append(caseId+"-"+newCount);
+							newData.append(caseId).append("-").append(newCount);
 							if (cases.length > 1)
 								newData.append(";");
 						} else {
@@ -202,13 +197,9 @@ public class ScheduledCheck {
 
 	// Each 2-5 minutes
 	public void regularChecks() {
-		CompletableFuture.runAsync(() -> {
-			checkAccountUpdates();
-		}).thenRunAsync(() -> {
-			checkUnbans();
-		}).thenRunAsync(() -> {
-			removeAlertPoints();
-		});
+		CompletableFuture.runAsync(this::checkAccountUpdates)
+				.thenRunAsync(this::checkUnbans)
+				.thenRunAsync(this::removeAlertPoints);
 	}
 
 	private void checkAccountUpdates() {
@@ -287,7 +278,7 @@ public class ScheduledCheck {
 			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
 			guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
 				s -> bot.getLogger().mod.onAutoUnban(caseData, guild),
-				f -> logger.warn("Exception at unban attempt", f.getMessage())
+				f -> logger.warn("Exception at unban attempt. {}", f.getMessage())
 			);
 			db.cases.setInactive(caseData.getCaseIdInt());
 		});

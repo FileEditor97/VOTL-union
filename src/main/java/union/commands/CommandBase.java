@@ -28,7 +28,7 @@ public abstract class CommandBase extends SlashCommand {
 	}
 
 	public final void createReply(SlashCommandEvent event, boolean ephemeral, @NotNull String msg) {
-		event.reply(msg).setEphemeral(true).queue();
+		event.reply(msg).setEphemeral(ephemeral).queue();
 	}
 
 	public final void createReply(SlashCommandEvent event, boolean ephemeral, @NotNull MessageCreateData data) {

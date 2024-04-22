@@ -125,7 +125,7 @@ public class BanCmd extends CommandBase {
 				// create embed
 				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 					.setDescription(lu.getText(event, path+".already_banned"))
-					.addField(lu.getText(event, "logger_embed.ban.short_title"), lu.getText(event, "logger_embed.ban.short_info")
+					.addField(lu.getText(event, "logger.moderation.ban.short_title"), lu.getText(event, "logger.moderation.ban.short_info")
 						.replace("{username}", ban.getUser().getEffectiveName())
 						.replace("{reason}", Optional.ofNullable(ban.getReason()).orElse("*none*"))
 						, false)

@@ -1749,7 +1749,7 @@
 			},
 			"rolespanel": {
 				"help": "Manage the roles request panel",
-				"usage": "rolepanel",
+				"usage": "rolespanel",
 				"create": {
 					"help": "Create role requests panel in selected channel",
 					"usage": "create <#Channel>",

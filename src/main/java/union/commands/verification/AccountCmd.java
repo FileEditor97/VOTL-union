@@ -53,12 +53,12 @@ public class AccountCmd extends CommandBase {
 		} else if (event.hasOption("steamid")) {
 			String input = event.optString("steamid");
 
-			Long steam64 = null;
+			long steam64;
 			if (Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", input)) {
 				steam64 = SteamUtil.convertSteamIDtoSteam64(input);
 			} else {
 				try {
-					steam64 = Long.valueOf(input);
+					steam64 = Long.parseLong(input);
 				} catch (NumberFormatException ex) {
 					editError(event, "errors.error", ex.getMessage());
 					return;
@@ -71,13 +71,8 @@ public class AccountCmd extends CommandBase {
 			} else {
 				Long steam64copy = steam64;
 				event.getJDA().retrieveUserById(discordId).queue(
-					user -> {
-						// create embed
-						replyAccountFull(event, steam64copy, user);
-					},
-					failed -> {
-						editError(event, path+".not_found_user", "User ID: "+discordId);
-					}
+					user -> replyAccountFull(event, steam64copy, user),
+					failed -> editError(event, path+".not_found_user", "User ID: "+discordId)
 				);
 			}
 		} else {

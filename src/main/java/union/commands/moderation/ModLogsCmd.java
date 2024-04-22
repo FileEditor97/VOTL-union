@@ -65,15 +65,15 @@ public class ModLogsCmd extends CommandBase {
 			.setTitle(lu.getLocalized(locale, path+".title").formatted(tu.getName(), page, pages))
 			.setFooter(lu.getLocalized(locale, path+".footer"));
 		cases.forEach(c -> {
-			StringBuffer buffer = new StringBuffer()
-				.append("> `"+lu.getLocalized(locale, c.getCaseType().getPath())+"`\n")
-				.append(lu.getLocalized(locale, path+".target").formatted(c.getTargetTag(), c.getTargetId()))
-				.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()));
+			StringBuilder stringBuilder = new StringBuilder()
+					.append("> `").append(lu.getLocalized(locale, c.getCaseType().getPath())).append("`\n")
+					.append(lu.getLocalized(locale, path+".target").formatted(c.getTargetTag(), c.getTargetId()))
+					.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()));
 			if (!c.getDuration().isNegative())
-				buffer.append(lu.getLocalized(locale, path+".duration").formatted(TimeUtil.formatDuration(lu, locale, c.getTimeStart(), c.getDuration())));
-			buffer.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
+				stringBuilder.append(lu.getLocalized(locale, path+".duration").formatted(TimeUtil.formatDuration(lu, locale, c.getTimeStart(), c.getDuration())));
+			stringBuilder.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
 
-			builder.addField((c.isActive() ? "🟥" : "⬜" ) + " " + lu.getLocalized(locale, path+".case").formatted(c.getCaseIdInt()), buffer.toString(), false);
+			builder.addField((c.isActive() ? "🟥" : "⬜" ) + " " + lu.getLocalized(locale, path+".case").formatted(c.getCaseIdInt()), stringBuilder.toString(), false);
 		});
 
 		editHookEmbed(event, builder.build());

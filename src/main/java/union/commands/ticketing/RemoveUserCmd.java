@@ -59,9 +59,8 @@ public class RemoveUserCmd extends CommandBase {
 					.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()))
 					.build()
 				).setAllowedMentions(Collections.emptyList()).queue();
-			}, failure -> {
-				editError(event, path+".failed", failure.getMessage());
-			});
+			},
+			failure -> editError(event, path+".failed", failure.getMessage()));
 		} else {
 			// TextChannel
 			try {

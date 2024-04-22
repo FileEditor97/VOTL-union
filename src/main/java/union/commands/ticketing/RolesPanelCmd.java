@@ -32,7 +32,7 @@ public class RolesPanelCmd extends CommandBase {
 	
 	public RolesPanelCmd(App bot) {
 		super(bot);
-		this.name = "rolepanel";
+		this.name = "rolespanel";
 		this.path = "bot.ticketing.rolespanel";
 		this.children = new SlashCommand[]{new Create(bot), new Update(bot), new RowText(bot), new OtherRole(bot)};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
@@ -73,14 +73,14 @@ public class RolesPanelCmd extends CommandBase {
 				createError(event, path+".empty_roles");
 				return;
 			}
-			List<ActionRow> actionRows = new ArrayList<ActionRow>();
+			List<ActionRow> actionRows = new ArrayList<>();
 
 			if (assignRolesSize > 0) {
 				actionRows.add(ActionRow.of(Button.success("role:start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
 			}
 			actionRows.add(ActionRow.of(Button.danger("role:remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
 			if (!toggleRoles.isEmpty()) {
-				List<Button> buttons = new ArrayList<Button>();
+				List<Button> buttons = new ArrayList<>();
 				toggleRoles.forEach(data -> {
 					if (buttons.size() >= 5) return;
 					String roleId = data.get("roleId").toString();
@@ -91,7 +91,7 @@ public class RolesPanelCmd extends CommandBase {
 				});
 				actionRows.add(ActionRow.of(buttons));
 			}
-			if (bot.getDBUtil().role.getRolesWithInvites(guildId).size() > 0) {
+			if (!bot.getDBUtil().role.getRolesWithInvites(guildId).isEmpty()) {
 				actionRows.add(ActionRow.of(Button.secondary("invites", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_invites"))));
 			}
 
@@ -149,14 +149,14 @@ public class RolesPanelCmd extends CommandBase {
 					createError(event, path+".empty_roles");
 					return;
 				}
-				List<ActionRow> actionRows = new ArrayList<ActionRow>();
+				List<ActionRow> actionRows = new ArrayList<>();
 
 				if (assignRolesSize > 0) {
 					actionRows.add(ActionRow.of(Button.success("role:start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
 				}
 				actionRows.add(ActionRow.of(Button.danger("role:remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
 				if (!toggleRoles.isEmpty()) {
-					List<Button> buttons = new ArrayList<Button>();
+					List<Button> buttons = new ArrayList<>();
 					toggleRoles.forEach(data -> {
 						if (buttons.size() >= 5) return;
 						String roleId = data.get("roleId").toString();
@@ -167,7 +167,7 @@ public class RolesPanelCmd extends CommandBase {
 					});
 					actionRows.add(ActionRow.of(buttons));
 				}
-				if (bot.getDBUtil().role.getRolesWithInvites(guildId).size() > 0) {
+				if (!bot.getDBUtil().role.getRolesWithInvites(guildId).isEmpty()) {
 					actionRows.add(ActionRow.of(Button.secondary("invites", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_invites"))));
 				}
 				
@@ -177,9 +177,8 @@ public class RolesPanelCmd extends CommandBase {
 					.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
 					.build()
 				);
-			}, failure -> {
-				createError(event, path+".not_found", failure.getMessage());
-			});
+			},
+			failure -> createError(event, path+".not_found", failure.getMessage()));
 		}
 
 	}

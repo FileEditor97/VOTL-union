@@ -102,11 +102,11 @@ public class TempRoleCmd extends CommandBase {
 				return;
 			}
 			if (duration.toMinutes() < 10 || duration.toDays() > MAX_DAYS) {
-				editError(event, path+".time_limit", "Received: "+duration.toString());
+				editError(event, path+".time_limit", "Received: "+duration);
 				return;
 			}
 
-			Boolean delete = event.optBoolean("delete", false);
+			boolean delete = event.optBoolean("delete", false);
 			if (delete && !event.getMember().hasPermission(Permission.MANAGE_ROLES)) {
 				editPermError(event, Permission.MANAGE_ROLES, false);
 				return;
@@ -123,9 +123,7 @@ public class TempRoleCmd extends CommandBase {
 						.replace("{until}", TimeUtil.formatTime(until, true)))
 					.build()
 				);
-			}, failure -> {
-				editError(event, "errors.error", failure.getMessage());
-			});
+			}, failure -> editError(event, "errors.error", failure.getMessage()));
 		}
 
 	}

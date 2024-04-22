@@ -170,7 +170,7 @@ public class BanCmd extends CommandBase {
 			});
 
 			guild.ban(tu, (event.optBoolean("delete", true) ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
-				// fail-safe check if has expirable ban (to prevent auto unban)
+				// fail-safe check if user has temporal ban (to prevent auto unban)
 				CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 				if (oldBanData != null) {
 					bot.getDBUtil().cases.setInactive(oldBanData.getCaseIdInt());
@@ -200,9 +200,7 @@ public class BanCmd extends CommandBase {
 				else
 					event.getHook().editOriginalEmbeds(embed).queue();
 			},
-			failed -> {
-				editError(event, path+".ban_abort", failed.getMessage());
-			});
+			failed -> editError(event, path+".ban_abort", failed.getMessage()));
 		});
 	}
 	

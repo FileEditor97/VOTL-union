@@ -37,7 +37,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class KickCmd extends CommandBase {
 
-	private EventWaiter waiter;
+	private final EventWaiter waiter;
 	
 	public KickCmd (App bot, EventWaiter waiter) {
 		super(bot);
@@ -114,16 +114,14 @@ public class KickCmd extends CommandBase {
 				buttonSync(event, msg, tm.getUser(), reason);
 			});
 		},
-		failure -> {
-			editError(event, "errors.error", failure.getMessage());
-		});
+		failure -> editError(event, "errors.error", failure.getMessage()));
 	}
 
 	private void buttonSync(SlashCommandEvent event, final Message message, User tu, String reason) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) return;
 		long guildId = event.getGuild().getIdLong();
 
-		List<Integer> groupIds = new ArrayList<Integer>();
+		List<Integer> groupIds = new ArrayList<>();
 		groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
 		groupIds.addAll(bot.getDBUtil().group.getManagedGroups(guildId));
 		if (groupIds.isEmpty()) return;
@@ -146,7 +144,7 @@ public class KickCmd extends CommandBase {
 					List<SelectOption> selected = selectEvent.getSelectedOptions();
 					
 					for (SelectOption option : selected) {
-						Integer groupId = Integer.parseInt(option.getValue());
+						int groupId = Integer.parseInt(option.getValue());
 						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runKick(groupId, event.getGuild(), tu, reason));
 					}
 

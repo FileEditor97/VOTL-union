@@ -79,7 +79,7 @@ public class SyncCmd extends CommandBase {
 			Integer groupId = event.optInteger("group");
 			long guildId = event.getGuild().getIdLong();
 			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
-				editError(event, path+".no_group", "Group ID: `"+groupId.toString()+"`");
+				editError(event, path+".no_group", "Group ID: `"+groupId+"`");
 				return;
 			}
 
@@ -97,7 +97,7 @@ public class SyncCmd extends CommandBase {
 						if (bot.getDBUtil().group.countMembers(groupId) < 1) {
 							editError(event, path+".no_guilds");
 							return;
-						};
+						}
 
 						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setDescription(lu.getText(event, path+".done"))
@@ -108,9 +108,7 @@ public class SyncCmd extends CommandBase {
 					},
 					20,
 					TimeUnit.SECONDS,
-					() -> {
-						event.getHook().editOriginalComponents(ActionRow.of(Button.of(ButtonStyle.SECONDARY, "timed_out", "Timed out").asDisabled())).queue();
-					}
+					() -> event.getHook().editOriginalComponents(ActionRow.of(Button.of(ButtonStyle.SECONDARY, "timed_out", "Timed out").asDisabled())).queue()
 				);
 			});
 		}

@@ -389,9 +389,7 @@ public class VoiceCmd extends CommandBase {
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", vc.getAsMention()))
 						.build()
 					);
-				}, failure -> {
-					editError(event, "errors.error", failure.getMessage());
-				}
+				}, failure -> editError(event, "errors.error", failure.getMessage())
 			);
 		}
 	}
@@ -461,9 +459,7 @@ public class VoiceCmd extends CommandBase {
 					.setDescription(lu.getUserText(event, path+".done", mentionStrings))
 					.build()
 				);
-			}, failure -> {
-				editPermError(event, Permission.MANAGE_PERMISSIONS, true);
-			});
+			}, failure -> editPermError(event, Permission.MANAGE_PERMISSIONS, true));
 		}
 
 	}
@@ -536,9 +532,7 @@ public class VoiceCmd extends CommandBase {
 					.setDescription(lu.getUserText(event, path+".done", mentionStrings))
 					.build()
 				);
-			}, failure -> {
-				editPermError(event, Permission.MANAGE_PERMISSIONS, true);
-			});
+			}, failure -> editPermError(event, Permission.MANAGE_PERMISSIONS, true));
 		}
 		
 	}

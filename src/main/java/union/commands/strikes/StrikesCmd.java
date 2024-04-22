@@ -63,8 +63,8 @@ public class StrikesCmd extends CommandBase {
 		StringBuilder builder = new StringBuilder();
 		for (String c : strikesInfoArray) {
 			String[] args = c.split("-");
-			Integer caseId = Integer.valueOf(args[0]);
-			Integer strikeAmount = Integer.valueOf(args[1]);
+			int caseId = Integer.parseInt(args[0]);
+			int strikeAmount = Integer.parseInt(args[1]);
 			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
 			builder.append("`%5d` %s | %s - %s\nBy: %s\n\n".formatted(
 				caseId,
@@ -73,7 +73,7 @@ public class StrikesCmd extends CommandBase {
 				TimeFormat.DATE_SHORT.format(caseData.getTimeStart()),
 				caseData.getModTag()
 			));
-		};
+		}
 		
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle(lu.getText(event, path+".title").formatted(strikeData.getLeft(), tu.getName(), tu.getId()))

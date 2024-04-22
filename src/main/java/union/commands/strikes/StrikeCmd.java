@@ -119,13 +119,13 @@ public class StrikeCmd extends CommandBase {
 		if (actions.isEmpty()) return null;
 		String data = punishActions.getRight();
 
-		// Check if can interact and target is not server's moderator or higher
+		// Check if user can interact and target is not server's moderator or higher
 		if (!guild.getSelfMember().canInteract(target)) return null;
 		if (bot.getCheckUtil().hasAccess(target, CmdAccessLevel.MOD)) return null;
 		if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.ALL)) return null;
 
 		// Execute
-		StringBuffer buffer = new StringBuffer();	// message
+		StringBuilder builder = new StringBuilder();	// message
 		if (actions.contains(PunishActions.KICK)) {
 			String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 			// Send PM to user
@@ -143,17 +143,15 @@ public class StrikeCmd extends CommandBase {
 				// log case
 				bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 			},
-			failure -> {
-				bot.getAppLogger().error("Strike punishment execution, Kick member", failure);
-			});
-			buffer.append(lu.getLocalized(locale, PunishActions.KICK.getPath()))
+			failure -> bot.getAppLogger().error("Strike punishment execution, Kick member", failure));
+			builder.append(lu.getLocalized(locale, PunishActions.KICK.getPath()))
 				.append("\n");
 		}
 		if (actions.contains(PunishActions.BAN)) {
 			Duration duration = null;
 			try {
-				duration = Duration.ofSeconds(Long.valueOf(PunishActions.BAN.getMatchedValue(data)));
-			} catch (NumberFormatException ex) {}
+				duration = Duration.ofSeconds(Long.parseLong(PunishActions.BAN.getMatchedValue(data)));
+			} catch (NumberFormatException ignored) {}
 			if (duration != null && !duration.isZero()) {
 				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 				Duration durationCopy = duration;
@@ -172,18 +170,18 @@ public class StrikeCmd extends CommandBase {
 					// log case
 					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 				},
-				failure -> {
-					bot.getAppLogger().error("Strike punishment execution, Ban member", failure);
-				});
-				buffer.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
-					.append(" "+lu.getLocalized(locale, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, locale, duration)+"\n");
+				failure -> bot.getAppLogger().error("Strike punishment execution, Ban member", failure));
+				builder.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
+						.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
+						.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
+						.append("\n");
 			}
 		}
 		if (actions.contains(PunishActions.MUTE)) {
 			Duration duration = null;
 			try {
-				duration = Duration.ofSeconds(Long.valueOf(PunishActions.MUTE.getMatchedValue(data)));
-			} catch (NumberFormatException ex) {}
+				duration = Duration.ofSeconds(Long.parseLong(PunishActions.MUTE.getMatchedValue(data)));
+			} catch (NumberFormatException ignored) {}
 			if (duration != null && !duration.isZero()) {
 				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 				// Send PM to user
@@ -202,18 +200,18 @@ public class StrikeCmd extends CommandBase {
 					// log case
 					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 				},
-				failure -> {
-					bot.getAppLogger().error("Strike punishment execution, Mute member", failure);
-				});
-				buffer.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
-					.append(" "+lu.getLocalized(locale, path+".for")+" "+TimeUtil.durationToLocalizedString(lu, locale, duration)+"\n");
+				failure -> bot.getAppLogger().error("Strike punishment execution, Mute member", failure));
+				builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
+						.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
+						.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
+						.append("\n");
 			}
 		}
 		if (actions.contains(PunishActions.REMOVE_ROLE)) {
 			Long roleId = null;
 			try {
 				roleId = Long.valueOf(PunishActions.REMOVE_ROLE.getMatchedValue(data));
-			} catch (NumberFormatException ex) {}
+			} catch (NumberFormatException ignored) {}
 			if (roleId != null) {
 				Role role = guild.getRoleById(roleId);
 				if (role != null && guild.getSelfMember().canInteract(role)) {
@@ -222,11 +220,10 @@ public class StrikeCmd extends CommandBase {
 						// log action
 						bot.getLogger().role.onRoleRemoved(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
-					failure -> {
-						bot.getAppLogger().error("Strike punishment execution, Remove role", failure);
-					});
-					buffer.append(lu.getLocalized(locale, PunishActions.REMOVE_ROLE.getPath()))
-						.append(" "+role.getName()+"\n");
+					failure -> bot.getAppLogger().error("Strike punishment execution, Remove role", failure));
+					builder.append(lu.getLocalized(locale, PunishActions.REMOVE_ROLE.getPath()))
+							.append(" ").append(role.getName())
+							.append("\n");
 				}
 			}
 		}
@@ -234,7 +231,7 @@ public class StrikeCmd extends CommandBase {
 			Long roleId = null;
 			try {
 				roleId = Long.valueOf(PunishActions.ADD_ROLE.getMatchedValue(data));
-			} catch (NumberFormatException ex) {}
+			} catch (NumberFormatException ignored) {}
 			if (roleId != null) {
 				Role role = guild.getRoleById(roleId);
 				if (role != null && guild.getSelfMember().canInteract(role)) {
@@ -243,20 +240,19 @@ public class StrikeCmd extends CommandBase {
 						// log action
 						bot.getLogger().role.onRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
-					failure -> {
-						bot.getAppLogger().error("Strike punishment execution, Add role", failure);
-					});
-					buffer.append(lu.getLocalized(locale, PunishActions.ADD_ROLE.getPath()))
-						.append(" "+role.getName()+"\n");
+					failure -> bot.getAppLogger().error("Strike punishment execution, Add role", failure));
+					builder.append(lu.getLocalized(locale, PunishActions.ADD_ROLE.getPath()))
+							.append(" ").append(role.getName())
+							.append("\n");
 				}
 			}
 		}
 
-		if (buffer.isEmpty()) return null;
+		if (builder.isEmpty()) return null;
 		
 		return new Field(
 			lu.getLocalized(locale, path+".autopunish_title").formatted(strikes),
-			buffer.toString(),
+			builder.toString(),
 			false
 		);
 

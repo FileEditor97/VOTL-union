@@ -43,3 +43,6 @@ app/.settings/org.eclipse.buildship.core.prefs
 
 # Include wrapper files
 !gradle/wrapper/*
+
+# Idea
+.idea

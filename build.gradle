@@ -13,10 +13,6 @@ def group = 'union.App'
 repositories {
 	// Use Maven Central for resolving dependencies.
 	mavenCentral()
-	// JDA-Chewtils SNAPSHOTs
-	maven {
-		url 'https://m2.chew.pro/snapshots/'
-	}
 }
 
 dependencies {
@@ -39,14 +35,12 @@ dependencies {
 	implementation 'org.jsoup:jsoup:1.17.2'							// HTML tools
 	// https://mvnrepository.com/artifact/io.github.java-diff-utils/java-diff-utils
 	implementation 'io.github.java-diff-utils:java-diff-utils:4.12'
+	// https://mvnrepository.com/artifact/org.json/json
+	implementation 'org.json:json:20240303'
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
 	implementation 'org.apache.groovy:groovy:4.0.21'				// Groovy - code evaluation
-
-	// Chewtils commands
-	// https://mvnrepository.com/artifact/org.json/json
-	implementation 'org.json:json:20240303'
 }
 
 javadoc {

@@ -85,7 +85,7 @@ public class TicketPanelCmd extends CommandBase {
 			String footer = event.optString("embed_footer");
 
 			if (isInvalidURL(image)) {
-				createError(event, path+".image_not_valid", "Received unvalid URL: `%s`".formatted(image));
+				createError(event, path+".image_not_valid", "Received invalid URL: `%s`".formatted(image));
 				return;
 			}
 
@@ -135,7 +135,7 @@ public class TicketPanelCmd extends CommandBase {
 			String footer = event.optString("embed_footer");
 
 			if (isInvalidURL(image)) {
-				editError(event, path+".image_not_valid", "Received unvalid URL: `%s`".formatted(image));
+				editError(event, path+".image_not_valid", "Received invalid URL: `%s`".formatted(image));
 				return;
 			}
 			
@@ -237,9 +237,7 @@ public class TicketPanelCmd extends CommandBase {
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
 						.build()
 					).queue();
-				}, failure -> {
-					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", failure.getMessage())).queue();
-				});
+				}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", failure.getMessage())).queue());
 			}
 		}
 
@@ -337,7 +335,7 @@ public class TicketPanelCmd extends CommandBase {
 
 			List<Role> supportRoles = Optional.ofNullable(event.optMentions("support_roles")).map(Mentions::getRoles).orElse(Collections.emptyList());
 			String supportRoleIds = null;
-			if (supportRoles.size() > 0) {
+			if (!supportRoles.isEmpty()) {
 				if (supportRoles.size() > 6) {
 					editError(event, path+".too_many_roles", "Provided: %d".formatted(supportRoles.size()));
 					return;
@@ -407,7 +405,7 @@ public class TicketPanelCmd extends CommandBase {
 
 			List<Role> supportRoles = Optional.ofNullable(event.optMentions("support_roles")).map(Mentions::getRoles).orElse(Collections.emptyList());
 			String supportRoleIds = null;
-			if (supportRoles.size() > 0) {
+			if (!supportRoles.isEmpty()) {
 				if (supportRoles.size() > 6) {
 					editError(event, path+".too_many_roles", "Provided: %d".formatted(supportRoles.size()));
 					return;
@@ -474,7 +472,7 @@ public class TicketPanelCmd extends CommandBase {
 			String message = Optional.ofNullable(tag.getMessage()).orElse(lu.getText(event, path+".none"));
 			String category = Optional.ofNullable(tag.getLocation()).map(id -> event.getGuild().getCategoryById(id).getAsMention()).orElse(lu.getText(event, path+".none"));
 			String roles = Optional.ofNullable(tag.getSupportRoles())
-				.map(ids -> Stream.of(ids.split(";")).map(id -> "<@&%s>".formatted(id)).collect(Collectors.joining(", ")))
+				.map(ids -> Stream.of(ids.split(";")).map("<@&%s>"::formatted).collect(Collectors.joining(", ")))
 				.orElse(lu.getText(event, path+".none"));
 			
 			builder.addField(lu.getText(event, path+".location"), category, true)
@@ -541,7 +539,7 @@ public class TicketPanelCmd extends CommandBase {
 			event.deferReply(true).queue();
 			long guildId = event.getGuild().getIdLong();
 			
-			StringBuffer response = new StringBuffer();
+			StringBuilder response = new StringBuilder();
 			if (event.hasOption("autoclose")) {
 				int time = event.optInteger("autoclose");
 				bot.getDBUtil().ticketSettings.setAutocloseTime(guildId, time);

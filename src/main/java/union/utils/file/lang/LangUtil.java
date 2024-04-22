@@ -18,32 +18,26 @@ public final class LangUtil {
 	
 	@NotNull
 	public String getString(DiscordLocale locale, String path) {
-		switch (locale) {
-			case RUSSIAN:
-				return fileManager.getString(locale.getLocale(), path);
-			default: //en
-				return fileManager.getString("en-GB", path);
-		}
+		return switch (locale) {
+			case RUSSIAN -> fileManager.getString(locale.getLocale(), path);
+			default -> fileManager.getString("en-GB", path);
+        };
 	}
 
 	@Nullable
 	public String getNullableString(DiscordLocale locale, String path) {
-		switch (locale) {
-			case RUSSIAN:
-				return fileManager.getNullableString(locale.getLocale(), path);
-			default: //en
-				return fileManager.getNullableString("en-GB", path);
-		}
+		return switch (locale) {
+			case RUSSIAN -> fileManager.getNullableString(locale.getLocale(), path);
+			default -> fileManager.getNullableString("en-GB", path);
+        };
 	}
 
 	@NotNull
 	public List<String> getStringList(DiscordLocale locale, String path) {
-		switch (locale) {
-			case RUSSIAN:
-				return fileManager.getStringList(locale.getLocale(), path);
-			default: //en
-				return fileManager.getStringList("en-GB", path);
-		}
+		return switch (locale) {
+			case RUSSIAN -> fileManager.getStringList(locale.getLocale(), path);
+			default -> fileManager.getStringList("en-GB", path);
+        };
 	}
 
 }

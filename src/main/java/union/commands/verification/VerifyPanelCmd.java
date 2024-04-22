@@ -100,7 +100,7 @@ public class VerifyPanelCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			Guild guild = event.getGuild();
-			Integer color = bot.getDBUtil().getGuildSettings(guild).getColor(); 
+			int color = bot.getDBUtil().getGuildSettings(guild).getColor();
 			
 			MessageEmbed main = new EmbedBuilder().setColor(color)
 				.setDescription(bot.getDBUtil().getVerifySettings(guild).getMainText())

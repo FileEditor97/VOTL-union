@@ -29,19 +29,18 @@ public class Helper {
 	private final LoggingUtil logUtil;
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Helper.class);
 
-	private final GuildListener guildListener;
-	
-	public Helper(App instance, final String token) throws Exception {
+    public Helper(App instance, final String token) {
 		this.mainJDA = instance.JDA;
 		this.db = instance.getDBUtil();
 		this.logUtil = instance.getLogger();
 
-		guildListener = new GuildListener(this);
+        GuildListener guildListener = new GuildListener(this);
 		
 		JDABuilder helperBuilder = JDABuilder.createLight(token).setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=RWU3o_kDixc"))
 			.addEventListeners(guildListener);
-		this.JDA = helperBuilder.build();
-	}
+
+        this.JDA = helperBuilder.build();
+    }
 
 	public JDA getJDA() {
 		return JDA;
@@ -64,7 +63,7 @@ public class Helper {
 	}
 
 	private void banUser(int groupId, Guild executedGuild, User user, String reason) {
-		List<Long> guildIds = new ArrayList<Long>();
+		List<Long> guildIds = new ArrayList<>();
 		for (long guildId : db.group.getGroupManagers(groupId)) {
 			for (int subGroupId : db.group.getOwnedGroups(guildId)) {
 				guildIds.addAll(db.group.getGroupMembers(subGroupId));
@@ -79,7 +78,7 @@ public class Helper {
 		for (long guildId : guildIds) {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
-			// fail-safe check if has expirable ban (to prevent auto unban)
+			// fail-safe check if user has temporal ban (to prevent auto unban)
 			db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
 
 			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason(newReason).submit());
@@ -97,7 +96,7 @@ public class Helper {
 	}
 
 	private void unbanUser(int groupId, Guild master, User user, String reason) {
-		List<Long> guildIds = new ArrayList<Long>();
+		List<Long> guildIds = new ArrayList<>();
 		for (long guildId : db.group.getGroupManagers(groupId)) {
 			for (int subGroupId : db.group.getOwnedGroups(guildId)) {
 				guildIds.addAll(db.group.getGroupMembers(subGroupId));
@@ -112,7 +111,7 @@ public class Helper {
 		for (long guildId : guildIds) {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
-			// Remove expirable ban case
+			// Remove temporal ban case
 			db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
 
 			completableFutures.add(guild.unban(user).reason(newReason).submit());
@@ -129,7 +128,7 @@ public class Helper {
 	}
 
 	private void kickUser(int groupId, Guild master, User user, String reason) {
-		List<Long> guildIds = new ArrayList<Long>();
+		List<Long> guildIds = new ArrayList<>();
 		for (long guildId : db.group.getGroupManagers(groupId)) {
 			for (int subGroupId : db.group.getOwnedGroups(guildId)) {
 				guildIds.addAll(db.group.getGroupMembers(subGroupId));
@@ -159,21 +158,15 @@ public class Helper {
 	}
 
 	public void runBan(int groupId, Guild executedGuild, User user, String reason) {
-		CompletableFuture.runAsync(() -> {
-			banUser(groupId, executedGuild, user, Optional.ofNullable(reason).orElse("none"));
-		});
+		CompletableFuture.runAsync(() -> banUser(groupId, executedGuild, user, Optional.ofNullable(reason).orElse("none")));
 	}
 
 	public void runUnban(int groupId, Guild master, User user, String reason) {
-		CompletableFuture.runAsync(() -> {
-			unbanUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
-		});
+		CompletableFuture.runAsync(() -> unbanUser(groupId, master, user, Optional.ofNullable(reason).orElse("none")));
 	}
 
 	public void runKick(int groupId, Guild master, User user, String reason) {
-		CompletableFuture.runAsync(() -> {
-			kickUser(groupId, master, user, Optional.ofNullable(reason).orElse("none"));
-		});
+		CompletableFuture.runAsync(() -> kickUser(groupId, master, user, Optional.ofNullable(reason).orElse("none")));
 	}
 
 }

@@ -26,8 +26,8 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class TicketUtil {
 	
-	private App bot;
-	private DBUtil db;
+	private final App bot;
+	private final DBUtil db;
 
 	public TicketUtil(App bot) {
 		this.bot = bot;

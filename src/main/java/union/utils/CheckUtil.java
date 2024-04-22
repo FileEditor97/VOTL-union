@@ -54,14 +54,13 @@ public class CheckUtil {
 
 		// Check for role level
 		List<String> roleIds = bot.getDBUtil().access.getAllRoles(member.getGuild().getId());
-		CmdAccessLevel level = member.getRoles()
+
+        return member.getRoles()
 			.stream()
 			.filter(role -> roleIds.contains(role.getId()))
 			.map(role -> bot.getDBUtil().access.getRoleLevel(role.getId()))
 			.max(CmdAccessLevel::compareTo)
 			.orElse(CmdAccessLevel.ALL);
-		
-		return level;
 	}
 
 	public Boolean hasHigherAccess(Member who, Member than) {
@@ -70,10 +69,8 @@ public class CheckUtil {
 
 	public Boolean hasAccess(Member member, CmdAccessLevel accessLevel) {
 		if (accessLevel.equals(CmdAccessLevel.ALL)) return true;
-		if (accessLevel.isHigherThan(getAccessLevel(member)))
-			return false;
-		return true;
-	}
+		return !accessLevel.isHigherThan(getAccessLevel(member));
+    }
 
 	public CheckUtil hasAccess(IReplyCallback replyCallback, Member member, CmdAccessLevel accessLevel) throws CheckException {
 		if (accessLevel.equals(CmdAccessLevel.ALL)) return this;

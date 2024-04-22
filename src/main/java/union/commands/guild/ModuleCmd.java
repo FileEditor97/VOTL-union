@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import union.App;
 import union.base.command.SlashCommand;
@@ -107,11 +106,10 @@ public class ModuleCmd extends CommandBase {
 			StringSelectMenu menu = StringSelectMenu.create("disable-module")
 				.setPlaceholder(lu.getText(event, path+".select"))
 				.setRequiredRange(1, 1)
-				.addOptions(enabled.stream().map(
-					sModule -> {
-						return SelectOption.of(lu.getText(event, sModule.getPath()), sModule.toString());
-					}
-				).collect(Collectors.toList()))
+				.addOptions(enabled.stream()
+						.map(sModule -> SelectOption.of(lu.getText(event, sModule.getPath()), sModule.toString()))
+						.toList()
+				)
 				.build();
 
 			hook.editOriginalEmbeds(embed.build()).setActionRow(menu).queue(msg -> {
@@ -180,11 +178,10 @@ public class ModuleCmd extends CommandBase {
 			StringSelectMenu menu = StringSelectMenu.create("enable-module")
 				.setPlaceholder(lu.getText(event, path+".select"))
 				.setRequiredRange(1, 1)
-				.addOptions(enabled.stream().map(
-					sModule -> {
-						return SelectOption.of(lu.getText(event, sModule.getPath()), sModule.toString());
-					}
-				).collect(Collectors.toList()))
+				.addOptions(enabled.stream()
+						.map(sModule -> SelectOption.of(lu.getText(event, sModule.getPath()), sModule.toString()))
+						.toList()
+				)
 				.build();
 
 			hook.editOriginalEmbeds(embed.build()).setActionRow(menu).queue(msg -> {

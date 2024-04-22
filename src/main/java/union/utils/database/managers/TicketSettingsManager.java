@@ -33,7 +33,7 @@ public class TicketSettingsManager extends LiteDBBase {
 	public TicketSettings getSettings(long guildId) {
 		if (cache.contains(guildId))
 			return cache.get(guildId);
-		TicketSettings settings = applyNonNull(getData(guildId), data -> new TicketSettings(data));
+		TicketSettings settings = applyNonNull(getData(guildId), TicketSettings::new);
 		if (settings == null)
 			return defaultSettings;
 		cache.put(guildId, settings);
@@ -63,19 +63,19 @@ public class TicketSettingsManager extends LiteDBBase {
 
 	public void setAutocloseLeft(long guildId, boolean close) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close==true ? 1 : 0));
+		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close ? 1 : 0));
 	}
 
 	public void setOtherRole(long guildId, boolean otherRole) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole==true ? 1 : 0));
+		execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole ? 1 : 0));
 	}
 
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
 
-	public class TicketSettings {
+	public static class TicketSettings {
 		private final int autocloseTime;
 		private final boolean autocloseLeft, otherRole;
 		private final List<String> rowText;
@@ -108,10 +108,6 @@ public class TicketSettingsManager extends LiteDBBase {
 
 		public boolean otherRoleEnabled() {
 			return otherRole;
-		}
-
-		public List<String> getRowText() {
-			return rowText;
 		}
 
 		public String getRowText(int n) {

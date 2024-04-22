@@ -5,7 +5,7 @@ import union.objects.annotation.NotNull;
 public class FormatterException extends Exception {
 	
 	@NotNull
-	private String path;
+	private final String path;
 	
 	public FormatterException(@NotNull String path) {
 		super();

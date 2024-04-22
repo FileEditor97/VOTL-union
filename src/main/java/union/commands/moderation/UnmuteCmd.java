@@ -73,9 +73,7 @@ public class UnmuteCmd extends CommandBase {
 					.build()
 				);
 			},
-			failed -> {
-				editError(event, path+".abort", failed.getMessage());
-			});
+			failed -> editError(event, path+".abort", failed.getMessage()));
 		} else {
 			editError(event, path+".not_muted");
 		}

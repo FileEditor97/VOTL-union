@@ -40,10 +40,6 @@ public class ModStatsCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 		User mod = event.optUser("user", event.getUser());
-		if (mod == null) {
-			editError(event, path+".no_user");
-			return;
-		}
 		long guildId = event.getGuild().getIdLong();
 
 		Map<Integer, Integer> countTotal = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong());

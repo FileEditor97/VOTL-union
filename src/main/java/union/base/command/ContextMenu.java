@@ -138,14 +138,12 @@ public abstract class ContextMenu extends Interaction
 		StringBuilder front = new StringBuilder(lu.getText(event, "errors.cooldown.cooldown_command")
 			.replace("{time}", Integer.toString(remaining))
 		);
-		if(cooldownScope.equals(CooldownScope.USER))
-			{}
-		else if(cooldownScope.equals(CooldownScope.USER_GUILD) && guild==null)
-			front.append(" " + lu.getText(event, CooldownScope.USER_CHANNEL.errorPath));
+		if(cooldownScope.equals(CooldownScope.USER_GUILD) && guild==null)
+			front.append(" ").append(lu.getText(event, CooldownScope.USER_CHANNEL.errorPath));
 		else if(cooldownScope.equals(CooldownScope.GUILD) && guild==null)
-			front.append(" " + lu.getText(event, CooldownScope.CHANNEL.errorPath));
+			front.append(" ").append(lu.getText(event, CooldownScope.CHANNEL.errorPath));
 		else
-			front.append(" " + lu.getText(event, cooldownScope.errorPath));
+			front.append(" ").append(lu.getText(event, cooldownScope.errorPath));
 		
 		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));
 	}

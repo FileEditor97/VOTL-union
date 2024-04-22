@@ -116,11 +116,6 @@ public class LogEmbedUtil {
 			return this;
 		}
 
-		/* public LogEmbedBuilder setHeader(LogEvent logEvent) {
-			builder.setAuthor(lu.getLocalized(locale, logEvent.getPath()));
-			return this;
-		} */
-
 		public LogEmbedBuilder setHeader(LogEvent logEvent, Object... args) {
 			builder.setAuthor(lu.getLocalized(locale, logEvent.getPath()).formatted(args));
 			return this;
@@ -422,7 +417,7 @@ public class LogEmbedUtil {
 			.addField("moderation.blacklist.steam", steamID)
 			.addField("moderation.blacklist.group", groupInfo)
 			.setEnforcer(enforcer.getIdLong())
-			.setId(target.getId())
+			.setId(target != null ? target.getId() : null)
 			.build();
 	}
 
@@ -768,7 +763,7 @@ public class LogEmbedUtil {
 				.replace("{name}", channel.getName())
 				.replace("{closed}", Optional.ofNullable(userClosed).map(User::getAsMention).orElse(localized(locale, "tickets.autoclosed")))
 				.replace("{created}", User.fromId(authorId).getAsMention())
-				.replace("{claimed}", Optional.ofNullable(claimerId).map(id -> "<@%s>".formatted(id)).orElse(localized(locale, "tickets.unclaimed")))
+				.replace("{claimed}", Optional.ofNullable(claimerId).map("<@%s>"::formatted).orElse(localized(locale, "tickets.unclaimed")))
 			)
 			.setFooter("Channel ID: "+channel.getId())
 			.build();
@@ -1156,12 +1151,14 @@ public class LogEmbedUtil {
 			switch (key) {
 				case "$add" -> {
 					String text = lu.getLocalizedNullable(locale, "logger.keys.add_roles");
-					builder.append("**"+text+"**: "+formatValue(key, change.getNewValue())+"\n");
+					builder.append("**").append(text).append("**: ")
+							.append(formatValue(key, change.getNewValue())).append("\n");
 					continue;
 				}
 				case "$remove" -> {
 					String text = lu.getLocalizedNullable(locale, "logger.keys.remove_roles");
-					builder.append("**"+text+"**: "+formatValue(key, change.getNewValue())+"\n");
+					builder.append("**").append(text).append("**: ")
+							.append(formatValue(key, change.getNewValue())).append("\n");
 					continue;
 				}
 				case "permissions" -> {
@@ -1180,13 +1177,16 @@ public class LogEmbedUtil {
 			Object newValue = change.getNewValue();
 			if (oldValue == null) {
 				// Created
-				builder.append("\u2795 **"+text+"**: "+formatValue(key, newValue));
+				builder.append("\u2795 **").append(text).append("**: ")
+						.append(formatValue(key, newValue));
 			} else if (newValue == null || newValue.toString().isBlank()) {
 				// Deleted
-				builder.append("\u2796 **"+text+"**: "+formatValue(key, oldValue));
+				builder.append("\u2796 **").append(text).append("**: ")
+						.append(formatValue(key, oldValue));
 			} else {
 				// Changed
-				builder.append("**"+text+"**: ||"+formatValue(key, oldValue)+"|| -> "+formatValue(key, newValue));
+				builder.append("**").append(text).append("**: ||")
+						.append(formatValue(key, oldValue)).append("|| -> ").append(formatValue(key, newValue));
 			}
 			builder.append("\n");
 		}
@@ -1198,12 +1198,10 @@ public class LogEmbedUtil {
 	private final String guildSplashLink = "[Image](https://cdn.discordapp.com/splashes/{guild}/%s.png)";
 
 	private String formatValue(String key, @NotNull Object object) {
-		if (object instanceof Boolean) {
-			Boolean value = (Boolean) object;
-			return value ? Constants.SUCCESS : Constants.FAILURE;
-		} else if (object instanceof String) {
-			String value = (String) object;
-			if (value.isEmpty()) return Constants.NONE;
+		if (object instanceof Boolean value) {
+            return value ? Constants.SUCCESS : Constants.FAILURE;
+		} else if (object instanceof String value) {
+            if (value.isEmpty()) return Constants.NONE;
 			return switch (key) {
 				case "afk_channel_id", "system_channel_id", "rules_channel_id", "public_updates_channel_id" -> "<#"+value+">";
 				case "owner_id" -> "<@"+value+">";
@@ -1212,9 +1210,8 @@ public class LogEmbedUtil {
 				case "communication_disabled_until" -> TimeUtil.formatTime(Instant.parse(value), false);
 				default -> "`"+MessageUtil.limitString(value, 1024)+"`";
 			};
-		} else if (object instanceof Integer) {
-			Integer value = (Integer) object;
-			return switch (key) {
+		} else if (object instanceof Integer value) {
+            return switch (key) {
 				case "type" -> formatType(ChannelType.fromId(value));
 				case "color" -> "`#"+Integer.toHexString(value)+"`";
 				case "explicit_content_filter" -> formatType(ExplicitContentLevel.fromKey(value));
@@ -1222,9 +1219,8 @@ public class LogEmbedUtil {
 				case "default_message_notifications" -> formatType(NotificationLevel.fromKey(value));
 				default -> String.valueOf(value);
 			};
-		} else if (object instanceof List<?>) {
-			List<?> values = (List<?>) object;
-			if (values.isEmpty()) return "";
+		} else if (object instanceof List<?> values) {
+            if (values.isEmpty()) return "";
 			if (values.get(0) instanceof HashMap) {
 				return values.stream()
 					.map(v -> (String) JsonPath.read(v, "$.id"))
@@ -1256,11 +1252,12 @@ public class LogEmbedUtil {
 			String id = (String) JsonPath.read(v, "$.id");
 			int type = (Integer) JsonPath.read(v, "$.type");
 			//buffer.append("> <@%s%s> (%<s)\n".formatted(type==0?"&":"", id))
-			builder.append("> %s%s>\n".formatted(type==0?"Role <@&":"Member <@", id))
-				.append("Permissions: `"+perms.stream().map(Permission::getName).collect(Collectors.joining(", ")))
-				.append("`\n");
+			builder.append("> %s%s>\n".formatted(type == 0 ? "Role <@&" : "Member <@", id))
+					.append("Permissions: `")
+					.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")))
+					.append("`\n");
 		});
-		return builder.append("").toString();
+		return builder.toString();
 	}
 
 	private String parseRolePermissions(DiscordLocale locale, AuditLogChange change) {
@@ -1269,13 +1266,17 @@ public class LogEmbedUtil {
 
 		StringBuilder builder = new StringBuilder();
 		if (!changes.getRight().isEmpty()) {
-			builder.append("**"+lu.getLocalized(locale, "logger.keys.add_permissions")+"**: ```\n");
-			changes.getRight().forEach(perm -> builder.append(perm.getName()+"\n"));
+			builder.append("**")
+					.append(lu.getLocalized(locale, "logger.keys.add_permissions"))
+					.append("**: ```\n");
+			changes.getRight().forEach(perm -> builder.append(perm.getName()).append("\n"));
 			builder.append("```\n");
 		}
 		if (!changes.getLeft().isEmpty()) {
-			builder.append("**"+lu.getLocalized(locale, "logger.keys.remove_permissions")+"**: ```\n");
-			changes.getLeft().forEach(perm -> builder.append(perm.getName()+"\n"));
+			builder.append("**")
+					.append(lu.getLocalized(locale, "logger.keys.remove_permissions"))
+					.append("**: ```\n");
+			changes.getLeft().forEach(perm -> builder.append(perm.getName()).append("\n"));
 			builder.append("```\n");
 		}
 		return builder.append("\n").toString();
@@ -1292,16 +1293,16 @@ public class LogEmbedUtil {
 				long permsLong = castLong(entry.getChangeByKey("allow").getNewValue());
 				if (permsLong != 0) {
 					EnumSet<Permission> perms = Permission.getPermissions(permsLong);
-					builder.append(lu.getLocalized(locale, "logger.keys.allow")+": `");
-					builder.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")));
-					builder.append("`\n");
+					builder.append(lu.getLocalized(locale, "logger.keys.allow")).append(": `")
+							.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")))
+							.append("`\n");
 				}
 				permsLong = castLong(entry.getChangeByKey("deny").getNewValue());
 				if (permsLong != 0) {
 					EnumSet<Permission> perms = Permission.getPermissions(permsLong);
-					builder.append(lu.getLocalized(locale, "logger.keys.deny")+": `");
-					builder.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")));
-					builder.append("`\n");
+					builder.append(lu.getLocalized(locale, "logger.keys.deny")).append(": `")
+							.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")))
+							.append("`\n");
 				}
 
 				return builder.toString();
@@ -1315,16 +1316,16 @@ public class LogEmbedUtil {
 				long permsLong = castLong(entry.getChangeByKey("allow").getOldValue());
 				if (permsLong != 0) {
 					EnumSet<Permission> perms = Permission.getPermissions(permsLong);
-					builder.append(lu.getLocalized(locale, "logger.keys.allow")+": `");
-					builder.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")));
-					builder.append("`\n");
+					builder.append(lu.getLocalized(locale, "logger.keys.allow")).append(": `")
+							.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")))
+							.append("`\n");
 				}
 				permsLong = castLong(entry.getChangeByKey("deny").getOldValue());
 				if (permsLong != 0) {
 					EnumSet<Permission> perms = Permission.getPermissions(permsLong);
-					builder.append(lu.getLocalized(locale, "logger.keys.deny")+": `");
-					builder.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")));
-					builder.append("`\n");
+					builder.append(lu.getLocalized(locale, "logger.keys.deny")).append(": `")
+							.append(perms.stream().map(Permission::getName).collect(Collectors.joining(", ")))
+							.append("`\n");
 				}
 
 				return builder.toString();
@@ -1333,17 +1334,17 @@ public class LogEmbedUtil {
 				StringBuilder builder = new StringBuilder();
 				Pair<EnumSet<Permission>, EnumSet<Permission>> changes = getChangedPerms(entry.getChangeByKey("allow"));
 				if (changes != null) {
-					builder.append("**"+lu.getLocalized(locale, "logger.keys.allow")+"**: ```\n");
-					changes.getLeft().forEach(perm -> builder.append("\u2796 "+perm.getName()+"\n"));
-					changes.getRight().forEach(perm -> builder.append("\u2795 "+perm.getName()+"\n"));
+					builder.append("**").append(lu.getLocalized(locale, "logger.keys.allow")).append("**: ```\n");
+					changes.getLeft().forEach(perm -> builder.append("\u2796 ").append(perm.getName()).append("\n"));
+					changes.getRight().forEach(perm -> builder.append("\u2795 ").append(perm.getName()).append("\n"));
 					builder.append("```\n");
 				}
 				
 				changes = getChangedPerms(entry.getChangeByKey("deny"));
 				if (changes != null) {
-					builder.append("**"+lu.getLocalized(locale, "logger.keys.deny")+"**: ```\n");
-					changes.getLeft().forEach(perm -> builder.append("\u2796 "+perm.getName()+"\n"));
-					changes.getRight().forEach(perm -> builder.append("\u2795 "+perm.getName()+"\n"));
+					builder.append("**").append(lu.getLocalized(locale, "logger.keys.deny")).append("**: ```\n");
+					changes.getLeft().forEach(perm -> builder.append("\u2796 ").append(perm.getName()).append("\n"));
+					changes.getRight().forEach(perm -> builder.append("\u2795 ").append(perm.getName()).append("\n"));
 					builder.append("```\n");
 				}
 

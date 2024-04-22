@@ -104,9 +104,8 @@ public class RoleCmd extends CommandBase {
 					.setColor(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{roles}", rolesString).replace("{user}", member.getAsMention()))
 					.build());
-			}, failure -> {
-				createError(event, path+".failed", failure.getMessage());
-			});
+			},
+			failure -> createError(event, path+".failed", failure.getMessage()));
 		}
 
 	}
@@ -161,7 +160,7 @@ public class RoleCmd extends CommandBase {
 				createError(event, path+".no_member");
 				return;
 			}
-			
+
 			List<Role> finalRoles = new ArrayList<>();
 			finalRoles.addAll(member.getRoles());
 			finalRoles.removeAll(roles);
@@ -174,9 +173,8 @@ public class RoleCmd extends CommandBase {
 				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{role}", rolesString).replace("{user}", member.getAsMention()))
 					.build());
-			}, failure -> {
-				createError(event, path+".failed", failure.getMessage());
-			});
+			},
+			failure -> createError(event, path+".failed", failure.getMessage()));
 		}
 		
 	}
@@ -214,7 +212,7 @@ public class RoleCmd extends CommandBase {
 			event.replyEmbeds(builder.build()).queue();
 
 			event.getGuild().findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
-				Integer maxSize = members.size();
+				int maxSize = members.size();
 				if (maxSize == 0) {
 					editError(event, path+".empty");
 					return;
@@ -236,7 +234,7 @@ public class RoleCmd extends CommandBase {
 						if (exception != null) {
 							editError(event, "errors.unknown", exception.getMessage());
 						} else {
-							Integer removed = 0;
+							int removed = 0;
 							for (CompletableFuture<Void> future : completableFutures) {
 								if (!future.isCompletedExceptionally()) removed++;
 							}
@@ -244,13 +242,11 @@ public class RoleCmd extends CommandBase {
 							bot.getLogger().role.onRoleRemovedAll(guild, event.getUser(), role);
 							// Send reply
 							editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
-								.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())
+								.replace("{role}", role.getName()).replace("{count}", Integer.toString(removed)).replace("{max}", Integer.toString(maxSize))
 							).build());
 						}
 					}).thenRun(guild::pruneMemberCache); // Prune member cache
-			}).onError(failure -> {
-				editError(event, "errors.error", failure.getMessage());
-			});
+			}).onError(failure -> editError(event, "errors.error", failure.getMessage()));
 		}
 		
 	}

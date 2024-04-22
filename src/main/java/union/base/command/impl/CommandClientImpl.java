@@ -85,7 +85,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 	private final HashMap<String,OffsetDateTime> cooldowns;
 	private final HashMap<String,Integer> uses;
 	private final boolean shutdownAutomatically;
-	private final String helpWord;
 	private final ScheduledExecutorService executor;
 
 	private CommandListener listener = null;
@@ -93,7 +92,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 
 	public CommandClientImpl(String ownerId, Function<MessageReceivedEvent, Boolean> commandPreProcessFunction, Activity activity, OnlineStatus status, String serverInvite,
 							 ArrayList<SlashCommand> slashCommands, ArrayList<ContextMenu> contextMenus, String forcedGuildId, String[] devGuildIds, boolean manualUpsert,
-							 boolean shutdownAutomatically, String helpWord, ScheduledExecutorService executor)
+							 boolean shutdownAutomatically, ScheduledExecutorService executor)
 	{
 		Checks.check(ownerId != null, "Owner ID was set null or not set! Please provide an User ID to register as the owner!");
 
@@ -117,7 +116,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 		this.cooldowns = new HashMap<>();
 		this.uses = new HashMap<>();
 		this.shutdownAutomatically = shutdownAutomatically;
-		this.helpWord = helpWord==null ? "help" : helpWord;
 		this.executor = executor==null ? Executors.newSingleThreadScheduledExecutor() : executor;
 
 		// Load slash commands
@@ -214,7 +212,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 	{
 		OffsetDateTime now = OffsetDateTime.now();
 		cooldowns.keySet().stream().filter((str) -> (cooldowns.get(str).isBefore(now)))
-				.collect(Collectors.toList()).forEach(cooldowns::remove);
+				.toList().forEach(cooldowns::remove);
 	}
 
 	@Override
@@ -249,7 +247,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 			//shift if not append
 			if(index<slashCommands.size())
 			{
-				slashCommandIndex.entrySet().stream().filter(entry -> entry.getValue()>=index).collect(Collectors.toList())
+				slashCommandIndex.entrySet().stream().filter(entry -> entry.getValue()>=index).toList()
 					.forEach(entry -> slashCommandIndex.put(entry.getKey(), entry.getValue()+1));
 			}
 			//add
@@ -282,7 +280,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 			//shift if not append
 			if(index<contextMenuIndex.size())
 			{
-				contextMenuIndex.entrySet().stream().filter(entry -> entry.getValue()>=index).collect(Collectors.toList())
+				contextMenuIndex.entrySet().stream().filter(entry -> entry.getValue()>=index).toList()
 					.forEach(entry -> contextMenuIndex.put(entry.getKey(), entry.getValue()+1));
 			}
 			//add
@@ -319,12 +317,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 	public int getTotalGuilds()
 	{
 		return totalGuilds;
-	}
-
-	@Override
-	public String getHelpWord()
-	{
-		return helpWord;
 	}
 
 	@Override
@@ -367,7 +359,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 
 		if(activity != null)
 			event.getJDA().getPresence().setPresence(status==null ? OnlineStatus.ONLINE : status,
-				"default".equals(activity.getName()) ? Activity.playing("Type /"+helpWord) : activity);
+				"default".equals(activity.getName()) ? Activity.playing("Type /help") : activity);
 
 		// Upsert slash commands, if not manual
 		if (!manualUpsert)

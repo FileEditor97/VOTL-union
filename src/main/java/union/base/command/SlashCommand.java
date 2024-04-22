@@ -217,12 +217,7 @@ public abstract class SlashCommand extends Interaction
 			}
 		}
 
-		// this check is unnecessary 
-		/* if (guildOnly && !event.isFromGuild()) {
-			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.guild_only"), client);
-			return;
-		} */
-		// check db and permisisons
+		// check db and permissions
 		if (event.isFromGuild() && !ownerCommand) {
 			Guild guild = event.getGuild();
 			Member author = event.getMember();
@@ -265,7 +260,7 @@ public abstract class SlashCommand extends Interaction
 	}
 
 	/**
-	 * Tests whether or not the {@link net.dv8tion.jda.api.entities.User User} who triggered this
+	 * Tests whether the {@link net.dv8tion.jda.api.entities.User User} who triggered this
 	 * event is an owner of the bot.
 	 *
 	 * @param event the event that triggered the command
@@ -273,10 +268,8 @@ public abstract class SlashCommand extends Interaction
 	 * @return {@code true} if the User is the Owner, else {@code false}
 	 */
 	public boolean isOwner(SlashCommandEvent event, CommandClient client) {
-		if (client.getOwnerIdLong() == event.getUser().getIdLong())
-			return true;
-		return false;
-	}
+        return client.getOwnerIdLong() == event.getUser().getIdLong();
+    }
 
 	/**
 	 * Checks if the given input represents this Command
@@ -288,10 +281,8 @@ public abstract class SlashCommand extends Interaction
 	 */
 	public boolean isCommandFor(String input)
 	{
-		if(name.equalsIgnoreCase(input))
-			return true;
-		return false;
-	}
+		return name.equalsIgnoreCase(input);
+    }
 
 	/**
 	 * Gets the {@link union.base.command.SlashCommand#name SlashCommand.name} for the Command.
@@ -392,14 +383,14 @@ public abstract class SlashCommand extends Interaction
 			// Temporary map for easy group storage
 			Map<String, SubcommandGroupData> groupData = new HashMap<>();
 			for (SlashCommand child : children) {
-				// Inherite
+				// Inherit
 				if (child.userPermissions.length == 0) {
 					child.userPermissions = getUserPermissions();
 				}
 				if (child.botPermissions.length == 0) {
 					child.botPermissions = getBotPermissions();
 				}
-				if (child.getAccessLevel().getLevel() == CmdAccessLevel.ALL.getLevel()) {
+				if (child.getAccessLevel().getLevel().equals(CmdAccessLevel.ALL.getLevel())) {
 					child.accessLevel = getAccessLevel();
 				}
 				if (child.module == null) {
@@ -530,14 +521,12 @@ public abstract class SlashCommand extends Interaction
 		StringBuilder front = new StringBuilder(lu.getText(event,"errors.cooldown.cooldown_command")
 			.replace("{time}", Integer.toString(remaining))
 		);
-		if (cooldownScope.equals(CooldownScope.USER))
-			{}
-		else if (cooldownScope.equals(CooldownScope.USER_GUILD) && event.getGuild()==null)
-			front.append(" " + lu.getText(event, CooldownScope.USER_CHANNEL.errorPath));
+		if (cooldownScope.equals(CooldownScope.USER_GUILD) && event.getGuild()==null)
+			front.append(" ").append(lu.getText(event, CooldownScope.USER_CHANNEL.errorPath));
 		else if (cooldownScope.equals(CooldownScope.GUILD) && event.getGuild()==null)
-			front.append(" " + lu.getText(event, CooldownScope.CHANNEL.errorPath));
+			front.append(" ").append(lu.getText(event, CooldownScope.CHANNEL.errorPath));
 		else
-			front.append(" " + lu.getText(event, cooldownScope.errorPath));
+			front.append(" ").append(lu.getText(event, cooldownScope.errorPath));
 
 		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));
 	}

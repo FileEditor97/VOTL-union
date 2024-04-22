@@ -65,7 +65,7 @@ public class CheckRankCmd extends CommandBase {
 
 		// Retrieve members with this role
 		event.getGuild().findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
-			Integer maxSize = members.size();
+			int maxSize = members.size();
 			if (maxSize == 0) {
 				editError(event, path+".empty");
 				return;
@@ -90,8 +90,11 @@ public class CheckRankCmd extends CommandBase {
 				boolean remove = true;
 				if (ranks != null) {
 					for (String rank : ranks) {
-						if (rank != null && requiredRank.contains(rank)) remove = false;
-					};
+                        if (rank != null && requiredRank.contains(rank)) {
+                            remove = false;
+                            break;
+                        }
+					}
 				}
 				if (remove) completableFutures.add(guild.removeRoleFromMember(member, role).reason("User is not "+requiredRank).submit().exceptionally(ex -> null));
 			}
@@ -101,7 +104,7 @@ public class CheckRankCmd extends CommandBase {
 					if (exception != null) {
 						editError(event, "errors.unknown", exception.getMessage());
 					} else {
-						Integer removed = 0;
+						int removed = 0;
 						for (CompletableFuture<Void> future : completableFutures) {
 							if (!future.isCompletedExceptionally()) removed++;
 						}
@@ -110,13 +113,11 @@ public class CheckRankCmd extends CommandBase {
 						bot.getLogger().role.onCheckRank(guild, event.getUser(), role, requiredRank);
 						// Send reply
 						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
-							.replace("{role}", role.getName()).replace("{count}", removed.toString()).replace("{max}", maxSize.toString())
+							.replace("{role}", role.getName()).replace("{count}", Integer.toString(removed)).replace("{max}", Integer.toString(maxSize))
 						).build());
 					}
 				}).thenRun(guild::pruneMemberCache); // Prune member cache;
-		}).onError(failure -> {
-			editError(event, "errors.error", failure.getMessage());
-		});
+		}).onError(failure -> editError(event, "errors.error", failure.getMessage()));
 	}
 
 }

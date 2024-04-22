@@ -90,7 +90,7 @@ public class AboutCmd extends CommandBase {
 			)
 			.build();
 		
-		createReplyEmbed(event, event.isFromGuild() ? !event.optBoolean("show", false) : false, embed);
+		createReplyEmbed(event, event.isFromGuild() && !event.optBoolean("show", false), embed);
 	}
 
 }

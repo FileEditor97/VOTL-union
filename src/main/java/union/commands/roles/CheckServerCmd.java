@@ -51,7 +51,7 @@ public class CheckServerCmd extends CommandBase {
 			return;
 		}
 
-		// Check if guild is accessable by helper bot
+		// Check if guild is accessible by helper bot
 		if (bot.getHelper() == null) {
 			createError(event, path+".no_helper");
 			return;
@@ -69,7 +69,7 @@ public class CheckServerCmd extends CommandBase {
 
 		// Retrieve members with this role
 		guild.findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
-			Integer maxSize = members.size();
+			int maxSize = members.size();
 			if (maxSize == 0) {
 				editError(event, path+".empty");
 				return;
@@ -81,12 +81,12 @@ public class CheckServerCmd extends CommandBase {
 			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.round(maxSize*0.7))).build());
 
 			/* 1. If user is not in target server:
-			Try remove the role from user in this server
+			Try to remove the role from user in this server
 			 If success - return "true"
 			 If failed (ex, lacks permissions or other) - return "false"
 			2. If user is in target server:
 			 return "false" 
-			So count only those, fromn whom role was removed*/
+			So count only those, from whom role was removed*/
 			List<CompletableFuture<Boolean>> completableFutures = new ArrayList<>();
 			for (Member member : members) {
 				completableFutures.add(targetGuild.retrieveMember(member).submit()
@@ -106,7 +106,7 @@ public class CheckServerCmd extends CommandBase {
 					if (exception != null) {
 						editError(event, "errors.unknown", exception.getMessage());
 					} else {
-						Integer removed = 0;
+						int removed = 0;
 						for (CompletableFuture<Boolean> future : completableFutures) {
 							try {
 								if (!future.isCompletedExceptionally() && future.get().equals(true)) removed++;
@@ -120,8 +120,8 @@ public class CheckServerCmd extends CommandBase {
 						bot.getLogger().role.onRoleCheckChildGuild(guild, event.getUser(), role, targetGuild);
 						// Send reply
 						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
-							.replace("{role}", role.getName()).replace("{count}", removed.toString())
-							.replace("{max}", maxSize.toString()).replace("{guild}", guildName)
+							.replace("{role}", role.getName()).replace("{count}", Integer.toString(removed))
+							.replace("{max}", Integer.toString(maxSize)).replace("{guild}", guildName)
 						).build());
 					}
 				}).thenRun(() -> {
@@ -129,9 +129,7 @@ public class CheckServerCmd extends CommandBase {
 					guild.pruneMemberCache();
 					targetGuild.pruneMemberCache();
 				});
-		}).onError(failure -> {
-			editError(event, "errors.error", failure.getMessage());
-		});
+		}).onError(failure -> editError(event, "errors.error", failure.getMessage()));
 	}
 
 }

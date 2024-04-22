@@ -227,9 +227,9 @@ public class AutopunishCmd extends CommandBase {
 							break;
 						case MUTE:
 						case BAN:
-							Duration duration = null;
+							Duration duration;
 							try {
-								duration = Duration.ofSeconds(Long.valueOf(action.getMatchedValue(data)));
+								duration = Duration.ofSeconds(Long.parseLong(action.getMatchedValue(data)));
 							} catch (NumberFormatException ex) {
 								break;
 							}
@@ -237,9 +237,9 @@ public class AutopunishCmd extends CommandBase {
 							break;
 						case REMOVE_ROLE:
 						case ADD_ROLE:
-							Long roleId = null;
+							long roleId;
 							try {
-								roleId = Long.valueOf(action.getMatchedValue(data));
+								roleId = Long.parseLong(action.getMatchedValue(data));
 							} catch (NumberFormatException ex) {
 								break;
 							}

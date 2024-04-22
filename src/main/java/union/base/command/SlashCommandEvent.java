@@ -224,7 +224,7 @@ public class SlashCommandEvent extends SlashCommandInteractionEvent {
 		if (!isFromGuild())
 			return defaultValue;
 
-		return getOption(key, defaultValue, optionMapping -> optionMapping.getAsChannel());
+		return getOption(key, defaultValue, OptionMapping::getAsChannel);
 	}
 
 	/**

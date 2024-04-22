@@ -44,7 +44,7 @@ public class GuildLogsManager extends LiteDBBase {
 	public WebhookData getLogWebhook(LogType type, long guildId) {
 		if (cache.contains(guildId))
 			return cache.get(guildId).getWebhookData(type);
-		LogSettings settings = applyNonNull(getData(guildId), data -> new LogSettings(data));
+		LogSettings settings = applyNonNull(getData(guildId), LogSettings::new);
 		if (settings == null)
 			return null;
 		cache.put(guildId, settings);
@@ -54,7 +54,7 @@ public class GuildLogsManager extends LiteDBBase {
 	public LogSettings getSettings(long guildId) {
 		if (cache.contains(guildId))
 			return cache.get(guildId);
-		LogSettings settings = applyNonNull(getData(guildId), data -> new LogSettings(data));
+		LogSettings settings = applyNonNull(getData(guildId), LogSettings::new);
 		if (settings == null)
 			return blankSettings;
 		cache.put(guildId, settings);
@@ -69,7 +69,7 @@ public class GuildLogsManager extends LiteDBBase {
 		cache.pull(guildId);
 	}
 
-	public class LogSettings {
+	public static class LogSettings {
 		private final Map<LogType, WebhookData> logs;
 
 		public LogSettings() {

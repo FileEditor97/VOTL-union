@@ -69,7 +69,7 @@ public class DurationCmd extends CommandBase {
 					target.timeoutUntil(caseData.getTimeStart().plus(newDuration)).reason("Duration change by "+event.getUser().getName()).queue();
 				} else {
 					// time will be expired, remove time out
-					target.removeTimeout();
+					target.removeTimeout().reason("Expired").queue();
 					bot.getDBUtil().cases.setInactive(caseId);
 				}
 			});

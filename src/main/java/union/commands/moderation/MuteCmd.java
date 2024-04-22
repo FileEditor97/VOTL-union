@@ -87,7 +87,7 @@ public class MuteCmd extends CommandBase {
 				.build()
 			);
 		} else {
-			// No case -> ovveride current timeout
+			// No case -> override current timeout
 			// No case and not timed out -> timeout
 			Member mod = event.getMember();
 			if (!guild.getSelfMember().canInteract(tm)) {
@@ -110,7 +110,7 @@ public class MuteCmd extends CommandBase {
 					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
-				// Set previous mute case inactive, as member is not timedout
+				// Set previous mute case inactive, as member is not timed-out
 				if (caseData != null) bot.getDBUtil().cases.setInactive(caseData.getCaseIdInt());
 				// add info to db
 				bot.getDBUtil().cases.add(CaseType.MUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
@@ -129,9 +129,7 @@ public class MuteCmd extends CommandBase {
 					.build()
 				);
 			},
-			failed -> {
-				editError(event, "errors.error", failed.getMessage());
-			});
+			failed -> editError(event, "errors.error", failed.getMessage()));
 		}
 	}
 

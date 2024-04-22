@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class GenerateListCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		List<SlashCommand> commands = event.getClient().getSlashCommands();
-		if (commands.size() == 0) {
+		if (commands.isEmpty()) {
 			createReply(event, "Commands not found");
 			return;
 		}
@@ -79,7 +79,7 @@ public class GenerateListCmd extends CommandBase {
 		File file = new File(Constants.DATA_PATH + "commands.json");
 		try {
 			file.createNewFile();
-			FileWriter writer = new FileWriter(file, Charset.forName("utf-8"));
+			FileWriter writer = new FileWriter(file, StandardCharsets.UTF_8);
 			writer.write(commandArray.toString());
 			writer.flush();
 			writer.close();
@@ -94,8 +94,8 @@ public class GenerateListCmd extends CommandBase {
 			return Map.of("name", "", "en-GB", "", "ru", "");
 		}
 		Map<String, Object> map = new HashMap<>();
-		map.put("name", category.getName());
-		map.putAll(getText("bot.help.command_menu.categories."+category.getName()));
+		map.put("name", category.name());
+		map.putAll(getText("bot.help.command_menu.categories."+category.name()));
 		return map;
 	}
 

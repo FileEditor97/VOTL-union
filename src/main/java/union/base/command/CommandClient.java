@@ -16,7 +16,6 @@
 package union.base.command;
 
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -58,11 +57,6 @@ import java.util.concurrent.ScheduledExecutorService;
  *                      CommandClientImpl which will cause several errors to occur very quickly after startup (except
  *                      if you provide {@code null} for the Owner ID, that'll just flat out throw an {@link
  *                      java.lang.IllegalArgumentException IllegalArgumentException}).
- *
- *         <p><b>4)</b> Do not provide strings when using {@link union.base.command.CommandClientBuilder#setEmojis(String, String, String)
- *                      CommandClientBuilder#setEmojis(String, String, String)} that are not unicode emojis or that do
- *                      not match the custom emote format specified in {@link Emoji#getFormatted()} ()
- *                      Emote#getAsMention()} (IE: {@code <:EmoteName:EmoteID>}).
  */
 public interface CommandClient
 {
@@ -100,10 +94,10 @@ public interface CommandClient
 	 * through the entire {@link java.util.ArrayList ArrayList} to find the command called. As expected, this
 	 * can get fairly hefty if a bot has a lot of Commands registered to it.
 	 *
-	 * <p>To prevent delay a CommandClient that has more that 20 Commands registered to it will begin to use
+	 * <p>To prevent delay a CommandClient that has more than 20 Commands registered to it will begin to use
 	 * <b>indexed calls</b>.
 	 * <br>Indexed calls use a {@link java.util.HashMap HashMap} which links their
-	 * {@link union.base.command.Command#name name} to the index that which they
+	 * {@link union.base.command.SlashCommand#name name} to the index that which they
 	 * are located at in the ArrayList they are stored.
 	 *
 	 * <p>This means that all insertion and removal of Commands must reorganize the index maintained by the HashMap.
@@ -298,7 +292,7 @@ public interface CommandClient
 	String getServerInvite();
 
 	/**
-	 * Gets an a recently updated count of all the {@link net.dv8tion.jda.api.entities.Guild Guild}s
+	 * Gets a recently updated count of all the {@link net.dv8tion.jda.api.entities.Guild Guild}s
 	 * the bot is connected to on all shards.
 	 *
 	 * <p><b>NOTE:</b> This may not always or should not be assumed accurate! Any time
@@ -318,13 +312,6 @@ public interface CommandClient
 	 *         all shards.
 	 */
 	int getTotalGuilds();
-
-	/**
-	 * Gets the word used to invoke a help DM.
-	 *
-	 * @return The help word
-	 */
-	String getHelpWord();
 
 	/**
 	 * Shuts down internals of the Command Client, such as the threadpool and guild settings manager

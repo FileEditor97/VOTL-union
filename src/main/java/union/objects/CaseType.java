@@ -40,9 +40,6 @@ public enum CaseType {
 		return path;
 	}
 
-	public Boolean isActive() {
-		return active;
-	}
 	public int isActiveInt() {
 		return active ? 1 : 0;
 	}

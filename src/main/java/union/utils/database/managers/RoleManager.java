@@ -106,7 +106,7 @@ public class RoleManager extends LiteDBBase {
 
 	public boolean isToggleable(String roleId) {
 		RoleType type = getType(roleId);
-		return type==null ? false : type.equals(RoleType.TOGGLE);
+		return type != null && type.equals(RoleType.TOGGLE);
 	}
 
 	public boolean existsRole(String roleId) {

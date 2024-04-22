@@ -42,7 +42,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public GuildSettings getSettings(long guildId) {
 		if (cache.contains(guildId))
 			return cache.get(guildId);
-		GuildSettings settings = applyNonNull(getData(guildId), data -> new GuildSettings(data));
+		GuildSettings settings = applyNonNull(getData(guildId), GuildSettings::new);
 		if (settings == null)
 			return blankSettings;
 		cache.put(guildId, settings);
@@ -123,7 +123,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		cache.pull(guildId);
 	}
 
-	public class GuildSettings {
+	public static class GuildSettings {
 		private final Long lastWebhookId, reportChannelId;
 		private final int color, strikeExpires, modulesOff;
 		private final String appealLink;
@@ -223,10 +223,10 @@ public class GuildSettingsManager extends LiteDBBase {
 		REASON(2, "logger_embed.inform.2"),
 		MOD(3, "logger_embed.inform.3");
 
-		private int level;
-		private String path;
+		private final int level;
+		private final String path;
 
-		private static final Map<Integer, ModerationInformLevel> BY_LEVEL = new HashMap<Integer, ModerationInformLevel>();
+		private static final Map<Integer, ModerationInformLevel> BY_LEVEL = new HashMap<>();
 
 		static {
 			for (ModerationInformLevel informLevel : ModerationInformLevel.values()) {

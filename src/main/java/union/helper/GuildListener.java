@@ -31,7 +31,7 @@ public class GuildListener extends ListenerAdapter {
 		if (event.getEntry().getType() == ActionType.BAN || event.getEntry().getType() == ActionType.UNBAN) {
 			UserSnowflake admin = UserSnowflake.fromId(event.getEntry().getUserIdLong());
 			// Ignore actions made by both bots
-			if (admin != null && (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser()))) return;
+			if (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser())) return;
 
 			// Get master guilds IDs and send logs to them
 			helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> 
@@ -42,7 +42,7 @@ public class GuildListener extends ListenerAdapter {
 		if (watchedTypes.contains(event.getEntry().getType()) && helper.getDBUtil().getGuildSettings(event.getGuild()).anticrashEnabled()) {
 			UserSnowflake admin = UserSnowflake.fromId(event.getEntry().getUserIdLong());
 			// Ignore actions made by both bots
-			if (admin != null && (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser()))) return;
+			if (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser())) return;
 
 			// add 1 point for action
 			long guildId = event.getGuild().getIdLong();

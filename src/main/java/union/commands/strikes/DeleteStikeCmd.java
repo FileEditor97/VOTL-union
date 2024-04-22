@@ -38,7 +38,7 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class DeleteStikeCmd extends CommandBase {
 
-	private EventWaiter waiter;
+	private final EventWaiter waiter;
 	
 	public DeleteStikeCmd(App bot, EventWaiter waiter) {
 		super(bot);
@@ -121,7 +121,7 @@ public class DeleteStikeCmd extends CommandBase {
 			return;
 		}
 
-		Integer activeAmount = Integer.valueOf(selected[1]);
+		int activeAmount = Integer.parseInt(selected[1]);
 		if (activeAmount == 1) {
 			long guildId = event.getGuild().getIdLong();
 			// As only one strike remains - delete case from strikes data and set case inactive
@@ -180,7 +180,7 @@ public class DeleteStikeCmd extends CommandBase {
 	private void buttonPressed(ButtonInteractionEvent event, Message msg, List<String> cases, User tu, int activeAmount) {
 		event.deferEdit().queue();
 		String[] value = event.getComponentId().split("-");
-		Integer caseId = Integer.valueOf(value[0]);
+		int caseId = Integer.parseInt(value[0]);
 
 		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
 		if (!caseData.isActive()) {
@@ -231,14 +231,14 @@ public class DeleteStikeCmd extends CommandBase {
 		List<SelectOption> options = new ArrayList<>();
 		for (String c : cases) {
 			String[] args = c.split("-");
-			Integer caseId = Integer.valueOf(args[0]);
-			Integer strikeAmount = Integer.valueOf(args[1]);
+			int caseId = Integer.parseInt(args[0]);
+			int strikeAmount = Integer.parseInt(args[1]);
 			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
 			options.add(SelectOption.of(
 				"%s | %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), MessageUtil.limitString(caseData.getReason(), 50)),
 				caseId+"-"+strikeAmount
 			).withDescription(TimeFormat.DATE_SHORT.format(caseData.getTimeStart())+" By: "+caseData.getModTag()));
-		};
+		}
 		return options;
 	}
 

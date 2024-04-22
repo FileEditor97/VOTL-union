@@ -77,7 +77,7 @@ public class BlacklistCmd extends CommandBase {
 				builder.addField("ID: %s".formatted(castLong(map.get("userId"))), lu.getText(event, path+".value").formatted(
 					Optional.ofNullable(castLong(map.get("steam64"))).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
 					Optional.ofNullable(castLong(map.get("guildId"))).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
-					Optional.ofNullable(castLong(map.get("modId"))).map(v -> "<@%s>".formatted(v)).orElse("-"),
+					Optional.ofNullable(castLong(map.get("modId"))).map("<@%s>"::formatted).orElse("-"),
 					Optional.ofNullable((String) map.get("reason")).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
 				), true)
 			);
@@ -129,12 +129,12 @@ public class BlacklistCmd extends CommandBase {
 			else if (event.hasOption("steamid")) {
 				String input = event.optString("steamid");
 
-				Long steam64 = null;
+				long steam64;
 				if (Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", input)) {
 					steam64 = SteamUtil.convertSteamIDtoSteam64(input);
 				} else {
 					try {
-						steam64 = Long.valueOf(input);
+						steam64 = Long.parseLong(input);
 					} catch (NumberFormatException ex) {
 						editError(event, "errors.error", ex.getMessage());
 						return;

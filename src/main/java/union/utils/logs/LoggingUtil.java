@@ -135,7 +135,7 @@ public class LoggingUtil {
 
 		public void onChangeReason(SlashCommandEvent event, CaseData caseData, Member moderator, String newReason) {
 			if (caseData == null) {
-				bot.getAppLogger().warn("Unknown case provided with interaction ", event.getName());
+				bot.getAppLogger().warn("Unknown case provided with interaction {}", event.getName());
 				return;
 			}
 
@@ -144,7 +144,7 @@ public class LoggingUtil {
 
 		public void onChangeDuration(SlashCommandEvent event, CaseData caseData, Member moderator, String newTime) {
 			if (caseData == null) {
-				bot.getAppLogger().warn("Unknown case provided with interaction ", event.getName());
+				bot.getAppLogger().warn("Unknown case provided with interaction {}", event.getName());
 				return;
 			}
 
@@ -433,7 +433,7 @@ public class LoggingUtil {
 				client.sendMessageEmbeds(
 					logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
 				).addFiles(file).queue();
-			} catch (Exception ex) {}
+			} catch (Exception ignored) {}
 		}
 
 		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, String authorId) {
@@ -684,6 +684,7 @@ public class LoggingUtil {
 		}
 
 		private FileUpload uploadContent(MessageData data, long messageId) {
+			if (data == null || data.isEmpty()) return null;
 			if (data.getContent().length() < 1000) return null;
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();

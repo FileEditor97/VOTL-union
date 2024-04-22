@@ -40,7 +40,7 @@ public class RemoveUserCmd extends CommandBase {
 			createError(event, path+".not_ticket");
 			return;
 		}
-		if (!bot.getDBUtil().ticket.isOpened(channelId)) {
+		if (bot.getDBUtil().ticket.isClosed(channelId)) {
 			// Ticket is closed
 			event.getChannel().delete().queue();
 			return;
@@ -59,9 +59,8 @@ public class RemoveUserCmd extends CommandBase {
 					.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()))
 					.build()
 				).setAllowedMentions(Collections.emptyList()).queue();
-			}, failure -> {
-				editError(event, path+".failed", failure.getMessage());
-			});
+			},
+			failure -> editError(event, path+".failed", failure.getMessage()));
 		} else {
 			// TextChannel
 			try {

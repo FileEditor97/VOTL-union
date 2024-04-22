@@ -83,7 +83,7 @@ public class TicketTagManager extends LiteDBBase {
 		if (buttonStyle != -1) 
 			values.add("buttonStyle="+buttonStyle);
 		
-		if (values.size() > 0) execute("UPDATE %s SET %s WHERE (tagId=%d)".formatted(table, String.join(", ", values), tagId));
+		if (!values.isEmpty()) execute("UPDATE %s SET %s WHERE (tagId=%d)".formatted(table, String.join(", ", values), tagId));
 	}
 
 	public String getGuildId(Integer tagId) {
@@ -117,7 +117,7 @@ public class TicketTagManager extends LiteDBBase {
 			Set.of("tagId", "buttonText", "buttonStyle", "emoji")
 		);
 		if (data.isEmpty()) return null;
-		return data.stream().map(map -> Tag.createButton(map)).toList();
+		return data.stream().map(Tag::createButton).toList();
 	}
 
 	public Tag getTagFull(Integer tagId) {

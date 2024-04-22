@@ -27,7 +27,7 @@ public class MessageUtil {
 	}
 
 	public static String capitalize(final String str) {
-		if (str == null || str.length() == 0) {
+		if (str == null || str.isEmpty()) {
 			return "";
 		}
 
@@ -79,13 +79,13 @@ public class MessageUtil {
 		return color;
 	}
 
-	public String getFormattedMembers(DiscordLocale locale, String... members) {
+	public String getFormattedMembers(String... members) {
 		if (members.length == 1)
 			return "**" + escapeAll(members[0]) + "**";
 
 		StringBuilder builder = new StringBuilder();
 		for (String member : members) {
-			if (builder.length() > 0)
+			if (!builder.isEmpty())
 				builder.append(", ");
 
 			builder.append("**").append(escapeAll(member)).append("**");

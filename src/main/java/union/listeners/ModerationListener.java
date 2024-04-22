@@ -16,6 +16,8 @@ import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateTimeOutEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.util.Objects;
+
 public class ModerationListener extends ListenerAdapter {
 
 	private final App bot;
@@ -36,7 +38,7 @@ public class ModerationListener extends ListenerAdapter {
 			.queue(list -> {
 				if (list.isEmpty()) return;
 				AuditLogEntry entry = list.get(0);
-				if (entry.getUser().equals(event.getJDA().getSelfUser())) return;  // Ignore self
+				if (Objects.equals(entry.getUser(), event.getJDA().getSelfUser())) return;  // Ignore self
 				bot.getLogger().mod.onUserBan(entry, event.getUser());
 			});
 	}
@@ -55,7 +57,7 @@ public class ModerationListener extends ListenerAdapter {
 			.queue(list -> {
 				if (list.isEmpty()) return;
 				AuditLogEntry entry = list.get(0);
-				if (entry.getUser().equals(event.getJDA().getSelfUser())) return;  // Ignore self
+				if (Objects.equals(entry.getUser(), event.getJDA().getSelfUser())) return;  // Ignore self
 				bot.getLogger().mod.onUserUnban(entry, event.getUser());
 			});
 	}

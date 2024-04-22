@@ -26,17 +26,10 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 	private Encoder<ILoggingEvent> encoder;
 
 	private String url;
-	private String json = "{"
-			+ "\"embeds\": [{"
-			+ "\"color\": 16711680, "
-			+ "\"description\": {message}"
-			+ "}]"
-			+ "}";
 
-	private long lastSend = 0L;
-	private long interval = 10L;
+    private long lastSend = 0L;
 
-	private OkHttpClient client = new OkHttpClient();
+	private final OkHttpClient client = new OkHttpClient();
 
 	@Override
 	protected void append(ILoggingEvent event) {
@@ -46,7 +39,7 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 		if (url == null) return;
 
 		// Limit send rate
-		if (event.getTimeStamp() < lastSend + interval) return;
+		if (event.getTimeStamp() < lastSend + 10L) return;
 
 		// Encode message
 		String message = new String(encoder.encode(event));
@@ -58,7 +51,13 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
 	private void send(String message) {
 		// Replace json variables
-		String payload = json.replace("{message}", JSONObject.quote(message));
+        String json = "{"
+                + "\"embeds\": [{"
+                + "\"color\": 16711680, "
+                + "\"description\": {message}"
+                + "}]"
+                + "}";
+        String payload = json.replace("{message}", JSONObject.quote(message));
 
 		// Create HTTP POST request
 		Request request = new Request.Builder()
@@ -73,7 +72,7 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 				if (ex instanceof UnknownHostException) {
 					logger.warn("Webhook call failed. Can't resolve URL.");
 				} else {
-					logger.warn("Webhook call failed. Payload:\n"+payload, ex);
+                    logger.warn("Webhook call failed. Payload:\n{}", payload, ex);
 				}
 			}
 

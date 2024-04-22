@@ -131,7 +131,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 			Integer id = null;
 			try {
 				id = Integer.valueOf(value);
-			} catch(NumberFormatException ex) {}
+			} catch(NumberFormatException ignored) {}
 			if (id != null) {
 				// if able to convert input to Integer
 				String title = db.tags.getTagText(id);

@@ -63,7 +63,7 @@ public class WebhookCmd extends CommandBase {
 			Guild guild = Objects.requireNonNull(event.getGuild());
 			DiscordLocale userLocale = event.getUserLocale();
 
-			Boolean listAll = event.optBoolean("all", false);
+			boolean listAll = event.optBoolean("all", false);
 
 			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getLocalized(userLocale, path+".embed.title"));
@@ -146,7 +146,6 @@ public class WebhookCmd extends CommandBase {
 				);
 			} catch (PermissionException ex) {
 				editPermError(event, ex.getPermission(), true);
-				ex.printStackTrace();
 			}
 		}
 
@@ -168,7 +167,7 @@ public class WebhookCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			Long webhookId = Long.parseLong(event.optString("id"));
+			long webhookId = Long.parseLong(event.optString("id"));
 
 			try {
 				event.getJDA().retrieveWebhookById(webhookId).queue(
@@ -182,9 +181,7 @@ public class WebhookCmd extends CommandBase {
 								.build()
 							);
 						}
-					}, failure -> {
-						editError(event, path+".error_not_found", failure.getMessage());
-					}
+					}, failure -> editError(event, path+".error_not_found", failure.getMessage())
 				);
 			} catch (IllegalArgumentException ex) {
 				editError(event, path+".error_not_found", ex.getMessage());
@@ -209,8 +206,8 @@ public class WebhookCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			Long webhookId = Long.parseLong(event.optString("id"));
-			Boolean delete = event.optBoolean("delete", false); 
+			long webhookId = Long.parseLong(event.optString("id"));
+			boolean delete = event.optBoolean("delete", false);
 
 			try {
 				event.getJDA().retrieveWebhookById(webhookId).queue(
@@ -233,9 +230,7 @@ public class WebhookCmd extends CommandBase {
 							}
 						}
 					},
-					failure -> {
-						createError(event, path+".error_not_found", failure.getMessage());
-					}
+					failure -> createError(event, path+".error_not_found", failure.getMessage())
 				);
 			} catch (IllegalArgumentException ex) {
 				createError(event, path+".error_not_found", ex.getMessage());
@@ -261,7 +256,7 @@ public class WebhookCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 			Guild guild = event.getGuild();
-			Long webhookId = Long.parseLong(event.optString("id"));
+			long webhookId = Long.parseLong(event.optString("id"));
 			GuildChannel channel = event.optGuildChannel("channel");
 
 			if (!channel.getType().equals(ChannelType.TEXT)) {

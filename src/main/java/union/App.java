@@ -61,8 +61,7 @@ public class App {
 	
 	private final Logger logger = (Logger) LoggerFactory.getLogger(App.class);
 
-	private static App instance;
-	private static Helper helper;
+    private static Helper helper;
 
 	public final String VERSION = Optional.ofNullable(App.class.getPackage().getImplementationVersion()).map(ver -> "v"+ver).orElse("DEVELOPMENT");
 
@@ -72,21 +71,9 @@ public class App {
 
 	private final FileManager fileManager = new FileManager();
 
-	private final GuildListener guildListener;
-	private final AutoCompleteListener acListener;
-	private final InteractionListener interactionListener;
-	private final VoiceListener voiceListener;
-	private final MessageListener messageListener;
-	private final MemberListener memberListener;
-	private final ModerationListener moderationListener;
-	private final AuditListener auditListener;
+    private final LoggingUtil logUtil;
 
-	private final LoggingUtil logUtil;
-	
-	private final ScheduledExecutorService scheduledExecutor;
-	private final ScheduledCheck scheduledCheck;
-	
-	private final DBUtil dbUtil;
+    private final DBUtil dbUtil;
 	private final MessageUtil messageUtil;
 	private final EmbedUtil embedUtil;
 	private final CheckUtil checkUtil;
@@ -110,7 +97,7 @@ public class App {
 		
 		// Define for default
 		dbUtil		= new DBUtil(fileManager);
-		localeUtil	= new LocaleUtil(this, "en-GB", DiscordLocale.ENGLISH_UK);
+		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
 		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this);
@@ -120,20 +107,20 @@ public class App {
 		webhookLogger = new WebhookLogger(dbUtil);
 		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
 
-		WAITER				= new EventWaiter();
-		guildListener		= new GuildListener(this);
-		interactionListener	= new InteractionListener(this, WAITER);
-		voiceListener		= new VoiceListener(this);
-		messageListener		= new MessageListener(this);
-		memberListener		= new MemberListener(this);
-		moderationListener	= new ModerationListener(this);
-		auditListener		= new AuditListener(dbUtil, logUtil);
+		WAITER = new EventWaiter();
+        GuildListener guildListener				= new GuildListener(this);
+        InteractionListener interactionListener = new InteractionListener(this, WAITER);
+        VoiceListener voiceListener				= new VoiceListener(this);
+        MessageListener messageListener			= new MessageListener(this);
+        MemberListener memberListener			= new MemberListener(this);
+        ModerationListener moderationListener	= new ModerationListener(this);
+        AuditListener auditListener				= new AuditListener(dbUtil, logUtil);
 
-		scheduledExecutor	= new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
-		scheduledCheck		= new ScheduledCheck(this);
+        ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
+        ScheduledCheck scheduledCheck = new ScheduledCheck(this);
 
-		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.timedChecks(), 3, 10, TimeUnit.MINUTES);
-		scheduledExecutor.scheduleAtFixedRate(() -> scheduledCheck.regularChecks(), 2, 3, TimeUnit.MINUTES);
+		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::timedChecks, 3, 10, TimeUnit.MINUTES);
+		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::regularChecks, 2, 3, TimeUnit.MINUTES);
 
 		// Define a command client
 		commandClient = new CommandClientBuilder()
@@ -213,7 +200,7 @@ public class App {
 			.build();
 
 		// Build
-		acListener = new AutoCompleteListener(commandClient, dbUtil);
+        AutoCompleteListener acListener = new AutoCompleteListener(commandClient, dbUtil);
 
 		final Set<GatewayIntent> intents = Set.of(
 			GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
@@ -247,10 +234,10 @@ public class App {
 			.setBulkDeleteSplittingEnabled(false)
 			.addEventListeners(
 				commandClient, WAITER, acListener, auditListener, interactionListener,
-				guildListener, memberListener, messageListener, moderationListener, voiceListener
+                    guildListener, memberListener, messageListener, moderationListener, voiceListener
 			);
 
-		JDA tempJda = null;
+		JDA tempJda;
 
 		int retries = 4; // how many times will it try to build
 		int cooldown = 8; // in seconds; cooldown amount, will doubles after each retry
@@ -264,11 +251,11 @@ public class App {
 			} catch (ErrorResponseException ex) { // Tries to reconnect to discord x times with some delay, else exits
 				if (retries > 0) {
 					retries--;
-					logger.info("Retrying connecting in "+cooldown+" seconds... "+retries+" more attempts");
+                    logger.info("Retrying connecting in {} seconds... {} more attempts", cooldown, retries);
 					try {
-						Thread.sleep(cooldown*1000);
+						Thread.sleep(cooldown*1000L);
 					} catch (InterruptedException e) {
-						logger.error("Thread sleep interupted", e);
+						logger.error("Thread sleep interrupted", e);
 					}
 					cooldown*=2;
 				} else {
@@ -338,14 +325,14 @@ public class App {
 	}
 
 	public static void main(String[] args) {
-		instance = new App();
+        App instance = new App();
 		instance.createWebhookAppender();
 		instance.logger.info("Success start");
 
 		try {
 			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
 			helper.getLogger().info("Helper started");
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			instance.logger.info("Was unable to start helper");
 			helper = null;
 		}

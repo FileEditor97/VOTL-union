@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import union.App;
@@ -158,10 +157,10 @@ public class DBUtil {
 
 	// 0 - no version or error
 	// 1> - compare active db version with resources
-	// if version lower -> apply instruction for creating new tables, adding/removing collumns
+	// if version lower -> apply instruction for creating new tables, adding/removing columns
 	// in the end set active db version to resources
 	public Integer getActiveDBVersion() {
-		Integer version = 0;
+		int version = 0;
 		try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
 			PreparedStatement st = conn.prepareStatement("PRAGMA user_version")) {
 			version = st.executeQuery().getInt(1);
@@ -172,7 +171,7 @@ public class DBUtil {
 	}
 
 	public Integer getResourcesDBVersion() {
-		Integer version = 0;
+		int version = 0;
 		try {
 			File tempFile = File.createTempFile("local-", ".tmp");
 			if (!fileManager.export(getClass().getResourceAsStream("/server.db"), tempFile.toPath())) {
@@ -209,8 +208,8 @@ public class DBUtil {
 		List<List<String>> result = new ArrayList<>();
 		lines.forEach(line -> {
 			String[] points = line.split(";");
-			List<String> list = points.length == 0 ? Arrays.asList(line) : Arrays.asList(points);
-			if (!list.isEmpty()) result.add(list);
+			List<String> list = points.length == 0 ? List.of(line) : List.of(points);
+			result.add(list);
 		});
 		return result;
 	}
@@ -225,15 +224,13 @@ public class DBUtil {
 		if (newVersion > activeVersion) {
 			try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
 			Statement st = conn.createStatement()) {
-				if (activeVersion < newVersion) {
-					for (List<String> version : loadInstructions(activeVersion)) {
-						for (String sql : version) {
-							logger.debug(sql);
-							st.execute(sql);
-						}
-					}
-				}
-			} catch(SQLException ex) {
+                for (List<String> version : loadInstructions(activeVersion)) {
+                    for (String sql : version) {
+                        logger.debug(sql);
+                        st.execute(sql);
+                    }
+                }
+            } catch(SQLException ex) {
 				logger.error("SQLite: Failed to execute update!\nPerform database update manually or delete it.\n{}", ex.getMessage());
 				return;
 			}

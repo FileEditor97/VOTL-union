@@ -91,7 +91,7 @@ public class RolesSetupCmd extends CommandBase {
 			if (type.equals(RoleType.ASSIGN.toString())) {
 				Integer row = event.optInteger("row", 0);
 				if (row == 0) {
-					for (Integer i = 1; i <= 3; i++) {
+					for (int i = 1; i <= 3; i++) {
 						if (bot.getDBUtil().role.getRowSize(guildId, i) < 25) {
 							row = i;
 							break;
@@ -111,15 +111,14 @@ public class RolesSetupCmd extends CommandBase {
 				if (!link.isBlank()) {
 					final Integer frow = row;
 					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
-						if (invite.isFromGuild() && invite.isExpirable()) {
+						if (invite.isFromGuild() && invite.isTemporal()) {
 							editError(event, path+".invalid_invite", "Not server type invite");
 							return;
 						}
 						bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), frow, RoleType.ASSIGN, invite.getUrl());
 						sendSuccess(event, type, role);
-					}, failure -> {
-						editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString()));
-					});
+					},
+					failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
 				} else {
 					bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, RoleType.ASSIGN, "NULL");
 					sendSuccess(event, type, role);
@@ -191,7 +190,7 @@ public class RolesSetupCmd extends CommandBase {
 
 			if (event.hasOption("description")) {
 				String description = event.optString("description");
-				if (description.toLowerCase().equals("null")) description = null;
+				if (description.equalsIgnoreCase("null")) description = null;
 
 				if (bot.getDBUtil().role.isToggleable(role.getId())) {
 					if (description == null) {
@@ -219,13 +218,13 @@ public class RolesSetupCmd extends CommandBase {
 
 			if (event.hasOption("invite")) {
 				String link = event.optString("invite").replaceFirst("(https:\\/\\/)?(discord)?(\\.?gg\\/)?", "").trim();
-				if (link.toLowerCase().equals("null")) {
+				if (link.equalsIgnoreCase("null")) {
 					bot.getDBUtil().role.setInvite(role.getId(), "NULL");
 					response.append(lu.getText(event, path+".default_invite"));
 					sendReply(event, response, role);
 				} else {
 					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
-						if (invite.isFromGuild() && invite.isExpirable()) {
+						if (invite.isFromGuild() && invite.isTemporal()) {
 							response.append(lu.getText(event, path+".invalid_invite"));
 						} else {
 							bot.getDBUtil().role.setInvite(role.getId(), invite.getUrl());
@@ -307,7 +306,7 @@ public class RolesSetupCmd extends CommandBase {
 						if (roles.isEmpty()) {
 							builder.addField(title, lu.getText(event, path+".none"), false);
 						} else {
-							generateField(guild, title, roles).forEach(field -> builder.addField(field));
+							generateField(guild, title, roles).forEach(builder::addField);
 						}
 					}
 				} else {
@@ -316,7 +315,7 @@ public class RolesSetupCmd extends CommandBase {
 					if (roles.isEmpty()) {
 						builder.addField(title, lu.getText(event, path+".none"), false);
 					} else {
-						generateField(guild, title, roles).forEach(field -> builder.addField(field));
+						generateField(guild, title, roles).forEach(builder::addField);
 					}
 				}
 			}
@@ -327,7 +326,7 @@ public class RolesSetupCmd extends CommandBase {
 	}
 	
 	private List<Field> generateField(final Guild guild, final String title, final List<Map<String, Object>> roles) {
-		List<Field> fields = new ArrayList<Field>();
+		List<Field> fields = new ArrayList<>();
 		StringBuffer buffer = new StringBuffer();
 		roles.forEach(data -> {
 			String roleId = data.get("roleId").toString();
@@ -343,7 +342,7 @@ public class RolesSetupCmd extends CommandBase {
 				buffer.setLength(0);
 			}
 		});
-		if (buffer.length() != 0) {
+		if (!buffer.isEmpty()) {
 			fields.add(new Field((fields.isEmpty() ? title : ""), buffer.toString(), false));
 		}
 		return fields;

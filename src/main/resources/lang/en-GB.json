@@ -32,7 +32,7 @@
 			"no_time_provided": "No time provided using pattern",
 			"except_seconds": "Provided time can't be specified in seconds",
 			"no_multip": "Could not get time multiplication from given character",
-			"parse_long": "Could not parse provided time due to owerflow or other error",
+			"parse_long": "Could not parse provided time due to overflow or other error",
 			"long_overflow": "Provided time too big, long overflow"
 		},
 		"interaction": {
@@ -67,7 +67,7 @@
 		"moderation": "Moderation category",
 		"verification": "Verification",
 		"ticketing": "Tickets",
-		"voice": "Custom voicechannels",
+		"voice": "Custom voice channels",
 		"report": "Report function",
 		"roles": "Role management",
 		"strikes": "Strike punishments",
@@ -242,7 +242,7 @@
 			"removed_all": "Role was removed from all users",
 			"temp_added": "Role added temporary to user",
 			"temp_updated": "Temporary role updated for user",
-			"temp_removed": "Temporaty role removed from user",
+			"temp_removed": "Temporary role removed from user",
 			"guild": "Target server",
 			"checkchild": "Role's members checked for presence in required server",
 			"checkrank": "Role's members checked for required rank"
@@ -402,12 +402,6 @@
 		"guild": {
 			"setup": {
 				"help": "Setup menu for this server",
-				"main": {
-					"help": "Setup main function (without touching other modules)",
-					"usage": "main",
-					"done": "**Setup done!**\nBot is ready for use on this server.\n\n*Recomended: setup log channel using `/log setup`*",
-					"exists": "Bot is already configured on this server.\nIf you belive there is an error, contact developer in `/help`"
-				},
 				"color": {
 					"help": "Set embed color accent",
 					"usage": "color <______ | __,__,__ | random>",
@@ -514,7 +508,7 @@
 						"name": "time",
 						"help": "Enter time in days, after which strikes expires"
 					},
-					"done": "Experation time set to %d days."
+					"done": "Expiration time set to %d days."
 				},
 				"dm_inform": {
 					"help": "Set what information is sent to offender when action is performed",
@@ -588,7 +582,7 @@
 							"name": "user",
 							"help": "Mention server member"
 						},
-						"done": "Successfully asigned {user} Operator access!"
+						"done": "Successfully assigned {user} Operator access!"
 					},
 					"no_role": "Role not found.",
 					"no_member": "Member not found.",
@@ -784,7 +778,7 @@
 					"limit_label": "Channel limit",
 					"limit_done": "Channel user limit set to {limit}!",
 					"permit_label": "Select members and/or roles to which grand access to your channel.",
-					"permit_done": "Successfully permited {targets} to connect to your channel!",
+					"permit_done": "Successfully permitted {targets} to connect to your channel!",
 					"reject_label": "Select members and/or roles to whom deny access to your channel.",
 					"reject_done": "Successfully rejected {targets} from connecting to your channel!",
 					"not_self": "You can't add/remove yourself or me.",
@@ -800,7 +794,7 @@
 				}
 			},
 			"voice": {
-				"help": "Private VoiceChannels managment",
+				"help": "Private VoiceChannels management",
 				"lock": {
 					"help": "Locks your channel for @everyone (except: allowed users)",
 					"usage": "lock",
@@ -835,7 +829,7 @@
 						"help": "Reset your VC's name to server's default",
 						"usage": "name reset"
 					},
-					"done": "Successfully changed your's channel name to `{value}`!"
+					"done": "Successfully changed your channel name to `{value}`!"
 				},
 				"limit": {
 					"help": "Control your VC's user limit",
@@ -851,7 +845,7 @@
 						"help": "Reset your VC's user limit to server's default",
 						"usage": "limit reset"
 					},
-					"done": "Successfully changed your's channel limit to `{value}`!"
+					"done": "Successfully changed your channel limit to `{value}`!"
 				},
 				"claim": {
 					"help": "Claim ownership of channel once owner has left",
@@ -870,7 +864,7 @@
 					},
 					"invalid_args": "You didn't mention role/-s or any member/-s.",
 					"not_self": "You can't add yourself or me.",
-					"done": "Successfully permited {targets} to connect to your channel!"
+					"done": "Successfully permitted {targets} to connect to your channel!"
 				},
 				"reject": {
 					"help": "Withdraw the user permission to join your VC",
@@ -1003,7 +997,7 @@
 				},
 				"time": {
 					"name": "time",
-					"help": "Temporaty ban user (Example: 2h, 2w5d (week, day, hour, minute) | 0)"
+					"help": "Temporary ban user (Example: 2h, 2w5d (week, day, hour, minute) | 0)"
 				},
 				"reason": {
 					"name": "reason",
@@ -1250,7 +1244,7 @@
 				"done": "Successfully changed cases Case `{id}` duration to: {duration}"
 			},
 			"group": {
-				"help": "Server Groups managment",
+				"help": "Server Groups management",
 				"create": {
 					"help": "Create new server Group",
 					"usage": "create <name> [shared?]",
@@ -1639,7 +1633,7 @@
 				"done": "Member has been given verified role!"
 			},
 			"unverify": {
-				"help": "Manualy remove verify role from member",
+				"help": "Manually remove verify role from member",
 				"usage": "unverify <@User | ID>",
 				"user": {
 					"name": "user",
@@ -1674,18 +1668,18 @@
 				"field_discord": "Discord account"
 			},
 			"vfcheck": {
-				"help": "Manage user verification autochecking",
+				"help": "Manage user verification auto-check",
 				"usage": "vfcheck",
 				"enable": {
-					"help": "Enable autochecking for account connectivity",
+					"help": "Enable auto-check for account connectivity",
 					"usage": "enable",
 					"no_role": "Set verification role, before enabling this",
-					"done": "Autochecking enabled!\nWhen message is send by user in any channel, bot will check if user is verified, else removes role."
+					"done": "Auto-check enabled!\nWhen message is send by user in any channel, bot will check if user is verified, else removes role."
 				},
 				"disable": {
-					"help": "Disable autochecking for account connectivity",
+					"help": "Disable auto-check for account connectivity",
 					"usage": "disable",
-					"done": "Autochecking disabled!"
+					"done": "Auto-check disabled!"
 				},
 				"forced": {
 					"help": "Show verified users, that have forced property via `/verify`",
@@ -1739,7 +1733,7 @@
 				"role_added": "Request approved, roles assigned to user.",
 				"role_dm": "{server}\n> Roles [{roles}] requested in ticket `role-{id}` assigned!\n-{mod}",
 				"role_none": "There aren't any roles that can be assigned. Manually assign user requested roles.",
-				"is_closed": "This ticket is already closed. Assign roles manualy or press `Close` button.",
+				"is_closed": "This ticket is already closed. Assign roles manually or press `Close` button.",
 				"close_request": "Hey! {user}, support have indicated that the ticket is now resolved. Would you like to close the ticket or do you have further questions? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
 				"close_auto": "Hi! {user}, this ticket has not received a response for some time. Do you want to close the ticket or is your request still unresolved? React below accordingly.\n\nIf no response {time} the ticket will automatically close itself. To prevent timed close please press cancel.",
 				"user_left": "Sadly, the user that created this ticket has left the server. If they rejoin, it will not automatically re-add them.",
@@ -1850,7 +1844,7 @@
 					"no_role": "Role not found or is incorrect.",
 					"cant_interact": "I can't interact with selected role.",
 					"exists": "Role is already managed. Check `/rolesetup view`",
-					"invalid_invite": "Provided invite is invalid. Check that it's correct and is not expirable.",
+					"invalid_invite": "Provided invite is invalid. Check that it's correct and is not temporal.",
 					"no_type": "Role type not found.",
 					"rows_max": "All assignable roles rows are full (3x25). Clear any row, to add new roles.",
 					"row_max": "Row is full (25 roles). Clear this row, to add new roles.",
@@ -1886,7 +1880,7 @@
 					"changed_row": "\n> Changed assignable role's row to `{row}`.",
 					"default_invite": "\n> Invite link cleared to default (none).",
 					"changed_invite": "\n> Invite link set to {link}.",
-					"invalid_invite": "\n> Invite link is not valid or is expirable and was not changed."
+					"invalid_invite": "\n> Invite link is not valid or is temporal and was not changed."
 				},
 				"remove": {
 					"help": "Remove role from managed roles list",

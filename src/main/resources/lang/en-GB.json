@@ -402,12 +402,6 @@
 		"guild": {
 			"setup": {
 				"help": "Setup menu for this server",
-				"main": {
-					"help": "Setup main function (without touching other modules)",
-					"usage": "main",
-					"done": "**Setup done!**\nBot is ready for use on this server.\n\n*Recommended: setup log channel using `/log setup`*",
-					"exists": "Bot is already configured on this server.\nIf you belive there is an error, contact developer in `/help`"
-				},
 				"color": {
 					"help": "Set embed color accent",
 					"usage": "color <______ | __,__,__ | random>",

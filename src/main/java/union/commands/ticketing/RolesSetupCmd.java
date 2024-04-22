@@ -111,7 +111,7 @@ public class RolesSetupCmd extends CommandBase {
 				if (!link.isBlank()) {
 					final Integer frow = row;
 					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
-						if (invite.isFromGuild() && invite.isExpirable()) {
+						if (invite.isFromGuild() && invite.isTemporal()) {
 							editError(event, path+".invalid_invite", "Not server type invite");
 							return;
 						}
@@ -225,7 +225,7 @@ public class RolesSetupCmd extends CommandBase {
 					sendReply(event, response, role);
 				} else {
 					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
-						if (invite.isFromGuild() && invite.isExpirable()) {
+						if (invite.isFromGuild() && invite.isTemporal()) {
 							response.append(lu.getText(event, path+".invalid_invite"));
 						} else {
 							bot.getDBUtil().role.setInvite(role.getId(), invite.getUrl());

@@ -100,7 +100,7 @@ public class GroupManager extends LiteDBBase {
 
 	public boolean canManage(int groupId, long guildId) {
 		Integer data = selectOne("SELECT canManage FROM %s WHERE (groupId=%d AND guildId=%d)".formatted(members, groupId, guildId), "canManage", Integer.class);
-		return data==null ? false : data==1;
+		return data != null && data == 1;
 	}
 
 	public void setManage(int groupId, long guildId, Boolean canManage) {

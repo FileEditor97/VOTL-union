@@ -35,7 +35,6 @@ import net.dv8tion.jda.api.utils.ImageProxy;
  * @since  3.0
  * @author Aljoscha Grebe
  *
- * @see    #resolve(JDA, String)
  * @see    #resolve(JDA, String, boolean)
  *
  * @see    net.dv8tion.jda.api.entities.Guild#retrieveInvites() Guild.retrieveInvites()
@@ -57,7 +56,7 @@ public interface Invite {
      * @param  code
      *         A valid invite code
      * @param  withCounts
-     *         Whether or not to include online and member counts for guild invites or users for group invites
+     *         Whether to include online and member counts for guild invites or users for group invites
      *
      * @return {@link net.dv8tion.jda.api.requests.RestAction RestAction} - Type: {@link Invite Invite}
      *         <br>The Invite object
@@ -104,9 +103,9 @@ public interface Invite {
     JDA getJDA();
 
     /**
-     * Returns experation date of this invite.
+     * Returns expiration date of this invite.
      *
-     * @return The experation date of this invite
+     * @return The expiration date of this invite
      */
     @NotNull
     OffsetDateTime getTimeExpires();
@@ -116,7 +115,7 @@ public interface Invite {
      *
      * @return Whether this invite is temporary or not
      */
-    boolean isExpirable();
+    boolean isTemporal();
 
     /**
      * Whether this Invite is for joining a guild.

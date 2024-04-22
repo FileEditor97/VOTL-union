@@ -129,7 +129,7 @@ public abstract class UserContextMenu extends ContextMenu {
 		}
 
 		if (client.getListener() != null)
-		client.getListener().onCompletedUserContextMenu(event, this);
+			client.getListener().onCompletedUserContextMenu(event, this);
 	}
 
 	/**

@@ -70,10 +70,8 @@ public class VerifyCacheManager extends LiteDBBase {
 		Long steam64 = getSteam64(discordId);
 		if (steam64 == null)
 			return false;
-		if (steam64 == 0L)
-			return true;
-		return false;
-	}
+        return steam64 == 0L;
+    }
 	
 
 	public void purgeVerified() {

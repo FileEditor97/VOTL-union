@@ -3,12 +3,12 @@ package union.utils;
 public class SteamUtil {
 
 	public static String convertSteam64toSteamID(long steam64) throws NumberFormatException {
-		Long universe = (steam64 >> 56) & 0xFF;
+		long universe = (steam64 >> 56) & 0xFF;
 		if (universe == 1) universe = 0L;
 
-		Long accountIdLowBit = (steam64 - 76561197960265728L) & 1;
+		long accountIdLowBit = (steam64 - 76561197960265728L) & 1;
 
-		Long accountIdHighBits = (steam64 - 76561197960265728L - accountIdLowBit) / 2;
+		long accountIdHighBits = (steam64 - 76561197960265728L - accountIdLowBit) / 2;
 
 		return "STEAM_" + universe + ":" + accountIdLowBit + ":" + accountIdHighBits;
 	}

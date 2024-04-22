@@ -49,7 +49,6 @@ public class CommandClientBuilder
 	private boolean manualUpsert = false;
 	private CommandListener listener;
 	private boolean shutdownAutomatically = true;
-	private String helpWord;
 	private ScheduledExecutorService executor;
 
 	/**
@@ -63,7 +62,7 @@ public class CommandClientBuilder
 	{
 		CommandClient client = new CommandClientImpl(ownerId, commandPreProcessFunction, activity, status, serverInvite,
 													 new ArrayList<>(slashCommands), new ArrayList<>(contextMenus), forcedGuildId, devGuildIds, manualUpsert,
-													 shutdownAutomatically, helpWord, executor);
+													 shutdownAutomatically, executor);
 		if(listener!=null)
 			client.setListener(listener);
 		return client;
@@ -98,22 +97,6 @@ public class CommandClientBuilder
 	public CommandClientBuilder setOwnerId(long ownerId)
 	{
 		this.ownerId = String.valueOf(ownerId);
-		return this;
-	}
-
-	/**
-	 * Sets the word used to trigger the command list.
-	 * <br>Setting this to {@code null} or not setting this at all will set the help word
-	 * to {@code "help"}.
-	 *
-	 * @param  helpWord
-	 *         The word to trigger the help command
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setHelpWord(String helpWord)
-	{
-		this.helpWord = helpWord;
 		return this;
 	}
 

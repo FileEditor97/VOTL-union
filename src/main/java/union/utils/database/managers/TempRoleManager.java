@@ -51,7 +51,7 @@ public class TempRoleManager extends LiteDBBase {
 
 	public Boolean shouldDelete(String roleId) {
 		Integer data = selectOne("SELECT deleteAfter FROM %s WHERE (roleId=%s)".formatted(table, roleId), "deleteAfter", Integer.class);
-		return data==null ? false : data==1;
+		return data != null && data == 1;
 	}
 
 }

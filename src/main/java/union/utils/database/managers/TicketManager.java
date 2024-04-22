@@ -59,9 +59,9 @@ public class TicketManager extends LiteDBBase {
 	}
 
 	// get status
-	public boolean isOpened(String channelId) {
+	public boolean isClosed(String channelId) {
 		Integer data = selectOne("SELECT closed FROM %s WHERE (channelId=%s)".formatted(table, channelId), "closed", Integer.class);
-		return data==null ? false : data==0;
+		return data == null || data != 0;
 	}
 
 	public String getOpenedChannel(String userId, String guildId, int tagId) {
@@ -107,7 +107,7 @@ public class TicketManager extends LiteDBBase {
 
 	public Boolean isRoleTicket(String channelId) {
 		Integer data = selectOne("SELECT tagId FROM %s WHERE (channelId=%s)".formatted(table, channelId), "tagId", Integer.class);
-		return data==null ? false : data==0;
+		return data != null && data == 0;
 	}
 
 	public int countTicketsByMod(String guildId, String modId, Instant afterTime, Instant beforeTime, boolean roleTag) {

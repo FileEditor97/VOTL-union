@@ -53,13 +53,13 @@ public class TimeUtil {
 
 		@Nullable
 		public static Integer getMultipByChar(Character c) {
-			return Optional.ofNullable(BY_CHAR.get(c)).map(tf -> tf.getMultip()).orElse(null);
+			return Optional.ofNullable(BY_CHAR.get(c)).map(TimeFormats::getMultip).orElse(null);
 		}
 	}
 
 	/*
 	 * Duration and Period class have parse() method,
-	 * but they are quite inconvinient, as we want to
+	 * but they are quite inconvenient, as we want to
 	 * use both duration(h m s) and period(w d).
 	 */
 	public static Duration stringToDuration(String text, boolean allowSeconds) throws FormatterException {
@@ -72,7 +72,7 @@ public class TimeUtil {
 		}
 		
 		Matcher timeMatcher = timePattern.matcher(text);
-		Long time = 0L;
+		long time = 0L;
 		while (timeMatcher.find()) {
 			Character c = timeMatcher.group(2).charAt(0);
 			if (c.equals('s') && !allowSeconds) {
@@ -84,7 +84,7 @@ public class TimeUtil {
 			}
 
 			try {
-				time = Math.addExact(time, Math.multiplyExact(Long.valueOf(timeMatcher.group(1)), multip));
+				time = Math.addExact(time, Math.multiplyExact(Long.parseLong(timeMatcher.group(1)), multip));
 			} catch (NumberFormatException ex) {
 				throw new FormatterException("errors.formatter.parse_long");
 			} catch (ArithmeticException ex) {
@@ -104,9 +104,9 @@ public class TimeUtil {
 
 		long days = duration.toDaysPart();
 		if (days >= 7) {
-			Integer weeks = Math.floorMod(days, 7);
-			builder.append(weeks+" weeks");
-			days -= weeks*7;
+			int weeks = Math.floorMod(days, 7);
+			builder.append(weeks).append(" weeks");
+			days -= weeks * 7L;
 		}
 		if (days > 0) {
 			if (!builder.isEmpty()) builder.append(" ");

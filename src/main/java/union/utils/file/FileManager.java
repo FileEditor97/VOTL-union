@@ -55,10 +55,10 @@ public class FileManager {
 		return this;
 	}
 	
-	// Convenience method do add new languages more easy.
+	// Convenience method do add new languages easier.
 	public FileManager addLang(@NotNull String file) throws Exception {
 		if (locales == null)
-		locales = new ArrayList<>();
+			locales = new ArrayList<>();
 		
 		DiscordLocale locale = DiscordLocale.from(file);
 		if (locale.equals(DiscordLocale.UNKNOWN)) {
@@ -180,9 +180,7 @@ public class FileManager {
 		if (file == null) return null;
 		
 		try {
-			Boolean res = JsonPath.using(CONF).parse(file).read("$." + path);
-			
-			return res;
+            return JsonPath.using(CONF).parse(file).read("$." + path);
 		} catch (FileNotFoundException ex) {
 			logger.error("Couldn't find file {}.json", name);
 		} catch (IOException ex) {

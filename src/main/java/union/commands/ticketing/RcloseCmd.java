@@ -46,7 +46,7 @@ public class RcloseCmd extends CommandBase {
 			createError(event, path+".not_ticket");
 			return;
 		}
-		if (!bot.getDBUtil().ticket.isOpened(channelId)) {
+		if (bot.getDBUtil().ticket.isClosed(channelId)) {
 			// Ticket is closed
 			event.getChannel().delete().queue();
 			return;

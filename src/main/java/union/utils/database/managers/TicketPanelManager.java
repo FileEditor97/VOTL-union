@@ -74,7 +74,7 @@ public class TicketPanelManager extends LiteDBBase {
 		if (footer != null)
 			values.add("footer="+replaceNewline(footer));
 
-		if (values.size() > 0) execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
+		if (!values.isEmpty()) execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
 	}
 
 	public Panel getPanel(Integer panelId) {

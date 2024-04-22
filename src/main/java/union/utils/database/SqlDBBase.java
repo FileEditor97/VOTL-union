@@ -28,26 +28,26 @@ public class SqlDBBase {
 	}
 
 	protected List<String> select(final String table, final String selectKey, final List<String> condKeys, final List<String> condValuesInp) {
-		List<String> condValues = condValuesInp.stream().map(value -> quote(value)).toList();
+		List<String> condValues = condValuesInp.stream().map(this::quote).toList();
 
-		String sql = "SELECT "+selectKey+" FROM "+table+" WHERE ";
+		StringBuilder sql = new StringBuilder("SELECT " + selectKey + " FROM " + table + " WHERE ");
 		for (int i = 0; i < condKeys.size(); i++) {
 			if (i > 0) {
-				sql += " AND ";
+				sql.append(" AND ");
 			}
-			sql += condKeys.get(i)+"="+condValues.get(i);
+			sql.append(condKeys.get(i)).append("=").append(condValues.get(i));
 		}
 
 		List<String> results = new ArrayList<String>();
-		cu.logger.debug(sql);
+		cu.logger.debug(sql.toString());
 		try (Connection conn = DriverManager.getConnection(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+		PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
 				results.add(rs.getString(selectKey));
 			}
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
+			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql.toString(), ex);
 		}
 		return results;
 	}
@@ -57,7 +57,7 @@ public class SqlDBBase {
 	}
 
 	protected List<Map<String, String>> select(final String table, final List<String> selectKeys, final List<String> condKeys, final List<String> condValuesInp) {
-		List<String> condValues = condValuesInp.stream().map(value -> quote(value)).toList();
+		List<String> condValues = condValuesInp.stream().map(this::quote).toList();
 
 		StringBuilder sql = new StringBuilder("SELECT "); //* FROM "+table+" WHERE ";
 
@@ -83,7 +83,7 @@ public class SqlDBBase {
 			ResultSet rs = st.executeQuery();
 			List<String> keys = new ArrayList<>();
 			
-			if (selectKeys.size() == 0) {
+			if (selectKeys.isEmpty()) {
 				for (int i = 1; i<=rs.getMetaData().getColumnCount(); i++) {
 					keys.add(rs.getMetaData().getColumnName(i));
 				}

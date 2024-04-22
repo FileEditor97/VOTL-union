@@ -410,7 +410,7 @@ public class DiscordHtmlTranscripts {
             Element embedField = document.createElement("div");
             embedField.addClass("chatlog__embed-field");
 
-            // Field nmae
+            // Field name
             Element embedFieldName = document.createElement("div");
             embedFieldName.addClass("chatlog__embed-field-name");
 

@@ -94,8 +94,8 @@ public class GenerateListCmd extends CommandBase {
 			return Map.of("name", "", "en-GB", "", "ru", "");
 		}
 		Map<String, Object> map = new HashMap<>();
-		map.put("name", category.getName());
-		map.putAll(getText("bot.help.command_menu.categories."+category.getName()));
+		map.put("name", category.name());
+		map.putAll(getText("bot.help.command_menu.categories."+category.name()));
 		return map;
 	}
 

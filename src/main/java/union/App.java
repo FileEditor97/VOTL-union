@@ -97,7 +97,7 @@ public class App {
 		
 		// Define for default
 		dbUtil		= new DBUtil(fileManager);
-		localeUtil	= new LocaleUtil(this, "en-GB", DiscordLocale.ENGLISH_UK);
+		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
 		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this);
@@ -255,7 +255,7 @@ public class App {
 					try {
 						Thread.sleep(cooldown*1000L);
 					} catch (InterruptedException e) {
-						logger.error("Thread sleep interupted", e);
+						logger.error("Thread sleep interrupted", e);
 					}
 					cooldown*=2;
 				} else {

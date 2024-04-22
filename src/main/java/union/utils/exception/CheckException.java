@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 public class CheckException extends Exception {
 
 	@NotNull
-	private MessageCreateData data;
+	private final MessageCreateData data;
 	
 	public CheckException(@NotNull MessageEmbed embed) {
 		super();

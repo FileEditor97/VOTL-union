@@ -93,7 +93,7 @@ public abstract class MessageContextMenu extends ContextMenu
 		}
 
 		if (client.getListener() != null)
-		client.getListener().onCompletedMessageContextMenu(event, this);
+			client.getListener().onCompletedMessageContextMenu(event, this);
 	}
 
 	/**

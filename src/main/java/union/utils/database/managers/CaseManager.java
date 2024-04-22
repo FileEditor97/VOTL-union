@@ -62,7 +62,7 @@ public class CaseManager extends LiteDBBase {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, (page-1)*10), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(map -> new CaseData(map)).toList();
+		return data.stream().map(CaseData::new).toList();
 	}
 
 	// get 10 cases for guild's user sorted in pages
@@ -70,7 +70,7 @@ public class CaseManager extends LiteDBBase {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, userId, (page-1)*10), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(map -> new CaseData(map)).toList();
+		return data.stream().map(CaseData::new).toList();
 	}
 
 	// get 10 active timed cases sorted in pages
@@ -78,7 +78,7 @@ public class CaseManager extends LiteDBBase {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND duration>0 AND guildId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, (page-1)*10), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(map -> new CaseData(map)).toList();
+		return data.stream().map(CaseData::new).toList();
 	}
 
 	// get user active temporary cases data
@@ -94,7 +94,7 @@ public class CaseManager extends LiteDBBase {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d AND type>20 AND active=1)"
 			.formatted(table, guildId, userId), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(map -> new CaseData(map)).toList();
+		return data.stream().map(CaseData::new).toList();
 	}
 
 	// set all ban cases for user inactive
@@ -142,10 +142,8 @@ public class CaseManager extends LiteDBBase {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (active=1 AND type<20 AND duration>0 AND timeStart+duration<%d) ORDER BY caseId DESC LIMIT 10"
 			.formatted(table, Instant.now().getEpochSecond()), fullCaseKeys);
 		if (data.isEmpty()) return Collections.emptyList();
-		return data.stream().map(map -> new CaseData(map)).toList();
+		return data.stream().map(CaseData::new).toList();
 	}
-
-	
 
 	public static class CaseData {
 		private final int caseId;

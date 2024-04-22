@@ -592,7 +592,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 		String channelId = event.getChannel().getId();
-		if (!db.ticket.isOpened(channelId)) {
+		if (db.ticket.isClosed(channelId)) {
 			sendError(event, "bot.ticketing.listener.is_closed");
 			return;
 		}
@@ -637,7 +637,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonTicketClose(ButtonInteractionEvent event) {
 		String channelId = event.getChannel().getId();
-		if (!db.ticket.isOpened(channelId)) {
+		if (db.ticket.isClosed(channelId)) {
 			// Ticket is closed
 			event.getChannel().delete().queue();
 			return;
@@ -654,7 +654,7 @@ public class InteractionListener extends ListenerAdapter {
 	private void buttonTicketCloseCancel(ButtonInteractionEvent event) {
 		String channelId = event.getChannel().getId();
 		Guild guild = event.getGuild();
-		if (!db.ticket.isOpened(channelId)) {
+		if (db.ticket.isClosed(channelId)) {
 			// Ticket is closed
 			event.getChannel().delete().queue();
 			return;
@@ -675,7 +675,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 		String channelId = event.getChannel().getId();
-		if (!db.ticket.isOpened(channelId)) {
+		if (db.ticket.isClosed(channelId)) {
 			sendError(event, "bot.ticketing.listener.is_closed");
 			return;
 		}
@@ -699,7 +699,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 		String channelId = event.getChannel().getId();
-		if (!db.ticket.isOpened(channelId)) {
+		if (db.ticket.isClosed(channelId)) {
 			sendError(event, "bot.ticketing.listener.is_closed");
 			return;
 		}

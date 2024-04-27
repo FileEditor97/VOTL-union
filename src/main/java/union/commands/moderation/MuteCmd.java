@@ -80,7 +80,7 @@ public class MuteCmd extends CommandBase {
 			// Case already exists, change duration
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 				.setDescription(lu.getText(event, path+".already_muted").replace("{id}", caseData.getCaseId()))
-				.addField(lu.getText(event, "logger_embed.mute.short_title"), lu.getText(event, "logger_embed.mute.short_info")
+				.addField(lu.getText(event, "logger.moderation.mute.short_title"), lu.getText(event, "logger.moderation.mute.short_info")
 					.replace("{username}", tm.getAsMention())
 					.replace("{until}", TimeUtil.formatTime(tm.getTimeOutEnd(), false))
 					, false)

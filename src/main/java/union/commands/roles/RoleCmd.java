@@ -84,7 +84,7 @@ public class RoleCmd extends CommandBase {
 			// Check roles
 			Role publicRole = guild.getPublicRole();
 			for (Role r : roles) {
-				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(role) || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
+				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(r) || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
 					createError(event, path+".incorrect_role", "Role: "+r.getAsMention());
 					return;
 				}
@@ -153,8 +153,7 @@ public class RoleCmd extends CommandBase {
 			// Check roles
 			Role publicRole = guild.getPublicRole();
 			for (Role r : roles) {
-				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(role)
-						|| !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
+				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(r) || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
 					createError(event, path+".incorrect_role", "Role: "+r.getAsMention());
 					return;
 				}

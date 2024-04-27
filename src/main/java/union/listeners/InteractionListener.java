@@ -1330,7 +1330,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		event.getGuild().retrieveMemberById(userId).queue(target -> {
+		event.getGuild().retrieveMemberById(targetId).queue(target -> {
 			List<Long> addIds = new ArrayList<>();
 			List<Long> removeIds = new ArrayList<>();
 			// Retrieve selected roles
@@ -1459,7 +1459,7 @@ public class InteractionListener extends ListenerAdapter {
 			String[] data = db.modifyRole.getRoles(guildId, userId, targetId).split(":");
 			if (data.length < 1) data = new String[]{"", "", "", ""};
 			data[menuId-1] = newValue;
-			db.modifyRole.update(guildId, userId, targetId, String.join(";", data), Instant.now().plus(2, ChronoUnit.MINUTES));
+			db.modifyRole.update(guildId, userId, targetId, String.join(":", data), Instant.now().plus(2, ChronoUnit.MINUTES));
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error
 			// Thrown errors are not user's error, but code's fault as such things should be caught earlier and replied properly

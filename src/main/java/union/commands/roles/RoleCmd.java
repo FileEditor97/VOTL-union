@@ -304,7 +304,7 @@ public class RoleCmd extends CommandBase {
 					roleOptions.clear();
 					defaultValues.clear();
 					// Allow maximum 4 rows (fifth for button)
-					if (actionRows.size() >= 4) return;
+					if (actionRows.size() >= 4) break;
 					// Else create new builder
 					menuBuilder = StringSelectMenu.create("role:manage-select:"+menuId+":"+target.getId()).setRequiredRange(0, 25);
 					menuId++;

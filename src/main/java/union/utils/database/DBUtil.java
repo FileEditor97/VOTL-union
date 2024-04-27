@@ -13,30 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import union.App;
-import union.utils.database.managers.AccessManager;
-import union.utils.database.managers.AlertsManager;
-import union.utils.database.managers.AutopunishManager;
-import union.utils.database.managers.BlacklistManager;
-import union.utils.database.managers.CaseManager;
-import union.utils.database.managers.GroupManager;
-import union.utils.database.managers.GuildLogsManager;
-import union.utils.database.managers.GuildSettingsManager;
-import union.utils.database.managers.GuildVoiceManager;
-import union.utils.database.managers.LogExceptionManager;
-import union.utils.database.managers.RoleManager;
-import union.utils.database.managers.StrikeManager;
-import union.utils.database.managers.TempRoleManager;
-import union.utils.database.managers.TicketManager;
-import union.utils.database.managers.TicketPanelManager;
-import union.utils.database.managers.TicketTagManager;
-import union.utils.database.managers.UnionPlayerManager;
-import union.utils.database.managers.UnionVerifyManager;
-import union.utils.database.managers.UserSettingsManager;
-import union.utils.database.managers.TicketSettingsManager;
-import union.utils.database.managers.VerifyCacheManager;
-import union.utils.database.managers.VerifySettingsManager;
-import union.utils.database.managers.VoiceChannelManager;
-import union.utils.database.managers.WebhookManager;
+import union.utils.database.managers.*;
 import union.utils.database.managers.GuildLogsManager.LogSettings;
 import union.utils.database.managers.GuildSettingsManager.GuildSettings;
 import union.utils.database.managers.TicketSettingsManager.TicketSettings;
@@ -78,6 +55,7 @@ public class DBUtil {
 	public final AlertsManager alerts;
 	public final GuildLogsManager logs;
 	public final LogExceptionManager logExceptions;
+	public final ModifyRoleManager modifyRole;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -127,6 +105,8 @@ public class DBUtil {
 		alerts = new AlertsManager(connectionUtil);
 		logs = new GuildLogsManager(connectionUtil);
 		logExceptions = new LogExceptionManager(connectionUtil);
+		modifyRole = new ModifyRoleManager(connectionUtil);
+		modifyRole.removeExpired(); // Remove expired selections
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);

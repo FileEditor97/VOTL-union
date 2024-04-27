@@ -240,6 +240,7 @@
 			"added_m": "Roles added to the user",
 			"removed_m": "Roles removed from the user",
 			"removed_all": "Role was removed from all users",
+			"modified": "User roles modified",
 			"temp_added": "Role added temporary to user",
 			"temp_updated": "Temporary role updated for user",
 			"temp_removed": "Temporary role removed from user",
@@ -697,7 +698,7 @@
 				}
 			},
 			"autopunish": {
-				"help": "Manage auto-punishments for stikes",
+				"help": "Manage auto-punishments for strikes",
 				"usage": "autopunish",
 				"add": {
 					"help": "Add new action",
@@ -816,9 +817,9 @@
 					"done": "Successfully unghosted your channel!"
 				},
 				"name": {
-					"help": "Control your VC's name",
+					"help": "Control your VC name",
 					"set": {
-						"help": "Set your VC's name",
+						"help": "Set your VC name",
 						"usage": "name set <name>",
 						"name": {
 							"name": "name",
@@ -826,15 +827,15 @@
 						}
 					},
 					"reset": {
-						"help": "Reset your VC's name to server's default",
+						"help": "Reset your VC name to server's default",
 						"usage": "name reset"
 					},
 					"done": "Successfully changed your channel name to `{value}`!"
 				},
 				"limit": {
-					"help": "Control your VC's user limit",
+					"help": "Control your VC user limit",
 					"set": {
-						"help": "Set your VC's user limit",
+						"help": "Set your VC user limit",
 						"usage": "limit set <limit>",
 						"limit": {
 							"name": "limit",
@@ -842,7 +843,7 @@
 						}
 					},
 					"reset": {
-						"help": "Reset your VC's user limit to server's default",
+						"help": "Reset your VC user limit to server's default",
 						"usage": "limit reset"
 					},
 					"done": "Successfully changed your channel limit to `{value}`!"
@@ -880,7 +881,7 @@
 				"perms": {
 					"help": "Manage your VoiceChannel's permissions",
 					"view": {
-						"help": "View VC's permissions",
+						"help": "View VC permissions",
 						"usage": "perms view",
 						"embed": {
 							"title": "Channel permissions for `{channel}`",
@@ -892,7 +893,7 @@
 						}
 					},
 					"reset": {
-						"help": "Reset VC's permissions to default (sync with category)",
+						"help": "Reset VC permissions to default (sync with category)",
 						"usage": "perms reset",
 						"done": "Successfully synced channel permissions with category!"
 					}
@@ -1469,7 +1470,7 @@
 				},
 				"embed": {
 					"about_title": "About {name}!",
-					"about_value": "UnionTeam's Discord bot for moderation, server managment and other. Written in Java using JDA library.\nDeveloper - **{developer_name}** ({developer_id}).",
+					"about_value": "UnionTeam's Discord bot for moderation, server management and other. Written in Java using JDA library.\nDeveloper - **{developer_name}** ({developer_id}).",
 					"bot_info": {
 						"title": "Bot info",
 						"bot_version": "Bot version: `VOTL-{bot_version}`",
@@ -1573,7 +1574,7 @@
 				"title": "Link your account to complete verification",
 				"howto": "How to link your account?",
 				"description": "To get full access to the server (sending messages, application and complaint channels), follow the link below and link your Steam and Discord account.",
-				"guide": "1. Go to the project's website https://unionteams.ru/\n2. Press \"Authenticate\" in upper right corner and login via Steam.\n3. Press on your profile in upper-right corner and enter \"Personal account\".\n4. Link your Discord account on the oppened page.\n5. Return to Discord verification channel and press any button there.",
+				"guide": "1. Go to the project's website https://unionteams.ru/\n2. Press \"Authenticate\" in upper right corner and login via Steam.\n3. Press on your profile in upper-right corner and enter \"Personal account\".\n4. Link your Discord account on the opened page.\n5. Return to Discord verification channel and press any button there.",
 				"video": "Video guide"
 			},
 			"listener": {
@@ -1622,7 +1623,7 @@
 				"done": "Role {role} assigned for verification!"
 			},
 			"verify": {
-				"help": "Manualy add verify role to member and protect from purge",
+				"help": "Manually add verify role to member and protect from purge",
 				"usage": "verify <@User | ID>",
 				"user": {
 					"name": "user",
@@ -1641,7 +1642,7 @@
 				},
 				"reason": {
 					"name": "reason",
-					"help": "Reason for unverification"
+					"help": "Reason for verification remove"
 				},
 				"no_user": "Couldn't find mentioned member, either they left server or not existent!",
 				"not_setup": "Verification role is not set!\nUse `/verifyrole`",
@@ -2244,6 +2245,22 @@
 					"estimate": "\n*Estimated time for completion `%d` seconds.*",
 					"empty": "No members has this role.",
 					"done": "Removed role `{role}` from {count}/{max} users."
+				},
+				"modify": {
+					"help": "Modify user roles",
+					"usage": "modify <@User>",
+					"user": {
+						"name": "user",
+						"help": "Select user"
+					},
+					"no_user": "Member not found.",
+					"incorrect_user": "Member roles can't be modified.",
+					"no_roles": "No roles to assign or remove.",
+					"button": "Modify roles",
+					"title": "**Modify %s roles.**\nAdd or remove roles below, then press the button to confirm changes.\n*Administrator roles can't be selected.*",
+					"expired": "Selection expired.\nRun command again.",
+					"no_change": "No changes in roles. Modify assigned roles and try again.",
+					"done": "Modified user %s roles.\n%s"
 				}
 			},
 			"temprole": {

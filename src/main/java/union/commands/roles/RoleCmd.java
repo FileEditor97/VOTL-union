@@ -1,5 +1,7 @@
 package union.commands.roles;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -7,6 +9,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommand;
@@ -31,7 +37,7 @@ public class RoleCmd extends CommandBase {
 		super(bot);
 		this.name = "role";
 		this.path = "bot.roles.role";
-		this.children = new SlashCommand[]{new Add(bot), new Remove(bot), new RemoveAll(bot)};
+		this.children = new SlashCommand[]{new Add(bot), new Remove(bot), new RemoveAll(bot), new Modify(bot)};
 		this.category = CmdCategory.ROLES;
 		this.module = CmdModule.ROLES;
 		this.accessLevel = CmdAccessLevel.HELPER;
@@ -78,7 +84,7 @@ public class RoleCmd extends CommandBase {
 			// Check roles
 			Role publicRole = guild.getPublicRole();
 			for (Role r : roles) {
-				if (r.equals(publicRole) || r.isManaged() || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
+				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(role) || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
 					createError(event, path+".incorrect_role", "Role: "+r.getAsMention());
 					return;
 				}
@@ -91,8 +97,7 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 
-			List<Role> finalRoles = new ArrayList<>();
-			finalRoles.addAll(member.getRoles());
+			List<Role> finalRoles = new ArrayList<>(member.getRoles());
 			finalRoles.addAll(roles);
 			
 			guild.modifyMemberRoles(member, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
@@ -148,7 +153,8 @@ public class RoleCmd extends CommandBase {
 			// Check roles
 			Role publicRole = guild.getPublicRole();
 			for (Role r : roles) {
-				if (r.equals(publicRole) || r.isManaged() || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
+				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(role)
+						|| !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
 					createError(event, path+".incorrect_role", "Role: "+r.getAsMention());
 					return;
 				}
@@ -161,8 +167,7 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 
-			List<Role> finalRoles = new ArrayList<>();
-			finalRoles.addAll(member.getRoles());
+			List<Role> finalRoles = new ArrayList<>(member.getRoles());
 			finalRoles.removeAll(roles);
 			
 			guild.modifyMemberRoles(member, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
@@ -171,7 +176,7 @@ public class RoleCmd extends CommandBase {
 				bot.getLogger().role.onRolesRemoved(guild, event.getUser(), member.getUser(), rolesString);
 				// Send reply
 				createReplyEmbed(event, false, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").replace("{role}", rolesString).replace("{user}", member.getAsMention()))
+					.setDescription(lu.getText(event, path+".done").replace("{roles}", rolesString).replace("{user}", member.getAsMention()))
 					.build());
 			},
 			failure -> createError(event, path+".failed", failure.getMessage()));
@@ -249,6 +254,81 @@ public class RoleCmd extends CommandBase {
 			}).onError(failure -> editError(event, "errors.error", failure.getMessage()));
 		}
 		
+	}
+
+	private class Modify extends SlashCommand {
+		public Modify(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "modify";
+			this.path = "bot.roles.role.modify";
+			this.options = List.of(
+					new OptionData(OptionType.USER, "user", lu.getText(path + ".user.help"), true)
+			);
+			this.cooldownScope = CooldownScope.USER;
+			this.cooldown = 15;
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			Member target = event.optMember("user");
+			if (target == null) {
+				editError(event, path+".no_user");
+				return;
+			}
+			if (!event.getMember().canInteract(target) || target.getUser().isBot()) {
+				editError(event, path+".incorrect_user");
+				return;
+			}
+			List<Role> userRoles = target.getRoles();
+			List<Role> allRoles = event.getGuild().getRoleCache().asList();
+
+			List<ActionRow> actionRows = new ArrayList<>();
+			StringSelectMenu.Builder menuBuilder = StringSelectMenu.create("role:manage-select:1:"+target.getId());
+			List<SelectOption> roleOptions = new ArrayList<>();
+			List<String> defaultValues = new ArrayList<>();
+			int menuId = 2;
+			Member selfMember = event.getGuild().getSelfMember();
+			for (Role role : allRoles) {
+				if (role.isManaged() || !selfMember.canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) continue;
+				SelectOption option = SelectOption.of(role.getName(), role.getId());
+
+				if (roleOptions.size() >= 25) {
+					// Append builder to the list and create new builder
+					menuBuilder.addOptions(roleOptions).setDefaultValues(defaultValues);
+					actionRows.add(ActionRow.of(menuBuilder.build()));
+					// Clear options and default values
+					roleOptions.clear();
+					defaultValues.clear();
+					// Allow maximum 4 rows (fifth for button)
+					if (actionRows.size() >= 4) return;
+					// Else create new builder
+					menuBuilder = StringSelectMenu.create("role:manage-select:"+menuId+":"+target.getId());
+					menuId++;
+				}
+				roleOptions.add(option);
+				if (userRoles.contains(role)) defaultValues.add(role.getId());
+			}
+			if (!roleOptions.isEmpty()) {
+				menuBuilder.addOptions(roleOptions).setDefaultValues(defaultValues);
+				actionRows.add(ActionRow.of(menuBuilder.build()));
+			}
+			if (actionRows.isEmpty()) {
+				editError(event, path+".no_roles");
+				return;
+			}
+			actionRows.add(ActionRow.of(Button.primary("role:manage-confirm:"+target.getId(), lu.getText(event, path+".button"))));
+
+			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getUser().getIdLong(),
+					target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
+
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+					.setDescription(lu.getText(event, path+".title").formatted(target.getAsMention()))
+					.build()
+			).setComponents(actionRows).queue();
+		}
 	}
 
 }

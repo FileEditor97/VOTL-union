@@ -207,7 +207,7 @@ public class LoggingUtil {
 
 		public void onApproved(Member member, Member admin, Guild guild, List<Role> roles, String ticketId) {
 			sendLog(guild, type, () -> logUtil.rolesApprovedEmbed(guild.getLocale(), ticketId, member.getIdLong(),
-				roles.stream().map(role -> role.getAsMention()).collect(Collectors.joining(" ")), admin.getIdLong()));
+				roles.stream().map(Role::getAsMention).collect(Collectors.joining(" ")), admin.getIdLong()));
 		}
 
 		public void onCheckRank(Guild guild, User admin, Role role, String rankName) {
@@ -232,6 +232,10 @@ public class LoggingUtil {
 
 		public void onRoleRemovedAll(Guild guild, User mod, Role role) {
 			sendLog(guild, type, () -> logUtil.roleRemovedAllEmbed(guild.getLocale(), mod.getIdLong(), role.getIdLong()));
+		}
+
+		public void onRolesModified(Guild guild, User mod, User target, String rolesModified) {
+			sendLog(guild, type, () -> logUtil.rolesModifiedEmbed(guild.getLocale(), mod.getIdLong(), target.getIdLong(), target.getEffectiveAvatarUrl(), rolesModified));
 		}
 
 		public void onTempRoleAdded(Guild guild, User mod, User target, Role role, Duration duration) {
@@ -391,7 +395,7 @@ public class LoggingUtil {
 			if (client == null) return;
 			try {
 				client.sendMessage("||"+Constants.DEVELOPER_TAG+"||").addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
-			} catch (Exception ex) {}
+			} catch (Exception ignored) {}
 		}
 	}
 

@@ -50,8 +50,6 @@ public class LogEmbedUtil {
 
 	private final LocaleUtil lu;
 
-	private final String pathHeader = "logger.";
-
 	private final int GREEN_DARK = 0x277236;
 	private final int GREEN_LIGHT = 0x67CB7B;
 	private final int AMBER_DARK = 0xCA8B02;
@@ -66,7 +64,7 @@ public class LogEmbedUtil {
 	}
 
 	private String localized(DiscordLocale locale, String pathFooter) {
-		return lu.getLocalized(locale, pathHeader+pathFooter);
+		return lu.getLocalized(locale, "logger."+pathFooter);
 	}
 
 	private class LogEmbedBuilder {
@@ -494,6 +492,17 @@ public class LogEmbedUtil {
 			.addField("roles.role", "<@&"+roleId+">")
 			.setEnforcer(modId)
 			.build();
+	}
+
+	@NotNull
+	public MessageEmbed rolesModifiedEmbed(DiscordLocale locale, long modId, long userId, String userUrl, String rolesModified) {
+		return new LogEmbedBuilder(locale, RED_LIGHT)
+				.setHeaderIcon("roles.modified", userUrl)
+				.setUser(userId)
+				.addField("roles.roles", rolesModified)
+				.setMod(modId)
+				.setId(userId)
+				.build();
 	}
 
 	@NotNull
@@ -1063,7 +1072,7 @@ public class LogEmbedUtil {
 			.addField("messages.author", "<@%s>".formatted(newData.getAuthorId()))
 			.addField("messages.channel", "<#%s>".formatted(channelId))
 			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, newData.getAuthorId()));
-		if (oldData != null && newData != null) {
+		if (oldData != null) {
 			if (oldData.getAttachment() != null && newData.getAttachment() == null) {
 				builder.appendDescription("Removed Attachment: "+oldData.getAttachment().getFileName()+"\n\n");
 			}
@@ -1166,7 +1175,7 @@ public class LogEmbedUtil {
 					continue;
 				}
 				case "permission_overwrites" -> {
-					builder.append(parseChannelOverrides(locale, change));
+					builder.append(parseChannelOverrides(change));
 					continue;
 				}
 				default -> {}
@@ -1239,7 +1248,7 @@ public class LogEmbedUtil {
 		return MessageUtil.formatKey(value.name());
 	}
 
-	private String parseChannelOverrides(DiscordLocale locale, AuditLogChange change) {
+	private String parseChannelOverrides(AuditLogChange change) {
 		List<?> values = (List<?>) change.getNewValue();
 		if (values == null || values.isEmpty()) return "";
 

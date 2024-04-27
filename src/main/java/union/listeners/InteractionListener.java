@@ -1321,7 +1321,7 @@ public class InteractionListener extends ListenerAdapter {
 	private void buttonModifyConfirm(ButtonInteractionEvent event) {
 		long guildId = event.getGuild().getIdLong();
 		long userId = event.getUser().getIdLong();
-		long targetId = Long.parseLong(event.getComponentId().split(":")[3]);
+		long targetId = Long.parseLong(event.getComponentId().split(":")[2]);
 
 		// If expired don't allow to modify embed
 		if (db.modifyRole.isExpired(guildId, userId, targetId)) {
@@ -1360,8 +1360,8 @@ public class InteractionListener extends ListenerAdapter {
 				StringBuilder builder = new StringBuilder();
 				if (!addIds.isEmpty()) builder.append("\n**Added**: ")
 						.append(addIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
-				if (!addIds.isEmpty()) builder.append("\n**Removed**: ")
-						.append(addIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
+				if (!removeIds.isEmpty()) builder.append("\n**Removed**: ")
+						.append(removeIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
 				String rolesString = builder.toString();
 				// Log
 				bot.getLogger().role.onRolesModified(guild, event.getUser(), target.getUser(), rolesString);
@@ -1457,6 +1457,7 @@ public class InteractionListener extends ListenerAdapter {
 			// each section stores changes for each menu
 			int menuId = Integer.parseInt(event.getComponentId().split(":")[2]);
 			String[] data = db.modifyRole.getRoles(guildId, userId, targetId).split(":");
+			if (data.length < 1) data = new String[]{"", "", "", ""};
 			data[menuId-1] = newValue;
 			db.modifyRole.update(guildId, userId, targetId, String.join(";", data), Instant.now().plus(2, ChronoUnit.MINUTES));
 		} catch(Throwable t) {

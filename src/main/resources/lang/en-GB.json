@@ -23,6 +23,7 @@
 		"cooldown": {
 			"cooldown_command": "That command is on cooldown for {time} more seconds",
 			"cooldown_button": "This button is on cooldown for {time} more seconds",
+			"user": "",
 			"channel": "in this channel",
 			"guild": "in this server",
 			"shard": "on this shard",

@@ -64,7 +64,7 @@ public enum CooldownScope
 	 *     <li>{@code <command-name>|U:<userID>}</li>
 	 * </ul>
 	 */
-	USER("U:%d",""),
+	USER("U:%d","errors.cooldown.user"),
 
 	/**
 	 * Applies the cooldown to the {@link net.dv8tion.jda.api.entities.channel.middleman.MessageChannel MessageChannel} the

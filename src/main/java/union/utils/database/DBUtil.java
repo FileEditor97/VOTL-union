@@ -106,12 +106,13 @@ public class DBUtil {
 		logs = new GuildLogsManager(connectionUtil);
 		logExceptions = new LogExceptionManager(connectionUtil);
 		modifyRole = new ModifyRoleManager(connectionUtil);
-		modifyRole.removeExpired(); // Remove expired selections
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
+
+		modifyRole.removeExpired(); // Remove expired selections
 	}
 
 	public VerifySettings getVerifySettings(Guild guild) {

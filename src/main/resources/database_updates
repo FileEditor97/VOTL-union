@@ -22,3 +22,4 @@ DROP TABLE "ticketSettings"; CREATE TABLE "ticketSettings"("guildId" INTEGER NOT
 CREATE TABLE "logExceptions" ("guildId" INTEGER NOT NULL, "targetId" INTEGER NOT NULL, UNIQUE("guildId", "targetId"))
 ALTER TABLE "guild" ADD "informBan" INTEGER NOT NULL DEFAULT 1; ALTER TABLE "guild" ADD "informKick" INTEGER NOT NULL DEFAULT 1; ALTER TABLE "guild" ADD "informMute" INTEGER NOT NULL DEFAULT 1; ALTER TABLE "guild" ADD "informStrike" INTEGER NOT NULL DEFAULT 1; ALTER TABLE "guild" ADD "informDelstrike" INTEGER NOT NULL DEFAULT 0
 CREATE TABLE "menuSelectRoles" ("guildId" INTEGER NOT NULL, "userId" INTEGER NOT NULL, "targetId" INTEGER NOT NULL, "expiresAfter" INTEGER NOT NULL, "roles" TEXT, UNIQUE("guildId", "userId", "targetId"))
+UPDATE roleAccess SET level=3 WHERE (level=2); UPDATE roleAccess SET level=2 WHERE (level=1)

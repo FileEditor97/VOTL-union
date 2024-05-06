@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.*;
@@ -217,12 +218,7 @@ public class InteractionListener extends ListenerAdapter {
 			// Log throwable and try to respond to the user with the error
 			// Thrown errors are not user's error, but code's fault as such things should be caught earlier and replied properly
 			bot.getAppLogger().error("ButtonInteraction Exception", t);
-			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-				.setTitle(lu.getLocalized(event.getUserLocale(), "errors.title"))
-				.setDescription(lu.getLocalized(event.getUserLocale(), "errors.unknown"))
-				.addField(lu.getLocalized(event.getUserLocale(), "errors.additional"), MessageUtil.limitString(t.getMessage(), 1024), false)
-				.build()
-			).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+			bot.getEmbedUtil().sendUnknownError(event.getHook(), event.getUserLocale(), t.getMessage());
 		}
 	}
 
@@ -1423,6 +1419,8 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
+	private final Pattern splitPattern = Pattern.compile(":");
+
 	// Roles modify
 	private void listModifySelect(StringSelectInteractionEvent event) {
 		event.deferEdit().queue();
@@ -1456,20 +1454,15 @@ public class InteractionListener extends ListenerAdapter {
 			// "1:2:3:4"
 			// each section stores changes for each menu
 			int menuId = Integer.parseInt(event.getComponentId().split(":")[2]);
-			String[] data = db.modifyRole.getRoles(guildId, userId, targetId).split(":");
-			if (data.length < 1) data = new String[]{"", "", "", ""};
+			String[] data = splitPattern.split(db.modifyRole.getRoles(guildId, userId, targetId), 4);
+			if (data.length != 4) data = new String[]{"", "", "", ""};
 			data[menuId-1] = newValue;
 			db.modifyRole.update(guildId, userId, targetId, String.join(":", data), Instant.now().plus(2, ChronoUnit.MINUTES));
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error
 			// Thrown errors are not user's error, but code's fault as such things should be caught earlier and replied properly
 			bot.getAppLogger().error("Role modify Exception", t);
-			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-					.setTitle(lu.getLocalized(event.getUserLocale(), "errors.title"))
-					.setDescription(lu.getLocalized(event.getUserLocale(), "errors.unknown"))
-					.addField(lu.getLocalized(event.getUserLocale(), "errors.additional"), MessageUtil.limitString(t.getMessage(), 1024), false)
-					.build()
-			).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+			bot.getEmbedUtil().sendUnknownError(event.getHook(), event.getUserLocale(), t.getMessage());
 		}
 	}
 

@@ -89,19 +89,14 @@ public class BanCmd extends CommandBase {
 					bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
 						guild.getIdLong(), reason, Instant.now(), duration);
 					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
-					// create embed
-					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getGuildText(event, path+".success")
-							.formatted(TimeUtil.formatDuration(lu, event.getGuildLocale(), Instant.now(), duration)))
-						.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tu.getName(), tu.getAsMention()), true)
-						.addField(lu.getGuildText(event, "logger.reason"), reason, true)
-						.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
-						.build();
 					// log ban
 					bot.getLogger().mod.onNewCase(guild, tu, newBanData);
 
 					// reply and add blacklist button
-					event.getHook().editOriginalEmbeds(embed).setActionRow(
+					event.getHook().editOriginalEmbeds(
+							bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getCaseIdInt(),
+									path+".success", tu, mod.getUser(), reason, duration)
+					).setActionRow(
 						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
 						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
 						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
@@ -180,13 +175,8 @@ public class BanCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), duration);
 				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
 				// create embed
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getGuildText(event, path+".success")
-						.formatted(TimeUtil.formatDuration(lu, event.getGuildLocale(), Instant.now(), duration)))
-					.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tu.getName(), tu.getAsMention()), true)
-					.addField(lu.getGuildText(event, "logger.reason"), reason, true)
-					.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
-					.build();
+				MessageEmbed embed = bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getCaseIdInt(),
+						path+".success", tu, mod.getUser(), reason, duration);
 				// log ban
 				bot.getLogger().mod.onNewCase(guild, tu, newBanData);
 

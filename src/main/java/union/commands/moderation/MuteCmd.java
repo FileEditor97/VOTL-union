@@ -120,13 +120,8 @@ public class MuteCmd extends CommandBase {
 				bot.getLogger().mod.onNewCase(guild, tm.getUser(), muteDate);
 				
 				// send embed
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getGuildText(event, path+".success")
-						.formatted(TimeUtil.formatDuration(lu, event.getGuildLocale(), Instant.now(), duration)))
-					.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tm.getUser().getName(), tm.getAsMention()), true)
-					.addField(lu.getGuildText(event, "logger.reason"), reason, true)
-					.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
-					.build()
+				editHookEmbed(event, bot.getModerationUtil().actionEmbed(guild.getLocale(), muteDate.getCaseIdInt(),
+						path+".success", tm.getUser(), mod.getUser(), reason, duration)
 				);
 			},
 			failed -> editError(event, "errors.error", failed.getMessage()));

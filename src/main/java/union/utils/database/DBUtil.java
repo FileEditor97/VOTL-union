@@ -56,6 +56,7 @@ public class DBUtil {
 	public final GuildLogsManager logs;
 	public final LogExceptionManager logExceptions;
 	public final ModifyRoleManager modifyRole;
+	public final ThreadControlManager threadControl;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -106,6 +107,7 @@ public class DBUtil {
 		logs = new GuildLogsManager(connectionUtil);
 		logExceptions = new LogExceptionManager(connectionUtil);
 		modifyRole = new ModifyRoleManager(connectionUtil);
+		threadControl = new ThreadControlManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
@@ -219,7 +221,7 @@ public class DBUtil {
 			// Update version
 			try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
 			Statement st = conn.createStatement()) {
-				st.execute("PRAGMA user_version = "+newVersion.toString());
+				st.execute("PRAGMA user_version = "+newVersion);
 				logger.info("SQLite: Database version updated to {}", newVersion);
 			} catch(SQLException ex) {
 				logger.error("SQLite: Failed to set active database version", ex);

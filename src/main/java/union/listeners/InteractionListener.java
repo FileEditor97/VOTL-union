@@ -11,10 +11,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.*;
 
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
@@ -122,7 +124,8 @@ public class InteractionListener extends ListenerAdapter {
 
 	private final List<String> acceptableButtons = List.of(
 		"verify", "role", "ticket", "tag", "invites",
-		"delete", "voice", "blacklist", "strikes", "sync_"
+		"delete", "voice", "blacklist", "strikes", "sync_",
+		"thread"
 	);
 
 	private boolean isAcceptedId(final String id) {
@@ -212,17 +215,18 @@ public class InteractionListener extends ListenerAdapter {
 				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonSyncKick(event));
 			} else if (buttonId.startsWith("strikes")) {
 				runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
+			} else if (buttonId.startsWith("thread")) {
+				String action = buttonId.split(":")[1];
+				switch (action) {
+					case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_DELETE, () -> buttonThreadDelete(event));
+					case "lock" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_LOCK, () -> buttonThreadLock(event));
+				}
 			}
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error
 			// Thrown errors are not user's error, but code's fault as such things should be caught earlier and replied properly
 			bot.getAppLogger().error("ButtonInteraction Exception", t);
-			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-				.setTitle(lu.getLocalized(event.getUserLocale(), "errors.title"))
-				.setDescription(lu.getLocalized(event.getUserLocale(), "errors.unknown"))
-				.addField(lu.getLocalized(event.getUserLocale(), "errors.additional"), MessageUtil.limitString(t.getMessage(), 1024), false)
-				.build()
-			).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+			bot.getEmbedUtil().sendUnknownError(event.getHook(), event.getUserLocale(), t.getMessage());
 		}
 	}
 
@@ -1378,6 +1382,46 @@ public class InteractionListener extends ListenerAdapter {
 		);
 	}
 
+	// Thread controls
+	private void buttonThreadDelete(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access or higher
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		if (!event.getChannelType().equals(ChannelType.GUILD_PUBLIC_THREAD)) {
+			sendError(event, "errors.error", "Channel is not a public thread. Will not delete this channel.");
+			return;
+		}
+
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, "threads.locked"))
+				.build()).queue(msg -> {
+			event.getChannel().delete().queueAfter(5, TimeUnit.SECONDS);
+		});
+	}
+
+	private void buttonThreadLock(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access or higher
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		if (!event.getChannelType().equals(ChannelType.GUILD_PUBLIC_THREAD)) {
+			sendError(event, "errors.error", "Channel is not a public thread.");
+			return;
+		}
+
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, "threads.locked"))
+				.build()).queue(msg -> {
+			event.getChannel().asThreadChannel().getManager().setLocked(true).setArchived(true)
+					.reason("By "+event.getUser().getEffectiveName()).queueAfter(5, TimeUnit.SECONDS);
+		});
+	}
+
 	@Override
 	public void onModalInteraction(@NotNull ModalInteractionEvent event) {
 		event.deferReply(true).queue();
@@ -1423,6 +1467,8 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
+	private final Pattern splitPattern = Pattern.compile(":");
+
 	// Roles modify
 	private void listModifySelect(StringSelectInteractionEvent event) {
 		event.deferEdit().queue();
@@ -1456,20 +1502,15 @@ public class InteractionListener extends ListenerAdapter {
 			// "1:2:3:4"
 			// each section stores changes for each menu
 			int menuId = Integer.parseInt(event.getComponentId().split(":")[2]);
-			String[] data = db.modifyRole.getRoles(guildId, userId, targetId).split(":");
-			if (data.length < 1) data = new String[]{"", "", "", ""};
+			String[] data = splitPattern.split(db.modifyRole.getRoles(guildId, userId, targetId), 4);
+			if (data.length != 4) data = new String[]{"", "", "", ""};
 			data[menuId-1] = newValue;
 			db.modifyRole.update(guildId, userId, targetId, String.join(":", data), Instant.now().plus(2, ChronoUnit.MINUTES));
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error
 			// Thrown errors are not user's error, but code's fault as such things should be caught earlier and replied properly
 			bot.getAppLogger().error("Role modify Exception", t);
-			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-					.setTitle(lu.getLocalized(event.getUserLocale(), "errors.title"))
-					.setDescription(lu.getLocalized(event.getUserLocale(), "errors.unknown"))
-					.addField(lu.getLocalized(event.getUserLocale(), "errors.additional"), MessageUtil.limitString(t.getMessage(), 1024), false)
-					.build()
-			).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+			bot.getEmbedUtil().sendUnknownError(event.getHook(), event.getUserLocale(), t.getMessage());
 		}
 	}
 
@@ -1593,7 +1634,9 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD),
 		BUTTON_SHOW_STRIKES(30, CooldownScope.USER),
 		BAN_SYNC_ACTION(10, CooldownScope.CHANNEL),
-		BUTTON_MODIFY_CONFIRM(10, CooldownScope.USER);
+		BUTTON_MODIFY_CONFIRM(10, CooldownScope.USER),
+		BUTTON_THREAD_DELETE(10, CooldownScope.GUILD),
+		BUTTON_THREAD_LOCK(10, CooldownScope.GUILD);
 
 		private final int time;
 		private final CooldownScope scope;

@@ -16,7 +16,6 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.PunishActions;
 import union.objects.constants.CmdCategory;
-import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.message.TimeUtil;
 
@@ -93,12 +92,8 @@ public class StrikeCmd extends CommandBase {
 		// log
 		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData);
 		// send reply
-		EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getGuildText(event, path+".success")
-				.formatted(lu.getGuildText(event, type.getPath())))
-			.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tm.getUser().getName(), tm.getAsMention()), true)
-			.addField(lu.getGuildText(event, "logger.reason"), reason, true)
-			.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false);
+		EmbedBuilder builder = bot.getModerationUtil().actionEmbed(guild.getLocale(), caseData.getCaseIdInt(),
+				path+".success", type.getPath(), tm.getUser(), mod.getUser(), reason);
 		if (action != null) builder.addField(action);
 
 		editHookEmbed(event, builder.build());
@@ -121,7 +116,6 @@ public class StrikeCmd extends CommandBase {
 
 		// Check if user can interact and target is not server's moderator or higher
 		if (!guild.getSelfMember().canInteract(target)) return null;
-		if (bot.getCheckUtil().hasAccess(target, CmdAccessLevel.MOD)) return null;
 		if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.ALL)) return null;
 
 		// Execute

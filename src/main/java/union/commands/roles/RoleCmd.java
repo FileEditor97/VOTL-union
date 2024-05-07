@@ -290,10 +290,11 @@ public class RoleCmd extends CommandBase {
 			StringSelectMenu.Builder menuBuilder = StringSelectMenu.create("role:manage-select:1:"+target.getId()).setRequiredRange(0, 25);
 			List<SelectOption> roleOptions = new ArrayList<>();
 			List<String> defaultValues = new ArrayList<>();
-			int menuId = 2;
+			int nextMenuId = 2;
 			Member selfMember = event.getGuild().getSelfMember();
+			Member user = event.getMember();
 			for (Role role : allRoles) {
-				if (role.isManaged() || !selfMember.canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR) || role.getIdLong()==guildId) continue;
+				if (role.isManaged() || !selfMember.canInteract(role) || !user.canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR) || role.getIdLong()==guildId) continue;
 				SelectOption option = SelectOption.of(role.getName(), role.getId());
 
 				if (roleOptions.size() >= 25) {
@@ -306,8 +307,8 @@ public class RoleCmd extends CommandBase {
 					// Allow maximum 4 rows (fifth for button)
 					if (actionRows.size() >= 4) break;
 					// Else create new builder
-					menuBuilder = StringSelectMenu.create("role:manage-select:"+menuId+":"+target.getId()).setRequiredRange(0, 25);
-					menuId++;
+					menuBuilder = StringSelectMenu.create("role:manage-select:"+nextMenuId+":"+target.getId()).setRequiredRange(0, 25);
+					nextMenuId++;
 				}
 				roleOptions.add(option);
 				if (userRoles.contains(role)) defaultValues.add(role.getId());
@@ -322,7 +323,7 @@ public class RoleCmd extends CommandBase {
 			}
 			actionRows.add(ActionRow.of(Button.primary("role:manage-confirm:"+target.getId(), lu.getText(event, path+".button"))));
 
-			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getUser().getIdLong(),
+			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), user.getIdLong(),
 					target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
 
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()

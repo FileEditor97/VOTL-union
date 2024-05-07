@@ -2,6 +2,10 @@ package union.utils.message;
 
 import java.time.ZonedDateTime;
 
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import union.objects.annotation.NotNull;
 import union.objects.constants.Constants;
 import union.utils.file.lang.LocaleUtil;
@@ -106,7 +110,7 @@ public class EmbedUtil {
 			user.openPrivateChannel()
 				.flatMap(ch -> ch.sendMessage(lu.getText(replyCallback, "errors.no_send_perm")))
 				.queue();
-			return MessageCreateData.fromContent("No MESSAGE_SEND perm"); //useles?
+			return MessageCreateData.fromContent("No MESSAGE_SEND perm"); //useless?
 		}
 		MessageCreateBuilder mb = new MessageCreateBuilder();
 
@@ -127,6 +131,15 @@ public class EmbedUtil {
 			mb.setEmbeds(getPermErrorEmbed(replyCallback, channel, perm, self).build());
 		}
 		return mb.build();
+	}
+
+	public void sendUnknownError(InteractionHook interactionHook, DiscordLocale locale, String reason) {
+		interactionHook.sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
+				.setTitle(lu.getLocalized(locale, "errors.title"))
+				.setDescription(lu.getLocalized(locale, "errors.unknown"))
+				.addField(lu.getLocalized(locale, "errors.additional"), MessageUtil.limitString(reason, 1024), false)
+				.build()
+		).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 	}
 
 }

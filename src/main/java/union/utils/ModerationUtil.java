@@ -113,4 +113,37 @@ public class ModerationUtil {
 		if (mod != null) builder.append("\n\\- ").append(mod.getGlobalName());
 		return builder.toString();
 	}
+
+	public MessageEmbed actionEmbed(DiscordLocale locale, int caseId, String actionPath, User target, User mod, String reason, Duration duration) {
+		return new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+			.setDescription(lu.getLocalized(locale, actionPath)
+					.formatted(TimeUtil.formatDuration(lu, locale, Instant.now(), duration)))
+			.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
+			.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
+			.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
+			.setTimestamp(Instant.now())
+			.setFooter("#"+caseId)
+			.build();
+	}
+
+	public MessageEmbed actionEmbed(DiscordLocale locale, int caseId, String actionPath, User target, User mod, String reason) {
+		return new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getLocalized(locale, actionPath))
+				.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
+				.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
+				.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
+				.setTimestamp(Instant.now())
+				.setFooter("#"+caseId)
+				.build();
+	}
+
+	public EmbedBuilder actionEmbed(DiscordLocale locale, int caseId, String actionPath, String typePath, User target, User mod, String reason) {
+		return new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getLocalized(locale, actionPath).formatted(lu.getLocalized(locale, typePath)))
+				.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
+				.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
+				.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
+				.setTimestamp(Instant.now())
+				.setFooter("#"+caseId);
+	}
 }

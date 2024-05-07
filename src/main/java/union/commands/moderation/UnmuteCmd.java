@@ -12,7 +12,6 @@ import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
-import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.Permission;
@@ -65,12 +64,8 @@ public class UnmuteCmd extends CommandBase {
 				// log unban
 				bot.getLogger().mod.onNewCase(guild, tm.getUser(), unmuteData, muteData != null ? muteData.getReason() : null);
 				// reply
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getGuildText(event, path+".success"))
-					.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tm.getUser().getName(), tm.getAsMention()), true)
-					.addField(lu.getGuildText(event, "logger.reason"), reason, true)
-					.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
-					.build()
+				editHookEmbed(event, bot.getModerationUtil().actionEmbed(guild.getLocale(), unmuteData.getCaseIdInt(),
+						path+".success", tm.getUser(), mod.getUser(), reason)
 				);
 			},
 			failed -> editError(event, path+".abort", failed.getMessage()));

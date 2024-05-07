@@ -89,12 +89,8 @@ public class UnbanCmd extends CommandBase {
 
 			// reply and ask for unban sync
 			event.getHook().editOriginalEmbeds(
-				bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getGuildText(event, path+".success"))
-					.addField(lu.getGuildText(event, "logger.user"), "%s (%s)".formatted(tu.getName(), tu.getAsMention()), true)
-					.addField(lu.getGuildText(event, "logger.reason"), reason, true)
-					.addField(lu.getGuildText(event, "logger.moderation.mod"), "%s (%s)".formatted(mod.getUser().getName(), mod.getAsMention()), false)
-					.build()
+					bot.getModerationUtil().actionEmbed(guild.getLocale(), unbanData.getCaseIdInt(),
+							path+".success", tu, mod.getUser(), reason)
 			).setActionRow(
 				Button.primary("sync_unban:"+tu.getId(), "Sync unban").withEmoji(Emoji.fromUnicode("🆑"))
 			).queue();

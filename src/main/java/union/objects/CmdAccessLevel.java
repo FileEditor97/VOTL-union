@@ -9,18 +9,19 @@ import java.util.Map;
  * 0 - lowest (public access)
  */
 public enum CmdAccessLevel {
-	ALL     (0, "everyone"),			// Default
-	HELPER	(1, "helper"),			// Role
-	MOD     (2, "moderator"),		// Role
+	ALL     (0, "everyone"),		// Default
+	EXCEPT  (1, "automod exception"),// Role
+	HELPER	(2, "helper"),			// Role
+	MOD     (3, "moderator"),		// Role
 	ADMIN   (5, "administrator"),	// by Permission (Administrator)
 	OPERATOR(7, "group operator"),	// User
-	OWNER   (8, "server owner"),		// by Guild info
+	OWNER   (8, "server owner"),	// by Guild info
 	DEV     (10, "bot developer");	// by config
 
 	private final Integer level;
 	private final String name;
 
-	private static final Map<Integer, CmdAccessLevel> BY_LEVEL = new HashMap<Integer, CmdAccessLevel>();
+	private static final Map<Integer, CmdAccessLevel> BY_LEVEL = new HashMap<>();
 
 	static {
 		for (CmdAccessLevel al : CmdAccessLevel.values()) {

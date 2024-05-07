@@ -112,6 +112,15 @@
 		"role_footer": "*After the issuance of roles - the request will be deleted.*\n*Do not close the ticket, wait for the moderator!*",
 		"autoclose_cancel": "The automated close on this ticket has been cancelled."
 	},
+	"threads": {
+		"panel": {
+			"title": "Channel controls",
+			"delete": "Delete",
+			"lock": "Lock & Archive"
+		},
+		"delete": "Thread will be deleted in 5 seconds.",
+		"locked": "Thread will be locked and archived in 5 seconds."
+	},
 	"logger_embed": {
 		"verify": {
 			"blacklisted": "Blacklisted in group #%d",
@@ -762,6 +771,38 @@
 					"help": "View all actions",
 					"usage": "view",
 					"empty": "There are no actions."
+				}
+			},
+			"threads": {
+				"help": "Manage thread control panel creation",
+				"usage": "threads",
+				"add": {
+					"help": "Add forum/channel",
+					"usage": "add <#Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel"
+					},
+					"no_channel": "Channel not found.",
+					"exists": "Channel is already managed.",
+					"done": "Management panel will be created for threads in %s."
+				},
+				"remove": {
+					"help": "Remove forum/channel",
+					"usage": "remove <Channel ID>",
+					"channel": {
+						"name": "channel",
+						"help": "Enter channel ID"
+					},
+					"no_channel": "Unable to use provided ID.",
+					"not_found": "Channel not found.",
+					"done": "Management panel will not be created for the channel `%s`."
+				},
+				"view": {
+					"help": "Show managed channels",
+					"usage": "view",
+					"title": "Managed channels",
+					"none": "*No channels.*"
 				}
 			}
 		},

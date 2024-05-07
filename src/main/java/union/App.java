@@ -114,7 +114,7 @@ public class App {
         MessageListener messageListener			= new MessageListener(this);
         MemberListener memberListener			= new MemberListener(this);
         ModerationListener moderationListener	= new ModerationListener(this);
-        AuditListener auditListener				= new AuditListener(dbUtil, logUtil);
+        AuditListener auditListener				= new AuditListener(this);
 
         ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
         ScheduledCheck scheduledCheck = new ScheduledCheck(this);
@@ -136,6 +136,7 @@ public class App {
 				new AccessCmd(this),
 				new LogsCmd(this),
 				new AutopunishCmd(this),
+				new ThreadsCmd(this),
 				// owner
 				new ShutdownCmd(this),
 				new EvalCmd(this),

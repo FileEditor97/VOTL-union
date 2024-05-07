@@ -1,7 +1,18 @@
 package union.listeners;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.audit.AuditLogKey;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import union.App;
+import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
+import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LoggingUtil;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -9,13 +20,15 @@ import net.dv8tion.jda.api.events.guild.GuildAuditLogEntryCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class AuditListener extends ListenerAdapter {
-	
+
+	private final LocaleUtil lu;
 	private final DBUtil db;
 	private final LoggingUtil logger;
  
-	public AuditListener(DBUtil dbUtil, LoggingUtil loggingUtil) {
-		this.db = dbUtil;
-		this.logger = loggingUtil;
+	public AuditListener(App bot) {
+		this.lu = bot.getLocaleUtil();
+		this.db = bot.getDBUtil();
+		this.logger = bot.getLogger();
 	}
 
 	@Override
@@ -23,6 +36,15 @@ public class AuditListener extends ListenerAdapter {
 		AuditLogEntry entry = event.getEntry();
 		switch (entry.getType()) {
 			case CHANNEL_CREATE -> {
+				// for thread, check if parent channel is managed
+				if (event.getEntry().getChangeByKey(AuditLogKey.CHANNEL_TYPE).getNewValue().equals(ChannelType.GUILD_PUBLIC_THREAD)) {
+					long threadId = event.getEntry().getTargetIdLong();
+					ThreadChannel thread = event.getGuild().getThreadChannelById(threadId);
+					if (thread != null && db.threadControl.exist(thread.getParentChannel().getIdLong())) {
+						// create controls
+						createThreadPanel(thread);
+					}
+				}
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.CHANNEL)) return;
 				
@@ -132,6 +154,19 @@ public class AuditListener extends ListenerAdapter {
 				// other
 			}	
 		}
+	}
+
+	private void createThreadPanel(ThreadChannel channel) {
+		DiscordLocale locale = channel.getGuild().getLocale();
+		MessageEmbed embed = new EmbedBuilder().setColor(0x595959)
+				.setTitle(lu.getLocalized(locale, "threads.panel.title"))
+				.build();
+		ActionRow actionRow = ActionRow.of(
+				Button.danger("thread:delete", lu.getLocalized(locale, "threads.panel.delete")),
+				Button.danger("thread:lock", lu.getLocalized(locale, "threads.panel.lock"))
+		);
+
+		channel.sendMessageEmbeds(embed).setComponents(actionRow).queue();
 	}
 
 }

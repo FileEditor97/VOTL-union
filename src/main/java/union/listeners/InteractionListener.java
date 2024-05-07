@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.*;
 
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
@@ -123,7 +124,8 @@ public class InteractionListener extends ListenerAdapter {
 
 	private final List<String> acceptableButtons = List.of(
 		"verify", "role", "ticket", "tag", "invites",
-		"delete", "voice", "blacklist", "strikes", "sync_"
+		"delete", "voice", "blacklist", "strikes", "sync_",
+		"thread"
 	);
 
 	private boolean isAcceptedId(final String id) {
@@ -213,6 +215,12 @@ public class InteractionListener extends ListenerAdapter {
 				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonSyncKick(event));
 			} else if (buttonId.startsWith("strikes")) {
 				runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
+			} else if (buttonId.startsWith("thread")) {
+				String action = buttonId.split(":")[1];
+				switch (action) {
+					case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_DELETE, () -> buttonThreadDelete(event));
+					case "lock" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_LOCK, () -> buttonThreadLock(event));
+				}
 			}
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error
@@ -1374,6 +1382,46 @@ public class InteractionListener extends ListenerAdapter {
 		);
 	}
 
+	// Thread controls
+	private void buttonThreadDelete(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access or higher
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		if (!event.getChannelType().equals(ChannelType.GUILD_PUBLIC_THREAD)) {
+			sendError(event, "errors.error", "Channel is not a public thread. Will not delete this channel.");
+			return;
+		}
+
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, "thread.locked"))
+				.build()).queue(msg -> {
+			event.getChannel().delete().queueAfter(5, TimeUnit.SECONDS);
+		});
+	}
+
+	private void buttonThreadLock(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access or higher
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		if (!event.getChannelType().equals(ChannelType.GUILD_PUBLIC_THREAD)) {
+			sendError(event, "errors.error", "Channel is not a public thread.");
+			return;
+		}
+
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, "thread.locked"))
+				.build()).queue(msg -> {
+			event.getChannel().asThreadChannel().getManager().setLocked(true).setArchived(true)
+					.reason("By "+event.getUser().getEffectiveName()).queueAfter(5, TimeUnit.SECONDS);
+		});
+	}
+
 	@Override
 	public void onModalInteraction(@NotNull ModalInteractionEvent event) {
 		event.deferReply(true).queue();
@@ -1586,7 +1634,9 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD),
 		BUTTON_SHOW_STRIKES(30, CooldownScope.USER),
 		BAN_SYNC_ACTION(10, CooldownScope.CHANNEL),
-		BUTTON_MODIFY_CONFIRM(10, CooldownScope.USER);
+		BUTTON_MODIFY_CONFIRM(10, CooldownScope.USER),
+		BUTTON_THREAD_DELETE(10, CooldownScope.GUILD),
+		BUTTON_THREAD_LOCK(10, CooldownScope.GUILD);
 
 		private final int time;
 		private final CooldownScope scope;

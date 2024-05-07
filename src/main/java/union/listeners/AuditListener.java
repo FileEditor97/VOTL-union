@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import union.App;
-import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 import union.utils.file.lang.LocaleUtil;
@@ -36,15 +35,6 @@ public class AuditListener extends ListenerAdapter {
 		AuditLogEntry entry = event.getEntry();
 		switch (entry.getType()) {
 			case CHANNEL_CREATE -> {
-				// for thread, check if parent channel is managed
-				if (event.getEntry().getChangeByKey(AuditLogKey.CHANNEL_TYPE).getNewValue().equals(ChannelType.GUILD_PUBLIC_THREAD)) {
-					long threadId = event.getEntry().getTargetIdLong();
-					ThreadChannel thread = event.getGuild().getThreadChannelById(threadId);
-					if (thread != null && db.threadControl.exist(thread.getParentChannel().getIdLong())) {
-						// create controls
-						createThreadPanel(thread);
-					}
-				}
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.CHANNEL)) return;
 				
@@ -149,6 +139,17 @@ public class AuditListener extends ListenerAdapter {
 				if (entry.getUserIdLong() == event.getJDA().getSelfUser().getIdLong()) return;
 
 				logger.member.onRoleChange(entry);
+			}
+			case THREAD_CREATE -> {
+				// check if parent channel is managed
+				if (event.getEntry().getChangeByKey(AuditLogKey.CHANNEL_TYPE).getNewValue().equals(ChannelType.GUILD_PUBLIC_THREAD.getId())) {
+					long threadId = event.getEntry().getTargetIdLong();
+					ThreadChannel thread = event.getGuild().getThreadChannelById(threadId);
+					if (thread != null && db.threadControl.exist(thread.getParentChannel().getIdLong())) {
+						// create controls
+						createThreadPanel(thread);
+					}
+				}
 			}
 			default -> {
 				// other

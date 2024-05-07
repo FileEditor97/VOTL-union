@@ -1396,7 +1396,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, "thread.locked"))
+				.setDescription(lu.getText(event, "threads.locked"))
 				.build()).queue(msg -> {
 			event.getChannel().delete().queueAfter(5, TimeUnit.SECONDS);
 		});
@@ -1415,7 +1415,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, "thread.locked"))
+				.setDescription(lu.getText(event, "threads.locked"))
 				.build()).queue(msg -> {
 			event.getChannel().asThreadChannel().getManager().setLocked(true).setArchived(true)
 					.reason("By "+event.getUser().getEffectiveName()).queueAfter(5, TimeUnit.SECONDS);

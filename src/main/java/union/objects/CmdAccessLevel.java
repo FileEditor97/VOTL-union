@@ -21,7 +21,7 @@ public enum CmdAccessLevel {
 	private final Integer level;
 	private final String name;
 
-	private static final Map<Integer, CmdAccessLevel> BY_LEVEL = new HashMap<Integer, CmdAccessLevel>();
+	private static final Map<Integer, CmdAccessLevel> BY_LEVEL = new HashMap<>();
 
 	static {
 		for (CmdAccessLevel al : CmdAccessLevel.values()) {

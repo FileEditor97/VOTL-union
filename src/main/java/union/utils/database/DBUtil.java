@@ -221,7 +221,7 @@ public class DBUtil {
 			// Update version
 			try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
 			Statement st = conn.createStatement()) {
-				st.execute("PRAGMA user_version = "+newVersion.toString());
+				st.execute("PRAGMA user_version = "+newVersion);
 				logger.info("SQLite: Database version updated to {}", newVersion);
 			} catch(SQLException ex) {
 				logger.error("SQLite: Failed to set active database version", ex);

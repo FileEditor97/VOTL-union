@@ -120,7 +120,10 @@ public class HelpCmd extends CommandBase {
 		List<SlashCommand> commands = (
 			filCat == null ? 
 			event.getClient().getSlashCommands() : 
-			event.getClient().getSlashCommands().stream().filter(cmd -> cmd.getCategory().name().contentEquals(filCat)).toList()
+			event.getClient().getSlashCommands().stream().filter(cmd -> {
+				if (cmd.getCategory() == null) return false;
+				return cmd.getCategory().name().contentEquals(filCat);
+			}).toList()
 		);
 		for (SlashCommand command : commands) {
 			if (!command.isOwnerCommand() || bot.getCheckUtil().isBotOwner(event.getUser())) {
@@ -129,6 +132,7 @@ public class HelpCmd extends CommandBase {
 						builder.addField(fieldTitle, fieldValue.toString(), false);
 					}
 					category = command.getCategory();
+					if (category == null) continue;
 					fieldTitle = lu.getLocalized(userLocale, "bot.help.command_menu.categories."+category.name());
 					fieldValue = new StringBuilder();
 				}

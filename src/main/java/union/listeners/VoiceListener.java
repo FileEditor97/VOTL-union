@@ -119,7 +119,7 @@ public class VoiceListener extends ListenerAdapter {
 			.queue(
 				channel -> {
 					db.voice.add(userId, channel.getIdLong());
-					guild.moveVoiceMember(member, channel).queueAfter(500, TimeUnit.MICROSECONDS);
+					guild.moveVoiceMember(member, channel).queueAfter(500, TimeUnit.MICROSECONDS, null, new ErrorHandler().ignore(IllegalStateException.class));
 				}
 			);
 	}

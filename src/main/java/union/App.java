@@ -194,7 +194,9 @@ public class App {
 			)
 			.addContextMenus(
 				new AccountContext(this),
-				new ReportContext(this)
+				new ReportContext(this),
+				new ModlogsContext(this),
+				new ActiveModlogsContext(this)
 			)
 			.setListener(new CommandListener(localeUtil))
 			.setDevGuildIds(fileManager.getStringList("config", "dev-servers").toArray(new String[0]))

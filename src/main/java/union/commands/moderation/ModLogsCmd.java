@@ -2,6 +2,7 @@ package union.commands.moderation;
 
 import java.util.List;
 
+import net.dv8tion.jda.api.utils.TimeFormat;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
@@ -27,7 +28,8 @@ public class ModLogsCmd extends CommandBase {
 		this.path = "bot.moderation.modlogs";
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
-			new OptionData(OptionType.INTEGER, "page", lu.getText(path+".page.help")).setMinValue(1)
+			new OptionData(OptionType.INTEGER, "page", lu.getText(path+".page.help")).setMinValue(1),
+			new OptionData(OptionType.BOOLEAN, "only_active", lu.getText(path+".only_active.help"))
 		);
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
@@ -41,7 +43,7 @@ public class ModLogsCmd extends CommandBase {
 
 		User tu;
 		if (event.hasOption("user")) {
-			tu = event.optUser("user", event.getUser());
+			tu = event.optUser("user");
 			if (!tu.equals(event.getUser()) && !bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.MOD)) {
 				editError(event, path+".no_perms");
 				return;
@@ -53,7 +55,7 @@ public class ModLogsCmd extends CommandBase {
 		long guildId = event.getGuild().getIdLong();
 		long userId = tu.getIdLong();
 		Integer page = event.optInteger("page", 1);
-		List<CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, event.optInteger("page", 1));
+		List<CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, page, event.optBoolean("only_active", false));
 		if (cases.isEmpty()) {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty")).build());
 			return;
@@ -66,14 +68,15 @@ public class ModLogsCmd extends CommandBase {
 			.setFooter(lu.getLocalized(locale, path+".footer"));
 		cases.forEach(c -> {
 			StringBuilder stringBuilder = new StringBuilder()
-					.append("> `").append(lu.getLocalized(locale, c.getCaseType().getPath())).append("`\n")
+					.append("> ").append(TimeFormat.DATE_TIME_SHORT.format(c.getTimeStart())).append("\n")
 					.append(lu.getLocalized(locale, path+".target").formatted(c.getTargetTag(), c.getTargetId()))
 					.append(lu.getLocalized(locale, path+".mod").formatted(c.getModTag()));
 			if (!c.getDuration().isNegative())
 				stringBuilder.append(lu.getLocalized(locale, path+".duration").formatted(TimeUtil.formatDuration(lu, locale, c.getTimeStart(), c.getDuration())));
 			stringBuilder.append(lu.getLocalized(locale, path+".reason").formatted(c.getReason()));
 
-			builder.addField((c.isActive() ? "🟥" : "⬜" ) + " " + lu.getLocalized(locale, path+".case").formatted(c.getCaseIdInt()), stringBuilder.toString(), false);
+			builder.addField(lu.getLocalized(locale, path+".case").formatted(c.isActive()?"🟥":"⬛", c.getCaseIdInt(), lu.getLocalized(locale, c.getCaseType().getPath())),
+					stringBuilder.toString(), false);
 		});
 
 		editHookEmbed(event, builder.build());

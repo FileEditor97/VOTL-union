@@ -408,6 +408,17 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
+	public MessageEmbed blacklistAddedEmbed(DiscordLocale locale, User enforcer, String steamID, String groupInfo) {
+		return new LogEmbedBuilder(locale, RED_DARK)
+				.setHeader( "moderation.blacklist.added", steamID)
+				.setUser(null)
+				.addField("moderation.blacklist.steam", steamID)
+				.addField("moderation.blacklist.group", groupInfo)
+				.setEnforcer(enforcer.getIdLong())
+				.build();
+	}
+
+	@NotNull
 	public MessageEmbed blacklistRemovedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String groupInfo) {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon( "moderation.blacklist.removed", target != null ? target.getEffectiveAvatarUrl() : null, target != null ? target.getName() : steamID)

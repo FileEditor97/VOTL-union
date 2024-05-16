@@ -1486,7 +1486,22 @@
 					"no_user": "Provided user is not blacklisted.",
 					"done_user": "Blacklist removed from user %s (%s) in group `%s`.",
 					"no_steam": "Entry not found with provided Steam ID.",
-					"done_steam": "Blacklist removed from Steam ID `%s` in group `%s`."
+					"done_steam": "Blacklist removed from SteamID `%s` in group `%s`."
+				},
+				"add": {
+					"help": "Add SteamID to blacklist",
+					"usage": "add <Group> <SteamID>",
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"steamid": {
+						"name": "steamid",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"cant_view": "Can't view selected group. (Not group's owner or manager)",
+					"already": "This steamID is already blacklisted in this group.",
+					"done": "Blacklisted SteamID `%s` in group `%s`."
 				},
 				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
 				"no_groups": "This server can't manage any group.",

@@ -167,8 +167,12 @@ public class LoggingUtil {
 			for (int groupId : groupIds) {
 				final String groupInfo = "%s (#%d)".formatted(bot.getDBUtil().group.getName(groupId), groupId);
 				Guild master = bot.JDA.getGuildById(bot.getDBUtil().group.getOwner(groupId));
-				sendLog(master, type, () -> logUtil.blacklistAddedEmbed(master.getLocale(), mod, target,
-					steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
+				if (target != null)
+					sendLog(master, type, () -> logUtil.blacklistAddedEmbed(master.getLocale(), mod, target,
+						steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
+				else
+					sendLog(master, type, () -> logUtil.blacklistAddedEmbed(master.getLocale(), mod,
+						steam64 == null ? "none" : SteamUtil.convertSteam64toSteamID(steam64), groupInfo));
 			}
 		}
 

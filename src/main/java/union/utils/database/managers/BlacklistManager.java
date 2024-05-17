@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
@@ -17,6 +18,11 @@ public class BlacklistManager extends LiteDBBase {
 	public void add(long guildId, int groupId, long userId, @Nullable Long steam64, @Nullable String reason, long modId) {
 		execute("INSERT INTO %s(guildId, groupId, userId, steam64, reason, modId) VALUES (%d, %d, %d, %d, %s, %s)"
 			.formatted(table, guildId, groupId, userId, steam64, quote(reason), modId));
+	}
+
+	public void addSteam(long guildId, int groupId, @NotNull Long steam64, long modId) {
+		execute("INSERT INTO %s(guildId, groupId, userId, steam64, modId) VALUES (%d, %d, -1, %d, %s)"
+			.formatted(table, guildId, groupId, steam64, modId));
 	}
 
 	public boolean inGroupUser(int groupId, long userId) {
@@ -33,14 +39,6 @@ public class BlacklistManager extends LiteDBBase {
 
 	public void removeSteam64(int groupId, long steam64) {
 		execute("DELETE FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64));
-	}
-
-	public Map<String, Object> getInfo(int groupId, long userId) {
-		return selectOne("SELECT * FROM %s WHERE (groupId=%d AND userId=%d)".formatted(table, groupId, userId), Set.of("guildId", "steam64", "reason", "modId"));
-	}
-
-	public Long getUserWithSteam64(int groupId, long steam64) {
-		return selectOne("SELECT userId FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64), "userId", Long.class);
 	}
 
 	public List<Map<String, Object>> getByPage(int groupId, int page) {

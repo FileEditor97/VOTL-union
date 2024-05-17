@@ -408,6 +408,17 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
+	public MessageEmbed blacklistAddedEmbed(DiscordLocale locale, User enforcer, String steamID, String groupInfo) {
+		return new LogEmbedBuilder(locale, RED_DARK)
+				.setHeader( "moderation.blacklist.added", steamID)
+				.setUser(null)
+				.addField("moderation.blacklist.steam", steamID)
+				.addField("moderation.blacklist.group", groupInfo)
+				.setEnforcer(enforcer.getIdLong())
+				.build();
+	}
+
+	@NotNull
 	public MessageEmbed blacklistRemovedEmbed(DiscordLocale locale, User enforcer, User target, String steamID, String groupInfo) {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon( "moderation.blacklist.removed", target != null ? target.getEffectiveAvatarUrl() : null, target != null ? target.getName() : steamID)
@@ -1179,18 +1190,18 @@ public class LogEmbedUtil {
 					continue;
 				}
 				default -> {}
-			};
+			}
 			String text = lu.getLocalizedNullable(locale, "logger.keys."+key);
 			if (text == null) continue;
 			Object oldValue = change.getOldValue();
 			Object newValue = change.getNewValue();
 			if (oldValue == null) {
 				// Created
-				builder.append("\u2795 **").append(text).append("**: ")
+				builder.append("➕ **").append(text).append("**: ")
 						.append(formatValue(key, newValue));
 			} else if (newValue == null || newValue.toString().isBlank()) {
 				// Deleted
-				builder.append("\u2796 **").append(text).append("**: ")
+				builder.append("➖ **").append(text).append("**: ")
 						.append(formatValue(key, oldValue));
 			} else {
 				// Changed
@@ -1249,7 +1260,7 @@ public class LogEmbedUtil {
 	}
 
 	private String parseChannelOverrides(AuditLogChange change) {
-		List<?> values = (List<?>) change.getNewValue();
+		List<?> values = change.getNewValue();
 		if (values == null || values.isEmpty()) return "";
 
 		StringBuilder builder = new StringBuilder();
@@ -1258,8 +1269,8 @@ public class LogEmbedUtil {
 			if (permsLong == 0) return;
 			EnumSet<Permission> perms = Permission.getPermissions(permsLong);
 
-			String id = (String) JsonPath.read(v, "$.id");
-			int type = (Integer) JsonPath.read(v, "$.type");
+			String id = JsonPath.read(v, "$.id");
+			int type = JsonPath.read(v, "$.type");
 			//buffer.append("> <@%s%s> (%<s)\n".formatted(type==0?"&":"", id))
 			builder.append("> %s%s>\n".formatted(type == 0 ? "Role <@&" : "Member <@", id))
 					.append("Permissions: `")
@@ -1344,16 +1355,16 @@ public class LogEmbedUtil {
 				Pair<EnumSet<Permission>, EnumSet<Permission>> changes = getChangedPerms(entry.getChangeByKey("allow"));
 				if (changes != null) {
 					builder.append("**").append(lu.getLocalized(locale, "logger.keys.allow")).append("**: ```\n");
-					changes.getLeft().forEach(perm -> builder.append("\u2796 ").append(perm.getName()).append("\n"));
-					changes.getRight().forEach(perm -> builder.append("\u2795 ").append(perm.getName()).append("\n"));
+					changes.getLeft().forEach(perm -> builder.append("➖ ").append(perm.getName()).append("\n"));
+					changes.getRight().forEach(perm -> builder.append("➕ ").append(perm.getName()).append("\n"));
 					builder.append("```\n");
 				}
 				
 				changes = getChangedPerms(entry.getChangeByKey("deny"));
 				if (changes != null) {
 					builder.append("**").append(lu.getLocalized(locale, "logger.keys.deny")).append("**: ```\n");
-					changes.getLeft().forEach(perm -> builder.append("\u2796 ").append(perm.getName()).append("\n"));
-					changes.getRight().forEach(perm -> builder.append("\u2795 ").append(perm.getName()).append("\n"));
+					changes.getLeft().forEach(perm -> builder.append("➖ ").append(perm.getName()).append("\n"));
+					changes.getRight().forEach(perm -> builder.append("➕ ").append(perm.getName()).append("\n"));
 					builder.append("```\n");
 				}
 
@@ -1418,11 +1429,9 @@ public class LogEmbedUtil {
 			switch (row.getTag()) {
 				case INSERT -> diff.append("+ ").append(row.getNewLine());
 				case DELETE -> diff.append("- ").append(row.getOldLine());
-				case CHANGE -> {
-					diff.append("- ").append(row.getOldLine())
+				case CHANGE -> diff.append("- ").append(row.getOldLine())
 						.append("\n")
 						.append("+ ").append(row.getNewLine());
-				}
 				default -> diff.append(" ").append(row.getOldLine());
 			}
 			diff.append("\n");

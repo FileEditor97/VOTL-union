@@ -94,7 +94,7 @@ public class ScheduledCheck {
 					bot.getDBUtil().ticket.forceCloseTicket(channelId);
 					return;
 				}
-				bot.getTicketUtil().closeTicket(channelId, null, "Autoclosure", failure -> {
+				bot.getTicketUtil().closeTicket(channelId, null, "Auto closure", failure -> {
 					logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 					db.ticket.setRequestStatus(channelId, -1L);
 				});
@@ -115,7 +115,7 @@ public class ScheduledCheck {
 				if (role == null) {
 					db.tempRole.removeRole(roleId);
 					return;
-				};
+				}
 				
 				if (db.tempRole.shouldDelete(roleId)) {
 					try {
@@ -189,7 +189,7 @@ public class ScheduledCheck {
 						throw new Exception("Strike data is empty. Deleted data for gid '%s' and uid '%s'".formatted(guildId, userId));
 					}
 				}
-			};
+			}
 		} catch (Throwable t) {
 			logger.error("Exception caught during expired warns check.", t);
 		}
@@ -207,7 +207,7 @@ public class ScheduledCheck {
 			List<Map<String, String>> data = db.unionVerify.updatedAccounts();
 			if (data.isEmpty()) return;
 
-			List<Pair<Long, Long>> removeRoles = new ArrayList<Pair<Long, Long>>(); // DiscordId, Steam64
+			List<Pair<Long, Long>> removeRoles = new ArrayList<>(); // DiscordId, Steam64
 
 			for (Map<String, String> account : data) {
 				String steam64Str = account.get("steam_id");
@@ -219,12 +219,12 @@ public class ScheduledCheck {
 				String discordIdStr = account.get("discord_id");
 				if (discordIdStr == null) {
 					// if not cached - cant track
-					if (cacheDiscordId == null) return;
+					if (cacheDiscordId == null) continue;
 					// if forced - skip
 					if (db.verifyCache.isForced(cacheDiscordId)) {
 						db.verifyCache.forceRemoveSteam64(cacheDiscordId);
-						return;
-					};
+						continue;
+					}
 
 					db.verifyCache.removeByDiscord(cacheDiscordId);
 					removeRoles.add(Pair.of(cacheDiscordId, steam64));
@@ -233,7 +233,7 @@ public class ScheduledCheck {
 					// if exists in cache
 					if (cacheDiscordId != null) {
 						// if same - skip
-						if (cacheDiscordId.equals(discordId)) return;
+						if (cacheDiscordId.equals(discordId)) continue;
 						// duplicate, remove roles from previous discord account
 						removeRoles.add(Pair.of(cacheDiscordId, steam64));
 						db.verifyCache.removeByDiscord(cacheDiscordId);
@@ -242,7 +242,7 @@ public class ScheduledCheck {
 					// Add user to cache
 					//db.verifyCache.addUser(discordId, steam64);
 				}
-			};
+			}
 
 			if (removeRoles.isEmpty()) return;
 			bot.JDA.getGuilds().forEach(guild -> {

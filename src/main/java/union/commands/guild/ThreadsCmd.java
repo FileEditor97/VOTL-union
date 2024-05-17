@@ -10,6 +10,7 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
+import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ThreadsCmd extends CommandBase {
 		super(bot);
 		this.name = "threads";
 		this.path = "bot.guild.threads";
+		this.category = CmdCategory.GUILD;
 		this.children = new SlashCommand[]{new Add(bot), new Remove(bot), new View(bot)};
 		this.accessLevel = CmdAccessLevel.ADMIN;
 	}

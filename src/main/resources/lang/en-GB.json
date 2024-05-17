@@ -247,7 +247,9 @@
 			"rank": "Rank",
 			"roles": "Roles",
 			"role": "Role",
+			"added": "Role added to the user",
 			"added_m": "Roles added to the user",
+			"removed": "Role removed from the user",
 			"removed_m": "Roles removed from the user",
 			"removed_all": "Role was removed from all users",
 			"modified": "User roles modified",
@@ -1407,7 +1409,7 @@
 			},
 			"modlogs": {
 				"help": "View moderation logs for a user",
-				"usage": "modlogs [@User] [page]",
+				"usage": "modlogs [@User] [page] [only active?]",
 				"user": {
 					"name": "user",
 					"help": "Select user"
@@ -1416,15 +1418,17 @@
 					"name": "page",
 					"help": "Page number to view"
 				},
+				"only_active": {
+					"name": "only_active",
+					"help": "Show only active moderations"
+				},
 				"no_perms": "You can't view others logs",
 				"empty": "No logs found for that user.",
 				"title": "Modlogs for %s (Page %d of %d)",
-				"footer": "\uD83D\uDFE5 - Active\n\u2B1C - Inactive",
-				"case": "**Case #`%d`**",
-				"target": "**User:** `%s (%d)`\n",
-				"mod": "**Moderator:** `%s`\n",
-				"duration": "**Duration:** %s\n",
-				"reason": "**Reason:** `%s`\n",
+				"footer": "\uD83D\uDFE5 - Active\n\u2B1B - Inactive\nID: %s",
+				"mod": "**Moderator**: `%s`\n",
+				"duration": "**Duration**: %s\n",
+				"reason": "**Reason**: `%s`\n",
 				"permanent": "permanent"
 			},
 			"modstats": {
@@ -1486,7 +1490,22 @@
 					"no_user": "Provided user is not blacklisted.",
 					"done_user": "Blacklist removed from user %s (%s) in group `%s`.",
 					"no_steam": "Entry not found with provided Steam ID.",
-					"done_steam": "Blacklist removed from Steam ID `%s` in group `%s`."
+					"done_steam": "Blacklist removed from SteamID `%s` in group `%s`."
+				},
+				"add": {
+					"help": "Add SteamID to blacklist",
+					"usage": "add <Group> <SteamID>",
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"steamid": {
+						"name": "steamid",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"cant_view": "Can't view selected group. (Not group's owner or manager)",
+					"already": "This SteamID is already blacklisted in this group.",
+					"done": "Blacklisted SteamID `%s` in group `%s`."
 				},
 				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
 				"no_groups": "This server can't manage any group.",
@@ -2435,6 +2454,14 @@
 			"link": "Open message",
 			"delete": "Delete message",
 			"deleted": "Message deleted by {name}!"
+		},
+		"modlogs": {
+			"name": "Moderation logs",
+			"full": "*To view full logs, use `/modlogs`.*"
+		},
+		"activelogs": {
+			"name": "Active moderations",
+			"full": "*To view full logs, use `/modlogs`.*"
 		}
 	}
 }

@@ -116,7 +116,7 @@ public class TicketTagManager extends LiteDBBase {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (panelId=%s)".formatted(table, panelId),
 			Set.of("tagId", "buttonText", "buttonStyle", "emoji")
 		);
-		if (data.isEmpty()) return null;
+		if (data.isEmpty()) return Collections.emptyList();
 		return data.stream().map(Tag::createButton).toList();
 	}
 

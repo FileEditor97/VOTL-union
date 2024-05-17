@@ -2,6 +2,7 @@ package union.utils.message;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Optional;
@@ -17,8 +18,8 @@ import net.dv8tion.jda.api.utils.TimeFormat;
 
 public class TimeUtil {
 
-	private static final Pattern timePatternFull = Pattern.compile("^(([0-9]+)([smhdw]{1}))+$", Pattern.CASE_INSENSITIVE);
-	private static final Pattern timePattern = Pattern.compile("([0-9]+)([smhdw]{1})", Pattern.CASE_INSENSITIVE);
+	private static final Pattern timePatternFull = Pattern.compile("^(([0-9]+)([smhdw]))+$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern timePattern = Pattern.compile("([0-9]+)([smhdw])", Pattern.CASE_INSENSITIVE);
 
 	private enum TimeFormats{
 		SECONDS('s', 1),
@@ -30,7 +31,7 @@ public class TimeUtil {
 		private final Character character;
 		private final Integer multip;
 
-		private static final HashMap<Character, TimeFormats> BY_CHAR = new HashMap<Character, TimeFormats>();
+		private static final HashMap<Character, TimeFormats> BY_CHAR = new HashMap<>();
 
 		static {
 			for (TimeFormats format : TimeFormats.values()) {
@@ -182,6 +183,12 @@ public class TimeUtil {
 			TimeFormat.DATE_SHORT.format(time),
 			TimeFormat.TIME_SHORT.format(time)
 		);
+	}
+
+	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+	public static String timeToString(TemporalAccessor time) {
+		if (time == null) return "indefinitely";
+		return formatter.format(time);
 	}
 
 	public static String formatDuration(LocaleUtil lu, DiscordLocale locale, Instant startTime, Duration duration) {

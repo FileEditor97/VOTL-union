@@ -13,7 +13,8 @@ import static union.utils.CastUtil.castLong;
 
 public class UnionPlayerManager extends SqlDBBase {
 
-	private final String TABLE_PLAYERS = "sam_players";
+	private final String SAM_PLAYERS = "sam_players";
+	private final String AXE_PLAYERS = "axe_players";
 
 	private final Map<Long, Map<String, String>> servers;
 
@@ -27,11 +28,11 @@ public class UnionPlayerManager extends SqlDBBase {
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) return List.of();
 		// Get data from database tables
-		List<String> data = new ArrayList<String>(dbs.size());
+		List<String> data = new ArrayList<>(dbs.size());
 		for (String db : dbs.keySet()) {
-			String rank = selectOne(db, TABLE_PLAYERS, "rank", "steamid", steamId);
+			String rank = selectOne(db, SAM_PLAYERS, "rank", "steamid", steamId);
 			if (rank != null) data.add(rank);
-		};
+		}
 		return data;
 	}
 
@@ -42,9 +43,9 @@ public class UnionPlayerManager extends SqlDBBase {
 		// Get data from database tables
 		Long playtime = null;
 		for (String db : dbs.keySet()) {
-			Long time = castLong(selectOne(db, TABLE_PLAYERS, "play_time", "steamid", steamId));
+			Long time = castLong(selectOne(db, SAM_PLAYERS, "play_time", "steamid", steamId));
 			if (time != null) playtime = playtime==null ? time : playtime+time;
-		};
+		}
 		return playtime;
 	}
 
@@ -53,11 +54,22 @@ public class UnionPlayerManager extends SqlDBBase {
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) return List.of();
 		// Get data from database table
-		List<PlayerInfo> data = new ArrayList<PlayerInfo>(dbs.size());
+		List<PlayerInfo> data = new ArrayList<>(dbs.size());
 		dbs.forEach((db,title) -> {
-			data.add(selectPlayerInfo(db, TABLE_PLAYERS, steamId).setServerTitle(title));
+			data.add(selectPlayerInfo(db, SAM_PLAYERS, steamId).setServerTitle(title));
 		});
 		return data;
+	}
+
+	public boolean existsAxePlayer(long guildId, @NotNull String steamId) {
+		// Find corresponding database
+		Map<String, String> dbs = servers.get(guildId);
+		if (dbs == null) return false;
+		// Get data from database table
+		for (String db : dbs.keySet()) {
+			if (selectOne(db, AXE_PLAYERS, "steamid", "steamid", steamId) != null) return true;
+		}
+		return false;
 	}
 
 	public static class PlayerInfo {
@@ -111,7 +123,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	private Map<Long, Map<String, String>> convertMap(Map<String, Object> obj) {
 		if (obj == null || obj.isEmpty()) return Map.of();
 
-		Map<Long, Map<String, String>> map = new HashMap<Long, Map<String, String>>(obj.size());
+		Map<Long, Map<String, String>> map = new HashMap<>(obj.size());
 		obj.forEach((k,v) -> {
 			if (v instanceof Map) {
 				map.put(castLong(k), (Map<String, String>) v);

@@ -30,7 +30,7 @@ public class BlacklistCmd extends CommandBase {
 		super(bot);
 		this.name = "blacklist";
 		this.path = "bot.moderation.blacklist";
-		this.children = new SlashCommand[]{new View(bot), new Remove(bot)};
+		this.children = new SlashCommand[]{new View(bot), new Remove(bot), new AddSteam(bot)};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -157,6 +157,59 @@ public class BlacklistCmd extends CommandBase {
 			else {
 				// No options
 				editError(event, path+".no_options");
+			}
+		}
+	}
+
+	private class AddSteam extends SlashCommand {
+		public AddSteam(App bot) {
+			this.bot = bot;
+			this.lu = bot.getLocaleUtil();
+			this.name = "add";
+			this.path = "bot.moderation.blacklist.add";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "group", lu.getText(path+".group.help"), true, true).setMinValue(1),
+				new OptionData(OptionType.STRING, "steamid", lu.getText(path+".steamid.help"), true).setMaxLength(30)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			Integer groupId = event.optInteger("group");
+			long guildId = event.getGuild().getIdLong();
+			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
+				// Is not group's owner or manager
+				editError(event, path+".cant_view");
+				return;
+			}
+
+			String input = event.optString("steamid");
+
+			long steam64;
+			if (Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", input)) {
+				steam64 = SteamUtil.convertSteamIDtoSteam64(input);
+			} else {
+				try {
+					steam64 = Long.parseLong(input);
+				} catch (NumberFormatException ex) {
+					editError(event, "errors.error", ex.getMessage());
+					return;
+				}
+			}
+
+			if (!bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
+				bot.getDBUtil().blacklist.addSteam(guildId, groupId, steam64, event.getUser().getIdLong());
+				// Log into master
+				bot.getLogger().mod.onBlacklistAdded(event.getUser(), null, steam64, List.of(groupId));
+				// Reply
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setDescription(lu.getText(event, path+".done").formatted(SteamUtil.convertSteam64toSteamID(steam64), groupId))
+						.build()
+				);
+			} else {
+				editError(event, path+".already", "Received: "+steam64);
 			}
 		}
 	}

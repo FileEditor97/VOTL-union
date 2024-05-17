@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -122,104 +123,87 @@ public class InteractionListener extends ListenerAdapter {
 		function.run();
 	}
 
-	private final List<String> acceptableButtons = List.of(
+	private final Set<String> acceptableButtons = Set.of(
 		"verify", "role", "ticket", "tag", "invites",
-		"delete", "voice", "blacklist", "strikes", "sync_",
-		"thread"
+		"delete", "voice", "blacklist", "strikes", "sync_unban",
+		"sync_ban", "sync_kick", "thread"
 	);
 
-	private boolean isAcceptedId(final String id) {
-		for (String match : acceptableButtons) {
-			if (id.startsWith(match)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 
 	@Override
 	public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
-		String buttonId = event.getComponentId();
-
-		if (!isAcceptedId(buttonId)) return;
+		String[] actions = event.getComponentId().split(":");
+		if (!acceptableButtons.contains(actions[0])) return;
 
 		// Acknowledge interaction
 		event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 
 		try {
-			if (buttonId.startsWith("verify")) {
+			if (actions[0].equals("verify")) {
 				runButtonInteraction(event, Cooldown.BUTTON_VERIFY, () -> buttonVerify(event));
 				return;
 			}
 			// Check verified
 			if (event.isFromGuild() && !isVerified(event)) return;
-	
+
 			// Continue...
-			if (buttonId.startsWith("role")) {
-				String action = buttonId.split(":")[1];
-				switch (action) {
-					case "start_request" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_SHOW, () -> buttonRoleShowSelection(event));
-					case "other" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_OTHER, () -> buttonRoleSelectionOther(event));
-					case "clear" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_CLEAR, () -> buttonRoleSelectionClear(event));
-					case "remove" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_REMOVE, () -> buttonRoleRemove(event));
-					case "toggle" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TOGGLE, () -> buttonRoleToggle(event));
-					case "manage-confirm" -> runButtonInteraction(event, Cooldown.BUTTON_MODIFY_CONFIRM, () -> buttonModifyConfirm(event));
+			switch (actions[0]) {
+				case "role" -> {
+					switch (actions[1]) {
+						case "start_request" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_SHOW, () -> buttonRoleShowSelection(event));
+						case "other" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_OTHER, () -> buttonRoleSelectionOther(event));
+						case "clear" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_CLEAR, () -> buttonRoleSelectionClear(event));
+						case "remove" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_REMOVE, () -> buttonRoleRemove(event));
+						case "toggle" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TOGGLE, () -> buttonRoleToggle(event));
+						case "manage-confirm" -> runButtonInteraction(event, Cooldown.BUTTON_MODIFY_CONFIRM, () -> buttonModifyConfirm(event));
+					}
 				}
-			} else if (buttonId.startsWith("ticket")) {
-				String action = buttonId.split(":")[1];
-				switch (action) {
-					case "role_create" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TICKET, () -> buttonRoleTicketCreate(event));
-					case "role_approve" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_APPROVE, () -> buttonRoleTicketApprove(event));
-					case "close" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLOSE, () -> buttonTicketClose(event));
-					case "cancel" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CANCEL, () -> buttonTicketCloseCancel(event));
-					case "claim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLAIM, () -> buttonTicketClaim(event));
-					case "unclaim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_UNCLAIM, () -> buttonTicketUnclaim(event));
+				case "ticket" -> {
+					switch (actions[1]) {
+						case "role_create" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TICKET, () -> buttonRoleTicketCreate(event));
+						case "role_approve" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_APPROVE, () -> buttonRoleTicketApprove(event));
+						case "close" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLOSE, () -> buttonTicketClose(event));
+						case "cancel" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CANCEL, () -> buttonTicketCloseCancel(event));
+						case "claim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CLAIM, () -> buttonTicketClaim(event));
+						case "unclaim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_UNCLAIM, () -> buttonTicketUnclaim(event));
+					}
 				}
-			} else if (buttonId.startsWith("tag")) {
-				runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
-			} else if (buttonId.startsWith("invites")) {
-				runButtonInteraction(event, Cooldown.BUTTON_INVITES, () -> buttonShowInvites(event));
-			} else if (buttonId.startsWith("delete")) {
-				runButtonInteraction(event, Cooldown.BUTTON_REPORT_DELETE, () -> buttonReportDelete(event));
-			} else if (buttonId.startsWith("voice")) {
-				if (!event.getMember().getVoiceState().inAudioChannel()) {
-					sendError(event, "bot.voice.listener.not_in_voice");
-					return;
+				case "tag" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
+				case "invites" -> runButtonInteraction(event, Cooldown.BUTTON_INVITES, () -> buttonShowInvites(event));
+				case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_REPORT_DELETE, () -> buttonReportDelete(event));
+				case "voice" -> {
+					if (!event.getMember().getVoiceState().inAudioChannel()) {
+						sendError(event, "bot.voice.listener.not_in_voice");
+						return;
+					}
+					Long channelId = db.voice.getChannel(event.getUser().getIdLong());
+					if (channelId == null) {
+						sendError(event, "errors.no_channel");
+						return;
+					}
+					VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
+					if (vc == null) return;
+					switch (actions[1]) {
+						case "lock" -> runButtonInteraction(event, null, () -> buttonVoiceLock(event, vc));
+						case "unlock" -> runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
+						case "ghost" -> runButtonInteraction(event, null, () -> buttonVoiceGhost(event, vc));
+						case "unghost" -> runButtonInteraction(event, null, () -> buttonVoiceUnghost(event, vc));
+						case "permit" -> runButtonInteraction(event, null, () -> buttonVoicePermit(event));
+						case "reject" -> runButtonInteraction(event, null, () -> buttonVoiceReject(event));
+						case "perms" -> runButtonInteraction(event, null, () -> buttonVoicePerms(event, vc));
+						case "delete" -> runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
+					}
 				}
-				Long channelId = db.voice.getChannel(event.getUser().getIdLong());
-				if (channelId == null) {
-					sendError(event, "errors.no_channel");
-					return;
-				}
-				VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
-				if (vc == null) return;
-				String action = buttonId.split(":")[1];
-				switch (action) {
-					case "lock" -> runButtonInteraction(event, null, () -> buttonVoiceLock(event, vc));
-					case "unlock" -> runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
-					case "ghost" -> runButtonInteraction(event, null, () -> buttonVoiceGhost(event, vc));
-					case "unghost" -> runButtonInteraction(event, null, () -> buttonVoiceUnghost(event, vc));
-					case "permit" -> runButtonInteraction(event, null, () -> buttonVoicePermit(event));
-					case "reject" -> runButtonInteraction(event, null, () -> buttonVoiceReject(event));
-					case "perms" -> runButtonInteraction(event, null, () -> buttonVoicePerms(event, vc));
-					case "delete" -> runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
-				}
-			} else if (buttonId.startsWith("blacklist")) {
-				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonBlacklist(event));
-			} else if (buttonId.startsWith("sync_unban")) {
-				runButtonInteraction(event, null, () -> buttonSyncUnban(event));
-			} else if (buttonId.startsWith("sync_ban")) {
-				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonSyncBan(event));
-			} else if (buttonId.startsWith("sync_kick")) {
-				runButtonInteraction(event, Cooldown.BAN_SYNC_ACTION, () -> buttonSyncKick(event));
-			} else if (buttonId.startsWith("strikes")) {
-				runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
-			} else if (buttonId.startsWith("thread")) {
-				String action = buttonId.split(":")[1];
-				switch (action) {
-					case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_DELETE, () -> buttonThreadDelete(event));
-					case "lock" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_LOCK, () -> buttonThreadLock(event));
+				case "blacklist" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonBlacklist(event));
+				case "sync_unban" -> runButtonInteraction(event, null, () -> buttonSyncUnban(event));
+				case "sync_ban" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncBan(event));
+				case "sync_kick" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncKick(event));
+				case "strikes" -> runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
+				case "thread" -> {
+					switch (actions[1]) {
+						case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_DELETE, () -> buttonThreadDelete(event));
+						case "lock" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_LOCK, () -> buttonThreadLock(event));
+					}
 				}
 			}
 		} catch(Throwable t) {
@@ -311,9 +295,13 @@ public class InteractionListener extends ListenerAdapter {
 			try {
 				final int minimumPlaytime = db.getVerifySettings(guild).getMinimumPlaytime();
 				if (minimumPlaytime > -1) {
-					final Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), SteamUtil.convertSteam64toSteamID(steam64));
+					String steamid = SteamUtil.convertSteam64toSteamID(steam64);
+					final Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), steamid);
 					// if user has not joined at least once
 					if (playtime == null) {
+						// Check backup table, if exists in other table but not in SAM - skip
+						if (db.unionPlayers.existsAxePlayer(guild.getIdLong(), steamid)) return;
+						// No user
 						sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
 						bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
 							lu.getText(event, "logger_embed.verify.playtime").formatted("none", minimumPlaytime));
@@ -344,7 +332,7 @@ public class InteractionListener extends ListenerAdapter {
 					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
 				});
 		} else {
-			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify-refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
+			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify:refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
 			// Check if user pressed refresh button
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
@@ -1633,7 +1621,7 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_INVITES(10, CooldownScope.USER),
 		BUTTON_REPORT_DELETE(3, CooldownScope.GUILD),
 		BUTTON_SHOW_STRIKES(30, CooldownScope.USER),
-		BAN_SYNC_ACTION(10, CooldownScope.CHANNEL),
+		BUTTON_SYNC_ACTION(10, CooldownScope.CHANNEL),
 		BUTTON_MODIFY_CONFIRM(10, CooldownScope.USER),
 		BUTTON_THREAD_DELETE(10, CooldownScope.GUILD),
 		BUTTON_THREAD_LOCK(10, CooldownScope.GUILD);

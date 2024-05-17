@@ -33,8 +33,8 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.requests.ErrorResponse;
-import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
+import union.utils.message.TimeUtil;
 
 public class DeleteStikeCmd extends CommandBase {
 
@@ -237,7 +237,7 @@ public class DeleteStikeCmd extends CommandBase {
 			options.add(SelectOption.of(
 				"%s | %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), MessageUtil.limitString(caseData.getReason(), 50)),
 				caseId+"-"+strikeAmount
-			).withDescription(TimeFormat.DATE_SHORT.format(caseData.getTimeStart())+" By: "+caseData.getModTag()));
+			).withDescription(TimeUtil.timeToString(caseData.getTimeStart())+" | By: "+caseData.getModTag()));
 		}
 		return options;
 	}

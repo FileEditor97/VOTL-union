@@ -53,6 +53,14 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// get 10 cases for guild's user sorted in pages
+	public List<CaseData> getGuildUser(long guildId, long userId, int page) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
+				.formatted(table, guildId, userId, (page-1)*10), fullCaseKeys);
+		if (data.isEmpty()) return Collections.emptyList();
+		return data.stream().map(CaseData::new).toList();
+	}
+
+	// get 10 cases for guild's user sorted in pages, active or inactive only
 	public List<CaseData> getGuildUser(long guildId, long userId, int page, boolean active) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%d AND targetId=%d AND active=%d) ORDER BY caseId DESC LIMIT 10 OFFSET %d"
 			.formatted(table, guildId, userId, active?1:0, (page-1)*10), fullCaseKeys);

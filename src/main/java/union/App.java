@@ -83,6 +83,7 @@ public class App {
 	private final WebhookLogger webhookLogger;
 	private final ModerationUtil moderationUtil;
 
+	@SuppressWarnings("BusyWait")
 	public App() {
 
 		try {

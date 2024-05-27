@@ -281,6 +281,21 @@ public class InteractionListener extends ListenerAdapter {
 			}
 		}
 
+		if (db.unionVerify.isDisabled()) {
+			// Use simple verification
+			// Give verify role to user, do not add to the cache
+			guild.addRoleToMember(member, role).reason("Verification completed - NO STEAM, database disabled").queue(
+				success -> {
+					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
+					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+				},
+				failure -> {
+					sendError(event, "bot.verification.failed_role");
+					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
+				});
+			return;
+		}
+
 		final Long steam64 = bot.getDBUtil().unionVerify.getSteam64(member.getId());
 		if (steam64 != null) {
 			// Check if steam64 is not blacklisted

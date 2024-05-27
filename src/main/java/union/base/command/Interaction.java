@@ -25,9 +25,9 @@ import net.dv8tion.jda.api.Permission;
 
 /**
  * A class that represents an interaction with a user.
- *
+ * <p>
  * This is all information used for all forms of interactions. Namely, permissions and cooldowns.
- *
+ * <p>
  * Any content here is safely functionality equivalent regardless of the source of the interaction.
  */
 public abstract class Interaction
@@ -153,7 +153,7 @@ public abstract class Interaction
 	}
 
 	/**
-	 * Path to the command strings. Must by set, otherwise will display Unknown text.
+	 * Path to the command strings. Must be set, otherwise will display Unknown text.
 	 */
 	@NotNull
 	protected String path = "misc.command";

@@ -30,7 +30,7 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
 	implementation 'org.xerial:sqlite-jdbc:3.45.3.0'				// sqlite database
 	// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
-	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'		// mariaDB (MySQL) database
+	implementation 'org.mariadb.jdbc:mariadb-java-client:3.4.0'		// mariaDB (MySQL) database
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
 	implementation 'org.jsoup:jsoup:1.17.2'							// HTML tools
 	// https://mvnrepository.com/artifact/io.github.java-diff-utils/java-diff-utils

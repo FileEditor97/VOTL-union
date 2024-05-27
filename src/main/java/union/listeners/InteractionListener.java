@@ -218,6 +218,7 @@ public class InteractionListener extends ListenerAdapter {
 	private Boolean isVerified(IReplyCallback event) {
 		Guild guild = event.getGuild();
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return true;
+		if (bot.getDBUtil().unionVerify.isDisabled()) return true;
 
 		User user = event.getUser();
 		if (bot.getDBUtil().verifyCache.isVerified(user.getIdLong())) return true;
@@ -226,7 +227,7 @@ public class InteractionListener extends ListenerAdapter {
 		if (role == null) return true;
 		
 		// check if still has account connected
-		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(user.getId())).map(Long::valueOf).orElse(null);
+		Long steam64 = bot.getDBUtil().unionVerify.getSteam64(user.getId());
 		if (steam64 == null) {
 			// remove verification role from user
 			try {
@@ -280,7 +281,22 @@ public class InteractionListener extends ListenerAdapter {
 			}
 		}
 
-		final Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
+		if (db.unionVerify.isDisabled()) {
+			// Use simple verification
+			// Give verify role to user, do not add to the cache
+			guild.addRoleToMember(member, role).reason("Verification completed - NO STEAM, database disabled").queue(
+				success -> {
+					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
+					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+				},
+				failure -> {
+					sendError(event, "bot.verification.failed_role");
+					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
+				});
+			return;
+		}
+
+		final Long steam64 = bot.getDBUtil().unionVerify.getSteam64(member.getId());
 		if (steam64 != null) {
 			// Check if steam64 is not blacklisted
 			for (int groupId : groupIds) {
@@ -1672,7 +1688,7 @@ public class InteractionListener extends ListenerAdapter {
 			front.append(" ").append(lu.getLocalized(event.getUserLocale(), CooldownScope.USER_CHANNEL.getErrorPath()));
 		else if (cooldownScope.equals(CooldownScope.GUILD) && event.getGuild()==null)
 			front.append(" ").append(lu.getLocalized(event.getUserLocale(), CooldownScope.CHANNEL.getErrorPath()));
-		else
+		else if (!cooldownScope.equals(CooldownScope.USER))
 			front.append(" ").append(lu.getLocalized(event.getUserLocale(), cooldownScope.getErrorPath()));
 
 		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));

@@ -64,11 +64,11 @@ public interface CommandClient
 	 * Adds a single {@link union.base.command.Interaction Interaction} to this CommandClient's
 	 * registered SlashCommand.
 	 *
-	 * <p>For CommandClient's containing 20 commands or less, command calls by users will have the bot iterate
+	 * <p>For CommandClient's containing 20 commands or fewer, command calls by users will have the bot iterate
 	 * through the entire {@link java.util.ArrayList ArrayList} to find the command called. As expected, this
 	 * can get fairly hefty if a bot has a lot of Commands registered to it.
 	 *
-	 * <p>To prevent delay a CommandClient that has more that 20 Commands registered to it will begin to use
+	 * <p>To prevent delay a CommandClient that has more than 20 Commands registered to it will begin to use
 	 * <b>indexed calls</b>.
 	 * <br>Indexed calls use a {@link java.util.HashMap HashMap} which links their
 	 * {@link union.base.command.SlashCommand#name name} to the index that which they
@@ -90,7 +90,7 @@ public interface CommandClient
 	 * Adds a single {@link union.base.command.SlashCommand SlashCommand} to this CommandClient's
 	 * registered Commands at the specified index.
 	 *
-	 * <p>For CommandClient's containing 20 commands or less, command calls by users will have the bot iterate
+	 * <p>For CommandClient's containing 20 commands or fewer, command calls by users will have the bot iterate
 	 * through the entire {@link java.util.ArrayList ArrayList} to find the command called. As expected, this
 	 * can get fairly hefty if a bot has a lot of Commands registered to it.
 	 *
@@ -290,28 +290,6 @@ public interface CommandClient
 	 * @return A possibly-null server invite
 	 */
 	String getServerInvite();
-
-	/**
-	 * Gets a recently updated count of all the {@link net.dv8tion.jda.api.entities.Guild Guild}s
-	 * the bot is connected to on all shards.
-	 *
-	 * <p><b>NOTE:</b> This may not always or should not be assumed accurate! Any time
-	 * a shard joins or leaves a guild it will update the number retrieved by this method
-	 * but will not update when other shards join or leave guilds. This means that shards
-	 * will not always retrieve the same value. For instance:
-	 * <ul>
-	 *     <li>1) Shard A joins 10 Guilds</li>
-	 *     <li>2) Shard B invokes this method</li>
-	 *     <li>3) Shard A invokes this method</li>
-	 * </ul>
-	 * The number retrieved by Shard B will be that of the number retrieved by Shard A,
-	 * minus 10 guilds because Shard B hasn't updated and accounted for those 10 guilds
-	 * on Shard A.
-	 *
-	 * @return A recently updated count of all the Guilds the bot is connected to on
-	 *         all shards.
-	 */
-	int getTotalGuilds();
 
 	/**
 	 * Shuts down internals of the Command Client, such as the threadpool and guild settings manager

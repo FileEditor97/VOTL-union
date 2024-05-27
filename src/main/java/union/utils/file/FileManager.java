@@ -142,7 +142,7 @@ public class FileManager {
 	}
 	
 	/**
-	 * @param name - json file to be saerched
+	 * @param name - json file to be searched
 	 * @param path - string's json path
 	 * @return Returns null-able string. 
 	 */
@@ -150,7 +150,7 @@ public class FileManager {
 	public String getNullableString(String name, String path) {
 		File file = files.get(name);
 
-		String text = null;
+		String text;
 		try {
 			if (file == null)
 				throw new FileNotFoundException();

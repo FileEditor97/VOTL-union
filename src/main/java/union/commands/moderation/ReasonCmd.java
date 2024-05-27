@@ -59,7 +59,7 @@ public class ReasonCmd extends CommandBase {
 						MessageEmbed embed = bot.getModerationUtil().getReasonUpdateEmbed(event.getGuildLocale(), event.getGuild(), caseData.getTimeStart(), caseData.getCaseType(), caseData.getReason(), newReason);
 						pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
-				});
+				}, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
 			}
 			case STRIKE_1, STRIKE_2, STRIKE_3 -> {
 				// Check if inform with reason is disabled
@@ -70,7 +70,7 @@ public class ReasonCmd extends CommandBase {
 						MessageEmbed embed = bot.getModerationUtil().getReasonUpdateEmbed(event.getGuildLocale(), event.getGuild(), caseData.getTimeStart(), caseData.getCaseType(), caseData.getReason(), newReason);
 						pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
-				});
+				}, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
 			}
 			default -> {}
 		}

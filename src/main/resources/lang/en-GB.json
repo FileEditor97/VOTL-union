@@ -23,7 +23,6 @@
 		"cooldown": {
 			"cooldown_command": "That command is on cooldown for {time} more seconds",
 			"cooldown_button": "This button is on cooldown for {time} more seconds",
-			"user": "",
 			"channel": "in this channel",
 			"guild": "in this server",
 			"shard": "on this shard",
@@ -410,6 +409,22 @@
 				},
 				"no_guild": "Selected server not found.",
 				"done": "Assigned {target} access {level}."
+			},
+			"disable": {
+				"help": "Manage bot settings",
+				"usage": "disable",
+				"database": {
+					"help": "Disable databases",
+					"usage": "database [player?] [verify?]",
+					"player": {
+						"name": "player",
+						"help": "Disable player database?"
+					},
+					"verify": {
+						"name": "verify",
+						"help": "Disable verify database?"
+					}
+				}
 			}
 		},
 		"guild": {

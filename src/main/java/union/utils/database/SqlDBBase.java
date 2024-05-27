@@ -38,7 +38,7 @@ public class SqlDBBase {
 			sql.append(condKeys.get(i)).append("=").append(condValues.get(i));
 		}
 
-		List<String> results = new ArrayList<String>();
+		List<String> results = new ArrayList<>();
 		cu.logger.debug(sql.toString());
 		try (Connection conn = DriverManager.getConnection(url);
 		PreparedStatement st = conn.prepareStatement(sql.toString())) {
@@ -75,7 +75,7 @@ public class SqlDBBase {
 			sql.append(condKeys.get(i)).append("=").append(condValues.get(i));
 		}
 
-		List<Map<String, String>> results = new ArrayList<Map<String, String>>();
+		List<Map<String, String>> results = new ArrayList<>();
 
 		cu.logger.debug(sql.toString());
 		try (Connection conn = DriverManager.getConnection(url);
@@ -167,10 +167,10 @@ public class SqlDBBase {
 		try (Connection conn = DriverManager.getConnection(url);
 		PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
-			if (rs.next()) result = new PlayerInfo(steamId, rs.getString("rank"), rs.getLong("play_time"));
+			if (rs.next()) result = new PlayerInfo(rs.getString("rank"), rs.getLong("play_time"));
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
-		return result==null ? new PlayerInfo(steamId) : result;
+		return result==null ? new PlayerInfo() : result;
 	}
 }

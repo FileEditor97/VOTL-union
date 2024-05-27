@@ -143,6 +143,7 @@ public class App {
 				new EvalCmd(this),
 				new GenerateListCmd(this),
 				new ForceAccessCmd(this),
+				new DisableCmd(this),
 				// webhook
 				new WebhookCmd(this),
 				// moderation

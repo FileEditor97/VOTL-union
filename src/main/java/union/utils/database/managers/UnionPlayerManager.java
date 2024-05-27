@@ -15,6 +15,11 @@ public class UnionPlayerManager extends SqlDBBase {
 
 	private final String SAM_PLAYERS = "sam_players";
 	private final String AXE_PLAYERS = "axe_players";
+	private boolean disabled = false;
+
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
+	}
 
 	private final Map<Long, Map<String, String>> servers;
 
@@ -24,6 +29,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	}
 
 	public List<String> getPlayerRank(long guildId, @NotNull String steamId) {
+		if (disabled) return List.of();
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) return List.of();
@@ -37,6 +43,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	}
 
 	public Long getPlayTime(long guildId, @NotNull String steamId) throws Exception {
+		if (disabled) throw new Exception("Disabled.");
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) throw new Exception("Database not found.");
@@ -50,6 +57,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	}
 
 	public List<PlayerInfo> getPlayerInfo(long guildId, @NotNull String steamId) {
+		if (disabled) return List.of();
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) return List.of();
@@ -61,10 +69,11 @@ public class UnionPlayerManager extends SqlDBBase {
 		return data;
 	}
 
-	public boolean existsAxePlayer(long guildId, @NotNull String steamId) {
+	public boolean existsAxePlayer(long guildId, @NotNull String steamId) throws Exception {
+		if (disabled) throw new Exception("Disabled.");
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
-		if (dbs == null) return false;
+		if (dbs == null) throw new Exception("Database not found.");
 		// Get data from database table
 		for (String db : dbs.keySet()) {
 			if (selectOne(db, AXE_PLAYERS, "steamid", "steamid", steamId) != null) return true;
@@ -74,17 +83,15 @@ public class UnionPlayerManager extends SqlDBBase {
 
 	public static class PlayerInfo {
 		private String serverTitle = null;
-		private final String steamId, rank;
+		private final String rank;
 		private final Long playedHours; // in hours
 
-		public PlayerInfo(String steamId) {
-			this.steamId = steamId;
+		public PlayerInfo() {
 			this.rank = null;
 			this.playedHours = null;
 		}
 
-		public PlayerInfo(String steamId, String rank, Long playTimeSeconds) {
-			this.steamId = steamId;
+		public PlayerInfo(String rank, Long playTimeSeconds) {
 			this.rank = rank;
 			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
 		}
@@ -96,10 +103,6 @@ public class UnionPlayerManager extends SqlDBBase {
 
 		public String getServerTitle() {
 			return serverTitle;
-		}
-
-		public String getSteamId() {
-			return steamId;
 		}
 
 		public String getRank() {

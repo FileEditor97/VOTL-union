@@ -1672,7 +1672,7 @@ public class InteractionListener extends ListenerAdapter {
 			front.append(" ").append(lu.getLocalized(event.getUserLocale(), CooldownScope.USER_CHANNEL.getErrorPath()));
 		else if (cooldownScope.equals(CooldownScope.GUILD) && event.getGuild()==null)
 			front.append(" ").append(lu.getLocalized(event.getUserLocale(), CooldownScope.CHANNEL.getErrorPath()));
-		else
+		else if (!cooldownScope.equals(CooldownScope.USER))
 			front.append(" ").append(lu.getLocalized(event.getUserLocale(), cooldownScope.getErrorPath()));
 
 		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));

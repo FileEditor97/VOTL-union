@@ -24,15 +24,15 @@ import union.objects.annotation.NotNull;
  * <p>The purpose for these values is to allow easy, refined, and generally convenient keys
  * for cooldown scopes, allowing a command to remain on cooldown for more than just the user
  * calling it, with no unnecessary abstraction or developer input.
- *
+ * <p>
  * Cooldown keys are generated via {@link union.base.command.SlashCommand#getCooldownKey(SlashCommandEvent)
  * SlashCommand#getCooldownKey(SlashCommandEvent)} using 1-2 Snowflake ID's corresponding to the name
  * (IE: {@code USER_CHANNEL} uses the ID's of the User and the Channel from the CommandEvent).
  *
  * <p>However, the issue with generalizing and generating like this is that the command may
  * be called in a non-guild environment, causing errors internally.
- * <br>To prevent this, all of the values that contain "{@code GUILD}" in their name default
- * to their "{@code CHANNEL}" counterparts when commands using them are called outside of a
+ * <br>To prevent this, all the values that contain "{@code GUILD}" in their name default
+ * to their "{@code CHANNEL}" counterparts when commands using them are called outside a
  * {@link net.dv8tion.jda.api.entities.Guild Guild} environment.
  * <ul>
  *     <li>{@link CooldownScope#GUILD GUILD} defaults to
@@ -64,7 +64,7 @@ public enum CooldownScope
 	 *     <li>{@code <command-name>|U:<userID>}</li>
 	 * </ul>
 	 */
-	USER("U:%d","errors.cooldown.user"),
+	USER("U:%d"),
 
 	/**
 	 * Applies the cooldown to the {@link net.dv8tion.jda.api.entities.channel.middleman.MessageChannel MessageChannel} the
@@ -159,25 +159,26 @@ public enum CooldownScope
 	GLOBAL("Global", "errors.cooldown.global");
 
 	private final String format;
-	@NotNull final String errorPath;
+	private final String errorPath;
 
-	CooldownScope(String format, @NotNull String errorPath)
-	{
+	CooldownScope(String format, @NotNull String errorPath) {
 		this.format = format;
 		this.errorPath = errorPath;
 	}
 
-	public String genKey(String name, long id)
-	{
+	CooldownScope(String format) {
+		this.format = format;
+		this.errorPath = null;
+	}
+
+	@NotNull
+	public String genKey(String name, long id) {
 		return genKey(name, id, -1);
 	}
 
-	public String genKey(String name, long idOne, long idTwo)
-	{
-		if(this.equals(GLOBAL))
-			return name+"|"+format;
-		else if(idTwo==-1)
-			return name+"|"+String.format(format,idOne);
+	public String genKey(String name, long idOne, long idTwo) {
+		if (this.equals(GLOBAL)) return name+"|"+format;
+		else if (idTwo==-1) return name+"|"+String.format(format,idOne);
 		else return name+"|"+String.format(format,idOne,idTwo);
 	}
 

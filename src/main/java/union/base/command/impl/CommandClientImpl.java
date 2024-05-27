@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import union.base.command.CommandClient;
 import union.base.command.CommandListener;
@@ -47,7 +45,6 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
@@ -88,9 +85,8 @@ public class CommandClientImpl implements CommandClient, EventListener
 	private final ScheduledExecutorService executor;
 
 	private CommandListener listener = null;
-	private int totalGuilds;
 
-	public CommandClientImpl(String ownerId, Function<MessageReceivedEvent, Boolean> commandPreProcessFunction, Activity activity, OnlineStatus status, String serverInvite,
+	public CommandClientImpl(String ownerId, Activity activity, OnlineStatus status, String serverInvite,
 							 ArrayList<SlashCommand> slashCommands, ArrayList<ContextMenu> contextMenus, String forcedGuildId, String[] devGuildIds, boolean manualUpsert,
 							 boolean shutdownAutomatically, ScheduledExecutorService executor)
 	{
@@ -314,12 +310,6 @@ public class CommandClientImpl implements CommandClient, EventListener
 	}
 
 	@Override
-	public int getTotalGuilds()
-	{
-		return totalGuilds;
-	}
-
-	@Override
 	public void shutdown()
 	{
 		executor.shutdown();
@@ -414,13 +404,13 @@ public class CommandClientImpl implements CommandClient, EventListener
 			// Upsert the commands + their privileges
 			server.updateCommands().addCommands(data)
 				.queue(
-					priv -> LOG.debug("Successfully added " + slashCommands.size() + " slash commands and " + contextMenus.size() + " menus to server " + server.getName()),
-					error -> LOG.error("Could not upsert commands! Does the bot have the applications.commands scope?" + error)
+					priv -> LOG.debug("Successfully added {} slash commands and {} menus to server {}", slashCommands.size(), contextMenus.size(), server.getName()),
+					error -> LOG.error("Could not upsert commands! Does the bot have the applications.commands scope?", error)
 				);
 		}
 		else
 			jda.updateCommands().addCommands(data)
-				.queue(commands -> LOG.debug("Successfully added " + commands.size() + " slash commands!"));
+				.queue(commands -> LOG.debug("Successfully added {} slash commands!", commands.size()));
 	}
 
 	@Override
@@ -449,7 +439,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 		}
 
 		jda.updateCommands().addCommands(data)
-			.queue(commands -> LOG.debug("Successfully added " + commands.size() + " slash commands globally!"));
+			.queue(commands -> LOG.debug("Successfully added {} slash commands globally!", commands.size()));
 
 		// Upsert the commands
 		for (String serverId : serverIds) {
@@ -467,8 +457,8 @@ public class CommandClientImpl implements CommandClient, EventListener
 			// Upsert the commands + their privileges
 			server.updateCommands().addCommands(dataDev)
 				.queue(
-					priv -> LOG.debug("Successfully added " + dataDev.size() + " slash commands to server " + server.getName()),
-					error -> LOG.error("Could not upsert commands! Does the bot have the applications.commands scope?" + error)
+					priv -> LOG.debug("Successfully added {} slash commands to server {}", dataDev.size(), server.getName()),
+					error -> LOG.error("Could not upsert commands! Does the bot have the applications.commands scope?", error)
 				);
 		}
 	}

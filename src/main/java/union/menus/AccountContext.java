@@ -36,7 +36,9 @@ public class AccountContext extends UserContextMenu {
 
 		String steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-		String avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64.toString()) + "_full.jpg";
+		String avatarUrl = bot.getDBUtil().unionVerify.getSteamAvatarUrl(steam64.toString());
+		if (avatarUrl != null) avatarUrl = "https://avatars.cloudflare.steamstatic.com/" + avatarUrl + "_full.jpg";
+		else avatarUrl = null;
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)

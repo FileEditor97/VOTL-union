@@ -56,6 +56,7 @@ public class MessageListener extends ListenerAdapter {
 
 		// verification check
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return;
+		if (bot.getDBUtil().unionVerify.isDisabled()) return;
 
 		final long userId = event.getAuthor().getIdLong();
 		if (bot.getDBUtil().verifyCache.isVerified(userId)) return;
@@ -64,8 +65,8 @@ public class MessageListener extends ListenerAdapter {
 		if (!event.getMember().getRoles().contains(role)) return;
 		
 		// check if still has account connected
-		final String steam64Str = bot.getDBUtil().unionVerify.getSteam64(String.valueOf(userId));
-		if (steam64Str == null) {
+		final Long steam64 = bot.getDBUtil().unionVerify.getSteam64(String.valueOf(userId));
+		if (steam64 == null) {
 			// remove verification role from user
 			try {
 				final User user = event.getAuthor();
@@ -78,10 +79,10 @@ public class MessageListener extends ListenerAdapter {
 						bot.getLogger().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
 					}
 				);
-			} catch (Exception ex) {}
+			} catch (Exception ignored) {}
 		} else {
 			// add user to local database
-			bot.getDBUtil().verifyCache.addUser(userId, Long.parseLong(steam64Str));
+			bot.getDBUtil().verifyCache.addUser(userId, steam64);
 		}
 	}
 

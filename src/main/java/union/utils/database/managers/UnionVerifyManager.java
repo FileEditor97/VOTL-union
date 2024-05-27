@@ -15,6 +15,8 @@ public class UnionVerifyManager extends SqlDBBase {
 		this.disabled = disabled;
 	}
 
+	public boolean isDisabled() {return disabled;}
+
 	public UnionVerifyManager(ConnectionUtil cu, String url, String user, String password) {
 		super(cu, "%s?user=%s&password=%s".formatted(url, user, password));
 	}
@@ -33,11 +35,11 @@ public class UnionVerifyManager extends SqlDBBase {
 		return data;
 	}
 
-	public String getSteam64(String discordId) {
+	public Long getSteam64(String discordId) {
 		if (disabled) return null;
 		String data = selectOne(TABLE, "steam_id", "discord_id", discordId);
 		if (data == null || data.isBlank()) return null;
-		return data;
+		return Long.parseLong(data);
 	}
 
 	// Check for any changed accounts

@@ -218,6 +218,7 @@ public class InteractionListener extends ListenerAdapter {
 	private Boolean isVerified(IReplyCallback event) {
 		Guild guild = event.getGuild();
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return true;
+		if (bot.getDBUtil().unionVerify.isDisabled()) return true;
 
 		User user = event.getUser();
 		if (bot.getDBUtil().verifyCache.isVerified(user.getIdLong())) return true;
@@ -226,7 +227,7 @@ public class InteractionListener extends ListenerAdapter {
 		if (role == null) return true;
 		
 		// check if still has account connected
-		Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(user.getId())).map(Long::valueOf).orElse(null);
+		Long steam64 = bot.getDBUtil().unionVerify.getSteam64(user.getId());
 		if (steam64 == null) {
 			// remove verification role from user
 			try {
@@ -280,7 +281,7 @@ public class InteractionListener extends ListenerAdapter {
 			}
 		}
 
-		final Long steam64 = Optional.ofNullable(bot.getDBUtil().unionVerify.getSteam64(member.getId())).map(Long::valueOf).orElse(null);
+		final Long steam64 = bot.getDBUtil().unionVerify.getSteam64(member.getId());
 		if (steam64 != null) {
 			// Check if steam64 is not blacklisted
 			for (int groupId : groupIds) {

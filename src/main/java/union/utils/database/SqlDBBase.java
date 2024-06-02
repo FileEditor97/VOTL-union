@@ -19,7 +19,7 @@ public class SqlDBBase {
 
 	public SqlDBBase(ConnectionUtil connectionUtil, String url) {
 		this.cu = connectionUtil;
-		this.url = url;
+		this.url = url+"&connectTimeout=5000&socketTimeout=3000&sessionVariables=max_statement_time=2";
 	}
 
 	// SELECT sql

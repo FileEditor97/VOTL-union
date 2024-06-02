@@ -21,9 +21,9 @@ public class CheckUtil {
 	private final App bot;
 	private final String ownerId;
 
-	public CheckUtil(App bot) {
+	public CheckUtil(App bot, String ownerId) {
 		this.bot = bot;
-		this.ownerId = bot.getFileManager().getString("config", "owner-id");
+		this.ownerId = ownerId;
 	}
 
 	public boolean isDeveloper(UserSnowflake user) {

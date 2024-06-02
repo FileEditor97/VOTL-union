@@ -75,10 +75,8 @@ public class LocaleUtil {
 	public Map<DiscordLocale, String> getFullLocaleMap(String path) {
 		Map<DiscordLocale, String> localeMap = new HashMap<>();
 		for (DiscordLocale locale : bot.getFileManager().getLanguages()) {
-			// Also counts en-US as en-GB (otherwise rises problem)
-			// Later may be changed
-			if (locale.getLocale().equals(DiscordLocale.ENGLISH_UK.getLocale()))
-				localeMap.put(DiscordLocale.ENGLISH_US, getLocalized(DiscordLocale.ENGLISH_US, path));
+			// Ignores UK/US change
+			if (locale.equals(DiscordLocale.ENGLISH_UK) || locale.equals(DiscordLocale.ENGLISH_US)) continue;
 			localeMap.put(locale, getLocalized(locale, path));
 		}
 		return localeMap;

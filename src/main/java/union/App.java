@@ -95,13 +95,15 @@ public class App {
 			logger.error("Error while interacting with File Manager", ex);
 			System.exit(0);
 		}
+
+		final String ownerId = fileManager.getString("config", "owner-id");
 		
 		// Define for default
 		dbUtil		= new DBUtil(fileManager);
 		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
 		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
-		checkUtil	= new CheckUtil(this);
+		checkUtil	= new CheckUtil(this, ownerId);
 		ticketUtil	= new TicketUtil(this);
 		logEmbedUtil = new LogEmbedUtil(localeUtil);
 		logUtil		= new LoggingUtil(this);
@@ -125,7 +127,7 @@ public class App {
 
 		// Define a command client
 		commandClient = new CommandClientBuilder()
-			.setOwnerId(fileManager.getString("config", "owner-id"))
+			.setOwnerId(ownerId)
 			.setServerInvite(Links.DISCORD)
 			.setScheduleExecutor(scheduledExecutor)
 			.setStatus(OnlineStatus.ONLINE)
@@ -144,6 +146,7 @@ public class App {
 				new GenerateListCmd(this),
 				new ForceAccessCmd(this),
 				new DisableCmd(this),
+				new DebugCmd(this),
 				// webhook
 				new WebhookCmd(this),
 				// moderation
@@ -338,7 +341,7 @@ public class App {
 			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
 			helper.getLogger().info("Helper started");
 		} catch (Throwable ex) {
-			instance.logger.info("Was unable to start helper");
+			instance.logger.info("Unable to start helper");
 			helper = null;
 		}
 	}
@@ -350,7 +353,7 @@ public class App {
 		
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 		PatternLayoutEncoder ple = new PatternLayoutEncoder();
-		ple.setPattern("%d{dd.MM.yyyy HH:mm:ss} [%thread] [%logger{0}] %msg%n");
+		ple.setPattern("%d{dd.MM.yyyy HH:mm:ss} [%thread] [%logger{0}] %ex{10}%n");
 		ple.setContext(lc);
 		ple.start();
 		WebhookAppender webhookAppender = new WebhookAppender();

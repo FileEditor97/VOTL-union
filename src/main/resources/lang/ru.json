@@ -425,6 +425,18 @@
 						"help": "Отключить verify базу данных?"
 					}
 				}
+			},
+			"debug": {
+				"help": "Возвращает файл логов",
+				"usage": "debug [debug logs?] [date]",
+				"debug_logs": {
+					"name": "debug_logs",
+					"help": "Debug logs"
+				},
+				"date": {
+					"name": "дата",
+					"help": "Formated as yyyy-MM-dd"
+				}
 			}
 		},
 		"guild": {

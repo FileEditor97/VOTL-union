@@ -197,8 +197,8 @@ public class ScheduledCheck {
 
 	// Each 2-5 minutes
 	public void regularChecks() {
-		CompletableFuture.runAsync(this::checkAccountUpdates)
-				.thenRunAsync(this::checkUnbans)
+		CompletableFuture.runAsync(this::checkUnbans)
+				.thenRunAsync(this::checkAccountUpdates)
 				.thenRunAsync(this::removeAlertPoints);
 	}
 

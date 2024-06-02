@@ -48,7 +48,7 @@ public class CheckUtil {
 		if (userLevel != null)
 			return userLevel;
 		
-		// Check if has Administrator privileges
+		// Check if user has Administrator privileges
 		if (member.hasPermission(Permission.ADMINISTRATOR))
 			return CmdAccessLevel.ADMIN;
 
@@ -63,11 +63,11 @@ public class CheckUtil {
 			.orElse(CmdAccessLevel.ALL);
 	}
 
-	public Boolean hasHigherAccess(Member who, Member than) {
+	public boolean hasHigherAccess(Member who, Member than) {
 		return getAccessLevel(who).isHigherThan(getAccessLevel(than));
 	}
 
-	public Boolean hasAccess(Member member, CmdAccessLevel accessLevel) {
+	public boolean hasAccess(Member member, CmdAccessLevel accessLevel) {
 		if (accessLevel.equals(CmdAccessLevel.ALL)) return true;
 		return !accessLevel.isHigherThan(getAccessLevel(member));
     }

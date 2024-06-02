@@ -29,7 +29,8 @@ public class DisableCmd extends CommandBase {
 		public Database(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "bot.owner.disable.database";
+			this.name = "database";
+			this.path = "bot.owner.disable.database";
 			this.options = List.of(
 				new OptionData(OptionType.BOOLEAN, "player", lu.getText(path+".player.help")),
 				new OptionData(OptionType.BOOLEAN, "verify", lu.getText(path+".verify.help"))

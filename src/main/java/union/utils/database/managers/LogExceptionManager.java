@@ -41,9 +41,7 @@ public class LogExceptionManager extends LiteDBBase {
 		if (cache.contains(guildId))
 			return cache.get(guildId);
 		List<Long> data = select("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), "targetId", Long.class);
-		if (data.isEmpty())
-			return Set.of();
-		Set<Long> dataSet = new HashSet<>(data);
+		Set<Long> dataSet = data.isEmpty() ? Set.of() : new HashSet<>(data);
 		cache.put(guildId, dataSet);
 		return dataSet;
 	}

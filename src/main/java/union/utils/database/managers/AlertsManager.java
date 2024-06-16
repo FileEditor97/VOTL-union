@@ -17,10 +17,6 @@ public class AlertsManager extends LiteDBBase {
 		execute("UPDATE %s SET points=points-1; DELETE FROM %<s WHERE points<1;".formatted(table));
 	}
 
-	public void removeGuildUser(long guildId, long userId) {
-		execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId));
-	}
-
 	public void removeAll() {
 		execute("DELETE FROM %s".formatted(table));
 	}

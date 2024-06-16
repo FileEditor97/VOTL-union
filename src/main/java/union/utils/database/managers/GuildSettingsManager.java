@@ -29,6 +29,7 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	// Cache
 	private final FixedCache<Long, GuildSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
+	public final FixedCache<Long, Boolean> anticrashCache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
 	private final GuildSettings blankSettings = new GuildSettings();
 	
 	public GuildSettingsManager(ConnectionUtil cu) {
@@ -51,6 +52,10 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	private Map<String, Object> getData(long guildId) {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
+	}
+
+	public Boolean isAnticrashEnabled(long guildId) {
+		return anticrashCache.get(guildId);
 	}
 
 	public void remove(long guildId) {
@@ -90,6 +95,7 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	public void setAnticrash(long guildId, boolean enabled) {
 		invalidateCache(guildId);
+		invalidateAnticrashCache(guildId);
 		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d".formatted(table, guildId, enabled ? 1 : 0));
 	}
 
@@ -121,6 +127,10 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
+	}
+
+	private void invalidateAnticrashCache(long guildId) {
+		anticrashCache.pull(guildId);
 	}
 
 	public static class GuildSettings {

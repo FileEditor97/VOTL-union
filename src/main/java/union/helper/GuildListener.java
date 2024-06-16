@@ -39,13 +39,28 @@ public class GuildListener extends ListenerAdapter {
 			);
 		}
 		// Alerts
-		if (watchedTypes.contains(event.getEntry().getType()) && helper.getDBUtil().getGuildSettings(event.getGuild()).anticrashEnabled()) {
+		if (watchedTypes.contains(event.getEntry().getType())) {
 			UserSnowflake admin = UserSnowflake.fromId(event.getEntry().getUserIdLong());
 			// Ignore actions made by both bots
 			if (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser())) return;
+			// Check if anticrash enabled in this guild or group's master guild
+			long guildId = event.getGuild().getIdLong();
+			Boolean enabled = helper.getDBUtil().guildSettings.isAnticrashEnabled(guildId);
+			if (enabled == null) {
+				enabled = helper.getDBUtil().getGuildSettings(guildId).anticrashEnabled()
+					|| helper.getDBUtil().group.getGuildGroups(guildId)
+						.stream()
+						.map(group -> helper.getDBUtil().group.getOwner(group))
+						.map(owner -> helper.getDBUtil().getGuildSettings(owner).anticrashEnabled())
+						.filter(on -> on)
+						.findFirst()
+						.orElse(false);
+
+				helper.getDBUtil().guildSettings.anticrashCache.put(guildId, enabled);
+			}
+			if (!enabled) return;
 
 			// add 1 point for action
-			long guildId = event.getGuild().getIdLong();
 			helper.getDBUtil().alerts.addPoint(guildId, admin.getIdLong());
 			int amount = helper.getDBUtil().alerts.getPoints(guildId, admin.getIdLong());
 			if (amount >= triggerAmount && amount < triggerAmount+3) {

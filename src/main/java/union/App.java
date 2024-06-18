@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import union.base.command.CommandClient;
 import union.base.command.CommandClientBuilder;
 import union.base.waiter.EventWaiter;
+import union.commands.games.GameCmd;
+import union.commands.games.GameStrikeCmd;
 import union.commands.guild.*;
 import union.commands.moderation.*;
 import union.commands.other.*;
@@ -195,7 +197,10 @@ public class App {
 				new CheckRankCmd(this),
 				new TempRoleCmd(this),
 				new RoleCmd(this),
-				new CheckServerCmd(this)
+				new CheckServerCmd(this),
+				// games
+				new GameCmd(this),
+				new GameStrikeCmd(this)
 			)
 			.addContextMenus(
 				new AccountContext(this),

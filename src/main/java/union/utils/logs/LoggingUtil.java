@@ -203,6 +203,12 @@ public class LoggingUtil {
 
 			sendLog(guild, type, () -> logUtil.userKickEmbed(guild.getLocale(), target, entry.getReason(), modId));
 		}
+
+		public void onGameStrike(Member target, String reason, User mod, int count, int max) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.gameStrikeEmbed(guild.getLocale(), target.getUser(), reason, mod.getIdLong(), count, max));
+		}
 	}
 
 	// Roles actions

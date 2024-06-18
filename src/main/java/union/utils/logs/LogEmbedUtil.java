@@ -324,7 +324,7 @@ public class LogEmbedUtil {
 			.setMod(modId)
 			.setId(target.getId())
 			.build();
-	} 
+	}
 
 	//  Mute
 	@NotNull
@@ -427,6 +427,19 @@ public class LogEmbedUtil {
 			.addField("moderation.blacklist.group", groupInfo)
 			.setEnforcer(enforcer.getIdLong())
 			.setId(target != null ? target.getId() : null)
+			.build();
+	}
+
+	//  Game
+	@NotNull
+	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, User target, String reason, long modId, int count, int max) {
+		return new LogEmbedBuilder(locale, RED_LIGHT)
+			.setHeaderIcon("moderation.game.strike", target.getEffectiveAvatarUrl(), target.getName())
+			.setUser(target.getIdLong())
+			.setReason(reason)
+			.setMod(modId)
+			.addField("moderation.game.strikes", count+"/"+max)
+			.setId(target.getId())
 			.build();
 	}
 

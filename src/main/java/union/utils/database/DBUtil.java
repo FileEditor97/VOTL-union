@@ -57,6 +57,7 @@ public class DBUtil {
 	public final LogExceptionManager logExceptions;
 	public final ModifyRoleManager modifyRole;
 	public final ThreadControlManager threadControl;
+	public final GameStrikeManager games;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -108,6 +109,7 @@ public class DBUtil {
 		logExceptions = new LogExceptionManager(connectionUtil);
 		modifyRole = new ModifyRoleManager(connectionUtil);
 		threadControl = new ThreadControlManager(connectionUtil);
+		games = new GameStrikeManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);

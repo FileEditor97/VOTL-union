@@ -3,6 +3,7 @@ package union.utils;
 import java.time.Duration;
 import java.time.Instant;
 
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import union.objects.CaseType;
 import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
@@ -145,5 +146,15 @@ public class ModerationUtil {
 				.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
 				.setTimestamp(Instant.now())
 				.setFooter("#"+caseId);
+	}
+
+	@Nullable
+	public MessageEmbed getGameStrikeEmbed(GuildChannel channel, User mod, String reason) {
+		int level = dbUtil.getGuildSettings(channel.getGuild()).getInformStrike().getLevel();
+		if (level == 0) return null;
+		String text = lu.getLocalized(channel.getGuild().getLocale(), "logger_embed.pm.gamestrike").formatted(channel.getName(), channel.getJumpUrl());
+		return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
+			.setDescription(formatText(text, channel.getGuild(), reason, null, level >= 3 ? mod : null))
+			.build();
 	}
 }

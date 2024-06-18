@@ -11,7 +11,8 @@ public enum CmdModule {
 	TICKETING("modules.ticketing", 5),
 	VOICE("modules.voice", 6),
 	REPORT("modules.report", 7),
-	ROLES("modules.roles", 8);
+	ROLES("modules.roles", 8),
+	GAMES("modules.games", 9);
 	
 	private final String path;
 	private final int value;

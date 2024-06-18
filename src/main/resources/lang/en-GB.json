@@ -60,7 +60,7 @@
 		"permanently": "permanently",
 		"temporary": "until %s",
 		"ban_expired": "Temporary ban expired",
-		"verify_instruct": "## Complete verification to join `%s`!\nYou must connect your account by joining the server bellow.\n*After completing verification there, you will be able to rejoin this server.*\n\n> --> %s <--"
+		"verify_instruct": "## Complete verification to join `%s`!\nYou must connect your account by joining the server bellow.\n*After completing verification there, you will be able to rejoin this server.*\n\n> --> %s <--",
 		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||"
 	},
 	"modules": {
@@ -73,6 +73,7 @@
 		"report": "Report function",
 		"roles": "Role management",
 		"strikes": "Strike punishments",
+		"games": "Games",
 		"module_disabled": "This command(module) is disabled."
 	},
 	"role_type": {
@@ -141,7 +142,8 @@
 			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
 			"appeal": "\nAppeal this action by following this link:\n> %s",
 			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
-			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s."
+			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s.",
+			"gamestrike": "You received Game strike in [%s](%s)."
 		},
 		"inform": {
 			"0": "Do not dm offender",
@@ -201,6 +203,10 @@
 				"removed": "Removed from blacklist | %s",
 				"steam": "SteamID",
 				"group": "Group"
+			},
+			"game": {
+				"strike": "Game strike | %s",
+				"strikes": "Strike count"
 			}
 		},
 		"groups": {
@@ -483,7 +489,7 @@
 						"help": "Enable anti-crash protection?"
 					},
 					"done": "Anti-crash protecting enabled - %s.",
-					"done_full": "Anti-crash protecting enabled - %s.\nBot will ping [ %s ] "
+					"done_full": "Anti-crash protecting enabled - %s.\nBot will ping [ %s ]"
 				},
 				"voice": {
 					"help": "Manage custom voice channel settings",
@@ -1387,7 +1393,7 @@
 					"embed_value": "Select server from the list below to be removed from Group `%s`.",
 					"done": "Successfully removed server __%s__ from Group `%s`."
 				},
-				"modify": {
+				"modify-group": {
 					"help": "Modify Group settings",
 					"usage": "modify <Group> [name] [appeal server ID] [invite link]",
 					"group_owned": {
@@ -1669,6 +1675,7 @@
 					"ticketing": "Tickets",
 					"voice": "Voice",
 					"roles": "Roles",
+					"games": "Games",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -2492,6 +2499,77 @@
 				"estimate": "\n*Estimated time for completion `%d` seconds.*",
 				"empty": "No members has this role.",
 				"done": "Removed {role} from {count}/{max} users, checked server `{guild}`!"
+			}
+		},
+		"games": {
+			"game": {
+				"help": "Setup game controls",
+				"usage": "game",
+				"add": {
+					"help": "Add channel to games list",
+					"usage": "add <@Channel> [max strikes]",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel"
+					},
+					"max_strikes": {
+						"name": "max_strikes",
+						"help": "Enter max amount of strikes user can receive before game ban. (3)"
+					},
+					"already": "This channel is already registered.",
+					"done": "Channel %s registered!\n*Max strikes: `%s`*"
+				},
+				"remove": {
+					"help": "Remove channel from games list",
+					"usage": "remove <@Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel"
+					},
+					"not_found": "This channel is not registered.",
+					"done": "Channel %s was removed from games list!"
+				},
+				"view-channels": {
+					"help": "View games list",
+					"usage": "view-channels",
+					"none": "No registered channels.",
+					"embed_title": "Game channels"
+				},
+				"clear": {
+					"help": "Clear all strikes for user in one game",
+					"usage": "clear <@User> <@Channel>",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user/Enter ID"
+					},
+					"not_found": "This channel is not registered.",
+					"no_user": "User not found",
+					"done": "Cleared games strikes for %s in %s."
+				}
+			},
+			"gamestrike": {
+				"help": "Give a user game strike",
+				"usage": "gamestrike <#Channel> <@User> <reason>",
+				"channel": {
+					"name": "channel",
+					"help": "Select channel"
+				},
+				"user": {
+					"name": "user",
+					"help": "Mention user/Enter ID"
+				},
+				"reason": {
+					"name": "reason",
+					"help": "Enter strike reason"
+				},
+				"not_found": "This channel is not registered.",
+				"not_member": "Selected user is not a member of this server",
+				"cooldown": "**Strike cooldown!**\n Please, wait before giving new strike.",
+				"done": "User %s received Game strike in %s."
 			}
 		}
 	},

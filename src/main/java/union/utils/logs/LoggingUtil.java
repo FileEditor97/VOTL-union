@@ -398,7 +398,8 @@ public class LoggingUtil {
 			IncomingWebhookClientImpl client = getWebhookClient(type, master);
 			if (client == null) return;
 			try {
-				client.sendMessage("||"+Constants.DEVELOPER_TAG+"||").addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
+				String ping = Optional.ofNullable(db.getGuildSettings(master).getAnticrashPing()).orElse("||"+Constants.DEVELOPER_TAG+"||");
+				client.sendMessage(ping).addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
 			} catch (Exception ignored) {}
 		}
 	}

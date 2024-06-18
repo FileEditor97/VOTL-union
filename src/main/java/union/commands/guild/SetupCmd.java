@@ -4,8 +4,11 @@ import java.awt.Color;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import net.dv8tion.jda.api.entities.Mentions;
 import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -96,7 +99,7 @@ public class SetupCmd extends CommandBase {
 			String text = event.optString("link");
 
 			if (!isValidURL(text)) {
-				createError(event, path+".not_valid", "Received unvalid URL: `%s`".formatted(text));
+				createError(event, path+".not_valid", "Received invalid URL: `%s`".formatted(text));
 				return;
 			}
 
@@ -154,7 +157,8 @@ public class SetupCmd extends CommandBase {
 			this.name = "anticrash";
 			this.path = "bot.guild.setup.anticrash";
 			this.options = List.of(
-				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help"), true)
+				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help"), true),
+				new OptionData(OptionType.STRING, "ping", lu.getText(path+".ping.help"))
 			);
 			this.accessLevel = CmdAccessLevel.OPERATOR;
 		}
@@ -163,11 +167,32 @@ public class SetupCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			boolean enabled = event.optBoolean("enabled");
 
-			bot.getDBUtil().guildSettings.setAnticrash(event.getGuild().getIdLong(), enabled);
+			long guildId = event.getGuild().getIdLong();
+			bot.getDBUtil().guildSettings.setAnticrash(guildId, enabled);
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").formatted(String.valueOf(enabled)))
-				.build());
+			if (event.hasOption("ping")) {
+				Mentions mentions = event.optMentions("ping");
+				String ping = null;
+				if (!mentions.getRoles().isEmpty() || !mentions.getMembers().isEmpty()) {
+					Set<String> pingSet = new HashSet<>();
+					pingSet.addAll(mentions.getRoles().stream().limit(4).map(r -> "<@&"+r.getIdLong()+">").toList());
+					pingSet.addAll(mentions.getMembers().stream().limit(4).map(r -> "<@"+r.getIdLong()+">").toList());
+
+					ping = String.join(" ", pingSet);
+				}
+				bot.getDBUtil().guildSettings.setAnticrashPing(guildId, ping);
+
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done_full").formatted(
+						enabled ? Constants.SUCCESS : Constants.FAILURE,
+						ping==null ? "developer" : ping
+					))
+					.build());
+			} else {
+				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done").formatted(enabled ? Constants.SUCCESS : Constants.FAILURE))
+					.build());
+			}
 		}
 	}
 

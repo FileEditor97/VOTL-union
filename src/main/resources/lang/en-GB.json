@@ -479,7 +479,8 @@
 						"name": "enabled",
 						"help": "Enable anti-crash protection?"
 					},
-					"done": "Anti-crash protecting enabled - `%s`."
+					"done": "Anti-crash protecting enabled - %s.",
+					"done_full": "Anti-crash protecting enabled - %s.\nBot will ping [ %s ] "
 				},
 				"voice": {
 					"help": "Manage custom voice channel settings",

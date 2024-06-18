@@ -526,6 +526,9 @@ public class GroupCmd extends CommandBase {
 					actionMenu -> {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
+						if (targetGuild == null) {
+							targetGuild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
+						}
 
 						StringBuilder builder = new StringBuilder(lu.getText(event, path+".done")
 							.formatted(targetGuild.getName(), groupName));

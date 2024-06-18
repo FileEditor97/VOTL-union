@@ -139,7 +139,7 @@ public class GuildListener extends ListenerAdapter {
 						pm.sendMessage(builder.toString()).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
 
-					event.getMember().kick().reason("NOT VERIFIED! Join main server to verify").queueAfter(4, TimeUnit.SECONDS, done -> {
+					event.getMember().kick().reason("NOT VERIFIED! Join main server to verify").queueAfter(3, TimeUnit.SECONDS, done -> {
 						// Log to master
 						helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and kick");
 					});

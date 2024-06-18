@@ -15,8 +15,8 @@ public class GroupManager extends LiteDBBase {
 	}
 
 	// groups table
-	public void create(long guildId, String name, long appealGuildId) {
-		execute("INSERT INTO %s(ownerId, name, appealGuildId) VALUES (%d, %s, %d)".formatted(groups, guildId, quote(name), appealGuildId));
+	public void create(long guildId, String name, long appealGuildId, String selfInvite) {
+		execute("INSERT INTO %s(ownerId, name, appealGuildId, selfInvite) VALUES (%d, %s, %d, %s)".formatted(groups, guildId, quote(name), appealGuildId, quote(selfInvite)));
 	}
 
 	public int getIncrement() {
@@ -52,9 +52,21 @@ public class GroupManager extends LiteDBBase {
 			.formatted(groups, groupId, guildId), "ownerId", Long.class) != null;
 	}
 
+	public void setAppealGuildId(int groupId, long appealGuildId) {
+		execute("UPDATE %s SET appealGuildId=%s WHERE (groupId=%d)".formatted(groups, appealGuildId, groupId));
+	}
+
 	public Long getAppealGuildId(int groupId) {
 		Long data = selectOne("SELECT appealGuildId FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "appealGuildId", Long.class);
 		return data==null ? 0L : data;
+	}
+
+	public void setSelfInvite(int groupId, String selfInvite) {
+		execute("UPDATE %s SET selfInvite=%s WHERE (groupId=%d)".formatted(groups, quote(selfInvite), groupId));
+	}
+
+	public String getSelfInvite(int groupId) {
+		return selectOne("SELECT selfInvite FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "selfInvite", String.class);
 	}
 
 	// groupMembers table
@@ -103,8 +115,17 @@ public class GroupManager extends LiteDBBase {
 		return data != null && data == 1;
 	}
 
-	public void setManage(int groupId, long guildId, Boolean canManage) {
+	public void setManage(int groupId, long guildId, boolean canManage) {
 		execute("UPDATE %s SET canManage=%d WHERE (groupId=%d AND guildId=%d)".formatted(members, canManage ? 1 : 0, groupId, guildId));
+	}
+
+	public boolean verifyEnabled(int groupId, long guildId) {
+		Integer data = selectOne("SELECT requireVerify FROM %s WHERE (groupId=%d AND guildId=%d)".formatted(members, groupId, guildId), "requireVerify", Integer.class);
+		return data != null && data == 1;
+	}
+
+	public void setVerify(int groupId, long guildId, boolean enabled) {
+		execute("UPDATE %s SET requireVerify=%d WHERE (groupId=%d AND guildId=%d)".formatted(members, enabled ? 1 : 0, groupId, guildId));
 	}
 
 }

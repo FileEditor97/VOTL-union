@@ -724,6 +724,16 @@ public class LogEmbedUtil {
 			.build();
 	}
 
+	@NotNull
+	public MessageEmbed informUserVerify(DiscordLocale locale, int groupId, Guild guild, User user, String actionTaken) {
+		return new LogEmbedBuilder(locale, AMBER_LIGHT)
+			.setHeader("helper.not_verified", guild.getIconUrl(), guild.getName())
+			.setUser(user.getIdLong())
+			.addField("helper.action", actionTaken, false)
+			.setFooter("Group ID: "+groupId)
+			.build();
+	}
+
 
 	// Verification
 	@NotNull

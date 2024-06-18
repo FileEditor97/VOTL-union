@@ -402,6 +402,13 @@ public class LoggingUtil {
 				client.sendMessage(ping).addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
 			} catch (Exception ignored) {}
 		}
+
+		public void helperInformVerify(int groupId, Guild targetGuild, User targetUser, String actionTaken) {
+			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			if (master == null) return;
+
+			sendLog(master, type, () -> logUtil.informUserVerify(master.getLocale(), groupId, targetGuild, targetUser, actionTaken));
+		}
 	}
 
 	// Verification actions

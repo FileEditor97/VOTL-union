@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,7 +14,6 @@ import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.Emotes;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import union.utils.invite.InviteImpl;
 
 public class GroupCmd extends CommandBase {
 	
@@ -35,7 +36,7 @@ public class GroupCmd extends CommandBase {
 		super(bot);
 		this.name = "group";
 		this.path = "bot.moderation.group";
-		this.children = new SlashCommand[]{new Create(bot), new Delete(bot), new Add(bot), new Remove(bot), new Rename(bot), new Manage(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Create(bot), new Delete(bot), new Add(bot), new Remove(bot), new Modify(bot), new Manage(bot), new View(bot)};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -46,7 +47,6 @@ public class GroupCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Create extends SlashCommand {
-
 		public Create(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -54,7 +54,8 @@ public class GroupCmd extends CommandBase {
 			this.path = "bot.moderation.group.create";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"), true).setMaxLength(120),
-				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help")).setRequiredLength(12, 20)
+				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help")).setRequiredLength(12, 20),
+				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"))
 			);
 			this.cooldown = 30;
 			this.cooldownScope = CooldownScope.GUILD;
@@ -84,24 +85,55 @@ public class GroupCmd extends CommandBase {
 					return;
 				}
 			}
-			
-			bot.getDBUtil().group.create(guildId, groupName, appealGuildId);
-			Integer groupId = bot.getDBUtil().group.getIncrement();
-			bot.getLogger().group.onCreation(event, groupId, groupName);
 
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(
-					lu.getText(event, path+".done").replace("{group_name}", groupName).replace("{group_id}", groupId.toString())
-					.replace("{is_shared}", Emotes.CROSS_C.getEmote())
-				)
-				.build()
-			);
+			if (event.hasOption("invite")) {
+				String link = event.optString("invite");
+
+				if (!isValidURL(link)) {
+					createError(event, path+".invalid_invite", "Received invalid URL: `%s`".formatted(link));
+					return;
+				}
+
+				long appealGuildIdTemp = appealGuildId;
+				InviteImpl.resolve(bot.JDA, link.replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim(), false).queue(invite -> {
+					if (!invite.isFromGuild() || invite.isTemporal() || invite.getGuild().getIdLong() != event.getGuild().getIdLong()) {
+						editError(event, path+".invalid_invite", "Link `%s`".formatted(invite.getUrl()));
+						return;
+					}
+					bot.getDBUtil().group.create(guildId, groupName, appealGuildIdTemp, invite.getUrl());
+					int groupId = bot.getDBUtil().group.getIncrement();
+					bot.getLogger().group.onCreation(event, groupId, groupName);
+
+					sendSuccess(event, groupName, groupId, true);
+				}, failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
+			} else {
+				bot.getDBUtil().group.create(guildId, groupName, appealGuildId, null);
+				int groupId = bot.getDBUtil().group.getIncrement();
+				bot.getLogger().group.onCreation(event, groupId, groupName);
+
+				sendSuccess(event, groupName, groupId, false);
+			}
 		}
 
+		private boolean isValidURL(String urlString) {
+			try {
+				URL url = new URL(urlString);
+				url.toURI();
+				return true;
+			} catch (Exception e) {
+				return false;
+			}
+		}
+
+		private void sendSuccess(SlashCommandEvent event, String groupName, int groupId, boolean hasInvite) {
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(
+					groupName, groupId, Constants.SUCCESS, hasInvite ? Constants.SUCCESS : Constants.FAILURE
+				)).build());
+		}
 	}
 
 	private class Delete extends SlashCommand {
-
 		public Delete(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -135,16 +167,13 @@ public class GroupCmd extends CommandBase {
 
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(
-					lu.getText(event, path+".done").replace("{group_name}", groupName).replace("{group_id}", groupId.toString())
-				)
-				.build()
+					lu.getText(event, path+".done").formatted(groupName, groupId)
+				).build()
 			);
 		}
-
 	}
 
 	private class Add extends SlashCommand {
-		// for currect requirement is enough, but as major release - NO
 		public Add(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -212,18 +241,15 @@ public class GroupCmd extends CommandBase {
 			}
 
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(
-					lu.getText(event, path+".done").replace("{server_id}", String.valueOf(targetId)).replace("{server_name}", guild.getName())
-						.replace("{group_name}", groupName)
-				)
-				.build()
+				.setDescription(lu.getText(event, path+".done").formatted(
+					guild.getName(), targetId, groupName
+				)).build()
 			);
 		}
 
 	}
 
 	private class Remove extends SlashCommand {
-
 		public Remove(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -263,7 +289,7 @@ public class GroupCmd extends CommandBase {
 			String groupName = bot.getDBUtil().group.getName(groupId);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"))
-				.setDescription(lu.getText(event, path+".embed_value").replace("{group_name}", groupName))
+				.setDescription(lu.getText(event, path+".embed_value").formatted(groupName))
 				.build();
 			
 			StringSelectMenu menu = StringSelectMenu.create("menu:remove-guild")
@@ -290,8 +316,10 @@ public class GroupCmd extends CommandBase {
 							bot.getLogger().group.onGuildRemoved(event, targetGuild, groupId, groupName);
 
 						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-							.setDescription(lu.getText(event, path+".done").replace("{guild_name}", Optional.ofNullable(targetGuild).map(Guild::getName).orElse("*Unknown*")).replace("{group_name}", groupName))
-							.build()
+							.setDescription(lu.getText(event, path+".done").formatted(
+								Optional.ofNullable(targetGuild).map(Guild::getName).orElse("*Unknown*"),
+								groupName
+							)).build()
 						).setComponents().queue();
 					},
 					30,
@@ -304,54 +332,127 @@ public class GroupCmd extends CommandBase {
 				);
 			});
 		}
-
 	}
 
-	private class Rename extends SlashCommand {
-
-		public Rename(App bot) {
+	private class Modify extends SlashCommand {
+		public Modify(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "rename";
-			this.path = "bot.moderation.group.rename";
+			this.name = "modify";
+			this.path = "bot.moderation.group.modify";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
-				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"), true).setMaxLength(120)
+				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help")).setMaxLength(120),
+				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help")).setRequiredLength(12, 20),
+				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"))
 			);
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			Integer groupId = event.optInteger("group_owned");
+			event.deferReply(true).queue();
+			int groupId = event.optInteger("group_owned");
 			Long ownerId = bot.getDBUtil().group.getOwner(groupId);
 			if (ownerId == null) {
-				createError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
+				editError(event, path+".no_group", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
 			if (event.getGuild().getIdLong() != ownerId) {
-				createError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
+				editError(event, path+".not_owned", "Group ID: `%d`".formatted(groupId));
 				return;
 			}
 
-			String oldName = bot.getDBUtil().group.getName(groupId);
-			String newName = event.optString("name");
+			if (event.getOptions().size() != 2) {
+				editError(event, path+".only_one_change");
+				return;
+			}
 
-			bot.getDBUtil().group.rename(groupId, newName);
-			bot.getLogger().group.onRenamed(event, oldName, groupId, newName);
+			if (event.hasOption("name")) {
+				String oldName = bot.getDBUtil().group.getName(groupId);
+				String newName = event.optString("name");
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(
-					lu.getText(event, path+".done").replace("{old_name}", oldName).replace("{new_name}", newName)
-					.replace("{group_id}", groupId.toString())
-				)
-				.build()
-			);
+				bot.getDBUtil().group.rename(groupId, newName);
+				bot.getLogger().group.onRenamed(event, oldName, groupId, newName);
+
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done").formatted(
+						oldName, lu.getText(event, path+".name_change").formatted(newName), groupId
+					)).build()
+				);
+			}
+			else if (event.hasOption("appeal_server")) {
+				long appealGuildId;
+
+				try {
+					appealGuildId = Long.parseLong(event.optString("appeal_server"));
+				} catch (NumberFormatException ex) {
+					editError(event, "errors.error", ex.getMessage());
+					return;
+				}
+				if (appealGuildId != 0L && event.getJDA().getGuildById(appealGuildId) == null) {
+					editError(event, "errors.error", "Unknown appeal server ID.\nReceived: "+appealGuildId);
+					return;
+				}
+
+				bot.getDBUtil().group.setAppealGuildId(groupId, appealGuildId);
+
+				String groupName = bot.getDBUtil().group.getName(groupId);
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done").formatted(
+						groupName, lu.getText(event, path+".appeal_change").formatted(appealGuildId), groupId
+					)).build()
+				);
+			}
+			else if (event.hasOption("invite")) {
+				String link = event.optString("invite");
+				String groupName = bot.getDBUtil().group.getName(groupId);
+
+				if (link.equalsIgnoreCase("null")) {
+					bot.getDBUtil().group.setSelfInvite(groupId, null);
+
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setDescription(lu.getText(event, path+".done").formatted(
+							groupName, lu.getText(event, path+".invite_change").formatted("- none -"), groupId
+						)).build()
+					);
+					return;
+				}
+
+				if (!isValidURL(link)) {
+					editError(event, path+".invalid_invite", "Received invalid URL: `%s`".formatted(link));
+					return;
+				}
+
+				InviteImpl.resolve(bot.JDA, link.replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim(), false).queue(invite -> {
+					if (!invite.isFromGuild() || invite.isTemporal() || invite.getGuild().getIdLong() != event.getGuild().getIdLong()) {
+						editError(event, path+".invalid_invite", "Link `%s`".formatted(invite.getUrl()));
+						return;
+					}
+
+					bot.getDBUtil().group.setSelfInvite(groupId, invite.getUrl());
+
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setDescription(lu.getText(event, path+".done").formatted(
+							groupName, lu.getText(event, path+".invite_change").formatted(invite.getUrl()), groupId
+						)).build()
+					);
+				}, failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
+			}
+		}
+
+		private boolean isValidURL(String urlString) {
+			try {
+				URL url = new URL(urlString);
+				url.toURI();
+				return true;
+			} catch (Exception e) {
+				return false;
+			}
 		}
 
 	}
 
 	private class Manage extends SlashCommand {
-
 		public Manage(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -359,7 +460,8 @@ public class GroupCmd extends CommandBase {
 			this.path = "bot.moderation.group.manage";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
-				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help"), true)
+				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help")),
+				new OptionData(OptionType.BOOLEAN, "enable_verification", lu.getText(path+".enable_verification.help"))
 			);
 		}
 
@@ -377,7 +479,18 @@ public class GroupCmd extends CommandBase {
 				return;
 			}
 
-			Boolean canManage = event.optBoolean("manage", false);
+			final Boolean canManage;
+			if (event.hasOption("manage")) canManage = event.optBoolean("manage");
+			else canManage = null;
+
+			final Boolean verify;
+			if (event.hasOption("enable_verification")) verify = event.optBoolean("enable_verification");
+			else verify = null;
+
+			if (canManage==null && verify==null) {
+				editError(event, path+".no_options");
+				return;
+			}
 
 			List<Guild> guilds = bot.getDBUtil().group.getGroupMembers(groupId).stream().map(id -> {
 				Guild guild = event.getJDA().getGuildById(id);
@@ -394,7 +507,7 @@ public class GroupCmd extends CommandBase {
 			String groupName = bot.getDBUtil().group.getName(groupId);
 			MessageEmbed embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"))
-				.setDescription(lu.getText(event, path+".embed_value").replace("{group_name}", groupName))
+				.setDescription(lu.getText(event, path+".embed_value"))
 				.build();
 			
 			StringSelectMenu menu = StringSelectMenu.create("menu:select-guild")
@@ -414,14 +527,20 @@ public class GroupCmd extends CommandBase {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
 
-						bot.getDBUtil().group.setManage(groupId, targetId, canManage);
+						StringBuilder builder = new StringBuilder(lu.getText(event, path+".done")
+							.formatted(targetGuild.getName(), groupName));
+
+						if (canManage!=null) {
+							bot.getDBUtil().group.setManage(groupId, targetId, canManage);
+							builder.append(lu.getText(event, path+".manage_change").formatted(canManage ? Constants.SUCCESS : Constants.FAILURE));
+						}
+						if (verify!=null) {
+							bot.getDBUtil().group.setVerify(groupId, targetId, verify);
+							builder.append(lu.getText(event, path+".verify_change").formatted(verify ? Constants.SUCCESS : Constants.FAILURE));
+						}
 
 						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-							.setDescription(
-								lu.getText(event, path+".done").replace("{guild_name}", targetGuild.getName()).replace("{group_name}", groupName)
-								.replace("{manage}", canManage.toString())
-							)
-							.build()
+							.setDescription(builder.toString()).build()
 						).setComponents().queue();
 					},
 					30,
@@ -437,7 +556,6 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class View extends SlashCommand {
-
 		public View(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
@@ -470,12 +588,12 @@ public class GroupCmd extends CommandBase {
 				int groupSize = memberIds.size();
 
 				EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
-					.setAuthor(lu.getText(event, path+".embed_title").replace("{group_name}", groupName).replace("{group_id}", groupId.toString()))
-					.setDescription(
-						lu.getText(event, path+".embed_value").replace("{guild_name}", event.getGuild().getName())
-						.replace("{guild_id}", String.valueOf(ownerId)).replace("{size}", String.valueOf(groupSize))
-						.replace("{is_shared}", Emotes.CROSS_C.getEmote())
-					);
+					.setAuthor(lu.getText(event, path+".embed_title").formatted(
+						groupName, groupId
+					))
+					.setDescription(lu.getText(event, path+".embed_value").formatted(
+						event.getGuild().getName(), event.getGuild().getId(), groupSize, Constants.SUCCESS
+					));
 				
 				if (groupSize > 0) {
 					String fieldLabel = lu.getText(event, path+".embed_guilds");
@@ -516,11 +634,9 @@ public class GroupCmd extends CommandBase {
 
 				EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 					.setAuthor(lu.getText(event, "logger.groups.title").formatted(groupName, groupId))
-					.setDescription(lu.getText(event, path+".embed_value")
-						.replace("{guild_name}", masterName)
-						.replace("{guild_id}", ownerId.toString()).replace("{size}", String.valueOf(groupSize))
-						.replace("{is_shared}", Emotes.CROSS_C.getEmote())
-					);
+					.setDescription(lu.getText(event, path+".embed_value").formatted(
+						masterName, ownerId, groupSize, Constants.SUCCESS
+					));
 				createReplyEmbed(event, builder.build());
 			} else {
 				// No options provided - reply with all groups that this guild is connected
@@ -555,7 +671,6 @@ public class GroupCmd extends CommandBase {
 				createReplyEmbed(event, builder.build());
 			}
 		}
-
 	}
 
 }

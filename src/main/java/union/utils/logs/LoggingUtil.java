@@ -203,6 +203,12 @@ public class LoggingUtil {
 
 			sendLog(guild, type, () -> logUtil.userKickEmbed(guild.getLocale(), target, entry.getReason(), modId));
 		}
+
+		public void onGameStrike(Member target, String reason, User mod, int count, int max) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.gameStrikeEmbed(guild.getLocale(), target.getUser(), reason, mod.getIdLong(), count, max));
+		}
 	}
 
 	// Roles actions
@@ -304,9 +310,9 @@ public class LoggingUtil {
 			List<Long> memberIds = db.group.getGroupMembers(groupId);
 			for (Long memberId : memberIds) {
 				db.group.remove(groupId, memberId);
-				Guild membed = bot.JDA.getGuildById(memberId);
+				Guild member = bot.JDA.getGuildById(memberId);
 
-				sendLog(membed, type, () -> logUtil.groupMemberDeletedEmbed(membed.getLocale(), ownerId, ownerIcon, groupId, name));
+				sendLog(member, type, () -> logUtil.groupMemberDeletedEmbed(member.getLocale(), ownerId, ownerIcon, groupId, name));
 			}
 
 			// Master log
@@ -388,6 +394,12 @@ public class LoggingUtil {
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
+			IncomingWebhookClientImpl client = getWebhookClient(type, master);
+			if (client == null) return;
+			try {
+				String ping = Optional.ofNullable(db.getGuildSettings(master).getAnticrashPing()).orElse("|| <@"+Constants.DEVELOPER_ID+"> ||");
+				client.sendMessage(ping).addEmbeds(logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId)).queue();
+			} catch (Exception ignored) {}
 			sendLog(master, type, () -> logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId));
 		}
 
@@ -398,8 +410,16 @@ public class LoggingUtil {
 			IncomingWebhookClientImpl client = getWebhookClient(type, master);
 			if (client == null) return;
 			try {
-				client.sendMessage("||"+Constants.DEVELOPER_TAG+"||").addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
+				String ping = Optional.ofNullable(db.getGuildSettings(master).getAnticrashPing()).orElse("|| <@"+Constants.DEVELOPER_ID+"> ||");
+				client.sendMessage(ping).addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
 			} catch (Exception ignored) {}
+		}
+
+		public void helperInformVerify(int groupId, Guild targetGuild, User targetUser, String actionTaken) {
+			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			if (master == null) return;
+
+			sendLog(master, type, () -> logUtil.informUserVerify(master.getLocale(), groupId, targetGuild, targetUser, actionTaken));
 		}
 	}
 

@@ -89,7 +89,7 @@ public class RolesSetupCmd extends CommandBase {
 			
 			String type = event.optString("type");
 			if (type.equals(RoleType.ASSIGN.toString())) {
-				Integer row = event.optInteger("row", 0);
+				int row = event.optInteger("row", 0);
 				if (row == 0) {
 					for (int i = 1; i <= 3; i++) {
 						if (bot.getDBUtil().role.getRowSize(guildId, i) < 25) {
@@ -107,15 +107,15 @@ public class RolesSetupCmd extends CommandBase {
 						return;
 					}
 				}
-				String link = event.optString("invite", "").replaceFirst("(https:\\/\\/)?(discord)?(\\.?gg\\/)?", "").trim();
+				String link = event.optString("invite", "").replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim();
 				if (!link.isBlank()) {
-					final Integer frow = row;
+					final int rowTemp = row;
 					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
-						if (invite.isFromGuild() && invite.isTemporal()) {
+						if (!invite.isFromGuild() || invite.isTemporal()) {
 							editError(event, path+".invalid_invite", "Not server type invite");
 							return;
 						}
-						bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), frow, RoleType.ASSIGN, invite.getUrl());
+						bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), rowTemp, RoleType.ASSIGN, invite.getUrl());
 						sendSuccess(event, type, role);
 					},
 					failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
@@ -217,7 +217,7 @@ public class RolesSetupCmd extends CommandBase {
 			}
 
 			if (event.hasOption("invite")) {
-				String link = event.optString("invite").replaceFirst("(https:\\/\\/)?(discord)?(\\.?gg\\/)?", "").trim();
+				String link = event.optString("invite").replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim();
 				if (link.equalsIgnoreCase("null")) {
 					bot.getDBUtil().role.setInvite(role.getId(), "NULL");
 					response.append(lu.getText(event, path+".default_invite"));

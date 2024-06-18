@@ -36,6 +36,7 @@ public class HelpCmd extends CommandBase {
 				.addChoice("Ticketing", "ticketing")
 				.addChoice("Voice", "voice")
 				.addChoice("Roles", "roles")
+				.addChoice("Games", "games")
 				.addChoice("Other", "other"),
 			new OptionData(OptionType.STRING, "command", lu.getText(path+".command.help"), false, true).setRequiredLength(3, 20),
 			new OptionData(OptionType.BOOLEAN, "show", lu.getText(path+".show.help"))

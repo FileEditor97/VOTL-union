@@ -324,7 +324,7 @@ public class LogEmbedUtil {
 			.setMod(modId)
 			.setId(target.getId())
 			.build();
-	} 
+	}
 
 	//  Mute
 	@NotNull
@@ -427,6 +427,19 @@ public class LogEmbedUtil {
 			.addField("moderation.blacklist.group", groupInfo)
 			.setEnforcer(enforcer.getIdLong())
 			.setId(target != null ? target.getId() : null)
+			.build();
+	}
+
+	//  Game
+	@NotNull
+	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, User target, String reason, long modId, int count, int max) {
+		return new LogEmbedBuilder(locale, RED_LIGHT)
+			.setHeaderIcon("moderation.game.strike", target.getEffectiveAvatarUrl(), target.getName())
+			.setUser(target.getIdLong())
+			.setReason(reason)
+			.setMod(modId)
+			.addField("moderation.game.strikes", count+"/"+max)
+			.setId(target.getId())
 			.build();
 	}
 
@@ -720,6 +733,16 @@ public class LogEmbedUtil {
 		return new LogEmbedBuilder(locale, AMBER_LIGHT)
 			.setHeader("helper.leave_guild", Optional.ofNullable(guild).map(Guild::getName).orElse("unknown"))
 			.addField("helper.guild_id", guildId)
+			.setFooter("Group ID: "+groupId)
+			.build();
+	}
+
+	@NotNull
+	public MessageEmbed informUserVerify(DiscordLocale locale, int groupId, Guild guild, User user, String actionTaken) {
+		return new LogEmbedBuilder(locale, AMBER_LIGHT)
+			.setHeader("helper.not_verified", guild.getIconUrl(), guild.getName())
+			.setUser(user.getIdLong())
+			.addField("helper.action", actionTaken, false)
 			.setFooter("Group ID: "+groupId)
 			.build();
 	}

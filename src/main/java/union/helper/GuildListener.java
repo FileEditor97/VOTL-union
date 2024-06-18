@@ -3,6 +3,7 @@ package union.helper;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.audit.ActionType;
@@ -109,6 +110,42 @@ public class GuildListener extends ListenerAdapter {
 		helper.getDBUtil().group.getGuildGroups(event.getGuildIdLong()).forEach(groupId -> 
 			helper.getLogUtil().group.helperInformLeave(groupId, null, event.getGuildId())
 		);
+	}
+
+	@Override
+	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+		long guildId = event.getGuild().getIdLong();
+		helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId -> {
+			if (helper.getDBUtil().group.verifyEnabled(groupId, guildId)) {
+				// Check if user is verified, else send pm and kick/ban from this server
+				String ownerInvite;
+				if (!helper.getDBUtil().verifyCache.isVerified(event.getUser().getIdLong())
+					&& (ownerInvite = helper.getDBUtil().group.getSelfInvite(groupId)) != null) {
+					// Not verified
+					event.getUser().openPrivateChannel().queue(pm -> {
+						StringBuilder builder = new StringBuilder(helper.getLocaleUtil()
+							.getLocalized(event.getGuild().getLocale(), "misc.verify_instruct")
+							.formatted(event.getGuild().getName(), ownerInvite)
+						);
+						Long ownerId = helper.getDBUtil().group.getOwner(groupId);
+						String appealInvite;
+						if (ownerId != null && (appealInvite = helper.getDBUtil().getGuildSettings(ownerId).getAppealLink()) != null) {
+							builder.append(helper.getLocaleUtil()
+								.getLocalized(event.getGuild().getLocale(), "misc.verify_reserve")
+								.formatted(appealInvite)
+							);
+						}
+
+						pm.sendMessage(builder.toString()).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					});
+
+					event.getMember().kick().reason("NOT VERIFIED! Join main server to verify").queueAfter(4, TimeUnit.SECONDS, done -> {
+						// Log to master
+						helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and kick");
+					});
+				}
+			}
+		});
 	}
 
 }

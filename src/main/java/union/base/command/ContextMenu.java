@@ -133,7 +133,7 @@ public abstract class ContextMenu extends Interaction
 	 * @return A String error message for this menu if {@code remaining > 0},
 	 *         else {@code null}.
 	 */
-	public <T> MessageCreateData getCooldownError(IReplyCallback event, Guild guild, int remaining) {
+	public MessageCreateData getCooldownError(IReplyCallback event, Guild guild, int remaining) {
 		if (remaining <= 0)
 			return null;
 		
@@ -153,7 +153,7 @@ public abstract class ContextMenu extends Interaction
 	/**
 	 * Builds CommandData for the ContextMenu upsert.
 	 * This code is executed when we need to upsert the menu.
-	 *
+	 * <p>
 	 * Useful for manual upserting.
 	 *
 	 * @return the built command data
@@ -161,7 +161,7 @@ public abstract class ContextMenu extends Interaction
 	public CommandData buildCommandData() {
 		// Set attributes
 		this.lu = bot.getLocaleUtil();
-		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
+		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name", lu.getText(getPath()+".name"));
 
 		// Make the command data
 		CommandData data = Commands.context(getType(), name);

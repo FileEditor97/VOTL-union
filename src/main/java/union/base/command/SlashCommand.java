@@ -345,7 +345,7 @@ public abstract class SlashCommand extends Interaction
 	public CommandData buildCommandData() {
 		// Set attributes
 		this.help = lu.getText(getHelpPath());
-		this.descriptionLocalization = lu.getFullLocaleMap(getHelpPath());
+		this.descriptionLocalization = lu.getFullLocaleMap(getHelpPath(), getHelp());
 
 		// Make the command data
 		SlashCommandData data = Commands.slash(getName(), getHelp());
@@ -353,8 +353,8 @@ public abstract class SlashCommand extends Interaction
 		// Add options and localizations
 		if (!getOptions().isEmpty()) {
 			getOptions().forEach(option -> {
-				option.setNameLocalizations(lu.getFullLocaleMap("%s.%s.name".formatted(getPath(), option.getName())));
-				option.setDescriptionLocalizations(lu.getFullLocaleMap("%s.%s.help".formatted(getPath(), option.getName())));
+				option.setNameLocalizations(lu.getFullLocaleMap("%s.%s.name".formatted(getPath(), option.getName()), option.getName()));
+				option.setDescriptionLocalizations(lu.getFullLocaleMap("%s.%s.help".formatted(getPath(), option.getName()), option.getDescription()));
 			});
 			data.addOptions(getOptions());
 		}
@@ -398,7 +398,7 @@ public abstract class SlashCommand extends Interaction
 				}
 				// Set attributes
 				child.help = lu.getText(child.getHelpPath());
-				child.descriptionLocalization = lu.getFullLocaleMap(child.getHelpPath());
+				child.descriptionLocalization = lu.getFullLocaleMap(child.getHelpPath(), child.getHelp());
 				
 				// Create subcommand data
 				SubcommandData subcommandData = new SubcommandData(child.getName(), child.getHelp());
@@ -406,8 +406,8 @@ public abstract class SlashCommand extends Interaction
 				// Add options and check localizations
 				if (!child.getOptions().isEmpty()) {
 					child.getOptions().forEach(option -> {
-						option.setNameLocalizations(lu.getFullLocaleMap("%s.%s.name".formatted(child.getPath(), option.getName())));
-						option.setDescriptionLocalizations(lu.getFullLocaleMap("%s.%s.help".formatted(child.getPath(), option.getName())));
+						option.setNameLocalizations(lu.getFullLocaleMap("%s.%s.name".formatted(child.getPath(), option.getName()), option.getName()));
+						option.setDescriptionLocalizations(lu.getFullLocaleMap("%s.%s.help".formatted(child.getPath(), option.getName()), option.getDescription()));
 					});
 					subcommandData.addOptions(child.getOptions());
 				}

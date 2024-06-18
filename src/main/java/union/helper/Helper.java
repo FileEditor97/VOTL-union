@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import union.App;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
+import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LoggingUtil;
 
 import net.dv8tion.jda.api.JDA;
@@ -27,12 +28,14 @@ public class Helper {
 	private final JDA mainJDA;
 	private final DBUtil db;
 	private final LoggingUtil logUtil;
+	private final LocaleUtil localeUtil;
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Helper.class);
 
     public Helper(App instance, final String token) {
 		this.mainJDA = instance.JDA;
 		this.db = instance.getDBUtil();
 		this.logUtil = instance.getLogger();
+		this.localeUtil = instance.getLocaleUtil();
 
         GuildListener guildListener = new GuildListener(this);
 		
@@ -56,6 +59,10 @@ public class Helper {
 
 	public LoggingUtil getLogUtil() {
 		return logUtil;
+	}
+
+	public LocaleUtil getLocaleUtil() {
+		return localeUtil;
 	}
 
 	public Logger getLogger() {

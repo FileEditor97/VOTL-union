@@ -157,10 +157,10 @@ public abstract class UserContextMenu extends ContextMenu {
 	public CommandData buildCommandData() {
 		// Set attributes
 		this.lu = bot.getLocaleUtil();
-		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
+		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name", lu.getText(getPath()+".name"));
 
 		// Make the command data
-		CommandData data = Commands.user(getName());
+		CommandData data = Commands.user(lu.getLocalized(lu.defaultLocale, getPath()+".name"));
 
 		// Check name localizations
 		if (!getNameLocalization().isEmpty()) {

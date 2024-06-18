@@ -24,7 +24,7 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	private final Set<String> columns = Set.of(
 		"color", "lastWebhookId", "appealLink", "reportChannelId", "strikeExpires", "modulesOff",
-		"anticrash", "informBan", "informKick", "informMute", "informStrike", "informDelstrike"
+		"anticrash", "anticrashPing", "informBan", "informKick", "informMute", "informStrike", "informDelstrike"
 	);
 
 	// Cache
@@ -99,6 +99,11 @@ public class GuildSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d".formatted(table, guildId, enabled ? 1 : 0));
 	}
 
+	public void setAnticrashPing(long guildId, String ping) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, anticrashPing) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET anticrashPing=%<s".formatted(table, guildId, quote(ping)));
+	}
+
 	public void setInformBanLevel(long guildId, ModerationInformLevel informLevel) {
 		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, informBan) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET informBan=%<d".formatted(table, guildId, informLevel.getLevel()));
@@ -136,7 +141,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public static class GuildSettings {
 		private final Long lastWebhookId, reportChannelId;
 		private final int color, strikeExpires, modulesOff;
-		private final String appealLink;
+		private final String appealLink, anticrashPing;
 		private final boolean anticrash;
 		private final ModerationInformLevel informBan, informKick, informMute, informStrike, informDelstrike;
 
@@ -148,11 +153,12 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.strikeExpires = 7;
 			this.modulesOff = 0;
 			this.anticrash = false;
+			this.anticrashPing = null;
 			this.informBan = ModerationInformLevel.DEFAULT;
 			this.informKick = ModerationInformLevel.DEFAULT;
 			this.informMute = ModerationInformLevel.DEFAULT;
 			this.informStrike = ModerationInformLevel.DEFAULT;
-			this.informDelstrike = ModerationInformLevel.DONT;
+			this.informDelstrike = ModerationInformLevel.NONE;
 		}
 
 		public GuildSettings(Map<String, Object> data) {
@@ -163,6 +169,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.strikeExpires = getOrDefault(data.get("strikeExpires"), 7);
 			this.modulesOff = getOrDefault(data.get("modulesOff"), 0);
 			this.anticrash = getOrDefault(data.get("anticrash"), 0) == 1;
+			this.anticrashPing = getOrDefault(data.get("anticrashPing"), null);
 			this.informBan = ModerationInformLevel.byLevel(getOrDefault(data.get("informBan"), 1));
 			this.informKick = ModerationInformLevel.byLevel(getOrDefault(data.get("informKick"), 1));
 			this.informMute = ModerationInformLevel.byLevel(getOrDefault(data.get("informMute"), 1));
@@ -206,6 +213,10 @@ public class GuildSettingsManager extends LiteDBBase {
 			return anticrash;
 		}
 
+		public String getAnticrashPing() {
+			return anticrashPing;
+		}
+
 		public ModerationInformLevel getInformBan() {
 			return informBan;
 		}
@@ -228,7 +239,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	}
 
 	public enum ModerationInformLevel {
-		DONT(0, "logger_embed.inform.0"),
+		NONE(0, "logger_embed.inform.0"),
 		DEFAULT(1, "logger_embed.inform.1"),
 		REASON(2, "logger_embed.inform.2"),
 		MOD(3, "logger_embed.inform.3");

@@ -18,7 +18,7 @@ public class LocaleUtil {
 
 	private final App bot;
 	private final LangUtil langUtil;
-	private final DiscordLocale defaultLocale;
+	public final DiscordLocale defaultLocale;
 
 	public LocaleUtil(App bot, DiscordLocale defaultLocale) {
 		this.bot = bot;
@@ -72,7 +72,19 @@ public class LocaleUtil {
 	}
 
 	@NotNull
-	public Map<DiscordLocale, String> getFullLocaleMap(String path) {
+	public Map<DiscordLocale, String> getFullLocaleMap(String path, String defaultText) {
+		Map<DiscordLocale, String> localeMap = new HashMap<>();
+		for (DiscordLocale locale : bot.getFileManager().getLanguages()) {
+			// Ignores UK/US change
+			if (locale.equals(DiscordLocale.ENGLISH_UK) || locale.equals(DiscordLocale.ENGLISH_US)) continue;
+			localeMap.put(locale, getLocalized(locale, path));
+		}
+		localeMap.put(DiscordLocale.ENGLISH_UK, defaultText);
+		localeMap.put(DiscordLocale.ENGLISH_US, defaultText);
+		return localeMap;
+	}
+
+	public Map<DiscordLocale, String> getLocaleMap(String path) {
 		Map<DiscordLocale, String> localeMap = new HashMap<>();
 		for (DiscordLocale locale : bot.getFileManager().getLanguages()) {
 			// Ignores UK/US change

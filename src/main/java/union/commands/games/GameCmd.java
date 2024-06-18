@@ -41,7 +41,7 @@ public class GameCmd extends CommandBase {
 				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
 					.setChannelTypes(ChannelType.TEXT),
 				new OptionData(OptionType.INTEGER, "max_strikes", lu.getText(path+".max_strikes.help"))
-					.setRequiredLength(1, 6)
+					.setRequiredRange(1,6)
 			);
 		}
 

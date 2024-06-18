@@ -121,7 +121,7 @@ public abstract class MessageContextMenu extends ContextMenu
 	public CommandData buildCommandData() {
 		// Set attributes
 		this.lu = bot.getLocaleUtil();
-		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
+		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name", lu.getText(getPath()+".name"));
 
 		// Make the command data
 		CommandData data = Commands.message(lu.getLocalized(lu.defaultLocale, getPath()+".name"));

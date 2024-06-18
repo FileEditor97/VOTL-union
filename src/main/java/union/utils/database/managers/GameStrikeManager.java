@@ -25,7 +25,7 @@ public class GameStrikeManager extends LiteDBBase {
 
 	// Channels
 	public void addChannel(long guildId, long channelId, int maxStrike) {
-		execute("INSERT INTO %s(guildId, channelId, maxStrike) VALUES (%s, %s, %s)".formatted(channels, guildId, channelId, maxStrike));
+		execute("INSERT INTO %s(guildId, channelId, maxStrikes) VALUES (%s, %s, %s)".formatted(channels, guildId, channelId, maxStrike));
 	}
 
 	public void setMaxStrikes(long channelId, int maxStrikes) {

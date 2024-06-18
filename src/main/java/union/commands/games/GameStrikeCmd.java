@@ -52,7 +52,9 @@ public class GameStrikeCmd extends CommandBase {
 			return;
 		}
 		Member tm = event.optMember("user");
-		if (tm == null || tm.getUser().isBot() || tm.equals(event.getMember()) || tm.equals(event.getGuild().getSelfMember())) {
+		if (tm == null || tm.getUser().isBot() || tm.equals(event.getMember())
+			|| tm.equals(event.getGuild().getSelfMember())
+			|| bot.getCheckUtil().hasHigherAccess(tm, event.getMember())) {
 			createError(event, path+".not_member");
 			return;
 		}

@@ -43,9 +43,9 @@ public class StrikeCmd extends CommandBase {
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
 			new OptionData(OptionType.INTEGER, "severity", lu.getText(path+".severity.help"), true).addChoices(List.of(
-				new Choice(lu.getText(path+".severity.minor"), 1).setNameLocalizations(lu.getFullLocaleMap(path+".severity.minor")),
-				new Choice(lu.getText(path+".severity.severe"), 2).setNameLocalizations(lu.getFullLocaleMap(path+".severity.severe")),
-				new Choice(lu.getText(path+".severity.extreme"), 3).setNameLocalizations(lu.getFullLocaleMap(path+".severity.extreme"))
+				new Choice(lu.getText(path+".severity.minor"), 1).setNameLocalizations(lu.getLocaleMap(path+".severity.minor")),
+				new Choice(lu.getText(path+".severity.severe"), 2).setNameLocalizations(lu.getLocaleMap(path+".severity.severe")),
+				new Choice(lu.getText(path+".severity.extreme"), 3).setNameLocalizations(lu.getLocaleMap(path+".severity.extreme"))
 			)),
 			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help"), true).setMaxLength(400)
 		);

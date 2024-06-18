@@ -143,7 +143,7 @@
 			"appeal": "\nAppeal this action by following this link:\n> %s",
 			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
 			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s.",
-			"gamestrike": "You received Game strike in [%s](%s)."
+			"gamestrike": "You received Game strike in channel [__%s__](%s)."
 		},
 		"inform": {
 			"0": "Do not dm offender",
@@ -483,10 +483,14 @@
 				},
 				"anticrash": {
 					"help": "Manage server's anti-crash protection",
-					"usage": "anticrash <enabled?>",
+					"usage": "anticrash <enabled?> [ping]",
 					"enabled": {
 						"name": "enabled",
 						"help": "Enable anti-crash protection?"
+					},
+					"ping": {
+						"name": "ping",
+						"help": "Mentions roles and/or users to be mentioned on action"
 					},
 					"done": "Anti-crash protecting enabled - %s.",
 					"done_full": "Anti-crash protecting enabled - %s.\nBot will ping [ %s ]"
@@ -2567,7 +2571,7 @@
 					"help": "Enter strike reason"
 				},
 				"not_found": "This channel is not registered.",
-				"not_member": "Selected user is not a member of this server",
+				"not_member": "Selected user is not a member of this server or can't be selected.",
 				"cooldown": "**Strike cooldown!**\n Please, wait before giving new strike.",
 				"done": "User %s received Game strike in %s."
 			}

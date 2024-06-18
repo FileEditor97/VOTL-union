@@ -310,9 +310,9 @@ public class LoggingUtil {
 			List<Long> memberIds = db.group.getGroupMembers(groupId);
 			for (Long memberId : memberIds) {
 				db.group.remove(groupId, memberId);
-				Guild membed = bot.JDA.getGuildById(memberId);
+				Guild member = bot.JDA.getGuildById(memberId);
 
-				sendLog(membed, type, () -> logUtil.groupMemberDeletedEmbed(membed.getLocale(), ownerId, ownerIcon, groupId, name));
+				sendLog(member, type, () -> logUtil.groupMemberDeletedEmbed(member.getLocale(), ownerId, ownerIcon, groupId, name));
 			}
 
 			// Master log
@@ -394,6 +394,12 @@ public class LoggingUtil {
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
+			IncomingWebhookClientImpl client = getWebhookClient(type, master);
+			if (client == null) return;
+			try {
+				String ping = Optional.ofNullable(db.getGuildSettings(master).getAnticrashPing()).orElse("|| <@"+Constants.DEVELOPER_ID+"> ||");
+				client.sendMessage(ping).addEmbeds(logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId)).queue();
+			} catch (Exception ignored) {}
 			sendLog(master, type, () -> logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId));
 		}
 
@@ -404,7 +410,7 @@ public class LoggingUtil {
 			IncomingWebhookClientImpl client = getWebhookClient(type, master);
 			if (client == null) return;
 			try {
-				String ping = Optional.ofNullable(db.getGuildSettings(master).getAnticrashPing()).orElse("||"+Constants.DEVELOPER_TAG+"||");
+				String ping = Optional.ofNullable(db.getGuildSettings(master).getAnticrashPing()).orElse("|| <@"+Constants.DEVELOPER_ID+"> ||");
 				client.sendMessage(ping).addEmbeds(logUtil.alertEmbed(master.getLocale(), groupId, targetGuild, targetMember, actionTaken, reason)).queue();
 			} catch (Exception ignored) {}
 		}

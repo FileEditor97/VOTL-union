@@ -338,8 +338,8 @@ public class GroupCmd extends CommandBase {
 		public Modify(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "modify";
-			this.path = "bot.moderation.group.modify";
+			this.name = "modify-group";
+			this.path = "bot.moderation.group.modify-group";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
 				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help")).setMaxLength(120),

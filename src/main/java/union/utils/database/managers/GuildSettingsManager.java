@@ -152,7 +152,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.informKick = ModerationInformLevel.DEFAULT;
 			this.informMute = ModerationInformLevel.DEFAULT;
 			this.informStrike = ModerationInformLevel.DEFAULT;
-			this.informDelstrike = ModerationInformLevel.DONT;
+			this.informDelstrike = ModerationInformLevel.NONE;
 		}
 
 		public GuildSettings(Map<String, Object> data) {
@@ -228,7 +228,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	}
 
 	public enum ModerationInformLevel {
-		DONT(0, "logger_embed.inform.0"),
+		NONE(0, "logger_embed.inform.0"),
 		DEFAULT(1, "logger_embed.inform.1"),
 		REASON(2, "logger_embed.inform.2"),
 		MOD(3, "logger_embed.inform.3");

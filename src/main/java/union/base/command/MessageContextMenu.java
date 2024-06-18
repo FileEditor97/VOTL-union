@@ -124,7 +124,7 @@ public abstract class MessageContextMenu extends ContextMenu
 		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
 
 		// Make the command data
-		CommandData data = Commands.message(getName());
+		CommandData data = Commands.message(lu.getLocalized(lu.defaultLocale, getPath()+".name"));
 
 		// Check name localizations
 		if (!getNameLocalization().isEmpty()) {

@@ -18,7 +18,7 @@ public class LocaleUtil {
 
 	private final App bot;
 	private final LangUtil langUtil;
-	private final DiscordLocale defaultLocale;
+	public final DiscordLocale defaultLocale;
 
 	public LocaleUtil(App bot, DiscordLocale defaultLocale) {
 		this.bot = bot;

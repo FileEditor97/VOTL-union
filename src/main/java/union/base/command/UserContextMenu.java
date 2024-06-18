@@ -160,7 +160,7 @@ public abstract class UserContextMenu extends ContextMenu {
 		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name");
 
 		// Make the command data
-		CommandData data = Commands.user(getName());
+		CommandData data = Commands.user(lu.getLocalized(lu.defaultLocale, getPath()+".name"));
 
 		// Check name localizations
 		if (!getNameLocalization().isEmpty()) {

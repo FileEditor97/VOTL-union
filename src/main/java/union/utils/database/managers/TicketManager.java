@@ -140,6 +140,10 @@ public class TicketManager extends LiteDBBase {
 		execute("UPDATE %s SET closeRequested=%d WHERE (channelId=%s)".formatted(table, closeRequested, channelId));
 	}
 
+	public void setRequestStatus(String channelId, long closeRequested, String reason) {
+		execute("UPDATE %s SET closeRequested=%d, reasonClosed=%s WHERE (channelId=%s)".formatted(table, closeRequested, quote(reason), channelId));
+	}
+
 	public long getTimeClosing(String channelId) {
 		Long data = selectOne("SELECT closeRequested FROM %s WHERE (channelId=%s);".formatted(table, channelId), "closeRequested", Long.class);
 		return data == null ? 0L : data;

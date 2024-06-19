@@ -400,20 +400,35 @@ public class SetupCmd extends CommandBase {
 			this.name = "strikes";
 			this.path = "bot.guild.setup.strikes";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "time", lu.getText(path+".time.help"), true)
-					.setRequiredRange(1, 30)
+				new OptionData(OptionType.INTEGER, "expires_after", lu.getText(path+".expires_after.help"))
+					.setRequiredRange(1, 30),
+				new OptionData(OptionType.INTEGER, "cooldown", lu.getText(path+".cooldown.help"))
+					.setRequiredRange(0, 30)
 			);
 			this.module = CmdModule.STRIKES;
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			Integer hours = event.optInteger("time");
+			if (event.getOptions().size() < 2) {
+				createError(event, path+".no_options");
+				return;
+			}
 
-			bot.getDBUtil().guildSettings.setStrikeExpiresAfter(event.getGuild().getIdLong(), hours);
+			StringBuilder builder = new StringBuilder(lu.getText(event, path+".embed_title"));
+			Integer expiresAfter = event.optInteger("expires_after");
+			if (expiresAfter != null) {
+				bot.getDBUtil().guildSettings.setStrikeExpiresAfter(event.getGuild().getIdLong(), expiresAfter);
+				builder.append(lu.getText(event, path+".expires_changed").formatted(expiresAfter));
+			}
+			Integer cooldown = event.optInteger("cooldown");
+			if (cooldown != null) {
+				bot.getDBUtil().guildSettings.setStrikeCooldown(event.getGuild().getIdLong(), cooldown);
+				builder.append(lu.getText(event, path+".cooldown_changed").formatted(cooldown));
+			}
 
 			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").formatted(hours))
+				.setDescription(builder.toString())
 				.build());
 		}
 

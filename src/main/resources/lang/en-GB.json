@@ -556,13 +556,20 @@
 					}
 				},
 				"strikes": {
-					"help": "Set time (days), after which strikes expires",
-					"usage": "strikes <days>",
-					"time": {
-						"name": "time",
+					"help": "Manage strike settings",
+					"usage": "strikes [expire time] [cooldown time]",
+					"expires_after": {
+						"name": "expires_after",
 						"help": "Enter time in days, after which strikes expires"
 					},
-					"done": "Expiration time set to %d days."
+					"cooldown": {
+						"name": "cooldown",
+						"help": "Enter time in minutes, cooldown between two strikes for the user"
+					},
+					"no_options": "No options provided.",
+					"embed_title": "**Strike settings changed.**\n",
+					"expires_changed": "\n> One strike expires after `%s` day/-s.",
+					"cooldown_changed": "\n> Cooldown between strikes set to `%s` minute/-s."
 				},
 				"dm_inform": {
 					"help": "Set what information is sent to offender when action is performed",
@@ -1211,6 +1218,7 @@
 				},
 				"not_found": "Member not found or input error",
 				"not_self": "You can't select yourself or the bot.",
+				"cooldown": "**Strike cooldown!**\n Please, wait before giving new strike.",
 				"success": "\uD83D\uDEA9 **User received %s.**",
 				"autopunish_title": "Applying punishment for %d strikes",
 				"autopunish_reason": "Autopunish: user has %d active strikes",

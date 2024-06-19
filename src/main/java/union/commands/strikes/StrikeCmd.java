@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.utils.TimeFormat;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
@@ -70,7 +71,18 @@ public class StrikeCmd extends CommandBase {
 			return;
 		}
 
+		// Check if target has strike cooldown
 		Guild guild = Objects.requireNonNull(event.getGuild());
+		int strikeCooldown = bot.getDBUtil().getGuildSettings(guild).getStrikeCooldown();
+		if (strikeCooldown > 0) {
+			Instant lastAddition = bot.getDBUtil().strike.getLastAddition(guild.getIdLong(), tm.getIdLong());
+			if (lastAddition != null && lastAddition.isAfter(Instant.now().minus(strikeCooldown, ChronoUnit.MINUTES))) {
+				// Cooldown active
+				editError(event, path+".cooldown", "Retry %s".formatted(TimeFormat.RELATIVE.format(lastAddition.plus(strikeCooldown, ChronoUnit.MINUTES))));
+				return;
+			}
+		}
+
 		String reason = event.optString("reason");
 		Integer strikeAmount = event.optInteger("severity", 1);
 		CaseType type = CaseType.byType(20 + strikeAmount);
@@ -114,7 +126,7 @@ public class StrikeCmd extends CommandBase {
 		if (actions.isEmpty()) return null;
 		String data = punishActions.getRight();
 
-		// Check if user can interact and target is not server's moderator or higher
+		// Check if user can interact and target is not automod exception or higher
 		if (!guild.getSelfMember().canInteract(target)) return null;
 		if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.ALL)) return null;
 

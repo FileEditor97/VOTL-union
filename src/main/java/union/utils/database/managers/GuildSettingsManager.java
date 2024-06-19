@@ -23,8 +23,9 @@ import static union.utils.CastUtil.resolveOrDefault;
 public class GuildSettingsManager extends LiteDBBase {
 
 	private final Set<String> columns = Set.of(
-		"color", "lastWebhookId", "appealLink", "reportChannelId", "strikeExpires", "modulesOff",
-		"anticrash", "anticrashPing", "informBan", "informKick", "informMute", "informStrike", "informDelstrike"
+		"color", "lastWebhookId", "appealLink", "reportChannelId",
+		"strikeExpires", "strikeCooldown", "modulesOff", "anticrash", "anticrashPing",
+		"informBan", "informKick", "informMute", "informStrike", "informDelstrike"
 	);
 
 	// Cache
@@ -88,6 +89,11 @@ public class GuildSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, strikeExpires) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET strikeExpires=%<d".formatted(table, guildId, expiresAfter));
 	}
 
+	public void setStrikeCooldown(long guildId, int cooldown) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, strikeCooldown) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET strikeCooldown=%<d".formatted(table, guildId, cooldown));
+	}
+
 	public void setModuleDisabled(long guildId, int modulesOff) {
 		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, modulesOff) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET modulesOff=%<d".formatted(table, guildId, modulesOff));
@@ -140,7 +146,7 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	public static class GuildSettings {
 		private final Long lastWebhookId, reportChannelId;
-		private final int color, strikeExpires, modulesOff;
+		private final int color, strikeExpires, strikeCooldown, modulesOff;
 		private final String appealLink, anticrashPing;
 		private final boolean anticrash;
 		private final ModerationInformLevel informBan, informKick, informMute, informStrike, informDelstrike;
@@ -151,6 +157,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.appealLink = null;
 			this.reportChannelId = null;
 			this.strikeExpires = 7;
+			this.strikeCooldown = 0;
 			this.modulesOff = 0;
 			this.anticrash = false;
 			this.anticrashPing = null;
@@ -167,6 +174,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.appealLink = getOrDefault(data.get("appealLink"), null);
 			this.reportChannelId = getOrDefault(data.get("reportChannelId"), null);
 			this.strikeExpires = getOrDefault(data.get("strikeExpires"), 7);
+			this.strikeCooldown = getOrDefault(data.get("strikeCooldown"), 0);
 			this.modulesOff = getOrDefault(data.get("modulesOff"), 0);
 			this.anticrash = getOrDefault(data.get("anticrash"), 0) == 1;
 			this.anticrashPing = getOrDefault(data.get("anticrashPing"), null);
@@ -195,6 +203,10 @@ public class GuildSettingsManager extends LiteDBBase {
 
 		public int getStrikeExpires() {
 			return strikeExpires;
+		}
+
+		public int getStrikeCooldown() {
+			return strikeCooldown;
 		}
 
 		public int getModulesOff() {

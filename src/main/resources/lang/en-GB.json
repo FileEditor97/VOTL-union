@@ -450,8 +450,8 @@
 			"message": {
 				"help": "Send text message",
 				"usage": "message <Channel ID> <text>",
-				"channel": {
-					"name": "channel",
+				"channel_id": {
+					"name": "channel_id",
 					"help": "Enter channel ID"
 				},
 				"content": {
@@ -1419,7 +1419,7 @@
 				},
 				"modify": {
 					"help": "Modify Group settings",
-					"usage": "modify <Group> [name] [appeal server ID] [invite link]",
+					"usage": "modify <Group> [name] [appeal server ID] [invite link] [verify]",
 					"group_owned": {
 						"name": "group_owned",
 						"help": "Select Group"

@@ -18,7 +18,7 @@ public class MessageCmd extends CommandBase {
 		this.name = "message";
 		this.path = "bot.owner.message";
 		this.options = List.of(
-			new OptionData(OptionType.STRING, "channel_id", lu.getText(path+".channel.help"), true),
+			new OptionData(OptionType.STRING, "channel_id", lu.getText(path+".channel_id.help"), true),
 			new OptionData(OptionType.STRING, "content", lu.getText(path+".content.help"), true)
 		);
 		this.category = CmdCategory.OWNER;

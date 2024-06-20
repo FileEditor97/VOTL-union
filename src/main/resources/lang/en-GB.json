@@ -1405,7 +1405,7 @@
 					"embed_value": "Select server from the list below to be removed from Group `%s`.",
 					"done": "Successfully removed server __%s__ from Group `%s`."
 				},
-				"modify-group": {
+				"modify": {
 					"help": "Modify Group settings",
 					"usage": "modify <Group> [name] [appeal server ID] [invite link]",
 					"group_owned": {
@@ -1424,6 +1424,10 @@
 						"name": "invite",
 						"help": "Enter this server invite link for sub-server verification"
 					},
+					"enable_verification": {
+						"name": "enable_verification",
+						"help": "Enable verification in member servers? Joined user must complete verification in the main server."
+					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"only_one_change": "Only one group parameter can be changed at this time.",
@@ -1431,11 +1435,12 @@
 					"name_change": "Renamed to `%s`.",
 					"appeal_change": "Appeal server ID set to `%s`.",
 					"invite_change": "This server invite link set to `%s`.",
+					"verify_change": "Verification enabled: %s",
 					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"
 				},
 				"manage": {
 					"help": "Manage group member's settings",
-					"usage": "manage <Group> [can manage?] [enable verify]",
+					"usage": "manage <Group> [can manage?]",
 					"group_owned": {
 						"name": "group_owned",
 						"help": "Select Group that this server owns"
@@ -1443,10 +1448,6 @@
 					"manage": {
 						"name": "manage",
 						"help": "Can selected server perform action in this Group? (false)"
-					},
-					"enable_verification": {
-						"name": "enable_verification",
-						"help": "Enable verification in selected server? Joined user must complete verification in the main server."
 					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
@@ -1456,7 +1457,6 @@
 					"embed_title": "Server",
 					"embed_value": "Select server from the list below.",
 					"manage_change": "\n> Can manage this Group: %s",
-					"verify_change": "\n> Verification enabled: %s",
 					"done": "Options changed for server __%s__ in Group `%s`."
 				},
 				"view": {
@@ -1473,7 +1473,8 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"embed_title": "Group '%s' (#%s)",
-					"embed_value": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOthers can join: %s",
+					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification enabled: %s",
+					"embed_short": "Owner: %s (`%s`)\nGroup size: %d server/-s",
 					"embed_guilds": "Server name | size | ID",
 					"embed_groups": "Group name | #ID",
 					"embed_owned": "Owned Groups",

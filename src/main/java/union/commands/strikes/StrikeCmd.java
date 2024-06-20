@@ -17,6 +17,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.PunishActions;
 import union.objects.constants.CmdCategory;
+import union.objects.constants.Constants;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.message.TimeUtil;
 
@@ -78,7 +79,10 @@ public class StrikeCmd extends CommandBase {
 			Instant lastAddition = bot.getDBUtil().strike.getLastAddition(guild.getIdLong(), tm.getIdLong());
 			if (lastAddition != null && lastAddition.isAfter(Instant.now().minus(strikeCooldown, ChronoUnit.MINUTES))) {
 				// Cooldown active
-				editError(event, path+".cooldown", "Retry %s".formatted(TimeFormat.RELATIVE.format(lastAddition.plus(strikeCooldown, ChronoUnit.MINUTES))));
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_FAILURE)
+					.setDescription(lu.getText(event, path+".cooldown").formatted(TimeFormat.RELATIVE.format(lastAddition.plus(strikeCooldown, ChronoUnit.MINUTES))))
+					.build()
+				);
 				return;
 			}
 		}

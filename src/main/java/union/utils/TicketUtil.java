@@ -64,7 +64,11 @@ public class TicketUtil {
 						bot.JDA.retrieveUserById(authorId).queue(user -> {
 							user.openPrivateChannel().queue(pm -> {
 								MessageEmbed embed = bot.getLogEmbedUtil().ticketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
-								pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+								if (file == null) {
+									pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+								} else {
+									pm.sendMessageEmbeds(embed).setFiles(file).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+								}
 							});
 						});
 

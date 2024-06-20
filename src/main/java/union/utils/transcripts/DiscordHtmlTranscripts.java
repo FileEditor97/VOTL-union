@@ -54,39 +54,12 @@ public class DiscordHtmlTranscripts {
         return instance;
     }
 
-    /**
-     * Creates a transcript from a {@link GuildMessageChannel} and returns a {@link FileUpload}.
-     * <br><br>
-     *
-     * <b>Please make sure that the current logged in account enabled the
-     * {@link net.dv8tion.jda.api.requests.GatewayIntent#MESSAGE_CONTENT MESSAGE_CONTENT}
-     * intent and is not missing following permissions before creating a transcript:</b>
-     * <ul>
-     *     <li>{@link net.dv8tion.jda.api.Permission#VIEW_CHANNEL VIEW_CHANNEL}</li>
-     *     <li>{@link net.dv8tion.jda.api.Permission#MESSAGE_HISTORY MESSAGE_HISTORY}</li>
-     * </ul>
-     * 
-     * @implNote Do not use! As it uses complete().
-     *
-     * @param channel The channel to create a transcript from
-     * @return A {@link FileUpload} to e.g. send the created transcript to a channel
-     *
-     * @throws IOException If the template file can not be found
-     * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException If the current logged in account
-     *         does not have the permission {@link net.dv8tion.jda.api.Permission#MESSAGE_HISTORY MESSAGE_HISTORY}
-     */
-    public FileUpload createTranscript(GuildMessageChannel channel) throws IOException, InsufficientPermissionException {
-        return FileUpload.fromData(
-                generateFromMessages(channel.getIterableHistory().stream().collect(Collectors.toList())),
-                "transcript.html"
-        );
-    }
-
     public void queueCreateTranscript(GuildMessageChannel channel, @NotNull Consumer<FileUpload> action, @NotNull Consumer<? super Throwable> failure) {
         channel.getIterableHistory()
             .deadline(System.currentTimeMillis() + 4000)
             .takeAsync(200)
             .thenAcceptAsync(list -> {
+                if (list.size() < 2) action.accept(null); // Probably one message is from bot and to be ignored.
                 try {
                     action.accept(FileUpload.fromData(generateFromMessages(list), "transcript.html"));
                 } catch(Exception ex) {

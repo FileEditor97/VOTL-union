@@ -11,9 +11,10 @@ public enum RoleType {
 	private final Integer type;
 	private final String path;
 
-	private static final Map<Integer, RoleType> BY_TYPE = new HashMap<Integer, RoleType>();
+	private static final Map<Integer, RoleType> BY_TYPE;
 
 	static {
+		BY_TYPE = new HashMap<>();
 		for (RoleType rt : RoleType.values()) {
 			BY_TYPE.put(rt.getType(), rt);
 		}

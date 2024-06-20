@@ -35,11 +35,6 @@ public class WebhookLogger {
 				.sendMessageEmbeds(embedSupplier.get()).queue();
 	}
 
-	public void sendMessageEmbed(@Nullable Guild guild, LogType type, @NotNull MessageEmbed embed) {
-		if (guild == null) return;
-		sendMessageEmbed(guild.getJDA(), guild.getIdLong(), type, embed);
-	}
-
 	public void sendMessageEmbed(@Nullable Guild guild, LogType type, @NotNull Supplier<MessageEmbed> embedSupplier) {
 		if (guild == null) return;
 		sendMessageEmbed(guild.getJDA(), guild.getIdLong(), type, embedSupplier);

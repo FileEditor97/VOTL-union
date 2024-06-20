@@ -322,7 +322,7 @@ public class GroupCmd extends CommandBase {
 			event.getHook().editOriginalEmbeds(embed).setComponents(rows).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
-					e -> e.getComponentId().equals("menu:remove-guild") && e.getMessageId().equals(msg.getId()),
+					e -> e.getMessageId().equals(msg.getId()),
 					actionMenu -> {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);

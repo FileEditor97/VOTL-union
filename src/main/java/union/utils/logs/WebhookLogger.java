@@ -21,23 +21,11 @@ public class WebhookLogger {
 		this.db = dbUtil;
 	}
 
-	public void sendMessageEmbed(JDA client, long guildId, LogType type, @NotNull MessageEmbed embed) {
-		WebhookData data = db.logs.getLogWebhook(type, guildId);
-		if (data != null)
-			new IncomingWebhookClientImpl(data.getWebhookId(), data.getToken(), client)
-				.sendMessageEmbeds(embed).queue();
-	}
-
 	public void sendMessageEmbed(JDA client, long guildId, LogType type, @NotNull Supplier<MessageEmbed> embedSupplier) {
 		WebhookData data = db.logs.getLogWebhook(type, guildId);
 		if (data != null)
 			new IncomingWebhookClientImpl(data.getWebhookId(), data.getToken(), client)
 				.sendMessageEmbeds(embedSupplier.get()).queue();
-	}
-
-	public void sendMessageEmbed(@Nullable Guild guild, LogType type, @NotNull MessageEmbed embed) {
-		if (guild == null) return;
-		sendMessageEmbed(guild.getJDA(), guild.getIdLong(), type, embed);
 	}
 
 	public void sendMessageEmbed(@Nullable Guild guild, LogType type, @NotNull Supplier<MessageEmbed> embedSupplier) {

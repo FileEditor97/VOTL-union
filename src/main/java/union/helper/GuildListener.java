@@ -114,9 +114,8 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-		long guildId = event.getGuild().getIdLong();
-		helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId -> {
-			if (helper.getDBUtil().group.verifyEnabled(groupId, guildId)) {
+		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> {
+			if (helper.getDBUtil().group.verifyEnabled(groupId)) {
 				// Check if user is verified, else send pm and kick/ban from this server
 				String ownerInvite;
 				if (!helper.getDBUtil().verifyCache.isVerified(event.getUser().getIdLong())
@@ -139,7 +138,7 @@ public class GuildListener extends ListenerAdapter {
 						pm.sendMessage(builder.toString()).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
 
-					event.getMember().kick().reason("NOT VERIFIED! Join main server to verify").queueAfter(4, TimeUnit.SECONDS, done -> {
+					event.getMember().kick().reason("NOT VERIFIED! Join main server to verify").queueAfter(3, TimeUnit.SECONDS, done -> {
 						// Log to master
 						helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and kick");
 					});

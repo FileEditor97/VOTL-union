@@ -1,6 +1,7 @@
 package union.commands.moderation;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -291,20 +292,37 @@ public class GroupCmd extends CommandBase {
 				.setTitle(lu.getText(event, path+".embed_title"))
 				.setDescription(lu.getText(event, path+".embed_value").formatted(groupName))
 				.build();
-			
-			StringSelectMenu menu = StringSelectMenu.create("menu:remove-guild")
-				.setPlaceholder("Select")
-				.setMaxValues(1)
-				.addOptions(guilds.stream()
-						.map(guild -> SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId()))
-						.limit(25)
-						.toList()
-				)
-				.build();
-			event.getHook().editOriginalEmbeds(embed).setActionRow(menu).queue(msg -> {
+
+			List<ActionRow> rows = new ArrayList<>();
+			List<SelectOption> options = new ArrayList<>();
+			for (Guild guild : guilds) {
+				options.add(SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId()));
+				if (options.size() >= 25) {
+					rows.add(ActionRow.of(
+							StringSelectMenu.create("menu:select-guild:"+(rows.size()+1))
+								.setPlaceholder("Select")
+								.setMaxValues(1)
+								.addOptions(options)
+								.build()
+						)
+					);
+					options = new ArrayList<>();
+				}
+			}
+			if (!options.isEmpty()) {
+				rows.add(ActionRow.of(
+						StringSelectMenu.create("menu:select-guild:"+(rows.size()+1))
+							.setPlaceholder("Select")
+							.setMaxValues(1)
+							.addOptions(options)
+							.build()
+					)
+				);
+			}
+			event.getHook().editOriginalEmbeds(embed).setComponents(rows).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
-					e -> e.getComponentId().equals("menu:remove-guild") && e.getMessageId().equals(msg.getId()),
+					e -> e.getMessageId().equals(msg.getId()),
 					actionMenu -> {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
@@ -326,7 +344,7 @@ public class GroupCmd extends CommandBase {
 					TimeUnit.SECONDS,
 					() -> {
 						event.getHook().editOriginalComponents(
-							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
+							ActionRow.of(StringSelectMenu.create("timed_out").setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 						).queue();
 					}
 				);
@@ -338,13 +356,14 @@ public class GroupCmd extends CommandBase {
 		public Modify(App bot) {
 			this.bot = bot;
 			this.lu = bot.getLocaleUtil();
-			this.name = "modify-group";
-			this.path = "bot.moderation.group.modify-group";
+			this.name = "modify";
+			this.path = "bot.moderation.group.modify";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
 				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help")).setMaxLength(120),
 				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help")).setRequiredLength(12, 20),
-				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"))
+				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help")),
+				new OptionData(OptionType.BOOLEAN, "enable_verification", lu.getText(path+".enable_verification.help"))
 			);
 		}
 
@@ -438,6 +457,18 @@ public class GroupCmd extends CommandBase {
 					);
 				}, failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
 			}
+			else if (event.hasOption("enable_verification")) {
+				boolean verify = event.optBoolean("enable_verification");
+				bot.getDBUtil().group.setVerify(groupId, verify);
+
+				String groupName = bot.getDBUtil().group.getName(groupId);
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done").formatted(
+						groupName, lu.getText(event, path+".verify_change").formatted(verify ? Constants.SUCCESS : Constants.FAILURE), groupId
+					))
+					.build()
+				);
+			}
 		}
 
 		private boolean isValidURL(String urlString) {
@@ -460,8 +491,8 @@ public class GroupCmd extends CommandBase {
 			this.path = "bot.moderation.group.manage";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
-				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help")),
-				new OptionData(OptionType.BOOLEAN, "enable_verification", lu.getText(path+".enable_verification.help"))
+				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help"))
+//				new OptionData(OptionType.BOOLEAN, "enable_verification", lu.getText(path+".enable_verification.help"))
 			);
 		}
 
@@ -483,11 +514,11 @@ public class GroupCmd extends CommandBase {
 			if (event.hasOption("manage")) canManage = event.optBoolean("manage");
 			else canManage = null;
 
-			final Boolean verify;
-			if (event.hasOption("enable_verification")) verify = event.optBoolean("enable_verification");
-			else verify = null;
+//			final Boolean verify;
+//			if (event.hasOption("enable_verification")) verify = event.optBoolean("enable_verification");
+//			else verify = null;
 
-			if (canManage==null && verify==null) {
+			if (canManage==null) {
 				editError(event, path+".no_options");
 				return;
 			}
@@ -509,20 +540,38 @@ public class GroupCmd extends CommandBase {
 				.setTitle(lu.getText(event, path+".embed_title"))
 				.setDescription(lu.getText(event, path+".embed_value"))
 				.build();
-			
-			StringSelectMenu menu = StringSelectMenu.create("menu:select-guild")
-				.setPlaceholder("Select")
-				.setMaxValues(1)
-				.addOptions(guilds.stream()
-						.map(guild -> SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId()))
-						.limit(25)
-						.toList()
-				)
-				.build();
-			event.getHook().editOriginalEmbeds(embed).setActionRow(menu).queue(msg -> {
+
+			List<ActionRow> rows = new ArrayList<>();
+			List<SelectOption> options = new ArrayList<>();
+			for (Guild guild : guilds) {
+				options.add(SelectOption.of("%s (%s)".formatted(guild.getName(), guild.getId()), guild.getId()));
+				if (options.size() >= 25) {
+					rows.add(ActionRow.of(
+						StringSelectMenu.create("menu:select-guild:"+(rows.size()+1))
+							.setPlaceholder("Select")
+							.setMaxValues(1)
+							.addOptions(options)
+							.build()
+						)
+					);
+					options = new ArrayList<>();
+				}
+			}
+			if (!options.isEmpty()) {
+				rows.add(ActionRow.of(
+					StringSelectMenu.create("menu:select-guild:"+(rows.size()+1))
+						.setPlaceholder("Select")
+						.setMaxValues(1)
+						.addOptions(options)
+						.build()
+					)
+				);
+			}
+
+			event.getHook().editOriginalEmbeds(embed).setComponents(rows).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
-					e -> e.getComponentId().equals("menu:select-guild") && e.getMessageId().equals(msg.getId()),
+					e -> e.getMessageId().equals(msg.getId()),
 					actionMenu -> {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
@@ -537,10 +586,10 @@ public class GroupCmd extends CommandBase {
 							bot.getDBUtil().group.setManage(groupId, targetId, canManage);
 							builder.append(lu.getText(event, path+".manage_change").formatted(canManage ? Constants.SUCCESS : Constants.FAILURE));
 						}
-						if (verify!=null) {
-							bot.getDBUtil().group.setVerify(groupId, targetId, verify);
-							builder.append(lu.getText(event, path+".verify_change").formatted(verify ? Constants.SUCCESS : Constants.FAILURE));
-						}
+//						if (verify!=null) {
+//							bot.getDBUtil().group.setVerify(groupId, targetId, verify);
+//							builder.append(lu.getText(event, path+".verify_change").formatted(verify ? Constants.SUCCESS : Constants.FAILURE));
+//						}
 
 						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setDescription(builder.toString()).build()
@@ -550,7 +599,7 @@ public class GroupCmd extends CommandBase {
 					TimeUnit.SECONDS,
 					() -> {
 						event.getHook().editOriginalComponents(
-							ActionRow.of(menu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
+							ActionRow.of(StringSelectMenu.create("timed_out").setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build())
 						).queue();
 					}
 				);
@@ -594,8 +643,11 @@ public class GroupCmd extends CommandBase {
 					.setAuthor(lu.getText(event, path+".embed_title").formatted(
 						groupName, groupId
 					))
-					.setDescription(lu.getText(event, path+".embed_value").formatted(
-						event.getGuild().getName(), event.getGuild().getId(), groupSize, Constants.SUCCESS
+					.setDescription(lu.getText(event, path+".embed_full").formatted(
+						event.getGuild().getName(), event.getGuild().getId(), groupSize,
+						Optional.ofNullable(bot.getDBUtil().group.getSelfInvite(groupId)).orElse("-"),
+						Optional.ofNullable(bot.getDBUtil().group.getAppealGuildId(groupId)).map(String::valueOf).orElse("-"),
+						bot.getDBUtil().group.verifyEnabled(groupId) ? Constants.SUCCESS : Constants.FAILURE
 					));
 				
 				if (groupSize > 0) {
@@ -637,8 +689,8 @@ public class GroupCmd extends CommandBase {
 
 				EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 					.setAuthor(lu.getText(event, "logger.groups.title").formatted(groupName, groupId))
-					.setDescription(lu.getText(event, path+".embed_value").formatted(
-						masterName, ownerId, groupSize, Constants.SUCCESS
+					.setDescription(lu.getText(event, path+".embed_short").formatted(
+						masterName, ownerId, groupSize
 					));
 				createReplyEmbed(event, builder.build());
 			} else {

@@ -446,6 +446,18 @@
 					"name": "date",
 					"help": "Formated as yyyy-MM-dd"
 				}
+			},
+			"message": {
+				"help": "Send text message",
+				"usage": "message <Channel ID> <text>",
+				"channel_id": {
+					"name": "channel_id",
+					"help": "Enter channel ID"
+				},
+				"content": {
+					"name": "content",
+					"help": "Enter text"
+				}
 			}
 		},
 		"guild": {
@@ -556,13 +568,20 @@
 					}
 				},
 				"strikes": {
-					"help": "Set time (days), after which strikes expires",
-					"usage": "strikes <days>",
-					"time": {
-						"name": "time",
+					"help": "Manage strike settings",
+					"usage": "strikes [expire time] [cooldown time]",
+					"expires_after": {
+						"name": "expires_after",
 						"help": "Enter time in days, after which strikes expires"
 					},
-					"done": "Expiration time set to %d days."
+					"cooldown": {
+						"name": "cooldown",
+						"help": "Enter time in minutes, cooldown between two strikes for the user"
+					},
+					"no_options": "No options provided.",
+					"embed_title": "**Strike settings changed.**\n",
+					"expires_changed": "\n> One strike expires after `%s` day/-s.",
+					"cooldown_changed": "\n> Cooldown between strikes set to `%s` minute/-s."
 				},
 				"dm_inform": {
 					"help": "Set what information is sent to offender when action is performed",
@@ -1211,6 +1230,7 @@
 				},
 				"not_found": "Member not found or input error",
 				"not_self": "You can't select yourself or the bot.",
+				"cooldown": "**Strike cooldown!**\n Please, wait before giving new strike.",
 				"success": "\uD83D\uDEA9 **User received %s.**",
 				"autopunish_title": "Applying punishment for %d strikes",
 				"autopunish_reason": "Autopunish: user has %d active strikes",
@@ -1397,9 +1417,9 @@
 					"embed_value": "Select server from the list below to be removed from Group `%s`.",
 					"done": "Successfully removed server __%s__ from Group `%s`."
 				},
-				"modify-group": {
+				"modify": {
 					"help": "Modify Group settings",
-					"usage": "modify <Group> [name] [appeal server ID] [invite link]",
+					"usage": "modify <Group> [name] [appeal server ID] [invite link] [verify]",
 					"group_owned": {
 						"name": "group_owned",
 						"help": "Select Group"
@@ -1416,6 +1436,10 @@
 						"name": "invite",
 						"help": "Enter this server invite link for sub-server verification"
 					},
+					"enable_verification": {
+						"name": "enable_verification",
+						"help": "Enable verification in member servers? Joined user must complete verification in the main server."
+					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"only_one_change": "Only one group parameter can be changed at this time.",
@@ -1423,11 +1447,12 @@
 					"name_change": "Renamed to `%s`.",
 					"appeal_change": "Appeal server ID set to `%s`.",
 					"invite_change": "This server invite link set to `%s`.",
+					"verify_change": "Verification enabled: %s",
 					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"
 				},
 				"manage": {
 					"help": "Manage group member's settings",
-					"usage": "manage <Group> [can manage?] [enable verify]",
+					"usage": "manage <Group> [can manage?]",
 					"group_owned": {
 						"name": "group_owned",
 						"help": "Select Group that this server owns"
@@ -1435,10 +1460,6 @@
 					"manage": {
 						"name": "manage",
 						"help": "Can selected server perform action in this Group? (false)"
-					},
-					"enable_verification": {
-						"name": "enable_verification",
-						"help": "Enable verification in selected server? Joined user must complete verification in the main server."
 					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
@@ -1448,7 +1469,6 @@
 					"embed_title": "Server",
 					"embed_value": "Select server from the list below.",
 					"manage_change": "\n> Can manage this Group: %s",
-					"verify_change": "\n> Verification enabled: %s",
 					"done": "Options changed for server __%s__ in Group `%s`."
 				},
 				"view": {
@@ -1465,7 +1485,8 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"embed_title": "Group '%s' (#%s)",
-					"embed_value": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOthers can join: %s",
+					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification enabled: %s",
+					"embed_short": "Owner: %s (`%s`)\nGroup size: %d server/-s",
 					"embed_guilds": "Server name | size | ID",
 					"embed_groups": "Group name | #ID",
 					"embed_owned": "Owned Groups",
@@ -2248,19 +2269,24 @@
 				},
 				"automation": {
 					"help": "Manage automation settings for tickets",
-					"usage": "automation [time] [author left]",
+					"usage": "automation [autoclose time] [author left] [time to reply]",
 					"autoclose": {
 						"name": "autoclose",
-						"help": "Asks ticket's author if ticket can be closed. Enter 0 to disable, or time in hours."
+						"help": "Asks ticket's author if ticket can be closed. 0 to disable / hours"
 					},
 					"author_left": {
 						"name": "author_left",
 						"help": "When ticket's author leaves server, should created ticket be closed?"
 					},
+					"reply_time": {
+						"name": "reply_time",
+						"help": "For how long to wait for user to reply in new ticket. 0 to disable wait / hours"
+					},
 					"no_options": "No tickets settings to be updated.",
 					"embed_title": "Updated tickets settings.",
-					"changed_autoclose": "\n> Autoclose time set to {time} hour/-s.",
-					"changed_left": "\n> When ticket's author leaves, ticket will be closed: {left}."
+					"changed_autoclose": "\n> Autoclose time set to %s hour/-s.",
+					"changed_left": "\n> When ticket's author leaves, ticket will be closed: %s.",
+					"changed_reply": "\n> Reply time set to %s hour/-s."
 				}
 			},
 			"close": {

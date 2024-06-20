@@ -529,7 +529,9 @@ public class TicketPanelCmd extends CommandBase {
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "autoclose", lu.getText(path+".autoclose.help"))
 					.setRequiredRange(0, 72),
-				new OptionData(OptionType.BOOLEAN, "author_left", lu.getText(path+".author_left.help"))
+				new OptionData(OptionType.BOOLEAN, "author_left", lu.getText(path+".author_left.help")),
+				new OptionData(OptionType.INTEGER, "reply_time", lu.getText(path+".reply_time.help"))
+					.setRequiredRange(0, 24)
 			);
 			this.accessLevel = CmdAccessLevel.ADMIN;
 		}
@@ -543,12 +545,17 @@ public class TicketPanelCmd extends CommandBase {
 			if (event.hasOption("autoclose")) {
 				int time = event.optInteger("autoclose");
 				bot.getDBUtil().ticketSettings.setAutocloseTime(guildId, time);
-				response.append(lu.getText(event, path+".changed_autoclose").replace("{time}", String.valueOf(time)));
+				response.append(lu.getText(event, path+".changed_autoclose").formatted(time));
 			}
 			if (event.hasOption("author_left")) {
 				boolean left = event.optBoolean("author_left");
 				bot.getDBUtil().ticketSettings.setAutocloseLeft(guildId, left);
-				response.append(lu.getText(event, path+".changed_left").replace("{left}", left ? Constants.SUCCESS : Constants.FAILURE));
+				response.append(lu.getText(event, path+".changed_left").formatted(left ? Constants.SUCCESS : Constants.FAILURE));
+			}
+			if (event.hasOption("reply_time")) {
+				int time = event.optInteger("reply_time");
+				bot.getDBUtil().ticketSettings.setTimeToReply(guildId, time);
+				response.append(lu.getText(event, path+".changed_reply").formatted(time));
 			}
 			
 			if (response.isEmpty()) {

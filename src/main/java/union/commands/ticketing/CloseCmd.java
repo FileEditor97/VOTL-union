@@ -1,5 +1,7 @@
 package union.commands.ticketing;
 
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -7,12 +9,17 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
+import java.util.List;
+
 public class CloseCmd extends CommandBase {
 
 	public CloseCmd(App bot) {
 		super(bot);
 		this.name = "close";
 		this.path = "bot.ticketing.close";
+		this.options = List.of(
+			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help")).setMaxLength(200)
+		);
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
 	}
@@ -31,7 +38,11 @@ public class CloseCmd extends CommandBase {
 			event.getChannel().delete().queue();
 			return;
 		}
-		String reason = bot.getDBUtil().ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support";
+
+		String reason = event.optString(
+			"reason",
+			bot.getDBUtil().ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support"
+		);
 		event.replyEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown"))
 			.build()

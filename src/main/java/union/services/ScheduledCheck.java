@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import net.dv8tion.jda.api.entities.Message;
 import union.App;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
@@ -88,7 +89,7 @@ public class ScheduledCheck {
 				}
 			});
 
-			db.ticket.getExpiredTickets().forEach(channelId -> {
+			db.ticket.getCloseMarkedTickets().forEach(channelId -> {
 				GuildChannel channel = bot.JDA.getGuildChannelById(channelId);
 				if (channel == null) {
 					bot.getDBUtil().ticket.forceCloseTicket(channelId);
@@ -98,6 +99,29 @@ public class ScheduledCheck {
 					logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 					db.ticket.setRequestStatus(channelId, -1L);
 				});
+			});
+
+			db.ticket.getReplyExpiredTickets().forEach(channelId -> {
+				GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
+				if (channel == null) {
+					bot.getDBUtil().ticket.forceCloseTicket(channelId);
+					return;
+				}
+				channel.getIterableHistory()
+					.takeAsync(1)
+					.thenAcceptAsync(list -> {
+						Message msg = list.get(0);
+						if (msg.getAuthor().isBot()) {
+							// Last message is bot - close ticket
+							bot.getTicketUtil().closeTicket(channelId, null, "No activity", failure -> {
+								logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
+								db.ticket.setWaitTime(channelId, -1L);
+							});
+						} else {
+							// There is human reply
+							db.ticket.setWaitTime(channelId, -1L);
+						}
+					});
 			});
 		} catch (Throwable t) {
 			logger.error("Exception caught during tickets checks.", t);

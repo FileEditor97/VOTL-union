@@ -331,29 +331,29 @@ public class LoggingUtil {
 			sendLog(event.getGuild(), type, () -> logUtil.groupOwnerAddedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, targetName, targetId, groupId, name));
 		}
 
-		public void onGuildJoined(SlashCommandEvent event, Integer groupId, String name) {
-			long ownerId = db.group.getOwner(groupId);
-			Guild owner = bot.JDA.getGuildById(ownerId);
-			String ownerIcon = owner.getIconUrl();
-
-			// Send log to added server
-			sendLog(event.getGuild(), type, () -> logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
-
-			// Master log
-			sendLog(owner, type, () -> logUtil.groupOwnerJoinedEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
-		}
-
-		public void onGuildLeft(SlashCommandEvent event, Integer groupId, String name) {
-			long ownerId = db.group.getOwner(groupId);
-			Guild owner = bot.JDA.getGuildById(ownerId);
-			String ownerIcon = owner.getIconUrl();
-
-			// Send log to removed server
-			sendLog(event.getGuild(), type, () -> logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
-
-			// Master log
-			sendLog(owner, type, () -> logUtil.groupOwnerLeftEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
-		}
+//		public void onGuildJoined(SlashCommandEvent event, Integer groupId, String name) {
+//			long ownerId = db.group.getOwner(groupId);
+//			Guild owner = bot.JDA.getGuildById(ownerId);
+//			String ownerIcon = owner.getIconUrl();
+//
+//			// Send log to added server
+//			sendLog(event.getGuild(), type, () -> logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
+//
+//			// Master log
+//			sendLog(owner, type, () -> logUtil.groupOwnerJoinedEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
+//		}
+//
+//		public void onGuildLeft(SlashCommandEvent event, Integer groupId, String name) {
+//			long ownerId = db.group.getOwner(groupId);
+//			Guild owner = bot.JDA.getGuildById(ownerId);
+//			String ownerIcon = owner.getIconUrl();
+//
+//			// Send log to removed server
+//			sendLog(event.getGuild(), type, () -> logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
+//
+//			// Master log
+//			sendLog(owner, type, () -> logUtil.groupOwnerLeftEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
+//		}
 
 		public void onGuildRemoved(SlashCommandEvent event, Guild target, Integer groupId, String name) {
 			long ownerId = event.getGuild().getIdLong();
@@ -458,9 +458,15 @@ public class LoggingUtil {
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 			try {
-				client.sendMessageEmbeds(
-					logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
-				).addFiles(file).queue();
+				if (file == null) {
+					client.sendMessageEmbeds(
+						logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
+					).queue();
+				} else {
+					client.sendMessageEmbeds(
+						logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
+					).addFiles(file).queue();
+				}
 			} catch (Exception ignored) {}
 		}
 
@@ -686,7 +692,7 @@ public class LoggingUtil {
 						.addFiles(fileUpload)
 						.queue();
 					return;
-				}	
+				}
 			}
 			client.sendMessageEmbeds(logUtil.messageBulkDelete(guild.getLocale(), channel.getIdLong(), count, modId)).queue();			
 		}
@@ -732,14 +738,17 @@ public class LoggingUtil {
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				baos.write("Channel ID: %s\n\n".formatted(channelId).getBytes());
+				int cached = 0;
 				for (MessageData data : messages) {
 					if (data.isEmpty()) continue;
+					cached++;
 					baos.write("[%s (%s)]:\n".formatted(data.getAuthorName(), data.getAuthorId()).getBytes());
 					if (data.getAttachment() != null)
 						baos.write("[Attachment: %s]\n".formatted(data.getAttachment().getFileName()).getBytes(StandardCharsets.UTF_8));
 					baos.write(data.getContent().getBytes(StandardCharsets.UTF_8));
 					baos.write("\n\n-------===-------\n\n".getBytes());
 				}
+				if (cached == 0) return null;
 				return FileUpload.fromData(baos.toByteArray(), channelId+"-"+Instant.now().toEpochMilli()+".txt");
 			} catch (IOException ex) {
 				bot.getAppLogger().error("Error at bulk deleted messages content upload.", ex);

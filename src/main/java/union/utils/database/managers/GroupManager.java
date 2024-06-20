@@ -69,6 +69,15 @@ public class GroupManager extends LiteDBBase {
 		return selectOne("SELECT selfInvite FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "selfInvite", String.class);
 	}
 
+	public boolean verifyEnabled(int groupId) {
+		Integer data = selectOne("SELECT memberVerify FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "memberVerify", Integer.class);
+		return data != null && data == 1;
+	}
+
+	public void setVerify(int groupId, boolean enabled) {
+		execute("UPDATE %s SET memberVerify=%d WHERE (groupId=%d)".formatted(groups, enabled ? 1 : 0, groupId));
+	}
+
 	// groupMembers table
 	public void add(int groupId, long guildId, Boolean canManage) {
 		execute("INSERT INTO %s(groupId, guildId, canManage) VALUES (%d, %d, %d)".formatted(members, groupId, guildId, canManage ? 1 : 0));
@@ -117,15 +126,6 @@ public class GroupManager extends LiteDBBase {
 
 	public void setManage(int groupId, long guildId, boolean canManage) {
 		execute("UPDATE %s SET canManage=%d WHERE (groupId=%d AND guildId=%d)".formatted(members, canManage ? 1 : 0, groupId, guildId));
-	}
-
-	public boolean verifyEnabled(int groupId, long guildId) {
-		Integer data = selectOne("SELECT requireVerify FROM %s WHERE (groupId=%d AND guildId=%d)".formatted(members, groupId, guildId), "requireVerify", Integer.class);
-		return data != null && data == 1;
-	}
-
-	public void setVerify(int groupId, long guildId, boolean enabled) {
-		execute("UPDATE %s SET requireVerify=%d WHERE (groupId=%d AND guildId=%d)".formatted(members, enabled ? 1 : 0, groupId, guildId));
 	}
 
 }

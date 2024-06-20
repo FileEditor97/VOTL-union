@@ -19,13 +19,12 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
-import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class GameStrikeCmd extends CommandBase {
 
-	private final Duration cooldown = Duration.ofMinutes(5);
 	private final long denyPerms = Permission.getRaw(Permission.MESSAGE_SEND, Permission.MESSAGE_SEND_IN_THREADS, Permission.MESSAGE_ADD_REACTION, Permission.CREATE_PUBLIC_THREADS);
 
 	public GameStrikeCmd(App bot) {
@@ -60,11 +59,14 @@ public class GameStrikeCmd extends CommandBase {
 		}
 
 		long channelId = channel.getIdLong();
-		Instant lastUpdate = bot.getDBUtil().games.getLastUpdate(channelId, tm.getIdLong());
-		if (lastUpdate != null && lastUpdate.isAfter(Instant.now().minus(cooldown))) {
-			// Cooldown between strikes
-			createError(event, path+".cooldown", "Wait - %s".formatted(TimeFormat.TIME_LONG.format(lastUpdate.plus(cooldown))));
-			return;
+		int strikeCooldown = bot.getDBUtil().getGuildSettings(event.getGuild()).getStrikeCooldown();
+		if (strikeCooldown > 0) {
+			Instant lastUpdate = bot.getDBUtil().games.getLastUpdate(channelId, tm.getIdLong());
+			if (lastUpdate != null && lastUpdate.isAfter(Instant.now().minus(strikeCooldown, ChronoUnit.MINUTES))) {
+				// Cooldown between strikes
+				createError(event, path+".cooldown", "Retry %s".formatted(TimeFormat.RELATIVE.format(lastUpdate.plus(strikeCooldown, ChronoUnit.MINUTES))));
+				return;
+			}
 		}
 
 		String reason = event.optString("reason");

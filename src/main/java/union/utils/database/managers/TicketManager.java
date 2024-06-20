@@ -1,6 +1,7 @@
 package union.utils.database.managers;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,13 +21,14 @@ public class TicketManager extends LiteDBBase {
 	 */
 
 	// add new ticket
-	public void addRoleTicket(int ticketId, String userId, String guildId, String channelId, String roleIds) {
-		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, roleIds) VALUES (%d, %s, %s, %s, 0, %s)"
-			.formatted(table, ticketId, userId, guildId, channelId, quote(roleIds)));
+	public void addRoleTicket(int ticketId, String userId, String guildId, String channelId, String roleIds, int replyTime) {
+		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, roleIds, replyWait) VALUES (%d, %s, %s, %s, 0, %s, %d)"
+			.formatted(table, ticketId, userId, guildId, channelId, quote(roleIds), replyTime>0 ? Instant.now().plus(replyTime, ChronoUnit.HOURS).getEpochSecond() : 0));
 	}
 
-	public void addTicket(int ticketId, String userId, String guildId, String channelId, int tagId) {
-		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId) VALUES (%d, %s, %s, %s, %d)".formatted(table, ticketId, userId, guildId, channelId, tagId));
+	public void addTicket(int ticketId, String userId, String guildId, String channelId, int tagId, int replyTime) {
+		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, replyWait) VALUES (%d, %s, %s, %s, %d, %d)"
+			.formatted(table, ticketId, userId, guildId, channelId, tagId, replyTime>0 ? Instant.now().plus(replyTime, ChronoUnit.HOURS).getEpochSecond() : 0));
 	}
 
 	// get last ticket's ID
@@ -74,20 +76,17 @@ public class TicketManager extends LiteDBBase {
 			"channelId", String.class);
 	}
 
-	public int countOpenedByUser(String userId, String guildId, int tagId) {
-		return count("SELECT COUNT(*) FROM %s WHERE (userId=%s AND guildId=%s AND tagId=%s AND closed=0)".formatted(table, userId, guildId, tagId));
-	}
-
-	public int countAllOpenedByUser(String userId, String guildId) {
-		return count("SELECT COUNT(*) FROM %s WHERE (userId=%s AND guildId=%s AND closed=0)".formatted(table, userId, guildId));
-	}
-
 	public List<String> getOpenedChannels() {
 		return select("SELECT channelId FROM %s WHERE (closed=0 AND closeRequested=0)".formatted(table), "channelId", String.class);
 	}
 
-	public List<String> getExpiredTickets() {
+	public List<String> getCloseMarkedTickets() {
 		return select("SELECT channelId FROM %s WHERE (closed=0 AND closeRequested>0 AND closeRequested<=%d)".formatted(table, Instant.now().getEpochSecond()),
+			"channelId", String.class);
+	}
+
+	public List<String> getReplyExpiredTickets() {
+		return select("SELECT channelId FROM %s WHERE (closed=0 AND replyWait>0 AND replyWait<=%d)".formatted(table, Instant.now().getEpochSecond()),
 			"channelId", String.class);
 	}
 
@@ -147,7 +146,10 @@ public class TicketManager extends LiteDBBase {
 	public long getTimeClosing(String channelId) {
 		Long data = selectOne("SELECT closeRequested FROM %s WHERE (channelId=%s);".formatted(table, channelId), "closeRequested", Long.class);
 		return data == null ? 0L : data;
+	}
 
+	public void setWaitTime(String channelId, long time) {
+		execute("UPDATE %s SET replyWait=%d WHERE (channelId=%s)".formatted(table, time, channelId));
 	}
 
 }

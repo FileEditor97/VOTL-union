@@ -552,7 +552,8 @@ public class InteractionListener extends ListenerAdapter {
 		int ticketId = 1 + db.ticket.lastIdByTag(guildId, 0);
 		event.getChannel().asTextChannel().createThreadChannel(lu.getLocalized(event.getGuildLocale(), "ticket.role")+"-"+ticketId, true).setInvitable(false).queue(
 			channel -> {
-				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds));
+				int time = bot.getDBUtil().getTicketSettings(guild).getTimeToReply();
+				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds), time);
 				
 				StringBuilder mentions = new StringBuilder(event.getMember().getAsMention());
 				db.access.getRoles(guildId, CmdAccessLevel.MOD).forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
@@ -760,7 +761,8 @@ public class InteractionListener extends ListenerAdapter {
 		if (tag.getTagType() == 1) {
 			// Thread ticket
 			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).setInvitable(false).queue(channel -> {
-				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);
+				int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
+				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId, time);
 				
 				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
 			},
@@ -780,7 +782,8 @@ public class InteractionListener extends ListenerAdapter {
 			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
 				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
 				.queue(channel -> {
-				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId);
+				int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
+				db.ticket.addTicket(ticketId, user.getId(), guildId, channel.getId(), tagId, time);
 
 				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
 			}, 

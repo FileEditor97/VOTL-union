@@ -77,8 +77,6 @@ public class TicketUtil {
 				closeHandle
 			);
 		}
-		
-
 	}
 
 	public void createTicket(ButtonInteractionEvent event, GuildMessageChannel channel, String mentions, String message) {

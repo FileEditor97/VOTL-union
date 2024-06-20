@@ -410,7 +410,7 @@ public class SetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			if (event.getOptions().size() < 2) {
+			if (event.getOptions().isEmpty()) {
 				createError(event, path+".no_options");
 				return;
 			}

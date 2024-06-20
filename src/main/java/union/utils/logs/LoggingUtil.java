@@ -331,29 +331,29 @@ public class LoggingUtil {
 			sendLog(event.getGuild(), type, () -> logUtil.groupOwnerAddedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, targetName, targetId, groupId, name));
 		}
 
-		public void onGuildJoined(SlashCommandEvent event, Integer groupId, String name) {
-			long ownerId = db.group.getOwner(groupId);
-			Guild owner = bot.JDA.getGuildById(ownerId);
-			String ownerIcon = owner.getIconUrl();
-
-			// Send log to added server
-			sendLog(event.getGuild(), type, () -> logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
-
-			// Master log
-			sendLog(owner, type, () -> logUtil.groupOwnerJoinedEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
-		}
-
-		public void onGuildLeft(SlashCommandEvent event, Integer groupId, String name) {
-			long ownerId = db.group.getOwner(groupId);
-			Guild owner = bot.JDA.getGuildById(ownerId);
-			String ownerIcon = owner.getIconUrl();
-
-			// Send log to removed server
-			sendLog(event.getGuild(), type, () -> logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
-
-			// Master log
-			sendLog(owner, type, () -> logUtil.groupOwnerLeftEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
-		}
+//		public void onGuildJoined(SlashCommandEvent event, Integer groupId, String name) {
+//			long ownerId = db.group.getOwner(groupId);
+//			Guild owner = bot.JDA.getGuildById(ownerId);
+//			String ownerIcon = owner.getIconUrl();
+//
+//			// Send log to added server
+//			sendLog(event.getGuild(), type, () -> logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
+//
+//			// Master log
+//			sendLog(owner, type, () -> logUtil.groupOwnerJoinedEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
+//		}
+//
+//		public void onGuildLeft(SlashCommandEvent event, Integer groupId, String name) {
+//			long ownerId = db.group.getOwner(groupId);
+//			Guild owner = bot.JDA.getGuildById(ownerId);
+//			String ownerIcon = owner.getIconUrl();
+//
+//			// Send log to removed server
+//			sendLog(event.getGuild(), type, () -> logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
+//
+//			// Master log
+//			sendLog(owner, type, () -> logUtil.groupOwnerLeftEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
+//		}
 
 		public void onGuildRemoved(SlashCommandEvent event, Guild target, Integer groupId, String name) {
 			long ownerId = event.getGuild().getIdLong();

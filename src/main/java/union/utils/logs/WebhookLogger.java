@@ -21,13 +21,6 @@ public class WebhookLogger {
 		this.db = dbUtil;
 	}
 
-	public void sendMessageEmbed(JDA client, long guildId, LogType type, @NotNull MessageEmbed embed) {
-		WebhookData data = db.logs.getLogWebhook(type, guildId);
-		if (data != null)
-			new IncomingWebhookClientImpl(data.getWebhookId(), data.getToken(), client)
-				.sendMessageEmbeds(embed).queue();
-	}
-
 	public void sendMessageEmbed(JDA client, long guildId, LogType type, @NotNull Supplier<MessageEmbed> embedSupplier) {
 		WebhookData data = db.logs.getLogWebhook(type, guildId);
 		if (data != null)

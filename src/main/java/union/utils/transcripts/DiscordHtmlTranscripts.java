@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import union.objects.annotation.NotNull;
 
@@ -92,8 +91,6 @@ public class DiscordHtmlTranscripts {
      * @throws IOException If the template file can not be found
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException If the current logged in account
      *         does not have the permission {@link net.dv8tion.jda.api.Permission#MESSAGE_HISTORY MESSAGE_HISTORY}
-     *         
-     * @see #createTranscript(GuildMessageChannel)
      */
     public InputStream generateFromMessages(Collection<Message> messages) throws IOException, InsufficientPermissionException {
         InputStream htmlTemplate = findFile();

@@ -149,6 +149,7 @@ public class App {
 				new ForceAccessCmd(this),
 				new DisableCmd(this),
 				new DebugCmd(this),
+				new MessageCmd(this),
 				// webhook
 				new WebhookCmd(this),
 				// moderation

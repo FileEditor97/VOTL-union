@@ -446,6 +446,18 @@
 					"name": "date",
 					"help": "Formated as yyyy-MM-dd"
 				}
+			},
+			"message": {
+				"help": "Send text message",
+				"usage": "message <Channel ID> <text>",
+				"channel": {
+					"name": "channel",
+					"help": "Enter channel ID"
+				},
+				"content": {
+					"name": "content",
+					"help": "Enter text"
+				}
 			}
 		},
 		"guild": {

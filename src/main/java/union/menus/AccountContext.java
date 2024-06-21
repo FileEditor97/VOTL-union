@@ -29,7 +29,7 @@ public class AccountContext extends UserContextMenu {
 
 		long userId = user.getIdLong();
 		Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
-		if (steam64 == null) {
+		if (steam64 == null || steam64 == 0L) {
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.verification.account.not_found_steam", "Received: "+userId)).queue();
 			return;
 		}

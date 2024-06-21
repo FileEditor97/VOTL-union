@@ -44,7 +44,7 @@ public class AccountCmd extends CommandBase {
 			long userId = optUser.getIdLong();
 			
 			Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
-			if (steam64 == null) {
+			if (steam64 == null || steam64 == 0L) {
 				editError(event, path+".not_found_steam", "Received: "+userId);
 				return;
 			}

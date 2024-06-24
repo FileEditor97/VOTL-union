@@ -419,20 +419,34 @@
 				"no_guild": "Selected server not found.",
 				"done": "Assigned {target} access {level}."
 			},
-			"disable": {
+			"settings": {
 				"help": "Manage bot settings",
-				"usage": "disable",
+				"usage": "settings",
 				"database": {
-					"help": "Disable databases",
+					"help": "Manage databases",
 					"usage": "database [player?] [verify?]",
 					"player": {
 						"name": "player",
-						"help": "Disable player database?"
+						"help": "Enable player database?"
 					},
 					"verify": {
 						"name": "verify",
-						"help": "Disable verify database?"
+						"help": "Enable verify database?"
 					}
+				},
+				"whitelist": {
+					"help": "Bots whitelist for group members",
+					"usage": "whitelist <add/remove> <bot ID>",
+					"add": {
+						"name": "add",
+						"help": "Add (or remove)?"
+					},
+					"bot_id": {
+						"name": "bot_id",
+						"help": "Enter bot ID"
+					},
+					"done_add": "Added ID `%s` to the whitelist.",
+					"done_remove": "Removed ID `%s` from the whitelist."
 				}
 			},
 			"debug": {

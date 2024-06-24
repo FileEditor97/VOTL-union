@@ -56,7 +56,7 @@ public class MessageListener extends ListenerAdapter {
 
 		// verification check
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return;
-		if (bot.getDBUtil().unionVerify.isDisabled()) return;
+		if (bot.getSettings().isDbVerifyDisabled()) return;
 
 		final long userId = event.getAuthor().getIdLong();
 		if (bot.getDBUtil().verifyCache.isVerified(userId)) return;

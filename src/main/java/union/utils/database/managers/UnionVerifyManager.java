@@ -5,38 +5,34 @@ import java.util.Map;
 
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
+import union.utils.file.SettingsManager;
 
 public class UnionVerifyManager extends SqlDBBase {
 
 	private final String TABLE = "union.users";
-	private boolean disabled = false;
+	private final SettingsManager settings;
 
-	public void setDisabled(boolean disabled) {
-		this.disabled = disabled;
-	}
-
-	public boolean isDisabled() {return disabled;}
-
-	public UnionVerifyManager(ConnectionUtil cu, String url, String user, String password) {
+	public UnionVerifyManager(ConnectionUtil cu, SettingsManager settings, String url, String user, String password) {
 		super(cu, "%s?user=%s&password=%s".formatted(url, user, password));
+		this.settings = settings;
 	}
 
 	public String getSteamName(String steam64) {
-		if (disabled) return null;
+		if (settings.isDbVerifyDisabled()) return null;
 		String data = selectOne(TABLE, "name", "steam_id", steam64);
 		if (data == null || data.isBlank()) return null;
 		return data;
 	}
 
 	public String getSteamAvatarUrl(String steam64) {
-		if (disabled) return null;
+		if (settings.isDbVerifyDisabled()) return null;
 		String data = selectOne(TABLE, "avatar", "steam_id", steam64);
 		if (data == null || data.isBlank()) return null;
 		return data;
 	}
 
 	public Long getSteam64(String discordId) {
-		if (disabled) return null;
+		if (settings.isDbVerifyDisabled()) return null;
 		String data = selectOne(TABLE, "steam_id", "discord_id", discordId);
 		if (data == null || data.isBlank()) return null;
 		return Long.parseLong(data);
@@ -44,7 +40,7 @@ public class UnionVerifyManager extends SqlDBBase {
 
 	// Check for any changed accounts
 	public List<Map<String, String>> updatedAccounts() {
-		if (disabled) return List.of();
+		if (settings.isDbVerifyDisabled()) return List.of();
 		return select(TABLE, List.of("discord_id", "steam_id"), "discord_updated", "1");
 	}
 

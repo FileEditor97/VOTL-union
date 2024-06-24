@@ -9,27 +9,26 @@ import java.util.Objects;
 import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
+import union.utils.file.SettingsManager;
+
 import static union.utils.CastUtil.castLong;
 
 public class UnionPlayerManager extends SqlDBBase {
 
 	private final String SAM_PLAYERS = "sam_players";
 	private final String AXE_PLAYERS = "axe_players";
-	private boolean disabled = false;
-
-	public void setDisabled(boolean disabled) {
-		this.disabled = disabled;
-	}
+	private final SettingsManager settings;
 
 	private final Map<Long, Map<String, String>> servers;
 
-	public UnionPlayerManager(ConnectionUtil cu, Map<String, Object> map, String url, String user, String password) {
+	public UnionPlayerManager(ConnectionUtil cu, SettingsManager settings, Map<String, Object> map, String url, String user, String password) {
 		super(cu, "%s?user=%s&password=%s".formatted(url, user, password));
+		this.settings = settings;
 		this.servers = convertMap(map);
 	}
 
 	public List<String> getPlayerRank(long guildId, @NotNull String steamId) {
-		if (disabled) return List.of();
+		if (settings.isDbPlayerDisabled()) return List.of();
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) return List.of();
@@ -43,7 +42,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	}
 
 	public Long getPlayTime(long guildId, @NotNull String steamId) throws Exception {
-		if (disabled) throw new Exception("Disabled.");
+		if (settings.isDbPlayerDisabled()) throw new Exception("Disabled.");
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) throw new Exception("Database not found.");
@@ -57,7 +56,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	}
 
 	public List<PlayerInfo> getPlayerInfo(long guildId, @NotNull String steamId) {
-		if (disabled) return List.of();
+		if (settings.isDbPlayerDisabled()) return List.of();
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) return List.of();
@@ -70,7 +69,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	}
 
 	public boolean existsAxePlayer(long guildId, @NotNull String steamId) throws Exception {
-		if (disabled) throw new Exception("Disabled.");
+		if (settings.isDbPlayerDisabled()) throw new Exception("Disabled.");
 		// Find corresponding database
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) throw new Exception("Database not found.");

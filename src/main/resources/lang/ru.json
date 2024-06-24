@@ -419,20 +419,34 @@
 				"no_guild": "Выбранный сервер не найден.",
 				"done": "Назначено {target} доступ {level}."
 			},
-			"disable": {
+			"settings": {
 				"help": "Управление настройками бота",
-				"usage": "disable",
+				"usage": "settings",
 				"database": {
-					"help": "Отключить базы данных",
+					"help": "Управление базами данных",
 					"usage": "database [player?] [verify?]",
 					"player": {
 						"name": "player",
-						"help": "Отключить player базу данных?"
+						"help": "Включить player базу данных?"
 					},
 					"verify": {
 						"name": "verify",
-						"help": "Отключить verify базу данных?"
+						"help": "Включить verify базу данных?"
 					}
+				},
+				"whitelist": {
+					"help": "Белый список ботов для участников группы",
+					"usage": "whitelist <add/remove> <bot ID>",
+					"add": {
+						"name": "add",
+						"help": "Добавить (или удалить)?"
+					},
+					"bot_id": {
+						"name": "bot_id",
+						"help": "Введите ID бота"
+					},
+					"done_add": "Добавлен ID `%s` в вайтлист.",
+					"done_remove": "Убран ID `%s` из вайтлиста."
 				}
 			},
 			"debug": {
@@ -501,7 +515,7 @@
 						"help": "Включить защиту от краша?"
 					},
 					"ping": {
-						"name": "пинг",
+						"name": "ping",
 						"help": "Пинганите роли и/или участников, что будут оповещены"
 					},
 					"done": "Защита от краша включена - %s.",

@@ -34,6 +34,7 @@ import union.utils.TicketUtil;
 import union.utils.WebhookAppender;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
+import union.utils.file.SettingsManager;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LogEmbedUtil;
 import union.utils.logs.LoggingUtil;
@@ -84,6 +85,7 @@ public class App {
 	private final TicketUtil ticketUtil;
 	private final WebhookLogger webhookLogger;
 	private final ModerationUtil moderationUtil;
+	private final SettingsManager settings;
 
 	@SuppressWarnings("BusyWait")
 	public App() {
@@ -91,6 +93,7 @@ public class App {
 		try {
 			fileManager.addFile("config", "/config.json", Constants.DATA_PATH + "config.json")
 				.addFile("database", "/server.db", Constants.DATA_PATH + "server.db")
+				.addSettings("settings", Constants.DATA_PATH + "settings.json")
 				.addLang("en-GB")
 				.addLang("ru");
 		} catch (Exception ex) {
@@ -101,7 +104,8 @@ public class App {
 		final String ownerId = fileManager.getString("config", "owner-id");
 		
 		// Define for default
-		dbUtil		= new DBUtil(fileManager);
+		settings	= new SettingsManager(fileManager);
+		dbUtil		= new DBUtil(fileManager, settings);
 		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
 		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
@@ -147,7 +151,7 @@ public class App {
 				new EvalCmd(this),
 				new GenerateListCmd(this),
 				new ForceAccessCmd(this),
-				new DisableCmd(this),
+				new SettingsCmd(this),
 				new DebugCmd(this),
 				new MessageCmd(this),
 				// webhook
@@ -332,6 +336,10 @@ public class App {
 
 	public ModerationUtil getModerationUtil() {
 		return moderationUtil;
+	}
+
+	public SettingsManager getSettings() {
+		return settings;
 	}
 
 	public Helper getHelper() {

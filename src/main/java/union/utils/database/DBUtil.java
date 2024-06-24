@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import union.utils.file.SettingsManager;
 
 public class DBUtil {
 
@@ -62,7 +63,7 @@ public class DBUtil {
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
 
-	public DBUtil(FileManager fileManager) {
+	public DBUtil(FileManager fileManager, SettingsManager settings) {
 		this.fileManager = fileManager;
 
 		// Check if MariaDB driver is initiated
@@ -111,8 +112,8 @@ public class DBUtil {
 		threadControl = new ThreadControlManager(connectionUtil);
 		games = new GameStrikeManager(connectionUtil);
 		
-		unionVerify = new UnionVerifyManager(connectionUtil, urlWebsite, userWebsite, passWebsite);
-		unionPlayers = new UnionPlayerManager(connectionUtil, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
+		unionVerify = new UnionVerifyManager(connectionUtil, settings, urlWebsite, userWebsite, passWebsite);
+		unionPlayers = new UnionPlayerManager(connectionUtil, settings, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
 

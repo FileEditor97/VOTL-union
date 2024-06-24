@@ -218,7 +218,7 @@ public class InteractionListener extends ListenerAdapter {
 	private Boolean isVerified(IReplyCallback event) {
 		Guild guild = event.getGuild();
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return true;
-		if (bot.getDBUtil().unionVerify.isDisabled()) return true;
+		if (bot.getSettings().isDbVerifyDisabled()) return true;
 
 		User user = event.getUser();
 		if (bot.getDBUtil().verifyCache.isVerified(user.getIdLong())) return true;
@@ -281,7 +281,7 @@ public class InteractionListener extends ListenerAdapter {
 			}
 		}
 
-		if (db.unionVerify.isDisabled()) {
+		if (bot.getSettings().isDbVerifyDisabled()) {
 			// Use simple verification
 			// Give verify role to user, do not add to the cache
 			guild.addRoleToMember(member, role).reason("Verification completed - NO STEAM, database disabled").queue(

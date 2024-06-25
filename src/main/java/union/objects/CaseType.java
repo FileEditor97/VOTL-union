@@ -18,7 +18,7 @@ public enum CaseType {
 	private final String path;
 	private final Boolean active;
 
-	private static final Map<Integer, CaseType> BY_TYPE = new HashMap<Integer, CaseType>();
+	private static final Map<Integer, CaseType> BY_TYPE = new HashMap<>();
 
 	static {
 		for (CaseType ct : CaseType.values()) {

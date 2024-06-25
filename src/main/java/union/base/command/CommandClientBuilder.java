@@ -268,7 +268,7 @@ public class CommandClientBuilder
 	 */
 	public CommandClientBuilder setDevGuildIds(long... guildIds)
 	{
-		this.devGuildIds = Arrays.stream(guildIds).mapToObj(String::valueOf).toArray(String[]::new);;
+		this.devGuildIds = Arrays.stream(guildIds).mapToObj(String::valueOf).toArray(String[]::new);
 		return this;
 	}
 

@@ -64,7 +64,7 @@ public class TicketPanelManager extends LiteDBBase {
 	}
 
 	public void updatePanel(Integer panelId, String title, String description, String image, String footer) {
-		List<String> values = new ArrayList<String>();
+		List<String> values = new ArrayList<>();
 		if (title != null)
 			values.add("title="+quote(title));
 		if (description != null)

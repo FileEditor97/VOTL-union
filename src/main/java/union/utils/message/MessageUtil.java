@@ -11,8 +11,6 @@ import java.util.regex.Pattern;
 
 import union.utils.file.lang.LocaleUtil;
 
-import net.dv8tion.jda.api.interactions.DiscordLocale;
-
 public class MessageUtil {
 
 	private static final Random random = new Random();
@@ -51,7 +49,7 @@ public class MessageUtil {
 		if (!input.equals("random") && !(input.length() == 6 || input.contains(",")))
 			return null;
 
-		Color color = null;
+		Color color;
 
 		if (input.equals("random")) {
 			int r = random.nextInt(256);

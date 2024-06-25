@@ -107,7 +107,7 @@ public class SlashCommandEvent extends SlashCommandInteractionEvent {
 	}
 
 	/**
-	 * Gets the provided Option Key as a int value, or returns {@code null} if the option cannot be found.
+	 * Gets the provided Option Key as an int value, or returns {@code null} if the option cannot be found.
 	 *
 	 * @param key   The option we want
 	 * @return The provided option, or null if the option is not present
@@ -117,7 +117,7 @@ public class SlashCommandEvent extends SlashCommandInteractionEvent {
 	}
 
 	/**
-	 * Gets the provided Option Key as a int value, or returns the default one if the option cannot be found.
+	 * Gets the provided Option Key as an int value, or returns the default one if the option cannot be found.
 	 *
 	 * @param key          The option we want
 	 * @param defaultValue The fallback option in case of the absence of the option value

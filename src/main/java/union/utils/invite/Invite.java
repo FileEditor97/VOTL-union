@@ -256,14 +256,14 @@ public interface Invite {
          *     <li>MORE_EMOJI - Guild is able to use more than 50 emoji</li>
          * </ul>
          *
-         * @return Never-null, unmodifiable Set containing all of the Guild's features.
+         * @return Never-null, unmodifiable Set containing all the Guild's features.
          */
         @NotNull
         Set<String> getFeatures();
     }
 
     /**
-     * Enum representing the type of an invite.
+     * Enum representing the type of invite.
      *
      * @see #getType()
      */

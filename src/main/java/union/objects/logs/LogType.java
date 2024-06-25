@@ -29,7 +29,7 @@ public enum LogType {
 	private final String path;
 
 	private static final Set<String> ALL = new HashSet<>();
-	private static final Map<String, LogType> BY_NAME = new HashMap<String, LogType>();
+	private static final Map<String, LogType> BY_NAME = new HashMap<>();
 
 	static {
 		for (LogType lc : LogType.values()) {

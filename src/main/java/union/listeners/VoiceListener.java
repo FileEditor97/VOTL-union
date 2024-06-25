@@ -115,7 +115,7 @@ public class VoiceListener extends ListenerAdapter {
 			.reason(member.getUser().getEffectiveName()+" private channel")
 			.setUserlimit(channelLimit)
 			.syncPermissionOverrides()
-			.addPermissionOverride(member, EnumSet.of(Permission.MANAGE_CHANNEL), null)
+			.addPermissionOverride(member, EnumSet.of(Permission.MANAGE_CHANNEL, Permission.VOICE_SET_STATUS, Permission.VOICE_MOVE_OTHERS), null)
 			.queue(
 				channel -> {
 					db.voice.add(userId, channel.getIdLong());

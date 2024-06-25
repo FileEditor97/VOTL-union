@@ -1461,7 +1461,7 @@
 					"name_change": "Renamed to `%s`.",
 					"appeal_change": "Appeal server ID set to `%s`.",
 					"invite_change": "This server invite link set to `%s`.",
-					"verify_change": "Verification enabled: %s",
+					"verify_change": "Verification set to: %s",
 					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"
 				},
 				"manage": {
@@ -1499,7 +1499,7 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"embed_title": "Group '%s' (#%s)",
-					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification enabled: %s",
+					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification setup: %s",
 					"embed_short": "Owner: %s (`%s`)\nGroup size: %d server/-s",
 					"embed_guilds": "Server name | size | ID",
 					"embed_groups": "Group name | #ID",

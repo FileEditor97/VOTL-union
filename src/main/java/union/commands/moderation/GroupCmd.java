@@ -359,11 +359,15 @@ public class GroupCmd extends CommandBase {
 			this.name = "modify";
 			this.path = "bot.moderation.group.modify";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
-				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help")).setMaxLength(120),
-				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help")).setRequiredLength(12, 20),
+				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true)
+					.setMinValue(0),
+				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"))
+					.setMaxLength(120),
+				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help"))
+					.setRequiredLength(12, 20),
 				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help")),
-				new OptionData(OptionType.BOOLEAN, "enable_verification", lu.getText(path+".enable_verification.help"))
+				new OptionData(OptionType.INTEGER, "enable_verification", lu.getText(path+".enable_verification.help"))
+					.setRequiredRange(-1, 10)
 			);
 		}
 
@@ -458,13 +462,14 @@ public class GroupCmd extends CommandBase {
 				}, failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
 			}
 			else if (event.hasOption("enable_verification")) {
-				boolean verify = event.optBoolean("enable_verification");
-				bot.getDBUtil().group.setVerify(groupId, verify);
+				int verifyValue = event.optInteger("enable_verification");
+				bot.getDBUtil().group.setVerify(groupId, verifyValue);
 
 				String groupName = bot.getDBUtil().group.getName(groupId);
+				String text = verifyValue==-1 ? Constants.FAILURE : (verifyValue==0 ? "Kick" : "Ban for "+verifyValue);
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").formatted(
-						groupName, lu.getText(event, path+".verify_change").formatted(verify ? Constants.SUCCESS : Constants.FAILURE), groupId
+						groupName, lu.getText(event, path+".verify_change").formatted(text), groupId
 					))
 					.build()
 				);
@@ -513,10 +518,6 @@ public class GroupCmd extends CommandBase {
 			final Boolean canManage;
 			if (event.hasOption("manage")) canManage = event.optBoolean("manage");
 			else canManage = null;
-
-//			final Boolean verify;
-//			if (event.hasOption("enable_verification")) verify = event.optBoolean("enable_verification");
-//			else verify = null;
 
 			if (canManage==null) {
 				editError(event, path+".no_options");
@@ -586,10 +587,6 @@ public class GroupCmd extends CommandBase {
 							bot.getDBUtil().group.setManage(groupId, targetId, canManage);
 							builder.append(lu.getText(event, path+".manage_change").formatted(canManage ? Constants.SUCCESS : Constants.FAILURE));
 						}
-//						if (verify!=null) {
-//							bot.getDBUtil().group.setVerify(groupId, targetId, verify);
-//							builder.append(lu.getText(event, path+".verify_change").formatted(verify ? Constants.SUCCESS : Constants.FAILURE));
-//						}
 
 						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setDescription(builder.toString()).build()
@@ -638,6 +635,7 @@ public class GroupCmd extends CommandBase {
 				String groupName = bot.getDBUtil().group.getName(groupId);
 				List<Long> memberIds = bot.getDBUtil().group.getGroupMembers(groupId);
 				int groupSize = memberIds.size();
+				int verifyValue = bot.getDBUtil().group.getVerifyValue(groupId);
 
 				EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 					.setAuthor(lu.getText(event, path+".embed_title").formatted(
@@ -647,7 +645,7 @@ public class GroupCmd extends CommandBase {
 						event.getGuild().getName(), event.getGuild().getId(), groupSize,
 						Optional.ofNullable(bot.getDBUtil().group.getSelfInvite(groupId)).orElse("-"),
 						Optional.ofNullable(bot.getDBUtil().group.getAppealGuildId(groupId)).map(String::valueOf).orElse("-"),
-						bot.getDBUtil().group.verifyEnabled(groupId) ? Constants.SUCCESS : Constants.FAILURE
+						verifyValue==-1 ? Constants.FAILURE : (verifyValue==0 ? "Kick" : "Ban for "+verifyValue)
 					));
 				
 				if (groupSize > 0) {

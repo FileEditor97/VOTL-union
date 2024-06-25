@@ -69,13 +69,13 @@ public class GroupManager extends LiteDBBase {
 		return selectOne("SELECT selfInvite FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "selfInvite", String.class);
 	}
 
-	public boolean verifyEnabled(int groupId) {
+	public int getVerifyValue(int groupId) {
 		Integer data = selectOne("SELECT memberVerify FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "memberVerify", Integer.class);
-		return data != null && data == 1;
+		return data==null ? -1 : data;
 	}
 
-	public void setVerify(int groupId, boolean enabled) {
-		execute("UPDATE %s SET memberVerify=%d WHERE (groupId=%d)".formatted(groups, enabled ? 1 : 0, groupId));
+	public void setVerify(int groupId, int value) {
+		execute("UPDATE %s SET memberVerify=%d WHERE (groupId=%d)".formatted(groups, value, groupId));
 	}
 
 	// groupMembers table

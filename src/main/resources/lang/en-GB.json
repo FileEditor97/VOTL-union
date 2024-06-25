@@ -1452,7 +1452,7 @@
 					},
 					"enable_verification": {
 						"name": "enable_verification",
-						"help": "Enable verification in member servers? Joined user must complete verification in the main server."
+						"help": "Enable verification in member servers? (-1 disable, 0 kick, >1 ban time in minutes)"
 					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",

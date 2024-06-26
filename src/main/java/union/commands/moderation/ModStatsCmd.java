@@ -1,6 +1,9 @@
 package union.commands.moderation;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +30,9 @@ public class ModStatsCmd extends CommandBase {
 		this.name = "modstats";
 		this.path = "bot.moderation.modstats";
 		this.options = List.of(
-			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"))
+			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
+			new OptionData(OptionType.STRING, "start_date", lu.getText(path+".start_date.help")),
+			new OptionData(OptionType.STRING, "end_date", lu.getText(path+".end_date.help"))
 		);
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
@@ -39,6 +44,66 @@ public class ModStatsCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
+
+		if (event.hasOption("start_date") || event.hasOption("end_date")) {
+			returnIntervalStats(event);
+		} else {
+			returnFullStats(event);
+		}
+	}
+
+	private void returnIntervalStats(SlashCommandEvent event) {
+		User mod = event.optUser("user", event.getUser());
+		long guildId = event.getGuild().getIdLong();
+
+		String afterDate = event.optString("start_date");
+		String beforeDate = event.optString("end_date");
+		Instant afterTime;
+		Instant beforeTime;
+
+		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		try {
+			beforeTime = beforeDate!=null
+				? LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant()
+				: Instant.now();
+			afterTime = afterDate!=null
+				? LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant()
+				: Instant.now().minus(7, ChronoUnit.DAYS);
+		} catch (Exception ex) {
+			editError(event, path+".failed_parse", ex.getMessage());
+			return;
+		}
+		if (beforeTime.isBefore(afterTime)) {
+			editError(event, path+".wrong_date");
+			return;
+		}
+
+		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), afterTime, beforeTime, true);
+		Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), afterTime, beforeTime);
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault());
+		String intervalText = "%s\n`%s` - `%s`".formatted(lu.getText(event, path+".title"), formatter.format(afterTime), formatter.format(beforeTime));
+		EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+			.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())
+			.setTitle(intervalText)
+			.setFooter("ID: "+mod.getId())
+			.setTimestamp(Instant.now());
+
+		String builder = "```\n" +
+			buildLine(lu.getText(event, path + ".strikes"), countStrikes(countCases)) +
+			buildLine(lu.getText(event, path + ".game_strikes"), getCount(countCases, CaseType.GAME_STRIKE)) +
+			buildLine(lu.getText(event, path + ".mutes"), getCount(countCases, CaseType.MUTE)) +
+			buildLine(lu.getText(event, path + ".kicks"), getCount(countCases, CaseType.KICK)) +
+			buildLine(lu.getText(event, path + ".bans"), getCount(countCases, CaseType.BAN)) +
+			buildTotal(lu.getText(event, path + ".total"), getTotal(countCases)) +
+			"\n" +
+			buildLine(lu.getText(event, path + ".roles"), countRoles) +
+			"```";
+
+		editHookEmbed(event, embedBuilder.setDescription(builder).build());
+	}
+
+	private void returnFullStats(SlashCommandEvent event) {
 		User mod = event.optUser("user", event.getUser());
 		long guildId = event.getGuild().getIdLong();
 
@@ -61,12 +126,14 @@ public class ModStatsCmd extends CommandBase {
 			.setFooter("ID: "+mod.getId())
 			.setTimestamp(Instant.now());
 
+		final String sevenText = lu.getText(event, path+".seven");
+		final String thirtyText = lu.getText(event, path+".thirty");
 		StringBuilder builder = new StringBuilder("```\n#         ")
-			.append(lu.getText(event, path+".seven")).append(" | ")
-			.append(lu.getText(event, path+".thirty")).append(" | ")
+			.append(sevenText).append(" | ")
+			.append(thirtyText).append(" | ")
 			.append(lu.getText(event, path+".all")).append("\n");
-		final int length7 = lu.getText(event, path+".seven").length();
-		final int length30 = lu.getText(event, path+".thirty").length();
+		final int length7 = sevenText.length();
+		final int length30 = thirtyText.length();
 
 		builder.append(buildLine(lu.getText(event, path+".strikes"), countStrikes(count7), countStrikes(count30), countStrikes(countTotal), length7, length30))
 			.append(buildLine(lu.getText(event, path+".game_strikes"), getCount(count7, CaseType.GAME_STRIKE), getCount(count30, CaseType.GAME_STRIKE), getCount(countTotal, CaseType.GAME_STRIKE), length7, length30))
@@ -85,8 +152,16 @@ public class ModStatsCmd extends CommandBase {
 		return String.format("%-9s %-"+length7+"s | %-"+length30+"s | %s\n", text, count7, count30, countTotal);
 	}
 
+	private String buildLine(String text, int count) {
+		return String.format("%-9s %s\n", text, count);
+	}
+
 	private String buildTotal(String text, int count7, int count30, int countTotal, int length7, int length30) {
 		return String.format("%-9s %-"+length7+"s | %-"+length30+"s | %s\n", "-"+text+"-", count7, count30, countTotal);
+	}
+
+	private String buildTotal(String text, int count) {
+		return String.format("%-9s %s\n", "-"+text+"-", count);
 	}
 
 	private int countStrikes(Map<Integer, Integer> data) {

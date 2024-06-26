@@ -1535,11 +1535,21 @@
 			},
 			"modstats": {
 				"help": "View moderation statistics for mod/admin",
-				"usage": "modstats [@User]",
+				"usage": "modstats [@User] [start date] [end date]",
 				"user": {
 					"name": "user",
 					"help": "Select user"
 				},
+				"start_date": {
+					"name": "start_date",
+					"help": "Enter start date (day-month-year)"
+				},
+				"end_date": {
+					"name": "end_date",
+					"help": "Enter end date (day-month-year)"
+				},
+				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
+				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"no_user": "User not found.",
 				"empty": "No statistics for this user.",
 				"title": "Moderation statistics",
@@ -1965,7 +1975,7 @@
 			},
 			"tcount": {
 				"help": "Count how many tickets where accepted by moderator",
-				"usage": "tcount <@User> [days (1-31)]",
+				"usage": "tcount <@User> [start date] [end date]",
 				"user": {
 					"name": "user",
 					"help": "Enter ID/mention the user"

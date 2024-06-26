@@ -115,6 +115,13 @@ public class CaseManager extends LiteDBBase {
 		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
 	}
 
+	public Map<Integer, Integer> countCasesByMod(long guildId, long modId, Instant afterTime, Instant beforeTime) {
+		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d AND timeStart>%d AND timeStart<%d) GROUP BY type"
+			.formatted(table, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond()), Set.of("type", "cc"));
+		if (data.isEmpty()) return Collections.emptyMap();
+		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
+	}
+
 	//  BANS
 	// get all active expired bans
 	public List<CaseData> getExpired() {

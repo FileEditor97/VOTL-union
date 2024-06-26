@@ -94,6 +94,7 @@ public class GameStrikeCmd extends CommandBase {
 		// Reply
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(tm.getAsMention(), channel.getAsMention()))
+			.setFooter("#"+strikeData.getCaseId())
 			.build());
 		// Check if reached limit
 		if (strikeCount >= maxStrikes) {

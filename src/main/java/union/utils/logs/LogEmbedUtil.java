@@ -432,14 +432,10 @@ public class LogEmbedUtil {
 
 	//  Game
 	@NotNull
-	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, User target, String reason, long modId, int count, int max) {
-		return new LogEmbedBuilder(locale, RED_LIGHT)
-			.setHeaderIcon("moderation.game.strike", target.getEffectiveAvatarUrl(), target.getName())
-			.setUser(target.getIdLong())
-			.setReason(reason)
-			.setMod(modId)
-			.addField("moderation.game.strikes", count+"/"+max)
-			.setId(target.getId())
+	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String text) {
+		return moderationEmbedBuilder(locale, caseData, userIcon)
+			.setColor(RED_LIGHT)
+			.addField("moderation.game.strikes", text)
 			.build();
 	}
 
@@ -753,7 +749,7 @@ public class LogEmbedUtil {
 	public MessageEmbed verifiedEmbed(DiscordLocale locale, String memberTag, long memberId, String memberIcon, String steamName, Long steam64) {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon("verify.added", memberIcon, memberTag)
-			.addField("verify.steam", (steam64 == null ? "None" :
+			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
 				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
@@ -765,7 +761,7 @@ public class LogEmbedUtil {
 	public MessageEmbed unverifiedEmbed(DiscordLocale locale, String memberTag, long memberId, String memberIcon, String steamName, Long steam64, String reason) {
 		return new LogEmbedBuilder(locale, RED_DARK)
 			.setHeaderIcon("verify.removed", memberIcon, memberTag)
-			.addField("verify.steam", (steam64 == null ? "None" :
+			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
 				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
@@ -779,7 +775,7 @@ public class LogEmbedUtil {
 		return new LogEmbedBuilder(locale, AMBER_DARK)
 			.setHeaderIcon("verify.attempt", memberIcon, memberTag)
 			.setDescription(localized(locale, "reason")+":\n> "+reason)
-			.addField("verify.steam", (steam64 == null ? "None" :
+			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
 				"`%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")

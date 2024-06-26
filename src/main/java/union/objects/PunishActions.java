@@ -18,7 +18,7 @@ public enum PunishActions {
 	private final String path;
 	private final String pattern;
 	
-	private static final Map<Integer, PunishActions> BY_TYPE = new HashMap<Integer, PunishActions>();
+	private static final Map<Integer, PunishActions> BY_TYPE = new HashMap<>();
 
 	static {
 		for (PunishActions ct : PunishActions.values()) {

@@ -123,10 +123,10 @@ public class Formatter {
     }
 
     public static String toHex(Color color) {
-        String hex = Integer.toHexString(color.getRGB() & 0xffffff);
+        StringBuilder hex = new StringBuilder(Integer.toHexString(color.getRGB() & 0xffffff));
         while (hex.length() < 6) {
-            hex = "0" + hex;
+            hex.insert(0, "0");
         }
-        return hex;
+        return hex.toString();
     }
 }

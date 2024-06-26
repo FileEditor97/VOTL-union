@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
+import net.dv8tion.jda.api.entities.ISnowflake;
 import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -609,7 +610,7 @@ public class VoiceCmd extends CommandBase {
 			EmbedBuilder embedBuilder2 = embedBuilder;
 			List<PermissionOverride> ovs = overrides;
 
-			guild.retrieveMembersByIds(false, overrides.stream().map(ov -> ov.getId()).toArray(String[]::new)).onSuccess(
+			guild.retrieveMembersByIds(false, overrides.stream().map(ISnowflake::getId).toArray(String[]::new)).onSuccess(
 				members -> {
 					if (members.isEmpty()) {
 						embedBuilder2.appendDescription(lu.getText(event, path+".embed.none") + "\n");

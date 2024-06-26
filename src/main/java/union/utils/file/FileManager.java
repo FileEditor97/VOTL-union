@@ -2,6 +2,7 @@ package union.utils.file;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -54,6 +55,12 @@ public class FileManager {
 		
 		return this;
 	}
+
+	public FileManager addSettings(String name, String pathname){
+		createSettings(name, pathname);
+
+		return this;
+	}
 	
 	// Convenience method do add new languages easier.
 	public FileManager addLang(@NotNull String file) throws Exception {
@@ -77,7 +84,7 @@ public class FileManager {
 		return locales;
 	}
 	
-	public void createUpdateLoad(String name, String internal, String external) {
+	private void createUpdateLoad(String name, String internal, String external) {
 		if (files == null)
 			files = new HashMap<>();
 
@@ -124,6 +131,52 @@ public class FileManager {
 		} catch (IOException ex) {
 			logger.error("Couldn't locate nor create {}", file.getAbsolutePath(), ex);
 		}
+	}
+
+	private void createSettings(String name, String pathname) {
+		if (files == null)
+			files = new HashMap<>();
+
+		File file = new File(pathname);
+
+		String[] split = pathname.contains("/") ? pathname.split(Constants.SEPAR) : pathname.split(Pattern.quote(Constants.SEPAR));
+
+		try {
+			if (!file.exists()) {
+				if ((split.length == 2 && !split[0].equals(".")) || (split.length >= 3 && split[0].equals("."))) {
+					if (!file.getParentFile().mkdirs() && !file.getParentFile().exists()) {
+						logger.error("Failed to create directory {}", split[1]);
+					}
+				}
+				if (file.createNewFile()) {
+					FileWriter fw = new FileWriter(file);
+					fw.write("{\"unionVerify\":true,\"unionPlayer\":true,\"botWhitelist\":[]}");
+					fw.close();
+					logger.info("Successfully created {}!", name);
+					files.put(name, file);
+				}
+				return;
+			}
+
+			files.put(name, file);
+			logger.info("Successfully loaded {}!", name);
+		} catch (IOException ex) {
+			logger.error("Couldn't locate nor create {}", file.getAbsolutePath(), ex);
+		}
+	}
+
+	/**
+	 * @param name - json file to be searched
+	 * @return Returns nullable File.
+	 */
+	@NotNull
+	public File getFile(String name) {
+		File file = files.get(name);
+
+		if (file == null)
+			logger.error("Couldn't find file {}.json", name);
+
+		return file;
 	}
 	
 	/**

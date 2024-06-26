@@ -6,13 +6,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import net.dv8tion.jda.api.entities.Message;
 import union.App;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
-import union.utils.database.managers.CaseManager.CaseData;
+
 import static union.utils.CastUtil.castLong;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -290,22 +291,31 @@ public class ScheduledCheck {
 	}
 
 	private void checkUnbans() {
-		List<CaseData> expired = db.cases.getExpired();
-		if (expired.isEmpty()) return;
-		
-		expired.forEach(caseData -> {
-			if (caseData.getCaseType().equals(CaseType.MUTE)) {
+		try {
+			db.cases.getExpired().forEach(caseData -> {
+				if (caseData.getCaseType().equals(CaseType.MUTE)) {
+					db.cases.setInactive(caseData.getCaseIdInt());
+					return;
+				}
+				Guild guild = bot.JDA.getGuildById(caseData.getGuildId());
+				if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
+				guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
+					s -> bot.getLogger().mod.onAutoUnban(caseData, guild),
+					f -> logger.warn("Exception at unban attempt. {}", f.getMessage())
+				);
 				db.cases.setInactive(caseData.getCaseIdInt());
-				return;
-			}
-			Guild guild = bot.JDA.getGuildById(caseData.getGuildId());
-			if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
-			guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
-				s -> bot.getLogger().mod.onAutoUnban(caseData, guild),
-				f -> logger.warn("Exception at unban attempt. {}", f.getMessage())
-			);
-			db.cases.setInactive(caseData.getCaseIdInt());
-		});
+			});
+
+			db.tempBan.getExpired().forEach(data -> {
+				Guild guild = Optional.ofNullable(bot.getHelper()).map(h -> h.getJDA().getGuildById(data.getLeft())).orElse(null);
+				if (guild == null) return;
+				guild.unban(UserSnowflake.fromId(data.getRight()))
+					.reason("Remove temp ban")
+					.queue(null, new ErrorHandler().ignore(ErrorResponse.MISSING_PERMISSIONS, ErrorResponse.UNKNOWN_USER));
+			});
+		} catch (Throwable t) {
+			logger.error("Exception caught during scheduled unban.", t);
+		}
 	}
 
 	private void removeAlertPoints() {

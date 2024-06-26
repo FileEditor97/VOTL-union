@@ -90,7 +90,8 @@
 		"strike1": "Strike [1]",
 		"strike2": "Strike [2]",
 		"strike3": "Strike [3]",
-		"blacklist": "Blacklist"
+		"blacklist": "Blacklist",
+		"game_strike": "Game strike"
 	},
 	"punish_action": {
 		"mute": "Time out",
@@ -419,20 +420,34 @@
 				"no_guild": "Selected server not found.",
 				"done": "Assigned {target} access {level}."
 			},
-			"disable": {
+			"settings": {
 				"help": "Manage bot settings",
-				"usage": "disable",
+				"usage": "settings",
 				"database": {
-					"help": "Disable databases",
+					"help": "Manage databases",
 					"usage": "database [player?] [verify?]",
 					"player": {
 						"name": "player",
-						"help": "Disable player database?"
+						"help": "Enable player database?"
 					},
 					"verify": {
 						"name": "verify",
-						"help": "Disable verify database?"
+						"help": "Enable verify database?"
 					}
+				},
+				"whitelist": {
+					"help": "Bots whitelist for group members",
+					"usage": "whitelist <add/remove> <bot ID>",
+					"add": {
+						"name": "add",
+						"help": "Add (or remove)?"
+					},
+					"bot_id": {
+						"name": "bot_id",
+						"help": "Enter bot ID"
+					},
+					"done_add": "Added ID `%s` to the whitelist.",
+					"done_remove": "Removed ID `%s` from the whitelist."
 				}
 			},
 			"debug": {
@@ -1438,7 +1453,7 @@
 					},
 					"enable_verification": {
 						"name": "enable_verification",
-						"help": "Enable verification in member servers? Joined user must complete verification in the main server."
+						"help": "Enable verification in member servers? (-1 disable, 0 kick, >1 ban time in minutes)"
 					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
@@ -1447,7 +1462,7 @@
 					"name_change": "Renamed to `%s`.",
 					"appeal_change": "Appeal server ID set to `%s`.",
 					"invite_change": "This server invite link set to `%s`.",
-					"verify_change": "Verification enabled: %s",
+					"verify_change": "Verification set to: %s",
 					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"
 				},
 				"manage": {
@@ -1485,7 +1500,7 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"embed_title": "Group '%s' (#%s)",
-					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification enabled: %s",
+					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification setup: %s",
 					"embed_short": "Owner: %s (`%s`)\nGroup size: %d server/-s",
 					"embed_guilds": "Server name | size | ID",
 					"embed_groups": "Group name | #ID",
@@ -1520,11 +1535,21 @@
 			},
 			"modstats": {
 				"help": "View moderation statistics for mod/admin",
-				"usage": "modstats [@User]",
+				"usage": "modstats [@User] [start date] [end date]",
 				"user": {
 					"name": "user",
 					"help": "Select user"
 				},
+				"start_date": {
+					"name": "start_date",
+					"help": "Enter start date (day-month-year)"
+				},
+				"end_date": {
+					"name": "end_date",
+					"help": "Enter end date (day-month-year)"
+				},
+				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
+				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"no_user": "User not found.",
 				"empty": "No statistics for this user.",
 				"title": "Moderation statistics",
@@ -1535,6 +1560,7 @@
 				"kicks": "Kick",
 				"bans": "Ban",
 				"strikes": "Strike",
+				"game_strikes": "Gm strike",
 				"roles": "Roles",
 				"total": "Total"
 			},
@@ -1949,7 +1975,7 @@
 			},
 			"tcount": {
 				"help": "Count how many tickets where accepted by moderator",
-				"usage": "tcount <@User> [days (1-31)]",
+				"usage": "tcount <@User> [start date] [end date]",
 				"user": {
 					"name": "user",
 					"help": "Enter ID/mention the user"

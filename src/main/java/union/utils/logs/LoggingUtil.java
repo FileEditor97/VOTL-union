@@ -79,7 +79,7 @@ public class LoggingUtil {
 			onNewCase(guild, target, caseData, null);
 		}
 		
-		public void onNewCase(Guild guild, User target, @NotNull CaseData caseData, String oldReason) {
+		public void onNewCase(Guild guild, User target, @NotNull CaseData caseData, String optionalData) {
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 
@@ -94,13 +94,13 @@ public class LoggingUtil {
 					embed = logUtil.banEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 					break;
 				case UNBAN:
-					embed = logUtil.unbanEmbed(guild.getLocale(), caseData, oldReason);
+					embed = logUtil.unbanEmbed(guild.getLocale(), caseData, optionalData);
 					break;
 				case MUTE:
 					embed = logUtil.muteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 					break;
 				case UNMUTE:
-					embed = logUtil.unmuteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), oldReason);
+					embed = logUtil.unmuteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), optionalData);
 					break;
 				case KICK:
 					embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
@@ -111,7 +111,10 @@ public class LoggingUtil {
 					embed = logUtil.strikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 					break;
 				case BLACKLIST:
-					embed = null;
+					embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
+					break;
+				case GAME_STRIKE:
+					embed = logUtil.gameStrikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), optionalData);
 					break;
 				default:
 					break;
@@ -202,12 +205,6 @@ public class LoggingUtil {
 			final long modId = entry.getUserIdLong();
 
 			sendLog(guild, type, () -> logUtil.userKickEmbed(guild.getLocale(), target, entry.getReason(), modId));
-		}
-
-		public void onGameStrike(Member target, String reason, User mod, int count, int max) {
-			final Guild guild = target.getGuild();
-
-			sendLog(guild, type, () -> logUtil.gameStrikeEmbed(guild.getLocale(), target.getUser(), reason, mod.getIdLong(), count, max));
 		}
 	}
 

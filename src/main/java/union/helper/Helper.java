@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import union.App;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
+import union.utils.file.SettingsManager;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LoggingUtil;
 
@@ -30,6 +31,7 @@ public class Helper {
 	private final DBUtil db;
 	private final LoggingUtil logUtil;
 	private final LocaleUtil localeUtil;
+	private final SettingsManager settings;
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Helper.class);
 
     public Helper(App instance, final String token) {
@@ -37,6 +39,7 @@ public class Helper {
 		this.db = instance.getDBUtil();
 		this.logUtil = instance.getLogger();
 		this.localeUtil = instance.getLocaleUtil();
+		this.settings = instance.getSettings();
 
         GuildListener guildListener = new GuildListener(this);
 		
@@ -66,6 +69,10 @@ public class Helper {
 
 	public LocaleUtil getLocaleUtil() {
 		return localeUtil;
+	}
+
+	public SettingsManager getSettings() {
+		return settings;
 	}
 
 	public Logger getLogger() {

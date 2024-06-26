@@ -19,7 +19,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 
 	private final List<SlashCommand> cmds;
 
-	private DBUtil db;
+	private final DBUtil db;
 
 	public AutoCompleteListener(CommandClient cc, DBUtil dbutil) {
 		cmds = cc.getSlashCommands();
@@ -70,7 +70,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 			}
 		}
 		else if (focusedOption.equals("group")) {
-			List<Integer> groupIds = new ArrayList<Integer>();
+			List<Integer> groupIds = new ArrayList<>();
 			groupIds.addAll(db.group.getOwnedGroups(event.getGuild().getIdLong()));
 			groupIds.addAll(db.group.getManagedGroups(event.getGuild().getIdLong()));
 			if (groupIds.isEmpty()) {
@@ -102,12 +102,12 @@ public class AutoCompleteListener extends ListenerAdapter {
 			Integer id = null;
 			try {
 				id = Integer.valueOf(value);
-			} catch(NumberFormatException ex) {}
+			} catch(NumberFormatException ignored) {}
 			if (id != null) {
 				// if able to convert input to Integer
 				String title = db.panels.getPanelTitle(id);
 				if (title != null) {
-					// if found panel with matching Id
+					// if found panel with matching ID
 					event.replyChoice("%s | %s".formatted(id, MessageUtil.limitString(title, 80)), id).queue();
 					return;
 				}
@@ -136,7 +136,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 				// if able to convert input to Integer
 				String title = db.tags.getTagText(id);
 				if (title != null) {
-					// if found panel with matching Id
+					// if found panel with matching ID
 					event.replyChoice("%s - %s".formatted(id, title), id).queue();
 					return;
 				}

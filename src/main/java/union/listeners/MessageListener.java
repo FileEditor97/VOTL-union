@@ -32,9 +32,8 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 
 public class MessageListener extends ListenerAdapter {
-
 	// Cache
-	FixedCache<Long, MessageData> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE*60); // messageId, message
+	private final FixedCache<Long, MessageData> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE*60); // messageId, message
 
 	private final App bot;
 	
@@ -56,7 +55,7 @@ public class MessageListener extends ListenerAdapter {
 
 		// verification check
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return;
-		if (bot.getDBUtil().unionVerify.isDisabled()) return;
+		if (bot.getSettings().isDbVerifyDisabled()) return;
 
 		final long userId = event.getAuthor().getIdLong();
 		if (bot.getDBUtil().verifyCache.isVerified(userId)) return;

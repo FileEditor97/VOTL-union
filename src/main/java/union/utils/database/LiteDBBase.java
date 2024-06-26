@@ -57,7 +57,7 @@ public class LiteDBBase {
 	}
 
 	protected <T> List<T> select(final String sql, String selectKey, Class<T> selectClass) {
-		List<T> results = new ArrayList<T>();
+		List<T> results = new ArrayList<>();
 
 		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
@@ -97,7 +97,7 @@ public class LiteDBBase {
 	}
 
 	protected List<Map<String, Object>> select(final String sql, final Set<String> selectKeys) {
-		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> results = new ArrayList<>();
 
 		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());

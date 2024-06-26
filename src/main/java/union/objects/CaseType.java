@@ -10,6 +10,7 @@ public enum CaseType {
 	BLACKLIST(10, "case_type.blacklist", true),
 	UNBAN(11, "case_type.unban", false),
 	UNMUTE(12, "case_type.unmute", false),
+	GAME_STRIKE(13, "case_type.game_strike", false),
 	STRIKE_1(21, "case_type.strike1", true),
 	STRIKE_2(22, "case_type.strike2", true),
 	STRIKE_3(23, "case_type.strike3", true);
@@ -18,7 +19,7 @@ public enum CaseType {
 	private final String path;
 	private final Boolean active;
 
-	private static final Map<Integer, CaseType> BY_TYPE = new HashMap<Integer, CaseType>();
+	private static final Map<Integer, CaseType> BY_TYPE = new HashMap<>();
 
 	static {
 		for (CaseType ct : CaseType.values()) {

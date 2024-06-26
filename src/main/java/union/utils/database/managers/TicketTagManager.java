@@ -65,7 +65,7 @@ public class TicketTagManager extends LiteDBBase {
 	}
 
 	public void updateTag(Integer tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
-		List<String> values = new ArrayList<String>();
+		List<String> values = new ArrayList<>();
 		if (tagType != null) 
 			values.add("tagType="+tagType);
 		if (buttonText != null) 

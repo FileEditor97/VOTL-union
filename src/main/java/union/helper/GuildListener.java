@@ -1,5 +1,7 @@
 package union.helper;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -103,6 +105,8 @@ public class GuildListener extends ListenerAdapter {
 		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> 
 			helper.getLogUtil().group.helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
 		);
+
+		helper.getDBUtil().tempBan.removeGuild(event.getGuild().getIdLong());
 	}
 
 	@Override
@@ -114,35 +118,49 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+		long userId = event.getUser().getIdLong();
+		if (event.getUser().isBot() && helper.getSettings().isBotWhitelisted(userId)) return;
 		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> {
-			if (helper.getDBUtil().group.verifyEnabled(groupId)) {
-				// Check if user is verified, else send pm and kick/ban from this server
-				String ownerInvite;
-				if (!helper.getDBUtil().verifyCache.isVerified(event.getUser().getIdLong())
-					&& (ownerInvite = helper.getDBUtil().group.getSelfInvite(groupId)) != null) {
-					// Not verified
-					event.getUser().openPrivateChannel().queue(pm -> {
-						StringBuilder builder = new StringBuilder(helper.getLocaleUtil()
-							.getLocalized(event.getGuild().getLocale(), "misc.verify_instruct")
-							.formatted(event.getGuild().getName(), ownerInvite)
+			int verifyValue = helper.getDBUtil().group.getVerifyValue(groupId);
+			if (verifyValue < 0) return;
+
+			// Check if user is verified, else send pm and kick/ban from this server
+			String ownerInvite;
+			if (helper.getDBUtil().verifyCache.isVerified(userId)
+				|| (ownerInvite = helper.getDBUtil().group.getSelfInvite(groupId)) == null) return;
+
+			// Send pm if not bot
+			if (!event.getUser().isBot()) {
+				event.getUser().openPrivateChannel().queue(pm -> {
+					StringBuilder builder = new StringBuilder(helper.getLocaleUtil()
+						.getLocalized(event.getGuild().getLocale(), "misc.verify_instruct")
+						.formatted(event.getGuild().getName(), ownerInvite)
+					);
+					Long ownerId = helper.getDBUtil().group.getOwner(groupId);
+					String appealInvite;
+					if (ownerId != null && (appealInvite = helper.getDBUtil().getGuildSettings(ownerId).getAppealLink()) != null) {
+						builder.append(helper.getLocaleUtil()
+							.getLocalized(event.getGuild().getLocale(), "misc.verify_reserve")
+							.formatted(appealInvite)
 						);
-						Long ownerId = helper.getDBUtil().group.getOwner(groupId);
-						String appealInvite;
-						if (ownerId != null && (appealInvite = helper.getDBUtil().getGuildSettings(ownerId).getAppealLink()) != null) {
-							builder.append(helper.getLocaleUtil()
-								.getLocalized(event.getGuild().getLocale(), "misc.verify_reserve")
-								.formatted(appealInvite)
-							);
-						}
+					}
 
-						pm.sendMessage(builder.toString()).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-					});
+					pm.sendMessage(builder.toString()).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+				});
+			}
 
-					event.getMember().kick().reason("NOT VERIFIED! Join main server to verify").queueAfter(3, TimeUnit.SECONDS, done -> {
-						// Log to master
-						helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and kick");
-					});
-				}
+			if (verifyValue == 0) {
+				event.getMember().kick().reason("NOT VERIFIED! Join main server to verify").queueAfter(3, TimeUnit.SECONDS, done -> {
+					// Log to master
+					helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and kick");
+				});
+			} else {
+				event.getMember().ban(0, TimeUnit.MINUTES).reason("NOT VERIFIED! Join main server to verify").queueAfter(3, TimeUnit.SECONDS, done -> {
+					// Add to DB
+					helper.getDBUtil().tempBan.add(event.getGuild().getIdLong(), event.getMember().getIdLong(), Instant.now().plus(verifyValue, ChronoUnit.MINUTES));
+					// Log to master
+					helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and ban for %s minutes".formatted(verifyValue));
+				});
 			}
 		});
 	}

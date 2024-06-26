@@ -90,7 +90,8 @@
 		"strike1": "Strike [1]",
 		"strike2": "Strike [2]",
 		"strike3": "Strike [3]",
-		"blacklist": "Blacklist"
+		"blacklist": "Blacklist",
+		"game_strike": "Game strike"
 	},
 	"punish_action": {
 		"mute": "Time out",
@@ -1544,11 +1545,12 @@
 				"title": "Moderation statistics",
 				"seven": "7 days",
 				"thirty": "30 days",
-				"all": "All time",
+				"all": "All-time",
 				"mutes": "Mute",
 				"kicks": "Kick",
 				"bans": "Ban",
 				"strikes": "Strike",
+				"game_strikes": "Gm strike",
 				"roles": "Roles",
 				"total": "Total"
 			},

@@ -19,6 +19,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.CaseManager;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -75,9 +76,11 @@ public class GameStrikeCmd extends CommandBase {
 
 		String reason = event.optString("reason");
 		// Add to DB
+		long guildId = event.getGuild().getIdLong();
 		bot.getDBUtil().cases.add(CaseType.GAME_STRIKE, tm.getIdLong(), tm.getUser().getName(), event.getUser().getIdLong(), event.getUser().getName(),
-			event.getGuild().getIdLong(), reason, Instant.now(), null);
-		bot.getDBUtil().games.addStrike(event.getGuild().getIdLong(), channelId, tm.getIdLong());
+			guildId, reason, Instant.now(), null);
+		CaseManager.CaseData strikeData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guildId);
+		bot.getDBUtil().games.addStrike(guildId, channelId, tm.getIdLong());
 		// Inform user
 		tm.getUser().openPrivateChannel().queue(pm -> {
 			MessageEmbed embed = bot.getModerationUtil().getGameStrikeEmbed(channel, event.getUser(), reason);
@@ -87,7 +90,7 @@ public class GameStrikeCmd extends CommandBase {
 		// Log
 		final int strikeCount = bot.getDBUtil().games.countStrikes(channelId, tm.getIdLong());
 		final int maxStrikes = bot.getDBUtil().games.getMaxStrikes(channelId);
-		bot.getLogger().mod.onGameStrike(tm, reason, event.getUser(), strikeCount, maxStrikes);
+		bot.getLogger().mod.onNewCase(event.getGuild(), tm.getUser(), strikeData, strikeCount+"/"+maxStrikes);
 		// Reply
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(tm.getAsMention(), channel.getAsMention()))

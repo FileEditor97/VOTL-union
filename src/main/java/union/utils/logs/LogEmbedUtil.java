@@ -432,14 +432,10 @@ public class LogEmbedUtil {
 
 	//  Game
 	@NotNull
-	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, User target, String reason, long modId, int count, int max) {
-		return new LogEmbedBuilder(locale, RED_LIGHT)
-			.setHeaderIcon("moderation.game.strike", target.getEffectiveAvatarUrl(), target.getName())
-			.setUser(target.getIdLong())
-			.setReason(reason)
-			.setMod(modId)
-			.addField("moderation.game.strikes", count+"/"+max)
-			.setId(target.getId())
+	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String text) {
+		return moderationEmbedBuilder(locale, caseData, userIcon)
+			.setColor(RED_LIGHT)
+			.addField("moderation.game.strikes", text)
 			.build();
 	}
 

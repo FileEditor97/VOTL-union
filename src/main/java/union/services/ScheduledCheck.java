@@ -307,11 +307,8 @@ public class ScheduledCheck {
 			});
 
 			db.tempBan.getExpired().forEach(data -> {
-				Guild guild = Optional.ofNullable(bot.getHelper()).map(h -> h.getJDA().getGuildById(data.getLeft())).orElse(null);
-				if (guild == null) return;
-				guild.unban(UserSnowflake.fromId(data.getRight()))
-					.reason("Remove temp ban")
-					.queue(null, new ErrorHandler().ignore(ErrorResponse.MISSING_PERMISSIONS, ErrorResponse.UNKNOWN_USER));
+				db.tempBan.remove(data.getLeft(), data.getRight());
+				Optional.ofNullable(bot.getHelper()).ifPresent(h -> h.unban(data.getLeft(), data.getRight(), "Remove temp ban"));
 			});
 		} catch (Throwable t) {
 			logger.error("Exception caught during scheduled unban.", t);

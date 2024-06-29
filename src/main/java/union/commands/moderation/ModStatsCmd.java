@@ -149,19 +149,19 @@ public class ModStatsCmd extends CommandBase {
 	}
 
 	private String buildLine(String text, int count7, int count30, int countTotal, int length7, int length30) {
-		return String.format("%-9s %-"+length7+"s | %-"+length30+"s | %s\n", text, count7, count30, countTotal);
+		return String.format("%-10s %-"+length7+"s | %-"+length30+"s | %s\n", text, count7, count30, countTotal);
 	}
 
 	private String buildLine(String text, int count) {
-		return String.format("%-9s %s\n", text, count);
+		return String.format("%-10s %s\n", text, count);
 	}
 
 	private String buildTotal(String text, int count7, int count30, int countTotal, int length7, int length30) {
-		return String.format("%-9s %-"+length7+"s | %-"+length30+"s | %s\n", "-"+text+"-", count7, count30, countTotal);
+		return String.format("%-10s %-"+length7+"s | %-"+length30+"s | %s\n", "-"+text+"-", count7, count30, countTotal);
 	}
 
 	private String buildTotal(String text, int count) {
-		return String.format("%-9s %s\n", "-"+text+"-", count);
+		return String.format("%-10s %s\n", "-"+text+"-", count);
 	}
 
 	private int countStrikes(Map<Integer, Integer> data) {

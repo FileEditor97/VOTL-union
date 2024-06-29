@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import union.App;
 import union.objects.CaseType;
@@ -184,6 +185,15 @@ public class Helper {
 
 	public void runKick(int groupId, Guild master, User user, String reason) {
 		CompletableFuture.runAsync(() -> kickUser(groupId, master, user, Optional.ofNullable(reason).orElse("none")));
+	}
+
+	public void unban(long guildId, long userId, String reason) {
+		Guild guild = getJDA().getGuildById(guildId);
+		if (guild == null) {
+			logger.warn("Guild not found by ID '{}'", guildId);
+			return;
+		}
+		guild.unban(UserSnowflake.fromId(userId)).reason(reason).queue();
 	}
 
 }

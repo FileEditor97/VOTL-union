@@ -15,7 +15,7 @@ public class TempBanManager extends LiteDBBase {
 	}
 
 	public void add(long guildId, long userId, Instant until) {
-		execute("INSERT INTO %s(guildId, userId, until) VALUES (%s, %s, %s".formatted(table, guildId, userId, until.getEpochSecond()));
+		execute("INSERT INTO %s(guildId, userId, until) VALUES (%s, %s, %s)".formatted(table, guildId, userId, until.getEpochSecond()));
 	}
 
 	public void remove(long guildId, long userId) {

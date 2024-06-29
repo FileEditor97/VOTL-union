@@ -187,36 +187,6 @@ public class StrikeCmd extends CommandBase {
 						.append("\n");
 			}
 		}
-		if (actions.contains(PunishActions.MUTE)) {
-			Duration duration = null;
-			try {
-				duration = Duration.ofSeconds(Long.parseLong(PunishActions.MUTE.getMatchedValue(data)));
-			} catch (NumberFormatException ignored) {}
-			if (duration != null && !duration.isZero()) {
-				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
-				// Send PM to user
-				target.getUser().openPrivateChannel().queue(pm -> {
-					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.MUTE, guild, reason, null, null, false);
-					if (embed == null) return;
-					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-				});
-
-				Duration durationCopy = duration;
-				guild.timeoutFor(target, duration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
-					// add case to DB
-					bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
-						guild.getIdLong(), reason, Instant.now(), durationCopy);
-					CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
-					// log case
-					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
-				},
-				failure -> bot.getAppLogger().error("Strike punishment execution, Mute member", failure));
-				builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
-						.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
-						.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
-						.append("\n");
-			}
-		}
 		if (actions.contains(PunishActions.REMOVE_ROLE)) {
 			Long roleId = null;
 			try {
@@ -255,6 +225,36 @@ public class StrikeCmd extends CommandBase {
 							.append(" ").append(role.getName())
 							.append("\n");
 				}
+			}
+		}
+		if (actions.contains(PunishActions.MUTE)) {
+			Duration duration = null;
+			try {
+				duration = Duration.ofSeconds(Long.parseLong(PunishActions.MUTE.getMatchedValue(data)));
+			} catch (NumberFormatException ignored) {}
+			if (duration != null && !duration.isZero()) {
+				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
+				// Send PM to user
+				target.getUser().openPrivateChannel().queue(pm -> {
+					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.MUTE, guild, reason, null, null, false);
+					if (embed == null) return;
+					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+				});
+
+				Duration durationCopy = duration;
+				guild.timeoutFor(target, duration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
+						// add case to DB
+						bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
+							guild.getIdLong(), reason, Instant.now(), durationCopy);
+						CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
+						// log case
+						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
+					},
+					failure -> bot.getAppLogger().error("Strike punishment execution, Mute member", failure));
+				builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
+					.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
+					.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
+					.append("\n");
 			}
 		}
 

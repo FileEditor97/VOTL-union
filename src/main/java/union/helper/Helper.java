@@ -7,6 +7,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import union.App;
 import union.objects.CaseType;
@@ -193,7 +195,7 @@ public class Helper {
 			logger.warn("Guild not found by ID '{}'", guildId);
 			return;
 		}
-		guild.unban(UserSnowflake.fromId(userId)).reason(reason).queue();
+		guild.unban(UserSnowflake.fromId(userId)).reason(reason).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_BAN));
 	}
 
 }

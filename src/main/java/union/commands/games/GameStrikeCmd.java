@@ -47,16 +47,18 @@ public class GameStrikeCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
+
 		GuildChannel channel = event.optGuildChannel("channel");
 		if (bot.getDBUtil().games.getMaxStrikes(channel.getIdLong()) == null) {
-			createError(event, path+".not_found", "Channel: %s".formatted(channel.getAsMention()));
+			editError(event, path+".not_found", "Channel: %s".formatted(channel.getAsMention()));
 			return;
 		}
 		Member tm = event.optMember("user");
 		if (tm == null || tm.getUser().isBot() || tm.equals(event.getMember())
 			|| tm.equals(event.getGuild().getSelfMember())
 			|| bot.getCheckUtil().hasHigherAccess(tm, event.getMember())) {
-			createError(event, path+".not_member");
+			editError(event, path+".not_member");
 			return;
 		}
 
@@ -92,7 +94,7 @@ public class GameStrikeCmd extends CommandBase {
 		final int maxStrikes = bot.getDBUtil().games.getMaxStrikes(channelId);
 		bot.getLogger().mod.onNewCase(event.getGuild(), tm.getUser(), strikeData, strikeCount+"/"+maxStrikes);
 		// Reply
-		createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+		editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(tm.getAsMention(), channel.getAsMention()))
 			.setFooter("#"+strikeData.getCaseId())
 			.build());

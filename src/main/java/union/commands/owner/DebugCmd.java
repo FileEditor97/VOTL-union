@@ -28,11 +28,12 @@ public class DebugCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
 		if (event.optBoolean("debug_logs", false)) {
-			event.replyFiles(FileUpload.fromData(new File("./logs/App-debug.log"))).queue();
+			event.getHook().editOriginalAttachments(FileUpload.fromData(new File("./logs/App-debug.log"))).queue();
 		} else {
 			String date = event.optString("date");
-			event.replyFiles(FileUpload.fromData(new File("./logs/App%s.log".formatted(date!=null?"."+date:"")))).queue();
+			event.getHook().editOriginalAttachments(FileUpload.fromData(new File("./logs/App%s.log".formatted(date!=null?"."+date:"")))).queue();
 		}
 	}
 

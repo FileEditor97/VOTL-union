@@ -19,11 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Function;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import union.base.command.impl.CommandClientImpl;
 
@@ -40,7 +38,6 @@ public class CommandClientBuilder
 	private Activity activity = Activity.playing("default");
 	private OnlineStatus status = OnlineStatus.ONLINE;
 	private String ownerId;
-	private Function<MessageReceivedEvent, Boolean> commandPreProcessFunction;
 	private String serverInvite;
 	private final LinkedList<SlashCommand> slashCommands = new LinkedList<>();
 	private final LinkedList<ContextMenu> contextMenus = new LinkedList<>();

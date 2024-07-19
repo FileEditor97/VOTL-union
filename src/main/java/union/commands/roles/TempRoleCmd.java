@@ -6,10 +6,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
+import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
@@ -23,16 +25,21 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
 public class TempRoleCmd extends CommandBase {
 
+	private final EventWaiter waiter;
 	private final int MAX_DAYS = 150;
 	
-	public TempRoleCmd(App bot) {
+	public TempRoleCmd(App bot, EventWaiter waiter) {
 		super(bot);
+		this.waiter = waiter;
 		this.name = "temprole";
 		this.path = "bot.roles.temprole";
 		this.children = new SlashCommand[]{new Assign(bot), new Cancel(bot), new Extend(bot), new View(bot)};
@@ -106,24 +113,52 @@ public class TempRoleCmd extends CommandBase {
 				return;
 			}
 
-			boolean delete = event.optBoolean("delete", false);
-			if (delete && !event.getMember().hasPermission(Permission.MANAGE_ROLES)) {
-				editPermError(event, Permission.MANAGE_ROLES, false);
-				return;
-			}
 			Instant until = Instant.now().plus(duration);
-
-			guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
-				bot.getDBUtil().tempRole.add(guild.getId(), roleId, userId, delete, until);
-				// Log
-				bot.getLogger().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), role, duration);
-				// Send reply
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
-						.replace("{until}", TimeUtil.formatTime(until, true)))
-					.build()
-				);
-			}, failure -> editError(event, "errors.error", failure.getMessage()));
+			if (event.optBoolean("delete", false)) {
+				if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+					editPermError(event, Permission.ADMINISTRATOR, false);
+					return;
+				}
+				Button confirm = Button.danger("confirm-temp", lu.getText(event, path+".confirm"));
+				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
+					.setTitle(lu.getText(event, path+".confirm_title"))
+					.setDescription(lu.getText(event, path+".confirm_value").formatted(TimeUtil.formatTime(until, true)))
+					.build())
+					.setActionRow(confirm).queue(msg -> {
+						waiter.waitForEvent(
+							ButtonInteractionEvent.class,
+							e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
+							actionEvent -> {
+								guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
+									bot.getDBUtil().tempRole.add(guild.getId(), roleId, userId, true, until);
+									// Log
+									bot.getLogger().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), role, duration, true);
+									// Send reply
+									editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+										.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
+											.replace("{until}", TimeUtil.formatTime(until, true)))
+										.build()
+									);
+								}, failure -> editError(event, "errors.error", failure.getMessage()));
+							},
+							20,
+							TimeUnit.SECONDS,
+							() -> msg.editMessageComponents(ActionRow.of(confirm.asDisabled().withLabel(lu.getText(event, "errors.timed_out")))).queue()
+						);
+					});
+			} else {
+				guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
+					bot.getDBUtil().tempRole.add(guild.getId(), roleId, userId, false, until);
+					// Log
+					bot.getLogger().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), role, duration, false);
+					// Send reply
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{user}", member.getAsMention())
+							.replace("{until}", TimeUtil.formatTime(until, true)))
+						.build()
+					);
+				}, failure -> editError(event, "errors.error", failure.getMessage()));
+			}
 		}
 
 	}

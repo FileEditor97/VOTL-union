@@ -264,6 +264,7 @@
 			"temp_added": "Role added temporary to user",
 			"temp_updated": "Temporary role updated for user",
 			"temp_removed": "Temporary role removed from user",
+			"temp_delete": "Delete after",
 			"guild": "Target server",
 			"checkchild": "Role's members checked for presence in required server",
 			"checkrank": "Role's members checked for required rank"
@@ -2472,7 +2473,10 @@
 					"incorrect_user": "Selected member can't be assigned role.",
 					"already_set": "Member already assigned this role.",
 					"time_limit": "Provided time must be between 10m <-> 150d.",
-					"done": "Temporary assigned user {user} role {role} until {until}."
+					"done": "Temporary assigned user {user} role {role} until {until}.",
+					"confirm": "Delete after",
+					"confirm_title": "After role expires - delete it",
+					"confirm_value": "**This role will be deleted at %s.**\nConfirm this by pressing the button below."
 				},
 				"cancel": {
 					"help": "Remove temporary role from user",

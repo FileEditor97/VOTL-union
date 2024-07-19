@@ -200,7 +200,7 @@ public class App {
 				new VoiceCmd(this),
 				// roles
 				new CheckRankCmd(this),
-				new TempRoleCmd(this),
+				new TempRoleCmd(this, WAITER),
 				new RoleCmd(this),
 				new CheckServerCmd(this),
 				// games

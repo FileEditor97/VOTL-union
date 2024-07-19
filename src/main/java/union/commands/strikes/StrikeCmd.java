@@ -54,8 +54,8 @@ public class StrikeCmd extends CommandBase {
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.STRIKES;
 		this.accessLevel = CmdAccessLevel.MOD;
-		this.cooldown = 5;
-		this.cooldownScope = CooldownScope.GUILD;
+		this.cooldown = 15;
+		this.cooldownScope = CooldownScope.USER;
 	}
 
 	@Override

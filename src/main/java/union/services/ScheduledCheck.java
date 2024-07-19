@@ -142,22 +142,23 @@ public class ScheduledCheck {
 					return;
 				}
 				
+				String userId = (String) data.get("userId");
 				if (db.tempRole.shouldDelete(roleId)) {
 					try {
-						role.delete().reason("Role expired").queue();
+						role.delete().reason("Role expired for '"+userId+"'").queue();
 					} catch (InsufficientPermissionException | HierarchyException ex) {
 						logger.warn("Was unable to delete temporary role '%s' during scheduled check.".formatted(roleId), ex);
 					}
 					db.tempRole.removeRole(roleId);
+					
 				} else {
-					String userId = (String) data.get("userId");
 					role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
 						logger.warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
 					});
 					db.tempRole.remove(roleId, userId);
-					// Log
-					bot.getLogger().role.onTempRoleAutoRemoved(role.getGuild(), castLong(userId), role);
 				}
+				// Log
+				bot.getLogger().role.onTempRoleAutoRemoved(role.getGuild(), castLong(userId), role);
 			});
 		} catch (Throwable t) {
 			logger.error("Exception caught during expired roles check.", t);

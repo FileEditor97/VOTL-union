@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import union.App;
 import union.base.command.Category;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -22,8 +21,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class HelpCmd extends CommandBase {
 
-	public HelpCmd(App bot) {
-		super(bot);
+	public HelpCmd() {
 		this.name = "help";
 		this.path = "bot.help";
 		this.options = List.of(

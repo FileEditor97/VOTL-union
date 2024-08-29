@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.dv8tion.jda.api.entities.Mentions;
-import union.App;
+
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -38,13 +38,12 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 public class SetupCmd extends CommandBase {
 
-	public SetupCmd(App bot) {
-		super(bot);
+	public SetupCmd() {
 		this.name = "setup";
 		this.path = "bot.guild.setup";
-		this.children = new SlashCommand[]{new PanelColor(bot), new AppealLink(bot), new ReportChannel(bot), new Anticrash(bot),
-			new VoiceCreate(bot), new VoiceSelect(bot), new VoicePanel(bot), new VoiceName(bot), new VoiceLimit(bot),
-			new Strikes(bot), new InformLevel(bot)
+		this.children = new SlashCommand[]{new PanelColor(), new AppealLink(), new ReportChannel(), new Anticrash(),
+			new VoiceCreate(), new VoiceSelect(), new VoicePanel(), new VoiceName(), new VoiceLimit(),
+			new Strikes(), new InformLevel()
 		};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -54,9 +53,7 @@ public class SetupCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class PanelColor extends SlashCommand {
-		public PanelColor(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public PanelColor() {
 			this.name = "color";
 			this.path = "bot.guild.setup.color";
 			this.options = List.of(
@@ -83,9 +80,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class AppealLink extends SlashCommand {
-		public AppealLink(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public AppealLink() {
 			this.name = "appeal";
 			this.path = "bot.guild.setup.appeal";
 			this.options = List.of(
@@ -122,9 +117,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class ReportChannel extends SlashCommand {
-		public ReportChannel(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public ReportChannel() {
 			this.name = "report";
 			this.path = "bot.guild.setup.report";
 			this.options = List.of(
@@ -151,9 +144,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class Anticrash extends SlashCommand {
-		public Anticrash(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Anticrash() {
 			this.name = "anticrash";
 			this.path = "bot.guild.setup.anticrash";
 			this.options = List.of(
@@ -197,9 +188,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class VoiceCreate extends SlashCommand {
-		public VoiceCreate(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public VoiceCreate() {
 			this.name = "create";
 			this.path = "bot.guild.setup.voice.create";
 			this.botPermissions = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES, Permission.MANAGE_PERMISSIONS, Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT, Permission.VOICE_MOVE_OTHERS};
@@ -242,9 +231,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class VoiceSelect extends SlashCommand {
-		public VoiceSelect(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public VoiceSelect() {
 			this.name = "select";
 			this.path = "bot.guild.setup.voice.select";
 			this.options = List.of(
@@ -286,9 +273,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class VoicePanel extends SlashCommand {
-		public VoicePanel(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public VoicePanel() {
 			this.name = "panel";
 			this.path = "bot.guild.setup.voice.panel";
 			this.options = List.of(
@@ -336,9 +321,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class VoiceName extends SlashCommand {
-		public VoiceName(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public VoiceName() {
 			this.name = "name";
 			this.path = "bot.guild.setup.voice.name";
 			this.options = List.of(
@@ -367,9 +350,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class VoiceLimit extends SlashCommand {
-		public VoiceLimit(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public VoiceLimit() {
 			this.name = "limit";
 			this.path = "bot.guild.setup.voice.limit";
 			this.options = List.of(
@@ -394,9 +375,7 @@ public class SetupCmd extends CommandBase {
 
 	private class Strikes extends SlashCommand {
 
-		public Strikes(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Strikes() {
 			this.name = "strikes";
 			this.path = "bot.guild.setup.strikes";
 			this.options = List.of(
@@ -435,9 +414,7 @@ public class SetupCmd extends CommandBase {
 	}
 
 	private class InformLevel extends SlashCommand {
-		public InformLevel(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public InformLevel() {
 			this.name = "dm_inform";
 			this.path = "bot.guild.setup.dm_inform";
 			this.options = List.of(

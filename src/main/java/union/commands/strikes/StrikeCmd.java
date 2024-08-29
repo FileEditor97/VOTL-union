@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.utils.TimeFormat;
-import union.App;
+
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -38,8 +38,7 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class StrikeCmd extends CommandBase {
 	
-	public StrikeCmd(App bot) {
-		super(bot);
+	public StrikeCmd() {
 		this.name = "strike";
 		this.path = "bot.moderation.strike";
 		this.options = List.of(

@@ -1,6 +1,5 @@
 package union.menus;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.MessageContextMenu;
 import union.base.command.MessageContextMenuEvent;
@@ -17,9 +16,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 public class ReportContext extends MessageContextMenu {
 	
-	public ReportContext(App bot) {
-		this.bot = bot;
-		this.lu = bot.getLocaleUtil();
+	public ReportContext() {
 		this.name = "report";
 		this.path = "menus.report";
 		this.module = CmdModule.REPORT;

@@ -12,8 +12,7 @@ import net.dv8tion.jda.api.entities.Activity;
 
 public class ShutdownCmd extends CommandBase {
 
-	public ShutdownCmd(App bot) {
-		super(bot);
+	public ShutdownCmd() {
 		this.name = "shutdown";
 		this.path = "bot.owner.shutdown";
 		this.category = CmdCategory.OWNER;

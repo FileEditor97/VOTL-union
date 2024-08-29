@@ -1,14 +1,12 @@
 package union.commands.other;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
 
 public class PingCmd extends CommandBase {
 	
-	public PingCmd(App bot) {
-		super(bot);
+	public PingCmd() {
 		this.name = "ping";
 		this.path = "bot.other.ping";
 		this.category = CmdCategory.OTHER;

@@ -3,7 +3,6 @@ package union.commands.owner;
 import java.util.List;
 import java.util.Map;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
@@ -23,8 +22,7 @@ import groovy.lang.GroovyShell;
 
 public class EvalCmd extends CommandBase {
 	
-	public EvalCmd(App bot) {
-		super(bot);
+	public EvalCmd() {
 		this.name = "eval";
 		this.path = "bot.owner.eval";
 		this.options = List.of(

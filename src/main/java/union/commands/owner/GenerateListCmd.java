@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import union.App;
 import union.base.command.Category;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -27,8 +26,7 @@ import org.json.JSONObject;
 
 public class GenerateListCmd extends CommandBase {
 	
-	public GenerateListCmd(App bot) {
-		super(bot);
+	public GenerateListCmd() {
 		this.name = "generate";
 		this.path = "bot.owner.generate";
 		this.category = CmdCategory.OWNER;

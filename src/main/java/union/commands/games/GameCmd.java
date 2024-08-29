@@ -18,11 +18,10 @@ import java.util.List;
 
 public class GameCmd extends CommandBase {
 
-	public GameCmd(App bot) {
-		super(bot);
+	public GameCmd() {
 		this.name = "game";
 		this.path = "bot.games.game";
-		this.children = new SlashCommand[]{new Add(bot), new Remove(bot), new ViewChannels(bot), new Clear(bot)};
+		this.children = new SlashCommand[]{new Add(), new Remove(), new ViewChannels(), new Clear()};
 		this.category = CmdCategory.GAMES;
 		this.module = CmdModule.GAMES;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -32,9 +31,7 @@ public class GameCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Add extends SlashCommand {
-		public Add(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Add() {
 			this.name = "add";
 			this.path = "bot.games.game.add";
 			this.options = List.of(
@@ -63,9 +60,7 @@ public class GameCmd extends CommandBase {
 	}
 
 	private class Remove extends SlashCommand {
-		public Remove(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Remove() {
 			this.name = "remove";
 			this.path = "bot.games.game.remove";
 			this.options = List.of(
@@ -91,9 +86,7 @@ public class GameCmd extends CommandBase {
 	}
 
 	private class ViewChannels extends SlashCommand {
-		public ViewChannels(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public ViewChannels() {
 			this.name = "view-channels";
 			this.path = "bot.games.game.view-channels";
 		}
@@ -123,9 +116,7 @@ public class GameCmd extends CommandBase {
 	}
 
 	private class Clear extends SlashCommand {
-		public Clear(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Clear() {
 			this.name = "clear";
 			this.path = "bot.games.game.clear";
 			this.options = List.of(

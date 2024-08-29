@@ -2,7 +2,6 @@ package union.commands.verification;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -18,8 +17,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class UnverifyCmd extends CommandBase {
 	
-	public UnverifyCmd(App bot) {
-		super(bot);
+	public UnverifyCmd() {
 		this.name = "unverify";
 		this.path = "bot.verification.unverify";
 		this.options = List.of(

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
@@ -37,12 +36,11 @@ public class TempRoleCmd extends CommandBase {
 	private final EventWaiter waiter;
 	private final int MAX_DAYS = 150;
 	
-	public TempRoleCmd(App bot, EventWaiter waiter) {
-		super(bot);
+	public TempRoleCmd(EventWaiter waiter) {
 		this.waiter = waiter;
 		this.name = "temprole";
 		this.path = "bot.roles.temprole";
-		this.children = new SlashCommand[]{new Assign(bot), new Cancel(bot), new Extend(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Assign(), new Cancel(), new Extend(), new View()};
 		this.category = CmdCategory.ROLES;
 		this.module = CmdModule.ROLES;
 		this.accessLevel = CmdAccessLevel.MOD;
@@ -53,9 +51,7 @@ public class TempRoleCmd extends CommandBase {
 
 	private class Assign extends SlashCommand {
 
-		public Assign(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Assign() {
 			this.name = "assign";
 			this.path = "bot.roles.temprole.assign";
 			this.options = List.of(
@@ -165,9 +161,7 @@ public class TempRoleCmd extends CommandBase {
 
 	private class Cancel extends SlashCommand {
 
-		public Cancel(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Cancel() {
 			this.name = "cancel";
 			this.path = "bot.roles.temprole.cancel";
 			this.options = List.of(
@@ -214,9 +208,7 @@ public class TempRoleCmd extends CommandBase {
 
 	private class Extend extends SlashCommand {
 
-		public Extend(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Extend() {
 			this.name = "extend";
 			this.path = "bot.roles.temprole.extend";
 			this.options = List.of(
@@ -277,9 +269,7 @@ public class TempRoleCmd extends CommandBase {
 
 	private class View extends SlashCommand {
 
-		public View(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public View() {
 			this.name = "view";
 			this.path = "bot.roles.temprole.view";
 		}

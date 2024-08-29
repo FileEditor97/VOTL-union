@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -23,8 +22,7 @@ import union.utils.message.TimeUtil;
 
 public class RcloseCmd extends CommandBase {
 	
-	public RcloseCmd(App bot) {
-		super(bot);
+	public RcloseCmd() {
 		this.name = "rclose";
 		this.path = "bot.ticketing.rclose";
 		this.options = List.of(

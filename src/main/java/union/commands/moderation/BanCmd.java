@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -34,8 +33,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class BanCmd extends CommandBase {
 	
-	public BanCmd(App bot) {
-		super(bot);
+	public BanCmd() {
 		this.name = "ban";
 		this.path = "bot.moderation.ban";
 		this.options = List.of(

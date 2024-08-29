@@ -13,11 +13,10 @@ import java.util.List;
 
 public class SettingsCmd extends CommandBase {
 
-	public SettingsCmd(App bot) {
-		super(bot);
+	public SettingsCmd() {
 		this.name = "settings";
 		this.path = "bot.owner.settings";
-		this.children = new SlashCommand[]{new Database(bot), new BotWhitelist(bot)};
+		this.children = new SlashCommand[]{new Database(), new BotWhitelist()};
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;
 		this.guildOnly = false;
@@ -27,9 +26,7 @@ public class SettingsCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Database extends SlashCommand {
-		public Database(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Database() {
 			this.name = "database";
 			this.path = "bot.owner.settings.database";
 			this.options = List.of(
@@ -56,9 +53,7 @@ public class SettingsCmd extends CommandBase {
 	}
 
 	private class BotWhitelist extends SlashCommand {
-		public BotWhitelist(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public BotWhitelist() {
 			this.name = "whitelist";
 			this.path = "bot.owner.settings.whitelist";
 			this.options = List.of(

@@ -451,7 +451,7 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		if (command != null) {
 			if (listener != null)
 				listener.onSlashCommand(commandEvent, command);
-			uses.put(command.getName(), uses.getOrDefault(command.getName(), 0) + 1);
+			uses.put(event.getFullCommandName(), uses.getOrDefault(event.getFullCommandName(), 0) + 1);
 			command.run(commandEvent);
 			// Command is done
 		}

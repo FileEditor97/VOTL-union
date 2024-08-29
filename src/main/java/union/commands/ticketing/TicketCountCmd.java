@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -20,8 +19,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class TicketCountCmd extends CommandBase {
 	
-	public TicketCountCmd(App bot) {
-		super(bot);
+	public TicketCountCmd() {
 		this.name = "tcount";
 		this.path = "bot.ticketing.tcount";
 		this.options = List.of(new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),

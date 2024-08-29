@@ -6,7 +6,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -24,8 +23,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class CheckServerCmd extends CommandBase {
 	
-	public CheckServerCmd(App bot) {
-		super(bot);
+	public CheckServerCmd() {
+		super();
 		this.name = "checkservers";
 		this.path = "bot.roles.checkservers";
 		this.options = List.of(

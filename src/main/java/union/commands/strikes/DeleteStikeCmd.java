@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
@@ -40,8 +39,7 @@ public class DeleteStikeCmd extends CommandBase {
 
 	private final EventWaiter waiter;
 	
-	public DeleteStikeCmd(App bot, EventWaiter waiter) {
-		super(bot);
+	public DeleteStikeCmd(EventWaiter waiter) {
 		this.name = "delstrike";
 		this.path = "bot.moderation.delstrike";
 		this.options = List.of(

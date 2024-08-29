@@ -13,10 +13,7 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 public abstract class CommandBase extends SlashCommand {
 	
-	public CommandBase(App bot) {
-		this.bot = bot;
-		this.lu = bot.getLocaleUtil();
-	}
+	public CommandBase() {}
 
 	// reply to event
 	public final void createReply(SlashCommandEvent event, @NotNull String msg) {

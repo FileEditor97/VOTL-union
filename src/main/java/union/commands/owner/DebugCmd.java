@@ -3,7 +3,6 @@ package union.commands.owner;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
@@ -13,8 +12,7 @@ import java.util.List;
 
 public class DebugCmd extends CommandBase {
 
-	public DebugCmd(App bot) {
-		super(bot);
+	public DebugCmd() {
 		this.name = "debug";
 		this.path = "bot.owner.debug";
 		this.options = List.of(

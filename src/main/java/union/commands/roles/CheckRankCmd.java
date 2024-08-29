@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -24,8 +23,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class CheckRankCmd extends CommandBase {
 	
-	public CheckRankCmd(App bot) {
-		super(bot);
+	public CheckRankCmd() {
+		super();
 		this.name = "checkrank";
 		this.path = "bot.roles.checkrank";
 		this.options = List.of(

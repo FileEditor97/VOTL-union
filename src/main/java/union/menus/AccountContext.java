@@ -1,6 +1,5 @@
 package union.menus;
 
-import union.App;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
 import union.objects.CmdAccessLevel;
@@ -13,9 +12,7 @@ import net.dv8tion.jda.api.entities.User;
 
 public class AccountContext extends UserContextMenu {
 	
-	public AccountContext(App bot) {
-		this.bot = bot;
-		this.lu = bot.getLocaleUtil();
+	public AccountContext() {
 		this.name = "account";
 		this.path = "menus.account";
 		this.module = CmdModule.VERIFICATION;

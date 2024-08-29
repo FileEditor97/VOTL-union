@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
@@ -28,11 +27,10 @@ public class ModuleCmd extends CommandBase {
 	
 	private static EventWaiter waiter;
 	
-	public ModuleCmd(App bot, EventWaiter waiter) {
-		super(bot);
+	public ModuleCmd(EventWaiter waiter) {
 		this.name = "module";
 		this.path = "bot.guild.module";
-		this.children = new SlashCommand[]{new Show(bot), new Disable(bot), new Enable(bot)};
+		this.children = new SlashCommand[]{new Show(), new Disable(), new Enable()};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.OWNER;
 		ModuleCmd.waiter = waiter;
@@ -43,9 +41,7 @@ public class ModuleCmd extends CommandBase {
 
 	private class Show extends SlashCommand {
 
-		public Show(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Show() {
 			this.name = "show";
 			this.path = "bot.guild.module.show";
 		}
@@ -77,9 +73,7 @@ public class ModuleCmd extends CommandBase {
 
 	private class Disable extends SlashCommand {
 
-		public Disable(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Disable() {
 			this.name = "disable";
 			this.path = "bot.guild.module.disable";
 		}
@@ -149,9 +143,7 @@ public class ModuleCmd extends CommandBase {
 
 	private class Enable extends SlashCommand {
 
-		public Enable(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Enable() {
 			this.name = "enable";
 			this.path = "bot.guild.module.enable";
 		}

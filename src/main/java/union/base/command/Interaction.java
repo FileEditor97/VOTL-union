@@ -169,21 +169,13 @@ public abstract class Interaction
 		return path;
 	}
 
-	protected App bot = null;
+	protected final App bot = App.getInstance();
 
-	protected LocaleUtil lu = null;
+	protected final LocaleUtil lu = bot.getLocaleUtil();
 
 	protected CmdModule module = null;
 
 	protected CmdAccessLevel accessLevel = CmdAccessLevel.ALL;
-
-	public App getApp() {
-		return bot;
-	}
-
-	public LocaleUtil getLocaleUtil() {
-		return lu;
-	}
 
 	public CmdAccessLevel getAccessLevel() {
 		return accessLevel;

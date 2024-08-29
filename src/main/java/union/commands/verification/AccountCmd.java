@@ -3,7 +3,6 @@ package union.commands.verification;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -20,8 +19,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class AccountCmd extends CommandBase {
 	
-	public AccountCmd(App bot) {
-		super(bot);
+	public AccountCmd() {
 		this.name = "account";
 		this.path = "bot.verification.account";
 		this.options = List.of(

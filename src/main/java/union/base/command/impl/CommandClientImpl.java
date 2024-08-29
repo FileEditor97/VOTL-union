@@ -63,8 +63,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author John Grosh (jagrosh)
  */
-public class CommandClientImpl implements CommandClient, EventListener
-{
+public class CommandClientImpl implements CommandClient, EventListener {
 	private static final Logger LOG = LoggerFactory.getLogger(CommandClient.class);
 
 	private final OffsetDateTime start;
@@ -92,7 +91,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 	{
 		Checks.check(ownerId != null, "Owner ID was set null or not set! Please provide an User ID to register as the owner!");
 
-		if(!SafeIdUtil.checkId(ownerId))
+		if (!SafeIdUtil.checkId(ownerId))
 			LOG.warn(String.format("The provided Owner ID (%s) was found unsafe! Make sure ID is a non-negative long!", ownerId));
 
 		this.start = OffsetDateTime.now();
@@ -115,14 +114,12 @@ public class CommandClientImpl implements CommandClient, EventListener
 		this.executor = executor==null ? Executors.newSingleThreadScheduledExecutor() : executor;
 
 		// Load slash commands
-		for(SlashCommand command : slashCommands)
-		{
+		for (SlashCommand command : slashCommands) {
 			addSlashCommand(command);
 		}
 
 		// Load context menus
-		for(ContextMenu menu : contextMenus)
-		{
+		for (ContextMenu menu : contextMenus) {
 			addContextMenu(menu);
 		}
 	}
@@ -182,13 +179,10 @@ public class CommandClientImpl implements CommandClient, EventListener
 	}
 
 	@Override
-	public int getRemainingCooldown(String name)
-	{
-		if(cooldowns.containsKey(name))
-		{
+	public int getRemainingCooldown(String name) {
+		if(cooldowns.containsKey(name)) {
 			int time = (int) Math.ceil(OffsetDateTime.now().until(cooldowns.get(name), ChronoUnit.MILLIS) / 1000D);
-			if(time<=0)
-			{
+			if (time<=0) {
 				cooldowns.remove(name);
 				return 0;
 			}
@@ -204,16 +198,14 @@ public class CommandClientImpl implements CommandClient, EventListener
 	}
 
 	@Override
-	public void cleanCooldowns()
-	{
+	public void cleanCooldowns() {
 		OffsetDateTime now = OffsetDateTime.now();
 		cooldowns.keySet().stream().filter((str) -> (cooldowns.get(str).isBefore(now)))
 				.toList().forEach(cooldowns::remove);
 	}
 
 	@Override
-	public int getCommandUses(SlashCommand command)
-	{
+	public int getCommandUses(SlashCommand command) {
 		return getCommandUses(command.getName());
 	}
 
@@ -224,25 +216,27 @@ public class CommandClientImpl implements CommandClient, EventListener
 	}
 
 	@Override
+	public HashMap<String, Integer> getCommandUses() {
+		return uses;
+	}
+
+	@Override
 	public void addSlashCommand(SlashCommand command)
 	{
 		addSlashCommand(command, slashCommands.size());
 	}
 
 	@Override
-	public void addSlashCommand(SlashCommand command, int index)
-	{
-		if(index>slashCommands.size() || index<0)
+	public void addSlashCommand(SlashCommand command, int index) {
+		if (index>slashCommands.size() || index<0)
 			throw new ArrayIndexOutOfBoundsException("Index specified is invalid: ["+index+"/"+slashCommands.size()+"]");
-		synchronized(slashCommandIndex)
-		{
+		synchronized(slashCommandIndex) {
 			String name = command.getName().toLowerCase(Locale.ROOT);
 			//check for collision
-			if(slashCommandIndex.containsKey(name))
+			if (slashCommandIndex.containsKey(name))
 				throw new IllegalArgumentException("Command added has a name that has already been indexed: \""+name+"\"!");
 			//shift if not append
-			if(index<slashCommands.size())
-			{
+			if (index<slashCommands.size()) {
 				slashCommandIndex.entrySet().stream().filter(entry -> entry.getValue()>=index).toList()
 					.forEach(entry -> slashCommandIndex.put(entry.getKey(), entry.getValue()+1));
 			}
@@ -259,23 +253,20 @@ public class CommandClientImpl implements CommandClient, EventListener
 	}
 
 	@Override
-	public void addContextMenu(ContextMenu menu, int index)
-	{
-		if(index>contextMenus.size() || index<0)
+	public void addContextMenu(ContextMenu menu, int index) {
+		if (index>contextMenus.size() || index<0)
 			throw new ArrayIndexOutOfBoundsException("Index specified is invalid: ["+index+"/"+contextMenus.size()+"]");
-		synchronized(contextMenuIndex)
-		{
+		synchronized(contextMenuIndex) {
 			String name = menu.getName();
 			//check for collision
-			if(contextMenuIndex.containsKey(name)) {
+			if (contextMenuIndex.containsKey(name)) {
 				// Compare the existing menu's class to the new menu's class
 				if (contextMenuIndex.get(name).getClass().getName().equals(menu.getClass().getName())) {
 					throw new IllegalArgumentException("Context Menu added has a name and class that has already been indexed: \"" + name + "\"!");
 				}
 			}
 			//shift if not append
-			if(index<contextMenuIndex.size())
-			{
+			if (index<contextMenuIndex.size()) {
 				contextMenuIndex.entrySet().stream().filter(entry -> entry.getValue()>=index).toList()
 					.forEach(entry -> contextMenuIndex.put(entry.getKey(), entry.getValue()+1));
 			}
@@ -316,62 +307,54 @@ public class CommandClientImpl implements CommandClient, EventListener
 	}
 
 	@Override
-	public void onEvent(@NotNull GenericEvent event)
-	{
-		if(event instanceof SlashCommandInteractionEvent)
+	public void onEvent(@NotNull GenericEvent event) {
+		if (event instanceof SlashCommandInteractionEvent)
 			onSlashCommand((SlashCommandInteractionEvent)event);
 
-		else if(event instanceof MessageContextInteractionEvent)
+		else if (event instanceof MessageContextInteractionEvent)
 			onMessageContextMenu((MessageContextInteractionEvent)event);
-		else if(event instanceof UserContextInteractionEvent)
+		else if (event instanceof UserContextInteractionEvent)
 			onUserContextMenu((UserContextInteractionEvent)event);
 
 		else if (event instanceof CommandAutoCompleteInteractionEvent)
 			onCommandAutoComplete((CommandAutoCompleteInteractionEvent)event);
 
-		else if(event instanceof ReadyEvent)
+		else if (event instanceof ReadyEvent)
 			onReady((ReadyEvent)event);
-		else if(event instanceof ShutdownEvent)
-		{
-			if(shutdownAutomatically)
+		else if (event instanceof ShutdownEvent) {
+			if (shutdownAutomatically)
 				shutdown();
 		}
 	}
 
-	private void onReady(ReadyEvent event)
-	{
-		if(!event.getJDA().getSelfUser().isBot())
-		{
+	private void onReady(ReadyEvent event) {
+		if (!event.getJDA().getSelfUser().isBot()) {
 			LOG.error("JDA-Utilities does not support CLIENT accounts.");
 			event.getJDA().shutdown();
 			return;
 		}
 
-		if(activity != null)
+		if (activity != null)
 			event.getJDA().getPresence().setPresence(status==null ? OnlineStatus.ONLINE : status,
 				"default".equals(activity.getName()) ? Activity.playing("Type /help") : activity);
 
 		// Upsert slash commands, if not manual
-		if (!manualUpsert)
-		{
+		if (!manualUpsert) {
 			upsertInteractions(event.getJDA());
 		}
 	}
 
 	@Override
-	public void upsertInteractions(JDA jda)
-	{
+	public void upsertInteractions(JDA jda) {
 		if (devGuildIds == null) {
 			upsertInteractions(jda, forcedGuildId);
 		} else {
 			upsertInteractions(jda, devGuildIds);
 		}
-		
 	}
 
 	@Override
-	public void upsertInteractions(JDA jda, String serverId)
-	{
+	public void upsertInteractions(JDA jda, String serverId) {
 		// Get all commands
 		List<CommandData> data = new ArrayList<>();
 		List<SlashCommand> slashCommands = getSlashCommands();
@@ -380,8 +363,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 		//Map<String, ContextMenu> contextMenuMap = new HashMap<>();
 
 		// Build the command and privilege data
-		for (SlashCommand command : slashCommands)
-		{
+		for (SlashCommand command : slashCommands) {
 			data.add(command.buildCommandData());
 			//slashCommandMap.put(command.getName(), command);
 		}
@@ -392,12 +374,10 @@ public class CommandClientImpl implements CommandClient, EventListener
 		}
 
 		// Upsert the commands
-		if (serverId != null)
-		{
+		if (serverId != null) {
 			// Attempt to retrieve the provided guild
 			Guild server = jda.getGuildById(serverId);
-			if (server == null)
-			{
+			if (server == null) {
 				LOG.error("Specified forced guild is null! Slash Commands will NOT be added! Is the bot added?");
 				return;
 			}
@@ -424,8 +404,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 		//Map<String, ContextMenu> contextMenuMap = new HashMap<>();
 
 		// Build the command and privilege data
-		for (SlashCommand command : slashCommands)
-		{
+		for (SlashCommand command : slashCommands) {
 			if (!command.isOwnerCommand()) {
 				data.add(command.buildCommandData());
 			} else {
@@ -449,8 +428,7 @@ public class CommandClientImpl implements CommandClient, EventListener
 				return;
 			}
 			Guild server = jda.getGuildById(serverId);
-			if (server == null)
-			{
+			if (server == null) {
 				LOG.error("Specified forced guild is null! Slash Commands will NOT be added! Is the bot added?");
 				return;
 			}
@@ -463,17 +441,15 @@ public class CommandClientImpl implements CommandClient, EventListener
 		}
 	}
 
-	private void onSlashCommand(SlashCommandInteractionEvent event)
-	{
+	private void onSlashCommand(SlashCommandInteractionEvent event) {
 		// this will be null if it's not a command
 		final SlashCommand command = findSlashCommand(event.getFullCommandName());
 
 		// Wrap the event in a SlashCommandEvent
 		final SlashCommandEvent commandEvent = new SlashCommandEvent(event, this);
 
-		if(command != null)
-		{
-			if(listener != null)
+		if (command != null) {
+			if (listener != null)
 				listener.onSlashCommand(commandEvent, command);
 			uses.put(command.getName(), uses.getOrDefault(command.getName(), 0) + 1);
 			command.run(commandEvent);
@@ -481,24 +457,20 @@ public class CommandClientImpl implements CommandClient, EventListener
 		}
 	}
 
-	private void onCommandAutoComplete(CommandAutoCompleteInteractionEvent event)
-	{
+	private void onCommandAutoComplete(CommandAutoCompleteInteractionEvent event) {
 		// this will be null if it's not a command
 		final SlashCommand command = findSlashCommand(event.getFullCommandName());
 
-		if(command != null)
-		{
+		if (command != null) {
 			command.onAutoComplete(event);
 		}
 	}
 
-	private SlashCommand findSlashCommand(String path)
-	{
+	private SlashCommand findSlashCommand(String path) {
 		String[] parts = path.split(" ");
 
 		final SlashCommand command; // this will be null if it's not a command
-		synchronized(slashCommandIndex)
-		{
+		synchronized(slashCommandIndex) {
 			int i = slashCommandIndex.getOrDefault(parts[0].toLowerCase(Locale.ROOT), -1);
 			command = i != -1? slashCommands.get(i) : null;
 		}
@@ -506,33 +478,31 @@ public class CommandClientImpl implements CommandClient, EventListener
 		if (command == null)
 			return null;
 
-		switch (parts.length) {
-			case 1: // Slash command with no children
-				return command;
-			case 2: // Slash command with children
+		return switch (parts.length) {
+			case 1 -> // Slash command with no children
+				command;
+			case 2 -> {
+				for (SlashCommand cmd : command.getChildren())
+					if (cmd.isCommandFor(parts[1]))
+						yield cmd;
+				yield null; // Slash command with children
 				// child check
-				for(SlashCommand cmd: command.getChildren())
-					if(cmd.isCommandFor(parts[1]))
-						return cmd;
-
-				return null;
-			case 3: // Slash command with a group and a child
-				for(SlashCommand cmd: command.getChildren())
-					if(cmd.isCommandFor(parts[2]) && cmd.getSubcommandGroup().getName().equals(parts[1]))
-						return cmd;
-
-				return null;
-		}
-
-		// How did we get here?
-		return null;
+			}
+			case 3 -> {
+				for (SlashCommand cmd : command.getChildren())
+					if (cmd.isCommandFor(parts[2]) && cmd.getSubcommandGroup().getName().equals(parts[1]))
+						yield cmd;
+				yield null; // Slash command with a group and a child
+			}
+			default ->
+				// How did we get here?
+				null;
+		};
 	}
 
-	private void onUserContextMenu(UserContextInteractionEvent event)
-	{
+	private void onUserContextMenu(UserContextInteractionEvent event) {
 		final UserContextMenu menu; // this will be null if it's not a command
-		synchronized(contextMenuIndex)
-		{
+		synchronized(contextMenuIndex) {
 			ContextMenu c;
 			int i = contextMenuIndex.getOrDefault(event.getName(), -1);
 			c = i != -1 ? contextMenus.get(i) : null;
@@ -545,9 +515,8 @@ public class CommandClientImpl implements CommandClient, EventListener
 
 		final UserContextMenuEvent menuEvent = new UserContextMenuEvent(event.getJDA(), event.getResponseNumber(), event,this);
 
-		if(menu != null)
-		{
-			if(listener != null)
+		if (menu != null) {
+			if (listener != null)
 				listener.onUserContextMenu(menuEvent, menu);
 			uses.put(menu.getName(), uses.getOrDefault(menu.getName(), 0) + 1);
 			menu.run(menuEvent);
@@ -555,11 +524,9 @@ public class CommandClientImpl implements CommandClient, EventListener
 		}
 	}
 
-	private void onMessageContextMenu(MessageContextInteractionEvent event)
-	{
+	private void onMessageContextMenu(MessageContextInteractionEvent event) {
 		final MessageContextMenu menu; // this will be null if it's not a command
-		synchronized(contextMenuIndex)
-		{
+		synchronized(contextMenuIndex) {
 			ContextMenu c;
 			// Do not lowercase, as there could be 2 menus with the same name, but different letter cases
 			int i = contextMenuIndex.getOrDefault(event.getName(), -1);
@@ -573,9 +540,8 @@ public class CommandClientImpl implements CommandClient, EventListener
 
 		final MessageContextMenuEvent menuEvent = new MessageContextMenuEvent(event.getJDA(), event.getResponseNumber(), event,this);
 
-		if(menu != null)
-		{
-			if(listener != null)
+		if (menu != null) {
+			if (listener != null)
 				listener.onMessageContextMenu(menuEvent, menu);
 			uses.put(menu.getName(), uses.getOrDefault(menu.getName(), 0) + 1);
 			menu.run(menuEvent);

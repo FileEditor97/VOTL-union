@@ -1,6 +1,5 @@
 package union.commands;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.objects.annotation.NotNull;

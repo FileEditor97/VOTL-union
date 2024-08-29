@@ -3,7 +3,6 @@ package union.commands.guild;
 import java.util.List;
 import java.util.Objects;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;

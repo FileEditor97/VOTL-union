@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.TimeFormat;
-import union.App;
+
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CaseType;

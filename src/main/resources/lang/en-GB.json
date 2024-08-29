@@ -888,6 +888,7 @@
 			"listener": {
 				"default_name": "{user}'s channel",
 				"cooldown": "Creating voice channels to quickly, wait a bit! Or you already own maximum VoiceChannels.",
+				"failed": "Failed to create the voice channel.\n> %s",
 				"not_in_voice": "You are not connected to any voice channel.",
 				"panel": {
 					"lock": "Channel locked!",
@@ -2386,7 +2387,7 @@
 					"invalid_args":"You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be added.",
 					"no_member": "Member not found.",
-					"done": "Added roles {roles} to {user}",
+					"done": "Added roles {roles} to {user}.",
 					"failed": "Unable to add selected roles to the user."
 				},
 				"remove": {
@@ -2411,7 +2412,7 @@
 					"invalid_args":"You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be removed.",
 					"no_member": "Member not found.",
-					"done": "Removed roles {roles} from {user}",
+					"done": "Removed roles {roles} from {user}.",
 					"failed": "Unable to remove selected roles from the user."
 				},
 				"removeall": {

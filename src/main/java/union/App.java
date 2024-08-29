@@ -61,6 +61,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 
 public class App {
+	protected static App instance;
 	
 	private final Logger logger = (Logger) LoggerFactory.getLogger(App.class);
 
@@ -89,6 +90,7 @@ public class App {
 
 	@SuppressWarnings("BusyWait")
 	public App() {
+		App.instance = this;
 
 		try {
 			fileManager.addFile("config", "/config.json", Constants.DATA_PATH + "config.json")
@@ -97,7 +99,7 @@ public class App {
 				.addLang("en-GB")
 				.addLang("ru");
 		} catch (Exception ex) {
-			logger.error("Error while interacting with File Manager", ex);
+			System.out.println(ex.getMessage());
 			System.exit(0);
 		}
 
@@ -257,6 +259,7 @@ public class App {
 
 		JDA tempJda;
 
+		// Try to log in
 		int retries = 4; // how many times will it try to build
 		int cooldown = 8; // in seconds; cooldown amount, will doubles after each retry
 		while (true) {
@@ -284,6 +287,22 @@ public class App {
 		}
 
 		this.JDA = tempJda;
+
+		createWebhookAppender();
+
+		logger.info("Success start");
+
+		try {
+			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
+			helper.getLogger().info("Helper started");
+		} catch (Throwable ex) {
+			instance.logger.info("Unable to start helper");
+			helper = null;
+		}
+	}
+
+	public static App getInstance() {
+		return instance;
 	}
 
 	public CommandClient getClient() {
@@ -345,21 +364,6 @@ public class App {
 	public Helper getHelper() {
 		return helper;
 	}
-
-	public static void main(String[] args) {
-        App instance = new App();
-		instance.createWebhookAppender();
-		instance.logger.info("Success start");
-
-		try {
-			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
-			helper.getLogger().info("Helper started");
-		} catch (Throwable ex) {
-			instance.logger.info("Unable to start helper");
-			helper = null;
-		}
-	}
-
 
 	private void createWebhookAppender() {
 		String url = getFileManager().getNullableString("config", "webhook");

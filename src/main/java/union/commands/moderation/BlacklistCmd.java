@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -26,11 +25,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class BlacklistCmd extends CommandBase {
 	
-	public BlacklistCmd(App bot) {
-		super(bot);
+	public BlacklistCmd() {
 		this.name = "blacklist";
 		this.path = "bot.moderation.blacklist";
-		this.children = new SlashCommand[]{new View(bot), new Remove(bot), new AddSteam(bot)};
+		this.children = new SlashCommand[]{new View(), new Remove(), new AddSteam(), new Search()};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -40,9 +38,7 @@ public class BlacklistCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class View extends SlashCommand {
-		public View(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public View() {
 			this.name = "view";
 			this.path = "bot.moderation.blacklist.view";
 			this.options = List.of(
@@ -87,9 +83,7 @@ public class BlacklistCmd extends CommandBase {
 	}
 
 	private class Remove extends SlashCommand {
-		public Remove(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Remove() {
 			this.name = "remove";
 			this.path = "bot.moderation.blacklist.remove";
 			this.options = List.of(
@@ -162,9 +156,7 @@ public class BlacklistCmd extends CommandBase {
 	}
 
 	private class AddSteam extends SlashCommand {
-		public AddSteam(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public AddSteam() {
 			this.name = "add";
 			this.path = "bot.moderation.blacklist.add";
 			this.options = List.of(
@@ -210,6 +202,83 @@ public class BlacklistCmd extends CommandBase {
 				);
 			} else {
 				editError(event, path+".already", "Received: "+steam64);
+			}
+		}
+	}
+
+	private class Search extends SlashCommand {
+		public Search() {
+			this.name = "search";
+			this.path = "bot.moderation.blacklist.search";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "group", lu.getText(path+".group.help"), true, true).setMinValue(1),
+				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
+				new OptionData(OptionType.STRING, "steamid", lu.getText(path+".steamid.help")).setMaxLength(30)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			Integer groupId = event.optInteger("group");
+			long guildId = event.getGuild().getIdLong();
+			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
+				// Is not group's owner or manager
+				editError(event, path+".cant_view");
+				return;
+			}
+
+			if (event.hasOption("user")) {
+				User user = event.optUser("user");
+				Map<String, Object> data = bot.getDBUtil().blacklist.getByUserId(groupId, user.getIdLong());
+				if (data == null) {
+					editError(event, path+".not_found", "Received: "+user.getAsMention());
+					return;
+				}
+
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+					.setDescription(lu.getText(event, path+".value").formatted(
+						"%s `%s`".formatted(user.getAsMention(), user.getId()),
+						Optional.ofNullable(castLong(data.get("steam64"))).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
+						Optional.ofNullable(castLong(data.get("guildId"))).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
+						Optional.ofNullable(castLong(data.get("modId"))).map("<@%s>"::formatted).orElse("-"),
+						Optional.ofNullable(String.valueOf(data.get("reason"))).map(v -> MessageUtil.limitString(v, 100)).orElse("-"),
+						groupId))
+					.build());
+			} else if (event.hasOption("steamid")) {
+				String input = event.optString("steamid");
+
+				long steam64;
+				if (Pattern.matches("^STEAM_[0-5]:[01]:\\d+$", input)) {
+					steam64 = SteamUtil.convertSteamIDtoSteam64(input);
+				} else {
+					try {
+						steam64 = Long.parseLong(input);
+					} catch (NumberFormatException ex) {
+						editError(event, "errors.error", ex.getMessage());
+						return;
+					}
+				}
+
+				Map<String, Object> data = bot.getDBUtil().blacklist.getBySteam64(groupId, steam64);
+				if (data == null) {
+					editError(event, path+".not_found", "Received: "+steam64);
+					return;
+				}
+
+				editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+					.setDescription(lu.getText(event, path+".value").formatted(
+						Optional.ofNullable(castLong(data.get("userId"))).map("<@%s> `%<s`"::formatted).orElse("-"),
+						SteamUtil.convertSteam64toSteamID(steam64),
+						Optional.ofNullable(castLong(data.get("guildId"))).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
+						Optional.ofNullable(castLong(data.get("modId"))).map("<@%s>"::formatted).orElse("-"),
+						Optional.ofNullable(String.valueOf(data.get("reason"))).map(v -> MessageUtil.limitString(v, 100)).orElse("-"),
+						groupId))
+					.build());
+			} else {
+				// No options
+				editError(event, path+".no_options");
 			}
 		}
 	}

@@ -474,6 +474,10 @@
 					"name": "content",
 					"help": "Enter text"
 				}
+			},
+			"statistics": {
+				"help": "View command use",
+				"usage": "statistics"
 			}
 		},
 		"guild": {
@@ -1621,6 +1625,26 @@
 					"cant_view": "Can't view selected group. (Not group's owner or manager)",
 					"already": "This SteamID is already blacklisted in this group.",
 					"done": "Blacklisted SteamID `%s` in group `%s`."
+				},
+				"search": {
+					"help": "Search blacklist for an user or SteamID",
+					"usage": "search <Group> <User/SteamID>",
+					"group": {
+						"name": "group",
+						"help": "Select Group"
+					},
+					"user": {
+						"name": "user",
+						"help": "Select user or enter ID"
+					},
+					"steamid": {
+						"name": "steamid",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"cant_view": "Can't view selected group. (Not group's owner or manager)",
+					"no_options": "No options provided. Either select *user* or enter *SteamID*.",
+					"not_found": "User not found.",
+					"value": "User: %s\nSteamID: `%s`\nServer: `%s`\nModerator: %s\nReason: `%s`\n*Group ID*: `%s`"
 				},
 				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
 				"no_groups": "This server can't manage any group.",

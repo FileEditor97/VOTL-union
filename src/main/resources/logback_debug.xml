@@ -64,7 +64,7 @@
         </encoder>
     </appender>
 
-    <logger name="dev.fileeditor.votl" level="DEBUG" additivity="true">
+    <logger name="union" level="DEBUG" additivity="true">
         <appender-ref ref="FILE-DEBUG"/>
         <appender-ref ref="CONSOLE-DEBUG" />
     </logger>

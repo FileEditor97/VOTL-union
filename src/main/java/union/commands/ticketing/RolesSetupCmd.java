@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import net.dv8tion.jda.internal.utils.Checks;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -169,17 +172,18 @@ public class RolesSetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
 			Role role = event.optRole("role");
 			if (role == null) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 			if (!bot.getDBUtil().role.existsRole(role.getId())) {
-				createError(event, path+".not_exists");
+				editError(event, path+".not_exists");
 				return;
 			}
-			
-			event.deferReply(true).queue();
+
 			StringBuffer response = new StringBuffer();
 
 			if (event.hasOption("description")) {
@@ -255,18 +259,32 @@ public class RolesSetupCmd extends CommandBase {
 			this.path = "bot.ticketing.rolesetup.remove";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)
+					.setMaxLength(20)
 			);
 		}
 
+		Pattern rolePattern = Pattern.compile("^<@[\\d+]>$");
+
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String roleId = event.optString("id", "0");
+			event.deferReply(true).queue();
+			String input = event.optString("id");
+
+			Matcher matcher = rolePattern.matcher(input);
+			String roleId = matcher.find() ? matcher.group(1) : input;
+			try {
+				Checks.isSnowflake(roleId);
+			} catch (IllegalArgumentException e) {
+				editError(event, path+".no_role", "ID: "+roleId);
+				return;
+			}
+
 			if (!bot.getDBUtil().role.existsRole(roleId)) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 			bot.getDBUtil().role.remove(roleId);
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{id}", roleId))
 				.build());
 		}
@@ -283,6 +301,7 @@ public class RolesSetupCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
+
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()

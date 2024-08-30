@@ -43,7 +43,6 @@ public class RolesPanelCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Create extends SlashCommand {
-
 		public Create() {
 			this.name = "create";
 			this.path = "bot.ticketing.rolespanel.create";
@@ -105,11 +104,9 @@ public class RolesPanelCmd extends CommandBase {
 				.build()
 			);
 		}
-
 	}
 
 	private class Update extends SlashCommand {
-
 		public Update() {
 			this.name = "update";
 			this.path = "bot.ticketing.rolespanel.update";
@@ -174,11 +171,9 @@ public class RolesPanelCmd extends CommandBase {
 			},
 			failure -> createError(event, path+".not_found", failure.getMessage()));
 		}
-
 	}
 
 	private class RowText extends SlashCommand {
-
 		public RowText() {
 			this.name = "row";
 			this.path = "bot.ticketing.rolespanel.row";
@@ -201,11 +196,9 @@ public class RolesPanelCmd extends CommandBase {
 				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))
 				.build());
 		}
-
 	}
 
 	private class OtherRole extends SlashCommand {
-
 		public OtherRole() {
 			this.name = "other";
 			this.path = "bot.ticketing.rolespanel.other";
@@ -226,5 +219,4 @@ public class RolesPanelCmd extends CommandBase {
 		}
 
 	}
-
 }

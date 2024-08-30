@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 public class CheckRankCmd extends CommandBase {
 	
 	public CheckRankCmd() {
-		super();
 		this.name = "checkrank";
 		this.path = "bot.roles.checkrank";
 		this.options = List.of(

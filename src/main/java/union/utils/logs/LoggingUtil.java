@@ -644,20 +644,22 @@ public class LoggingUtil {
 		private final LogType type = LogType.MESSAGE;
 
 		public void onMessageUpdate(Member author, GuildChannel channel, long messageId, MessageData oldData, MessageData newData) {
+			if (oldData == null || newData == null) return;
+
 			final Guild guild = channel.getGuild();
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 
-			if (oldData == null || newData == null) return;
-
+			MessageEmbed embed = logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData);
+			if (embed == null) return;
 			FileUpload fileUpload = uploadContentUpdate(oldData, newData, messageId);
 			if (fileUpload != null) {
-				client.sendMessageEmbeds(logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData))
+				client.sendMessageEmbeds(embed)
 					.addFiles(fileUpload)
 					.queue();
-				return;
+			} else {
+				client.sendMessageEmbeds(embed).queue();
 			}
-			client.sendMessageEmbeds(logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData)).queue();
 		}
 
 		public void onMessageDelete(GuildChannel channel, long messageId, MessageData data, Long modId) {
@@ -697,7 +699,7 @@ public class LoggingUtil {
 		private FileUpload uploadContentUpdate(MessageData oldData, MessageData newData, long messageId) {
 			if (oldData.getContent().isBlank() || newData.getContent().isBlank()) return null;
 			if (newData.getContent().equals(oldData.getContent())) return null;
-			if (oldData.getContent().length()+oldData.getContent().length() < 1000) return null;
+			if (newData.getContent().length()+oldData.getContent().length() < 1000) return null;
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				baos.write("[%s (%s)]\n".formatted(newData.getAuthorName(), newData.getAuthorId()).getBytes());

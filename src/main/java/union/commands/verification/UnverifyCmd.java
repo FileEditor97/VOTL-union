@@ -37,6 +37,7 @@ public class UnverifyCmd extends CommandBase {
 		Member member = event.optMember("user");
 		if (member == null) {
 			editError(event, path+".no_user");
+			return;
 		}
 
 		Guild guild = event.getGuild();

@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 public class CheckServerCmd extends CommandBase {
 	
 	public CheckServerCmd() {
-		super();
 		this.name = "checkservers";
 		this.path = "bot.roles.checkservers";
 		this.options = List.of(

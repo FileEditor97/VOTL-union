@@ -3,7 +3,7 @@ package union.commands.owner;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import union.App;
+
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
@@ -13,8 +13,7 @@ import java.util.List;
 
 public class MessageCmd extends CommandBase {
 
-	public MessageCmd(App bot) {
-		super(bot);
+	public MessageCmd() {
 		this.name = "message";
 		this.path = "bot.owner.message";
 		this.options = List.of(

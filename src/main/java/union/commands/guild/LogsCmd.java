@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -33,12 +32,11 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 
 public class LogsCmd extends CommandBase {
 	
-	public LogsCmd(App bot) {
-		super(bot);
+	public LogsCmd() {
 		this.name = "logs";
 		this.path = "bot.guild.logs";
-		this.children = new SlashCommand[]{new Enable(bot), new Disable(bot), new View(bot),
-			new AddException(bot), new RemoveException(bot), new ViewException(bot)};
+		this.children = new SlashCommand[]{new Enable(), new Disable(), new View(),
+			new AddException(), new RemoveException(), new ViewException()};
 		this.accessLevel = CmdAccessLevel.ADMIN;
 		this.category = CmdCategory.GUILD;
 	}
@@ -47,9 +45,7 @@ public class LogsCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Enable extends SlashCommand {
-		public Enable(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Enable() {
 			this.name = "enable";
 			this.path = "bot.guild.logs.manage.enable";
 			this.options = List.of(
@@ -110,9 +106,7 @@ public class LogsCmd extends CommandBase {
 	}
 
 	private class Disable extends SlashCommand {
-		public Disable(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Disable() {
 			this.name = "disable";
 			this.path = "bot.guild.logs.manage.disable";
 			this.options = List.of(
@@ -162,9 +156,7 @@ public class LogsCmd extends CommandBase {
 	}
 
 	private class View extends SlashCommand {
-		public View(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public View() {
 			this.name = "view";
 			this.path = "bot.guild.logs.manage.view";
 			this.subcommandGroup = new SubcommandGroupData("manage", lu.getText("bot.guild.logs.manage.help"));
@@ -197,9 +189,7 @@ public class LogsCmd extends CommandBase {
 	}
 
 	private class AddException extends SlashCommand {
-		public AddException(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public AddException() {
 			this.name = "add";
 			this.path = "bot.guild.logs.exceptions.add";
 			this.options = List.of(
@@ -245,9 +235,7 @@ public class LogsCmd extends CommandBase {
 	}
 
 	private class RemoveException extends SlashCommand {
-		public RemoveException(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public RemoveException() {
 			this.name = "remove";
 			this.path = "bot.guild.logs.exceptions.remove";
 			this.options = List.of(
@@ -281,9 +269,7 @@ public class LogsCmd extends CommandBase {
 	}
 
 	private class ViewException extends SlashCommand {
-		public ViewException(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public ViewException() {
 			this.name = "view";
 			this.path = "bot.guild.logs.exceptions.view";
 			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));

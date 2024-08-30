@@ -2,7 +2,6 @@ package union.commands.other;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
@@ -16,8 +15,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class StatusCmd extends CommandBase {
 
-	public StatusCmd(App bot) {
-		super(bot);
+	public StatusCmd() {
 		this.name = "status";
 		this.path = "bot.other.status";
 		this.options = List.of(

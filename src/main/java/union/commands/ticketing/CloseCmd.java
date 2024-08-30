@@ -2,7 +2,7 @@ package union.commands.ticketing;
 
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import union.App;
+
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdModule;
@@ -13,8 +13,7 @@ import java.util.List;
 
 public class CloseCmd extends CommandBase {
 
-	public CloseCmd(App bot) {
-		super(bot);
+	public CloseCmd() {
 		this.name = "close";
 		this.path = "bot.ticketing.close";
 		this.options = List.of(

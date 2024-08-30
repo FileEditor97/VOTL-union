@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -21,8 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class AddUserCmd extends CommandBase {
 
-	public AddUserCmd(App bot) {
-		super(bot);
+	public AddUserCmd() {
 		this.name = "add";
 		this.path = "bot.ticketing.add";
 		this.options = List.of(

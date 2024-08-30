@@ -61,6 +61,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 
 public class App {
+	protected static App instance;
 	
 	private final Logger logger = (Logger) LoggerFactory.getLogger(App.class);
 
@@ -89,6 +90,7 @@ public class App {
 
 	@SuppressWarnings("BusyWait")
 	public App() {
+		App.instance = this;
 
 		try {
 			fileManager.addFile("config", "/config.json", Constants.DATA_PATH + "config.json")
@@ -97,7 +99,7 @@ public class App {
 				.addLang("en-GB")
 				.addLang("ru");
 		} catch (Exception ex) {
-			logger.error("Error while interacting with File Manager", ex);
+			System.out.println(ex.getMessage());
 			System.exit(0);
 		}
 
@@ -140,78 +142,79 @@ public class App {
 			.setActivity(Activity.customStatus(">>>  /help  <<<"))
 			.addSlashCommands(
 				// guild
-				new SetupCmd(this),
-				new ModuleCmd(this, WAITER),
-				new AccessCmd(this),
-				new LogsCmd(this),
-				new AutopunishCmd(this),
-				new ThreadsCmd(this),
+				new SetupCmd(),
+				new ModuleCmd(WAITER),
+				new AccessCmd(),
+				new LogsCmd(),
+				new AutopunishCmd(),
+				new ThreadsCmd(),
 				// owner
-				new ShutdownCmd(this),
-				new EvalCmd(this),
-				new GenerateListCmd(this),
-				new ForceAccessCmd(this),
-				new SettingsCmd(this),
-				new DebugCmd(this),
-				new MessageCmd(this),
+				new ShutdownCmd(),
+				new EvalCmd(),
+				new GenerateListCmd(),
+				new ForceAccessCmd(),
+				new SettingsCmd(),
+				new DebugCmd(),
+				new MessageCmd(),
+				new StatisticsCmd(),
 				// webhook
-				new WebhookCmd(this),
+				new WebhookCmd(),
 				// moderation
-				new BanCmd(this),
-				new UnbanCmd(this),
-				new KickCmd(this, WAITER),
-				new SyncCmd(this, WAITER),
-				new CaseCmd(this),
-				new ReasonCmd(this),
-				new DurationCmd(this),
-				new GroupCmd(this, WAITER),
-				new MuteCmd(this),
-				new UnmuteCmd(this),
-				new ModLogsCmd(this),
-				new ModStatsCmd(this),
-				new BlacklistCmd(this),
+				new BanCmd(),
+				new UnbanCmd(),
+				new KickCmd(WAITER),
+				new SyncCmd(WAITER),
+				new CaseCmd(),
+				new ReasonCmd(),
+				new DurationCmd(),
+				new GroupCmd(WAITER),
+				new MuteCmd(),
+				new UnmuteCmd(),
+				new ModLogsCmd(),
+				new ModStatsCmd(),
+				new BlacklistCmd(),
 				// strikes
-				new StrikeCmd(this),
-				new DeleteStikeCmd(this, WAITER),
-				new ClearStrikesCmd(this),
-				new StrikesCmd(this),
+				new StrikeCmd(),
+				new DeleteStikeCmd(WAITER),
+				new ClearStrikesCmd(),
+				new StrikesCmd(),
 				// other
-				new PingCmd(this),
-				new AboutCmd(this),
-				new HelpCmd(this),
-				new StatusCmd(this),
+				new PingCmd(),
+				new AboutCmd(),
+				new HelpCmd(),
+				new StatusCmd(),
 				// verify
-				new VerifyPanelCmd(this),
-				new VerifyRoleCmd(this),
-				new VerifyCmd(this),
-				new UnverifyCmd(this),
-				new AccountCmd(this),
-				new VerifyCheckCmd(this),
+				new VerifyPanelCmd(),
+				new VerifyRoleCmd(),
+				new VerifyCmd(),
+				new UnverifyCmd(),
+				new AccountCmd(),
+				new VerifyCheckCmd(),
 				// ticketing
-				new RolesPanelCmd(this),
-				new TicketCountCmd(this),
-				new RolesSetupCmd(this),
-				new TicketPanelCmd(this),
-				new CloseCmd(this),
-				new RcloseCmd(this),
-				new AddUserCmd(this),
-				new RemoveUserCmd(this),
+				new RolesPanelCmd(),
+				new TicketCountCmd(),
+				new RolesSetupCmd(),
+				new TicketPanelCmd(),
+				new CloseCmd(),
+				new RcloseCmd(),
+				new AddUserCmd(),
+				new RemoveUserCmd(),
 				// voice
-				new VoiceCmd(this),
+				new VoiceCmd(),
 				// roles
-				new CheckRankCmd(this),
-				new TempRoleCmd(this, WAITER),
-				new RoleCmd(this),
-				new CheckServerCmd(this),
+				new CheckRankCmd(),
+				new TempRoleCmd(WAITER),
+				new RoleCmd(),
+				new CheckServerCmd(),
 				// games
-				new GameCmd(this),
-				new GameStrikeCmd(this)
+				new GameCmd(),
+				new GameStrikeCmd()
 			)
 			.addContextMenus(
-				new AccountContext(this),
-				new ReportContext(this),
-				new ModlogsContext(this),
-				new ActiveModlogsContext(this)
+				new AccountContext(),
+				new ReportContext(),
+				new ModlogsContext(),
+				new ActiveModlogsContext()
 			)
 			.setListener(new CommandListener(localeUtil))
 			.setDevGuildIds(fileManager.getStringList("config", "dev-servers").toArray(new String[0]))
@@ -257,6 +260,7 @@ public class App {
 
 		JDA tempJda;
 
+		// Try to log in
 		int retries = 4; // how many times will it try to build
 		int cooldown = 8; // in seconds; cooldown amount, will doubles after each retry
 		while (true) {
@@ -284,6 +288,22 @@ public class App {
 		}
 
 		this.JDA = tempJda;
+
+		createWebhookAppender();
+
+		logger.info("Success start");
+
+		try {
+			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
+			helper.getLogger().info("Helper started");
+		} catch (Throwable ex) {
+			instance.logger.info("Unable to start helper");
+			helper = null;
+		}
+	}
+
+	public static App getInstance() {
+		return instance;
 	}
 
 	public CommandClient getClient() {
@@ -345,21 +365,6 @@ public class App {
 	public Helper getHelper() {
 		return helper;
 	}
-
-	public static void main(String[] args) {
-        App instance = new App();
-		instance.createWebhookAppender();
-		instance.logger.info("Success start");
-
-		try {
-			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
-			helper.getLogger().info("Helper started");
-		} catch (Throwable ex) {
-			instance.logger.info("Unable to start helper");
-			helper = null;
-		}
-	}
-
 
 	private void createWebhookAppender() {
 		String url = getFileManager().getNullableString("config", "webhook");

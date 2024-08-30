@@ -94,6 +94,8 @@ public class FileManager {
 
 		try {
 			if (!file.exists()) {
+				if (App.class.getResource(internal) == null)
+					throw new FileNotFoundException("Resource file '"+internal+"' not found.");
 				if ((split.length == 2 && !split[0].equals(".")) || (split.length >= 3 && split[0].equals("."))) {
 					if (!file.getParentFile().mkdirs() && !file.getParentFile().exists()) {
 						logger.error("Failed to create directory {}", split[1]);
@@ -224,6 +226,22 @@ public class FileManager {
 		}
 
 		return text;
+	}
+
+	@Nullable
+	public Integer getInteger(String name, String path){
+		File file = files.get(name);
+
+		if (file == null) return null;
+
+		try {
+			return JsonPath.using(CONF).parse(file).read("$." + path);
+		} catch (FileNotFoundException ex) {
+			logger.error("Couldn't find file {}.json", name);
+		} catch (IOException ex) {
+			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
+		}
+		return null;
 	}
 	
 	@Nullable

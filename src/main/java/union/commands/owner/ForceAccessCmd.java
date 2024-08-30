@@ -2,7 +2,6 @@ package union.commands.owner;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -14,8 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class ForceAccessCmd extends CommandBase {
 	
-	public ForceAccessCmd(App bot) {
-		super(bot);
+	public ForceAccessCmd() {
 		this.name = "forceaccess";
 		this.path = "bot.owner.forceaccess";
 		this.category = CmdCategory.OWNER;

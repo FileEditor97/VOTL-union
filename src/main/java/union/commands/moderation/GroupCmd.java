@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -33,11 +32,10 @@ public class GroupCmd extends CommandBase {
 	
 	private static EventWaiter waiter;
 
-	public GroupCmd(App bot, EventWaiter waiter) {
-		super(bot);
+	public GroupCmd(EventWaiter waiter) {
 		this.name = "group";
 		this.path = "bot.moderation.group";
-		this.children = new SlashCommand[]{new Create(bot), new Delete(bot), new Add(bot), new Remove(bot), new Modify(bot), new Manage(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Create(), new Delete(), new Add(), new Remove(), new Modify(), new Manage(), new View()};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -48,9 +46,7 @@ public class GroupCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Create extends SlashCommand {
-		public Create(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Create() {
 			this.name = "create";
 			this.path = "bot.moderation.group.create";
 			this.options = List.of(
@@ -135,9 +131,7 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class Delete extends SlashCommand {
-		public Delete(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Delete() {
 			this.name = "delete";
 			this.path = "bot.moderation.group.delete";
 			this.options = List.of(
@@ -175,9 +169,7 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class Add extends SlashCommand {
-		public Add(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Add() {
 			this.name = "add";
 			this.path = "bot.moderation.group.add";
 			this.options = List.of(
@@ -251,9 +243,7 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class Remove extends SlashCommand {
-		public Remove(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Remove() {
 			this.name = "remove";
 			this.path = "bot.moderation.group.remove";
 			this.options = List.of(
@@ -353,9 +343,7 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class Modify extends SlashCommand {
-		public Modify(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Modify() {
 			this.name = "modify";
 			this.path = "bot.moderation.group.modify";
 			this.options = List.of(
@@ -489,15 +477,12 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class Manage extends SlashCommand {
-		public Manage(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Manage() {
 			this.name = "manage";
 			this.path = "bot.moderation.group.manage";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
 				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help"))
-//				new OptionData(OptionType.BOOLEAN, "enable_verification", lu.getText(path+".enable_verification.help"))
 			);
 		}
 
@@ -605,9 +590,7 @@ public class GroupCmd extends CommandBase {
 	}
 
 	private class View extends SlashCommand {
-		public View(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public View() {
 			this.name = "view";
 			this.path = "bot.moderation.group.view";
 			this.options = List.of(

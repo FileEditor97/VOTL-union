@@ -2,7 +2,6 @@ package union.commands.moderation;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -19,8 +18,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse;
 
 public class ReasonCmd extends CommandBase {
 	
-	public ReasonCmd(App bot) {
-		super(bot);
+	public ReasonCmd() {
 		this.name = "reason";
 		this.path = "bot.moderation.reason";
 		this.options = List.of(

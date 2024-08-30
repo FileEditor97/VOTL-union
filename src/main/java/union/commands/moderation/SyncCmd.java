@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -28,11 +27,10 @@ public class SyncCmd extends CommandBase {
 
 	private static EventWaiter waiter;
 	
-	public SyncCmd(App bot, EventWaiter waiter) {
-		super(bot);
+	public SyncCmd(EventWaiter waiter) {
 		this.name = "sync";
 		this.path = "bot.moderation.sync";
-		this.children = new SlashCommand[]{new Kick(bot)};
+		this.children = new SlashCommand[]{new Kick()};
 		this.botPermissions = new Permission[]{Permission.KICK_MEMBERS, Permission.BAN_MEMBERS};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
@@ -45,9 +43,7 @@ public class SyncCmd extends CommandBase {
 
 	private class Kick extends SlashCommand {
 		
-		public Kick(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Kick() {
 			this.name = "kick";
 			this.path = "bot.moderation.sync.kick";
 			this.options = List.of(

@@ -1,6 +1,5 @@
 package union.commands.owner;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
@@ -12,8 +11,7 @@ import net.dv8tion.jda.api.entities.Activity;
 
 public class ShutdownCmd extends CommandBase {
 
-	public ShutdownCmd(App bot) {
-		super(bot);
+	public ShutdownCmd() {
 		this.name = "shutdown";
 		this.path = "bot.owner.shutdown";
 		this.category = CmdCategory.OWNER;

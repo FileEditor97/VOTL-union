@@ -3,7 +3,7 @@
  Voice of the Lord - discord bot written in Java using JDA library.  
  Functions: server moderation and sync blacklists, custom voice channels and verification, ticketing.  
 
- Visit main website https://votl.fileeditor.dev/  
+ Visit https://votl.fileeditor.dev/ to learn more about available commands and to view documentation.  
 
  This is modified version of [public bot (VOTL)](https://github.com/FileEditor97/VOTL) for [UnionTeam's](https://unionteams.ru) Discord servers.  
 
@@ -39,4 +39,5 @@
 ## Inspiration/Credits
  Thanks to Chew (JDA-Chewtils and Chewbotcca bot) and jagrosh (JDA-Utilities)  
  [PurrBot](https://github.com/purrbot-site/PurrBot) by Andre_601 (purrbot.site)  
+ [AvaIre](https://github.com/avaire/avaire) by Senither  
  Ryzeon & Inkception for [Discord (JDA) HTML Transcripts](https://github.com/Ryzeon/discord-html-transcripts)

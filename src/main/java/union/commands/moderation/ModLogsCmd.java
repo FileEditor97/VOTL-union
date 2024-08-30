@@ -3,7 +3,6 @@ package union.commands.moderation;
 import java.util.List;
 
 import net.dv8tion.jda.api.utils.TimeFormat;
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -23,8 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class ModLogsCmd extends CommandBase {
 	
-	public ModLogsCmd(App bot) {
-		super(bot);
+	public ModLogsCmd() {
 		this.name = "modlogs";
 		this.path = "bot.moderation.modlogs";
 		this.options = List.of(

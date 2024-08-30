@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import union.App;
+import net.dv8tion.jda.internal.utils.Checks;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -27,11 +29,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class RolesSetupCmd extends CommandBase {
 	
-	public RolesSetupCmd(App bot) {
-		super(bot);
+	public RolesSetupCmd() {
 		this.name = "rolesetup";
 		this.path = "bot.ticketing.rolesetup";
-		this.children = new SlashCommand[]{new Add(bot), new Update(bot), new Remove(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Add(), new Update(), new Remove(), new View()};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -42,9 +43,7 @@ public class RolesSetupCmd extends CommandBase {
 
 	private class Add extends SlashCommand {
 
-		public Add(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Add() {
 			this.name = "add";
 			this.path = "bot.ticketing.rolesetup.add";
 			this.options = List.of(
@@ -153,9 +152,7 @@ public class RolesSetupCmd extends CommandBase {
 
 	private class Update extends SlashCommand {
 
-		public Update(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Update() {
 			this.name = "update";
 			this.path = "bot.ticketing.rolesetup.update";
 			this.options = List.of(
@@ -175,17 +172,18 @@ public class RolesSetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
 			Role role = event.optRole("role");
 			if (role == null) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 			if (!bot.getDBUtil().role.existsRole(role.getId())) {
-				createError(event, path+".not_exists");
+				editError(event, path+".not_exists");
 				return;
 			}
-			
-			event.deferReply(true).queue();
+
 			StringBuffer response = new StringBuffer();
 
 			if (event.hasOption("description")) {
@@ -256,25 +254,37 @@ public class RolesSetupCmd extends CommandBase {
 
 	private class Remove extends SlashCommand {
 
-		public Remove(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Remove() {
 			this.name = "remove";
 			this.path = "bot.ticketing.rolesetup.remove";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)
+					.setMaxLength(30)
 			);
 		}
 
+		Pattern rolePattern = Pattern.compile("^<@[\\d+]>$");
+
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			String roleId = event.optString("id", "0");
+			event.deferReply(true).queue();
+			String input = event.optString("id");
+
+			Matcher matcher = rolePattern.matcher(input);
+			String roleId = matcher.find() ? matcher.group(1) : input;
+			try {
+				Checks.isSnowflake(roleId);
+			} catch (IllegalArgumentException e) {
+				editError(event, path+".no_role", "ID: "+roleId);
+				return;
+			}
+
 			if (!bot.getDBUtil().role.existsRole(roleId)) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 			bot.getDBUtil().role.remove(roleId);
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{id}", roleId))
 				.build());
 		}
@@ -283,9 +293,7 @@ public class RolesSetupCmd extends CommandBase {
 
 	private class View extends SlashCommand {
 
-		public View(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public View() {
 			this.name = "view";
 			this.path = "bot.ticketing.rolesetup.view";
 		}
@@ -293,6 +301,7 @@ public class RolesSetupCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
+
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()

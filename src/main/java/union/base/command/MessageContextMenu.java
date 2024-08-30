@@ -120,7 +120,6 @@ public abstract class MessageContextMenu extends ContextMenu
 	@Override
 	public CommandData buildCommandData() {
 		// Set attributes
-		this.lu = bot.getLocaleUtil();
 		this.nameLocalization = lu.getFullLocaleMap(getPath()+".name", lu.getText(getPath()+".name"));
 
 		// Make the command data

@@ -2,7 +2,6 @@ package union.commands.verification;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -27,11 +26,10 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
 
 public class VerifyPanelCmd extends CommandBase {
 	
-	public VerifyPanelCmd(App bot) { 
-		super(bot);
+	public VerifyPanelCmd() {
 		this.name = "vfpanel";
 		this.path = "bot.verification.vfpanel";
-		this.children = new SlashCommand[]{new Create(bot), new Preview(bot), new SetText(bot)};
+		this.children = new SlashCommand[]{new Create(), new Preview(), new SetText()};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
 		this.module = CmdModule.VERIFICATION;
 		this.category = CmdCategory.VERIFICATION;
@@ -43,9 +41,7 @@ public class VerifyPanelCmd extends CommandBase {
 
 	private class Create extends SlashCommand {
 		
-		public Create(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Create() {
 			this.name = "create";
 			this.path = "bot.verification.vfpanel.create";
 			this.options = List.of(
@@ -90,9 +86,7 @@ public class VerifyPanelCmd extends CommandBase {
 
 	private class Preview extends SlashCommand {
 
-		public Preview(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Preview() {
 			this.name = "preview";
 			this.path = "bot.verification.vfpanel.preview";
 		}
@@ -119,9 +113,7 @@ public class VerifyPanelCmd extends CommandBase {
 
 	private class SetText extends SlashCommand {
 		
-		public SetText(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public SetText() {
 			this.name = "text";
 			this.path = "bot.verification.vfpanel.text";
 		}

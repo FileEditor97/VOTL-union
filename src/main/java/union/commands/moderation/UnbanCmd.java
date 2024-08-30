@@ -3,7 +3,6 @@ package union.commands.moderation;
 import java.time.Instant;
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CaseType;
@@ -24,8 +23,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 public class UnbanCmd extends CommandBase {
 	
-	public UnbanCmd(App bot) {
-		super(bot);
+	public UnbanCmd() {
 		this.name = "unban";
 		this.path = "bot.moderation.unban";
 		this.options = List.of(

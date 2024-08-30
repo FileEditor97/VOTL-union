@@ -45,6 +45,16 @@ public class BlacklistManager extends LiteDBBase {
 		return select("SELECT * FROM %s WHERE (groupId=%d) ORDER BY userId DESC LIMIT 20 OFFSET %d".formatted(table, groupId, (page-1)*20), Set.of("guildId", "userId", "steam64", "reason", "modId"));
 	}
 
+	public Map<String, Object> getByUserId(int groupId, long userId) {
+		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (groupId=%d AND userId=%d) ".formatted(table, groupId, userId), Set.of("guildId", "userId", "steam64", "reason", "modId"));
+		return data.isEmpty() ? null : data;
+	}
+
+	public Map<String, Object> getBySteam64(int groupId, long steam64) {
+		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (groupId=%d AND steam64=%d) ".formatted(table, groupId, steam64), Set.of("guildId", "userId", "steam64", "reason", "modId"));
+		return data.isEmpty() ? null : data;
+	}
+
 	public Integer countEntries(int groupId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (groupId=%d)".formatted(table, groupId));
 	}

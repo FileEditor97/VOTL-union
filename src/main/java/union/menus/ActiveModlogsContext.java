@@ -1,7 +1,7 @@
 package union.menus;
 
 import net.dv8tion.jda.api.entities.User;
-import union.App;
+
 import union.base.command.CooldownScope;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
@@ -14,9 +14,7 @@ import java.util.List;
 
 public class ActiveModlogsContext extends UserContextMenu {
 
-	public ActiveModlogsContext(App bot) {
-		this.bot = bot;
-		this.lu = bot.getLocaleUtil();
+	public ActiveModlogsContext() {
 		this.name = "activelogs";
 		this.path = "menus.activelogs";
 		this.module = CmdModule.MODERATION;

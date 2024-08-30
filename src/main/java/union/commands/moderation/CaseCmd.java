@@ -2,7 +2,6 @@ package union.commands.moderation;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -16,8 +15,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class CaseCmd extends CommandBase {
 
-	public CaseCmd(App bot) {
-		super(bot);
+	public CaseCmd() {
 		this.name = "case";
 		this.path = "bot.moderation.case";
 		this.options = List.of(

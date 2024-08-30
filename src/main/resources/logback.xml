@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration debug="false" scan="true">
 	<property name="DEV_HOME" value="./logs"/>
 
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -16,7 +16,7 @@
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- daily rollover -->
 			<fileNamePattern>${DEV_HOME}/App.%d{yyyy-MM-dd}.log</fileNamePattern>
-			<!-- keep 30 days' worth of history capped at 100MB total size -->
+			<!-- keep 20 days' worth of history capped at 40MB total size -->
 			<maxHistory>20</maxHistory>
 			<totalSizeCap>40MB</totalSizeCap>
 		</rollingPolicy>
@@ -53,9 +53,12 @@
 		</encoder>
 	</appender>
 
-	<root level="debug">
+	<logger name="union" level="DEBUG" additivity="true">
+		<appender-ref ref="FILE-DEBUG"/>
+	</logger>
+
+	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
 		<appender-ref ref="FILE" />
-		<appender-ref ref="FILE-DEBUG" />
 	</root>
 </configuration>

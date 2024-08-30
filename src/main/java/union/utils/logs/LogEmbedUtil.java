@@ -1096,23 +1096,25 @@ public class LogEmbedUtil {
 
 	// Message
 	@NotNull
-	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, MessageData oldData, MessageData newData) {
+	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, @NotNull MessageData oldData, @NotNull MessageData newData) {
+		String diff = getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
+		// If there is no change to report - return null
+		if ((oldData.getAttachment() == null || newData.getAttachment() != null) && diff == null) return null;
+
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
 			.setHeader(LogEvent.MESSAGE_UPDATE)
 			.setDescription("[View Message](https://discord.com/channels/%s/%s/%s)\n".formatted(member.getGuild().getId(), channelId, messageId))
 			.addField("messages.author", "<@%s>".formatted(newData.getAuthorId()))
 			.addField("messages.channel", "<#%s>".formatted(channelId))
 			.setFooter("Message ID: %s\nUser ID: %s".formatted(messageId, newData.getAuthorId()));
-		if (oldData != null) {
-			if (oldData.getAttachment() != null && newData.getAttachment() == null) {
-				builder.appendDescription("Removed Attachment: "+oldData.getAttachment().getFileName()+"\n\n");
-			}
-			String diff = getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
-			if (diff != null) {
-				builder.appendDescription("**"+localized(locale, "messages.content")+"**: ```diff\n")
-					.appendDescription(MessageUtil.limitString(diff, 1600))
-					.appendDescription("\n```");
-			}
+
+		if (oldData.getAttachment() != null && newData.getAttachment() == null) {
+			builder.appendDescription("Removed Attachment: "+oldData.getAttachment().getFileName()+"\n\n");
+		}
+		if (diff != null) {
+			builder.appendDescription("**"+localized(locale, "messages.content")+"**: ```diff\n")
+				.appendDescription(MessageUtil.limitString(diff, 1600))
+				.appendDescription("\n```");
 		}
 
 		return builder.build();

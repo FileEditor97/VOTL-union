@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.TimeFormat;
-import union.App;
+
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CaseType;
@@ -29,8 +29,7 @@ public class GameStrikeCmd extends CommandBase {
 
 	private final long denyPerms = Permission.getRaw(Permission.MESSAGE_SEND, Permission.MESSAGE_SEND_IN_THREADS, Permission.MESSAGE_ADD_REACTION, Permission.CREATE_PUBLIC_THREADS);
 
-	public GameStrikeCmd(App bot) {
-		super(bot);
+	public GameStrikeCmd() {
 		this.name = "gamestrike";
 		this.path = "bot.games.gamestrike";
 		this.options = List.of(

@@ -2,7 +2,6 @@ package union.commands.verification;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -17,8 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class VerifyRoleCmd extends CommandBase {
 	
-	public VerifyRoleCmd(App bot) { 
-		super(bot);
+	public VerifyRoleCmd() {
 		this.name = "verifyrole";
 		this.path = "bot.verification.verifyrole";
 		this.options = List.of(

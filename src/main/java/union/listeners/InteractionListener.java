@@ -696,7 +696,7 @@ public class InteractionListener extends ListenerAdapter {
 		Button close = Button.danger("ticket:close", lu.getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒"));
 		Button claimed = Button.primary("ticket:claimed", lu.getLocalized(event.getGuildLocale(), "ticket.claimed").formatted(event.getUser().getName())).asDisabled();
 		Button unclaim = Button.primary("ticket:unclaim", lu.getLocalized(event.getGuildLocale(), "ticket.unclaim"));
-		event.getMessage().editMessageComponents(ActionRow.of(close, claimed, unclaim)).queue();
+		event.getMessage().editMessageComponents(ActionRow.of(close, claimed, unclaim)).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE));
 	}
 
 	private void buttonTicketUnclaim(ButtonInteractionEvent event) {
@@ -719,7 +719,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		Button close = Button.danger("ticket:close", lu.getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒"));
 		Button claim = Button.primary("ticket:claim", lu.getLocalized(event.getGuildLocale(), "ticket.claim"));
-		event.getMessage().editMessageComponents(ActionRow.of(close, claim)).queue();
+		event.getMessage().editMessageComponents(ActionRow.of(close, claim)).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE));
 	}
 
 	// Tag, create ticket

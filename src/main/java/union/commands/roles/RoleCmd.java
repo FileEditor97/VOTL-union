@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-import union.App;
+
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -33,11 +33,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class RoleCmd extends CommandBase {
 	
-	public RoleCmd(App bot) {
-		super(bot);
+	public RoleCmd() {
 		this.name = "role";
 		this.path = "bot.roles.role";
-		this.children = new SlashCommand[]{new Add(bot), new Remove(bot), new RemoveAll(bot), new Modify(bot)};
+		this.children = new SlashCommand[]{new Add(), new Remove(), new RemoveAll(), new Modify()};
 		this.category = CmdCategory.ROLES;
 		this.module = CmdModule.ROLES;
 		this.accessLevel = CmdAccessLevel.HELPER;
@@ -48,9 +47,7 @@ public class RoleCmd extends CommandBase {
 	
 	private class Add extends SlashCommand {
 
-		public Add(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Add() {
 			this.name = "add";
 			this.path = "bot.roles.role.add";
 			this.options = List.of(
@@ -117,9 +114,7 @@ public class RoleCmd extends CommandBase {
 
 	private class Remove extends SlashCommand {
 
-		public Remove(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Remove() {
 			this.name = "remove";
 			this.path = "bot.roles.role.remove";
 			this.options = List.of(
@@ -185,9 +180,7 @@ public class RoleCmd extends CommandBase {
 
 	private class RemoveAll extends SlashCommand {
 
-		public RemoveAll(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public RemoveAll() {
 			this.name = "removeall";
 			this.path = "bot.roles.role.removeall";
 			this.options = List.of(
@@ -256,9 +249,7 @@ public class RoleCmd extends CommandBase {
 	}
 
 	private class Modify extends SlashCommand {
-		public Modify(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Modify() {
 			this.name = "modify";
 			this.path = "bot.roles.role.modify";
 			this.options = List.of(

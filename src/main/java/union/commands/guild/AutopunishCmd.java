@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -23,11 +22,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class AutopunishCmd extends CommandBase {
 
-	public AutopunishCmd(App bot) {
-		super(bot);
+	public AutopunishCmd() {
 		this.name = "autopunish";
 		this.path = "bot.guild.autopunish";
-		this.children = new SlashCommand[]{new Add(bot), new Remove(bot), new View(bot)};
+		this.children = new SlashCommand[]{new Add(), new Remove(), new View()};
 		this.category = CmdCategory.GUILD;
 		this.module = CmdModule.STRIKES;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -38,9 +36,7 @@ public class AutopunishCmd extends CommandBase {
 
 	private class Add extends SlashCommand {
 
-		public Add(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Add() {
 			this.name = "add";
 			this.path = "bot.guild.autopunish.add";
 			this.options = List.of(
@@ -148,9 +144,7 @@ public class AutopunishCmd extends CommandBase {
 
 	private class Remove extends SlashCommand {
 
-		public Remove(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Remove() {
 			this.name = "remove";
 			this.path = "bot.guild.autopunish.remove";
 			this.options = List.of(
@@ -195,9 +189,7 @@ public class AutopunishCmd extends CommandBase {
 
 	private class View extends SlashCommand {
 
-		public View(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public View() {
 			this.name = "view";
 			this.path = "bot.guild.autopunish.view";
 		}

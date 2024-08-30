@@ -2,7 +2,6 @@ package union.commands.strikes;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -20,8 +19,7 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 public class StrikesCmd extends CommandBase {
 	
-	public StrikesCmd(App bot) {
-		super(bot);
+	public StrikesCmd() {
 		this.name = "strikes";
 		this.path = "bot.moderation.strikes";
 		this.options = List.of(

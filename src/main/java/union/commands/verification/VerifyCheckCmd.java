@@ -2,7 +2,6 @@ package union.commands.verification;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -17,11 +16,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class VerifyCheckCmd extends CommandBase {
 	
-	public VerifyCheckCmd(App bot) {
-		super(bot);
+	public VerifyCheckCmd() {
 		this.name = "vfcheck";
 		this.path = "bot.verification.vfcheck";
-		this.children = new SlashCommand[]{new Enable(bot), new Disable(bot), new Forced(bot), new Time(bot)};
+		this.children = new SlashCommand[]{new Enable(), new Disable(), new Forced(), new Time()};
 		this.module = CmdModule.VERIFICATION;
 		this.category = CmdCategory.VERIFICATION;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -31,9 +29,7 @@ public class VerifyCheckCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Enable extends SlashCommand {
-		public Enable(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Enable() {
 			this.name = "enable";
 			this.path = "bot.verification.vfcheck.enable";
 		}
@@ -54,9 +50,7 @@ public class VerifyCheckCmd extends CommandBase {
 	}
 
 	private class Disable extends SlashCommand {
-		public Disable(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Disable() {
 			this.name = "disable";
 			this.path = "bot.verification.vfcheck.disable";
 		}
@@ -72,9 +66,7 @@ public class VerifyCheckCmd extends CommandBase {
 	}
 
 	private class Forced extends SlashCommand {
-		public Forced(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Forced() {
 			this.name = "forced";
 			this.path = "bot.verification.vfcheck.forced";
 			this.accessLevel = CmdAccessLevel.MOD;
@@ -97,9 +89,7 @@ public class VerifyCheckCmd extends CommandBase {
 	}
 
 	private class Time extends SlashCommand {
-		public Time(App bot) {
-			this.bot = bot;
-			this.lu = bot.getLocaleUtil();
+		public Time() {
 			this.name = "playtime";
 			this.path = "bot.verification.vfcheck.playtime";
 			this.options = List.of(

@@ -3,7 +3,6 @@ package union.commands.ticketing;
 import java.util.Collections;
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -19,8 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class RemoveUserCmd extends CommandBase {
 	
-	public RemoveUserCmd(App bot) {
-		super(bot);
+	public RemoveUserCmd() {
 		this.name = "remove";
 		this.path = "bot.ticketing.remove";
 		this.options = List.of(

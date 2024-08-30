@@ -2,7 +2,6 @@ package union.commands.other;
 
 import java.util.List;
 
-import union.App;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.constants.CmdCategory;
@@ -17,8 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class AboutCmd extends CommandBase {
 
-	public AboutCmd(App bot) {
-		super(bot);
+	public AboutCmd() {
 		this.name = "about";
 		this.path = "bot.other.about";
 		this.options = List.of(

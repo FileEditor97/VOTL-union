@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
-import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -22,8 +21,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class UnmuteCmd extends CommandBase {
 	
-	public UnmuteCmd(App bot) {
-		super(bot);
+	public UnmuteCmd() {
 		this.name = "unmute";
 		this.path = "bot.moderation.unmute";
 		this.options = List.of(

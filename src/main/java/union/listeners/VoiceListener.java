@@ -120,6 +120,12 @@ public class VoiceListener extends ListenerAdapter {
 				channel -> {
 					db.voice.add(userId, channel.getIdLong());
 					guild.moveVoiceMember(member, channel).queueAfter(500, TimeUnit.MICROSECONDS, null, new ErrorHandler().ignore(ErrorResponse.USER_NOT_CONNECTED));
+				},
+				failure -> {
+					member.getUser().openPrivateChannel()
+						.queue(channel ->
+							channel.sendMessage(bot.getLocaleUtil().getLocalized(guildLocale, "bot.voice.listener.failed").formatted(failure.getMessage()))
+								.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
 				}
 			);
 	}

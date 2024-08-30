@@ -259,7 +259,7 @@ public class RolesSetupCmd extends CommandBase {
 			this.path = "bot.ticketing.rolesetup.remove";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)
-					.setMaxLength(20)
+					.setMaxLength(30)
 			);
 		}
 

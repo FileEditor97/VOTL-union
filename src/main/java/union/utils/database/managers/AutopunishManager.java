@@ -48,9 +48,9 @@ public class AutopunishManager extends LiteDBBase {
 	}
 
 	public static class Autopunish {
-		private int strike;
-		private List<PunishActions> actions;
-		private String data;
+		private final int strike;
+		private final List<PunishActions> actions;
+		private final String data;
 
 		public Autopunish(Map<String, Object> data) {
 			this.strike = (Integer) data.get("strike");

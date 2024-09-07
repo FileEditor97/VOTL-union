@@ -1,6 +1,7 @@
 package union.commands.verification;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import union.base.command.CooldownScope;
@@ -43,7 +44,7 @@ public class AccountCmd extends CommandBase {
 			
 			Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
 			if (steam64 == null || steam64 == 0L) {
-				editError(event, path+".not_found_steam", "Received: "+userId);
+				editErrorDeletable(event, path+".not_found_steam", "Received: "+userId);
 				return;
 			}
 
@@ -58,7 +59,7 @@ public class AccountCmd extends CommandBase {
 				try {
 					steam64 = Long.parseLong(input);
 				} catch (NumberFormatException ex) {
-					editError(event, "errors.error", ex.getMessage());
+					editErrorDeletable(event, "errors.error", ex.getMessage());
 					return;
 				}
 			}
@@ -70,11 +71,11 @@ public class AccountCmd extends CommandBase {
 				Long steam64copy = steam64;
 				event.getJDA().retrieveUserById(discordId).queue(
 					user -> replyAccountFull(event, steam64copy, user),
-					failed -> editError(event, path+".not_found_user", "User ID: "+discordId)
+					failed -> editErrorDeletable(event, path+".not_found_user", "User ID: "+discordId)
 				);
 			}
 		} else {
-			editError(event, path+".no_options");
+			editErrorDeletable(event, path+".no_options");
 		}
 	}
 
@@ -83,7 +84,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			editErrorDeletable(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 
@@ -114,7 +115,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			editErrorDeletable(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 

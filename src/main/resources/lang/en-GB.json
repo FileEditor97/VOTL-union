@@ -375,7 +375,8 @@
 			"permission_overwrites": "Channel overwrites",
 			"allow": "Allowed",
 			"deny": "Denied",
-			"communication_disabled_until": "Timeout"
+			"communication_disabled_until": "Timeout",
+			"preferred_locale": "Community language"
 		}
 	},
 	"bot": {

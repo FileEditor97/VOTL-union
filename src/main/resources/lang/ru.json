@@ -375,7 +375,8 @@
 			"permission_overwrites": "Разрешения канала",
 			"allow": "Разрешено",
 			"deny": "Запрещено",
-			"communication_disabled_until": "Тайм-аут"
+			"communication_disabled_until": "Тайм-аут",
+			"preferred_locale": "Язык сообщества"
 		}
 	},
 	"bot": {

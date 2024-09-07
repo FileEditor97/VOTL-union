@@ -122,7 +122,7 @@ public class StrikeCmd extends CommandBase {
 		// Get strike new strike amount
 		Integer strikes = bot.getDBUtil().strike.getStrikeCount(guild.getIdLong(), target.getIdLong());
 		// Get actions for strike amount
-		Pair<Integer, String> punishActions = bot.getDBUtil().autopunish.getAction(guild.getIdLong(), strikes);
+		Pair<Integer, String> punishActions = bot.getDBUtil().autopunish.getTopAction(guild.getIdLong(), strikes);
 		if (punishActions == null) return null;
 
 		List<PunishActions> actions = PunishActions.decodeActions(punishActions.getLeft());
@@ -130,11 +130,19 @@ public class StrikeCmd extends CommandBase {
 		String data = punishActions.getRight();
 
 		// Check if user can interact and target is not automod exception or higher
-		if (!guild.getSelfMember().canInteract(target)) return null;
-		if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.ALL)) return null;
+		if (!guild.getSelfMember().canInteract(target)) return new Field(
+			lu.getLocalized(locale, path+".autopunish_error"),
+			lu.getLocalized(locale, path+".autopunish_higher"),
+			false
+		);
+		if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.ALL)) return new Field(
+			lu.getLocalized(locale, path+".autopunish_error"),
+			lu.getLocalized(locale, path+".autopunish_exception"),
+			false
+		);
 
 		// Execute
-		StringBuilder builder = new StringBuilder();	// message
+		StringBuilder builder = new StringBuilder();
 		if (actions.contains(PunishActions.KICK)) {
 			String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 			// Send PM to user
@@ -195,7 +203,7 @@ public class StrikeCmd extends CommandBase {
 				Role role = guild.getRoleById(roleId);
 				if (role != null && guild.getSelfMember().canInteract(role)) {
 					// Apply action, result will be in logs
-					guild.removeRoleFromMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
+					guild.removeRoleFromMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queueAfter(5, TimeUnit.SECONDS, done -> {
 						// log action
 						bot.getLogger().role.onRoleRemoved(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
@@ -215,7 +223,7 @@ public class StrikeCmd extends CommandBase {
 				Role role = guild.getRoleById(roleId);
 				if (role != null && guild.getSelfMember().canInteract(role)) {
 					// Apply action, result will be in logs
-					guild.addRoleToMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
+					guild.addRoleToMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queueAfter(5, TimeUnit.SECONDS, done -> {
 						// log action
 						bot.getLogger().role.onRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
@@ -264,7 +272,6 @@ public class StrikeCmd extends CommandBase {
 			builder.toString(),
 			false
 		);
-
 	}
 
 }

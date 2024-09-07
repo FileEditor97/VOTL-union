@@ -1315,9 +1315,14 @@ public class InteractionListener extends ListenerAdapter {
 	// Strikes
 	private void buttonShowStrikes(ButtonInteractionEvent event) {
 		long guildId = Long.parseLong(event.getComponentId().split(":")[1]);
+		Guild guild = event.getJDA().getGuildById(guildId);
+		if (guild == null) {
+			sendError(event, "errors.error", "Server not found.");
+			return;
+		}
 		Pair<Integer, Integer> strikeData = bot.getDBUtil().strike.getDataCountAndDate(guildId, event.getUser().getIdLong());
 		if (strikeData == null) {
-			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.no_strikes")).build()).queue();
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.no_strikes").formatted(guild.getName())).build()).queue();
 			return;
 		}
 		

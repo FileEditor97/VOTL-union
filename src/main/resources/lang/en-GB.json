@@ -1254,6 +1254,9 @@
 				"cooldown": "**Strike cooldown!**\nPlease, wait before giving new strike.\n\nRetry %s.",
 				"success": "\uD83D\uDEA9 **User received %s.**",
 				"autopunish_title": "Applying punishment for %d strikes",
+				"autopunish_error": "Unable to apply auto punishment.",
+				"autopunish_higher": "User is higher than bot.",
+				"autopunish_exception": "User is an exception.",
 				"autopunish_reason": "Autopunish: user has %d active strikes",
 				"for": "for"
 			},

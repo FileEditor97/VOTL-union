@@ -3,7 +3,6 @@ package union.commands.guild;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -13,6 +12,7 @@ import union.objects.CmdModule;
 import union.objects.PunishActions;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.AutopunishManager;
 import union.utils.exception.FormatterException;
 import union.utils.message.TimeUtil;
 
@@ -171,6 +171,7 @@ public class AutopunishCmd extends CommandBase {
 		
 	}
 
+	// TODO
 	/* private class Update extends SlashCommand {
 
 		public Update(App bot) {
@@ -198,24 +199,32 @@ public class AutopunishCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 			
-			List<Map<String, Object>> list = bot.getDBUtil().autopunish.getAllActions(event.getGuild().getIdLong());
+			List<AutopunishManager.Autopunish> list = bot.getDBUtil().autopunish.getAllActions(event.getGuild().getIdLong());
 			if (list.isEmpty()) {
 				editError(event, path+".empty");
 				return;
 			}
 
 			StringBuilder builder = new StringBuilder();
-			list.forEach(map -> {
-				Integer strikeCount = (Integer) map.get("strike");
-				List<PunishActions> actions = PunishActions.decodeActions((Integer) map.get("actions"));
-				if (actions.isEmpty()) return;
-				String data = (String) map.getOrDefault("data", "");
+			for (int i = 0; i < list.size(); i++) {
+				AutopunishManager.Autopunish map = list.get(i);
 
-				builder.append("`%2d` ".formatted(strikeCount));
+				List<PunishActions> actions = map.getActions();
+				if (actions.isEmpty()) continue;
+				int strikeCount = map.getCount();
+				String data = map.getData();
+
+				// Check if to add '>'
+				String prefix = "";
+				if (i+1 >= list.size() || list.get(i+1).getCount() > strikeCount+1)
+					// Last element or next element strikeCount>this+1
+					prefix = ">";
+
+				builder.append("`%3s` ".formatted(prefix+strikeCount));
 				actions.forEach(action -> {
 					switch (action) {
 						case KICK:
-						builder.append(lu.getText(event, action.getPath()));
+							builder.append(lu.getText(event, action.getPath()));
 							break;
 						case MUTE:
 						case BAN:
@@ -243,7 +252,7 @@ public class AutopunishCmd extends CommandBase {
 					builder.append(" ");
 				});
 				builder.append("\n");
-			});
+			}
 
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed()
 				.setDescription(builder.toString())

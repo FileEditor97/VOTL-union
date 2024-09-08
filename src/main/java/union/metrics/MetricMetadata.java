@@ -1,7 +1,5 @@
 package union.metrics;
 
-import io.prometheus.metrics.model.snapshots.PrometheusNaming;
-
 public final class MetricMetadata {
 	private final String name;
 	private final String help;

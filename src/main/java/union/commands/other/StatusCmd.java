@@ -4,6 +4,7 @@ import java.util.List;
 
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.metrics.Metrics;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
@@ -42,7 +43,12 @@ public class StatusCmd extends CommandBase {
 						.formatted(event.getJDA().getGuilds().size()),
 					lu.getLocalized(userLocale, "bot.other.status.embed.stats.shard")
 						.formatted(event.getJDA().getShardInfo().getShardId() + 1, event.getJDA().getShardInfo().getShardTotal()),
-					memoryUsage(lu, userLocale)
+					memoryUsage(lu, userLocale),
+					"\n",
+					lu.getLocalized(userLocale, "bot.other.status.embed.stats.events")
+						.formatted(Metrics.jdaEvents.sum()),
+					lu.getLocalized(userLocale, "bot.other.status.embed.stats.commands")
+						.formatted(Metrics.commandsReceived.sum())
 				),
 				false
 			)

@@ -42,6 +42,13 @@ public class SetStatusCmd extends CommandBase {
 		event.deferReply(true).queue();
 
 		ActivityType type = parseType(event.optString("type"));
+		if (type == null) {
+			event.getJDA().getPresence().setActivity(null);
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".clear"))
+				.build());
+			return;
+		}
 		String text = event.optString("text");
 
 		switch (type) {
@@ -60,12 +67,6 @@ public class SetStatusCmd extends CommandBase {
 				event.getJDA().getPresence().setActivity(Activity.of(type, text, url));
 				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".set").formatted(activityString(type), text+"\n> URL: "+url ))
-					.build());
-			}
-			default -> {
-				event.getJDA().getPresence().setActivity(null);
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".clear"))
 					.build());
 			}
 		}

@@ -76,6 +76,10 @@ public class Counter {
 		data.clear();
 	}
 
+	public MetricMetadata getMetadata() {
+		return metadata;
+	}
+
 	public static class Builder {
 		protected String name;
 		protected String help;

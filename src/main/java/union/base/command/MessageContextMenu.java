@@ -50,7 +50,7 @@ public abstract class MessageContextMenu extends ContextMenu
 		if (cooldown>0 && !(event.isOwner())) {
 			String key = getCooldownKey(event);
 			int remaining = client.getRemainingCooldown(key);
-			if (remaining>0) {
+			if (remaining > 0) {
 				terminate(event, getCooldownError(event, event.getGuild(), remaining));
 				return;
 			}

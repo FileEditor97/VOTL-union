@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import union.metrics.Metrics;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 
 public class SqlDBBase {
@@ -28,6 +29,9 @@ public class SqlDBBase {
 	}
 
 	protected List<String> select(final String table, final String selectKey, final List<String> condKeys, final List<String> condValuesInp) {
+		// Metrics
+		Metrics.databaseSqlQueries.getLabel("SELECT").inc();
+
 		List<String> condValues = condValuesInp.stream().map(this::quote).toList();
 
 		StringBuilder sql = new StringBuilder("SELECT " + selectKey + " FROM " + table + " WHERE ");
@@ -57,6 +61,9 @@ public class SqlDBBase {
 	}
 
 	protected List<Map<String, String>> select(final String table, final List<String> selectKeys, final List<String> condKeys, final List<String> condValuesInp) {
+		// Metrics
+		Metrics.databaseSqlQueries.getLabel("SELECT").inc();
+
 		List<String> condValues = condValuesInp.stream().map(this::quote).toList();
 
 		StringBuilder sql = new StringBuilder("SELECT "); //* FROM "+table+" WHERE ";
@@ -82,7 +89,7 @@ public class SqlDBBase {
 		PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
 			List<String> keys = new ArrayList<>();
-			
+
 			if (selectKeys.isEmpty()) {
 				for (int i = 1; i<=rs.getMetaData().getColumnCount(); i++) {
 					keys.add(rs.getMetaData().getColumnName(i));
@@ -105,6 +112,9 @@ public class SqlDBBase {
 	}
 
 	protected String selectOne(final String table, final String selectKey, final String condKey, final Object condValue) {
+		// Metrics
+		Metrics.databaseSqlQueries.getLabel("SELECT").inc();
+
 		String sql = "SELECT %s FROM %s WHERE %s=%s".formatted(selectKey, table, condKey, quote(condValue));
 
 		String result = null;
@@ -121,6 +131,9 @@ public class SqlDBBase {
 
 	// SELECT with database selection
 	protected String selectOne(final String database, final String table, final String selectKey, final String condKey, final Object condValue) {
+		// Metrics
+		Metrics.databaseSqlQueries.getLabel("SELECT").inc();
+
 		String sql = "SELECT %s FROM %s.%s WHERE %s=%s".formatted(selectKey, database, table, condKey, quote(condValue));
 
 		String result = null;
@@ -137,6 +150,9 @@ public class SqlDBBase {
 
 	// UPDATE sql
 	protected void update(final String table, final String updateKey, final Object updateValueObj, final String condKey, final Object condValueObj) {
+		// Metrics
+		Metrics.databaseSqlQueries.getLabel("UPDATE").inc();
+
 		String sql = "UPDATE "+table+" SET "+updateKey+"="+quote(updateValueObj)+" WHERE "+condKey+"="+quote(condValueObj);
 
 		cu.logger.debug(sql);
@@ -160,6 +176,9 @@ public class SqlDBBase {
 
 	// Specific SELECT
 	protected PlayerInfo selectPlayerInfo(final String database, final String table, final String steamId) {
+		// Metrics
+		Metrics.databaseSqlQueries.getLabel("SELECT").inc();
+
 		String sql = "SELECT rank, play_time FROM %s.%s WHERE steamid=%s;".formatted(database, table, quote(steamId));
 
 		PlayerInfo result = null;

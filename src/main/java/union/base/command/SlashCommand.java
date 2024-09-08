@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import io.prometheus.metrics.core.datapoints.Timer;
+import union.metrics.Metrics;
 import union.objects.CmdAccessLevel;
 import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
@@ -196,7 +198,7 @@ public abstract class SlashCommand extends Interaction
 	 *         The SlashCommandEvent that triggered this Command
 	 */
 	public final void run(SlashCommandEvent event) {
-		// client 
+		// client
 		final CommandClient client = event.getClient();
 
 		// check owner command
@@ -243,8 +245,10 @@ public abstract class SlashCommand extends Interaction
 			}
 		}
 
+		// Metrics
+		Metrics.commandsExecuted.getLabel(event.getFullCommandName()).inc();
 		// execute
-		try {
+		try (Timer ignored = Metrics.executionTime.labelValues(event.getFullCommandName()).startTimer()) {
 			execute(event);
 		} catch (Throwable t) {
 			if (client.getListener() != null) {
@@ -279,8 +283,7 @@ public abstract class SlashCommand extends Interaction
 	 *
 	 * @return {@code true} if the input is the name or an alias of the Command
 	 */
-	public boolean isCommandFor(String input)
-	{
+	public boolean isCommandFor(String input) {
 		return name.equalsIgnoreCase(input);
     }
 
@@ -290,8 +293,7 @@ public abstract class SlashCommand extends Interaction
 	 * @return The name for the Command
 	 */
 	@NotNull
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
 
@@ -301,8 +303,7 @@ public abstract class SlashCommand extends Interaction
 	 * @return The help for the Command
 	 */
 	@NotNull
-	public String getHelp()
-	{
+	public String getHelp() {
 		return help;
 	}
 
@@ -311,8 +312,7 @@ public abstract class SlashCommand extends Interaction
 	 *
 	 * @return The category for the Command
 	 */
-	public Category getCategory()
-	{
+	public Category getCategory() {
 		return category;
 	}
 
@@ -465,6 +465,7 @@ public abstract class SlashCommand extends Interaction
 	}
 
 	private void terminate(SlashCommandEvent event, MessageCreateData message, CommandClient client) {
+		Metrics.commandsTerminated.getLabel(event.getFullCommandName()).inc();
 		if (message != null)
 			event.reply(message).setEphemeral(true).queue(null, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 		if (event.getClient().getListener() != null)
@@ -550,8 +551,7 @@ public abstract class SlashCommand extends Interaction
 	 * @return {@code true} if this Command can only be used in a Guild, else {@code false} if it can
 	 *         be used outside of one
 	 */
-	public boolean isGuildOnly()
-	{
+	public boolean isGuildOnly() {
 		return guildOnly;
 	}
 }

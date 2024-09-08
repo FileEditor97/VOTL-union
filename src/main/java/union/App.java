@@ -24,6 +24,7 @@ import union.commands.webhook.WebhookCmd;
 import union.helper.Helper;
 import union.listeners.*;
 import union.menus.*;
+import union.metrics.Metrics;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
@@ -126,6 +127,7 @@ public class App {
         MemberListener memberListener			= new MemberListener(this);
         ModerationListener moderationListener	= new ModerationListener(this);
         AuditListener auditListener				= new AuditListener(this);
+		EventListener eventListener				= new EventListener();
 
         ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
         ScheduledCheck scheduledCheck = new ScheduledCheck(this);
@@ -256,7 +258,8 @@ public class App {
 			.setBulkDeleteSplittingEnabled(false)
 			.addEventListeners(
 				commandClient, WAITER, acListener, auditListener, interactionListener,
-                    guildListener, memberListener, messageListener, moderationListener, voiceListener
+				guildListener, memberListener, messageListener, moderationListener, voiceListener,
+				eventListener
 			);
 
 		JDA tempJda;
@@ -291,6 +294,9 @@ public class App {
 		this.JDA = tempJda;
 
 		createWebhookAppender();
+
+		logger.info("Preparing and setting up metrics");
+		Metrics.setup();
 
 		logger.info("Success start");
 

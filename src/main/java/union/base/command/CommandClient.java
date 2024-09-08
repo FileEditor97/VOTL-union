@@ -18,7 +18,6 @@ package union.base.command;
 import net.dv8tion.jda.api.JDA;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -236,41 +235,6 @@ public interface CommandClient
 	 * Cleans up expired cooldowns to reduce memory.
 	 */
 	void cleanCooldowns();
-
-	/**
-	 * Gets the number of uses for the provide {@link union.base.command.SlashCommand SlashCommand}
-	 * during this session, or {@code 0} if the command is not registered to this CommandClient.
-	 *
-	 * @param  command
-	 *         The Command
-	 *
-	 * @return The number of uses for the Command
-	 */
-	int getCommandUses(SlashCommand command);
-
-	/**
-	 * Gets the number of uses for a {@link union.base.command.SlashCommand SlashCommand}
-	 * during this session matching the provided String name, or {@code 0} if there is no Command
-	 * with the name.
-	 *
-	 * <p><b>NOTE:</b> 
-	 * {@link union.base.command.SlashCommand#children child commands} <b>ARE NOT</b>
-	 * tracked and providing names or effective names of child commands will return {@code 0}.
-	 *
-	 * @param  name
-	 *         The name of the Command
-	 *
-	 * @return The number of uses for the Command, or {@code 0} if the name does not match with a Command
-	 */
-	int getCommandUses(String name);
-
-	/**
-	 * Gets the number of uses for all {@link union.base.command.SlashCommand SlashCommands}
-	 * during this session.
-	 *
-	 * @return The map of SlashCommand name and it uses.
-	 */
-	HashMap<String, Integer> getCommandUses();
 
 	/**
 	 * Gets the ID of the owner of this bot as a String.

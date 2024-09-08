@@ -157,6 +157,7 @@ public class App {
 				new DebugCmd(),
 				new MessageCmd(),
 				new StatisticsCmd(),
+				new SetStatusCmd(),
 				// webhook
 				new WebhookCmd(),
 				// moderation

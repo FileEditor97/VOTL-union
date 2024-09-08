@@ -480,6 +480,25 @@
 			"statistics": {
 				"help": "View command use",
 				"usage": "statistics"
+			},
+			"setstatus": {
+				"help": "Set bot status",
+				"usage": "setstatus <Type> <message> [URL]",
+				"type": {
+					"name": "type",
+					"help": "Select activity type"
+				},
+				"text": {
+					"name": "text",
+					"help": "Enter activity message"
+				},
+				"url": {
+					"name": "url",
+					"help": "Enter url for 'streaming' activity"
+				},
+				"invalid_url": "Invalid URL provided.",
+				"clear": "Activity cleared.",
+				"set": "%s activity set.\n> %s"
 			}
 		},
 		"guild": {

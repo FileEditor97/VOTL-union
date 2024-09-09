@@ -37,7 +37,7 @@
 		},
 		"interaction": {
 			"no_values": "None of the values has been selected.",
-			"no_access": "You cannot perform this action because you do not have the required access level."
+			"no_access": "You cannot perform this action because you do not have the required access."
 		},
 		"timed_out": "Timed out",
 		"no_helper": "Helper bot is disabled. Unable to perform this action"
@@ -61,7 +61,8 @@
 		"temporary": "until %s",
 		"ban_expired": "Temporary ban expired",
 		"verify_instruct": "## Complete verification to join `%s`!\nYou must connect your account by joining the server bellow.\n*After completing verification there, you will be able to rejoin this server.*\n\n> --> %s <--",
-		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||"
+		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||",
+		"temp_msg": "-# This message will be deleted in 10 seconds."
 	},
 	"modules": {
 		"webhook": "Webhook commands",
@@ -74,7 +75,7 @@
 		"roles": "Role management",
 		"strikes": "Strike punishments",
 		"games": "Games",
-		"module_disabled": "This command(module) is disabled."
+		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {
 		"assign": "Assignable",
@@ -374,7 +375,8 @@
 			"permission_overwrites": "Channel overwrites",
 			"allow": "Allowed",
 			"deny": "Denied",
-			"communication_disabled_until": "Timeout"
+			"communication_disabled_until": "Timeout",
+			"preferred_locale": "Community language"
 		}
 	},
 	"bot": {
@@ -475,9 +477,41 @@
 					"help": "Enter text"
 				}
 			},
-			"statistics": {
-				"help": "View command use",
-				"usage": "statistics"
+			"setstatus": {
+				"help": "Set bot status",
+				"usage": "setstatus <Type> <message> [URL]",
+				"type": {
+					"name": "type",
+					"help": "Select activity type"
+				},
+				"text": {
+					"name": "text",
+					"help": "Enter activity message"
+				},
+				"url": {
+					"name": "url",
+					"help": "Enter url for 'streaming' activity"
+				},
+				"invalid_url": "Invalid URL provided.",
+				"clear": "Activity cleared.",
+				"set": "%s activity set.\n> %s"
+			},
+			"metrics": {
+				"help": "Different metrics",
+				"usage": "metrics",
+				"command": {
+					"help": "Information about command usage",
+					"usage": "command <full name>",
+					"command-name": {
+						"name": "command-name",
+						"help": "Enter full command name (ex. 'access add role')"
+					},
+					"not_found": "Command not found or has no information."
+				},
+				"stats": {
+					"help": "View command use",
+					"usage": "stats"
+				}
 			}
 		},
 		"guild": {
@@ -1254,6 +1288,9 @@
 				"cooldown": "**Strike cooldown!**\nPlease, wait before giving new strike.\n\nRetry %s.",
 				"success": "\uD83D\uDEA9 **User received %s.**",
 				"autopunish_title": "Applying punishment for %d strikes",
+				"autopunish_error": "Unable to apply auto punishment.",
+				"autopunish_higher": "User is higher than bot.",
+				"autopunish_exception": "User is an exception.",
 				"autopunish_reason": "Autopunish: user has %d active strikes",
 				"for": "for"
 			},
@@ -1701,15 +1738,19 @@
 				"embed": {
 					"stats_title": "Stats",
 					"stats" : {
-						"guilds": "{value} Servers",
-						"shard": "Shard {this}/{all}"
+						"guilds": "%s Servers",
+						"shard": "Shard %s/%s",
+						"memory": "Memory: %sMb / %sMb",
+						"events": "Events received: %s",
+						"commands": "Commands run: %s",
+						"messages": "Messages received: %s"
 					},
 					"shard_title": "This shard",
 					"shard": {
-						"users": "Cached users {value}",
-						"guilds": "Cached server {value}",
-						"text_channels": "{value} Text Channels",
-						"voice_channels": "{value} Voice Channels"
+						"users": "Cached users %s",
+						"guilds": "Cached server %s",
+						"text_channels": "%s Text Channels",
+						"voice_channels": "%s Voice Channels"
 					},
 					"last_restart": "Last restart"
 				}

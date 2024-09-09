@@ -64,7 +64,7 @@ public class GuildListener extends ListenerAdapter {
 		db.group.removeGuildFromGroups(guildIdLong);
 		db.group.deleteGuildGroups(guildIdLong);
 
-		db.access.removeAll(guildId);
+		db.access.removeAll(guildIdLong);
 		db.webhook.removeAll(guildIdLong);
 		db.verifySettings.remove(guildIdLong);
 		db.ticketSettings.remove(guildIdLong);

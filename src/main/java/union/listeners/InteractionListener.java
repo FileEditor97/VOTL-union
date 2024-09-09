@@ -556,7 +556,7 @@ public class InteractionListener extends ListenerAdapter {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds), time);
 				
 				StringBuilder mentions = new StringBuilder(event.getMember().getAsMention());
-				db.access.getRoles(guildId, CmdAccessLevel.MOD).forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
+				db.access.getRoles(guild.getIdLong(), CmdAccessLevel.MOD).forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
 				channel.sendMessage(mentions.toString()).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
 				
 				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
@@ -1315,9 +1315,14 @@ public class InteractionListener extends ListenerAdapter {
 	// Strikes
 	private void buttonShowStrikes(ButtonInteractionEvent event) {
 		long guildId = Long.parseLong(event.getComponentId().split(":")[1]);
+		Guild guild = event.getJDA().getGuildById(guildId);
+		if (guild == null) {
+			sendError(event, "errors.error", "Server not found.");
+			return;
+		}
 		Pair<Integer, Integer> strikeData = bot.getDBUtil().strike.getDataCountAndDate(guildId, event.getUser().getIdLong());
 		if (strikeData == null) {
-			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.no_strikes")).build()).queue();
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.no_strikes").formatted(guild.getName())).build()).queue();
 			return;
 		}
 		

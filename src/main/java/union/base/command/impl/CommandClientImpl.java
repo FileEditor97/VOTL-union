@@ -205,22 +205,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 	}
 
 	@Override
-	public int getCommandUses(SlashCommand command) {
-		return getCommandUses(command.getName());
-	}
-
-	@Override
-	public int getCommandUses(String name)
-	{
-		return uses.getOrDefault(name, 0);
-	}
-
-	@Override
-	public HashMap<String, Integer> getCommandUses() {
-		return uses;
-	}
-
-	@Override
 	public void addSlashCommand(SlashCommand command)
 	{
 		addSlashCommand(command, slashCommands.size());

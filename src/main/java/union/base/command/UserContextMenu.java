@@ -83,10 +83,10 @@ public abstract class UserContextMenu extends ContextMenu {
 		}
 
 		// cooldown check, ignoring owner
-		if (cooldown>0 && !(event.isOwner())) {
+		if (cooldown > 0 && !(event.isOwner())) {
 			String key = getCooldownKey(event);
 			int remaining = client.getRemainingCooldown(key);
-			if (remaining>0) {
+			if (remaining > 0) {
 				terminate(event, getCooldownError(event, event.getGuild(), remaining));
 				return;
 			}

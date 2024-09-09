@@ -22,7 +22,7 @@ dependencies {
 		exclude module: 'opus-java'
 	}
 	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-	implementation 'ch.qos.logback:logback-classic:1.5.7'			// Logging (required by JDA)
+	implementation 'ch.qos.logback:logback-classic:1.5.8'			// Logging (required by JDA)
 
 	// Tools
 	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
@@ -37,6 +37,10 @@ dependencies {
 	implementation 'io.github.java-diff-utils:java-diff-utils:4.12'
 	// https://mvnrepository.com/artifact/org.json/json
 	implementation 'org.json:json:20240303'
+
+	// Metrics
+    // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
+    implementation 'io.github.classgraph:classgraph:4.8.175'
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy

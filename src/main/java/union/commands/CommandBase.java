@@ -10,6 +10,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
+import java.util.concurrent.TimeUnit;
+
 public abstract class CommandBase extends SlashCommand {
 	
 	public CommandBase() {}
@@ -78,6 +80,16 @@ public abstract class CommandBase extends SlashCommand {
 
 	public final void editError(SlashCommandEvent event, @NotNull String path, String reason) {
 		editHookEmbed(event, bot.getEmbedUtil().getError(event, path, reason));
+	}
+
+	public final void editErrorDeletable(SlashCommandEvent event, @NotNull String path) {
+		editErrorDeletable(event, path, null);
+	}
+
+	public final void editErrorDeletable(SlashCommandEvent event, @NotNull String path, String reason) {
+		event.getHook().editOriginal(lu.getText(event, "misc.temp_msg"))
+			.setEmbeds(bot.getEmbedUtil().getError(event, path, reason))
+			.queue(msg -> msg.delete().queueAfter(10, TimeUnit.SECONDS));
 	}
 
 	// PermError

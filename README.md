@@ -40,4 +40,5 @@
  Thanks to Chew (JDA-Chewtils and Chewbotcca bot) and jagrosh (JDA-Utilities)  
  [PurrBot](https://github.com/purrbot-site/PurrBot) by Andre_601 (purrbot.site)  
  [AvaIre](https://github.com/avaire/avaire) by Senither  
- Ryzeon & Inkception for [Discord (JDA) HTML Transcripts](https://github.com/Ryzeon/discord-html-transcripts)
+ Ryzeon & Inkception for [Discord (JDA) HTML Transcripts](https://github.com/Ryzeon/discord-html-transcripts)  
+ [Prometheus](https://github.com/prometheus/client_java) contributors

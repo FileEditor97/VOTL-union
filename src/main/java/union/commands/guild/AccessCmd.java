@@ -1,7 +1,6 @@
 package union.commands.guild;
 
 import java.util.List;
-import java.util.Objects;
 
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -45,18 +44,18 @@ public class AccessCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 
-			Guild guild = Objects.requireNonNull(event.getGuild());
-			String guildId = guild.getId();
+			Guild guild = event.getGuild();
+			long guildId = guild.getIdLong();
 
-			List<String> exceptIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.EXCEPT);
-			List<String> helperIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.HELPER);
-			List<String> modIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.MOD);
-			List<String> userIds = bot.getDBUtil().access.getAllUsers(guildId);
+			List<Long> exceptIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.EXCEPT);
+			List<Long> helperIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.HELPER);
+			List<Long> modIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.MOD);
+			List<Long> operatorIds = bot.getDBUtil().access.getOperators(guildId);
 
 			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, "bot.guild.access.view.embed.title"));
 
-			if (exceptIds.isEmpty() && helperIds.isEmpty() && modIds.isEmpty() && userIds.isEmpty()) {
+			if (exceptIds.isEmpty() && helperIds.isEmpty() && modIds.isEmpty() && operatorIds.isEmpty()) {
 				editHookEmbed(event, 
 					embedBuilder.setDescription(
 						lu.getText(event, "bot.guild.access.view.embed.none_found")
@@ -69,10 +68,10 @@ public class AccessCmd extends CommandBase {
 
 			sb.append(lu.getText(event, "bot.guild.access.view.embed.except")).append("\n");
 			if (exceptIds.isEmpty()) sb.append("> %s\n".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
-			else for (String roleId : exceptIds) {
+			else for (long roleId : exceptIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
-					bot.getDBUtil().access.removeRole(roleId);
+					bot.getDBUtil().access.removeRole(guildId, roleId);
 					continue;
 				}
 				sb.append("> %s `%s`\n".formatted(role.getAsMention(), roleId));
@@ -80,10 +79,10 @@ public class AccessCmd extends CommandBase {
 
 			sb.append(lu.getText(event, "bot.guild.access.view.embed.helper")).append("\n");
 			if (helperIds.isEmpty()) sb.append("> %s\n".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
-			else for (String roleId : helperIds) {
+			else for (long roleId : helperIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
-					bot.getDBUtil().access.removeRole(roleId);
+					bot.getDBUtil().access.removeRole(guildId, roleId);
 					continue;
 				}
 				sb.append("> %s `%s`\n".formatted(role.getAsMention(), roleId));
@@ -91,18 +90,18 @@ public class AccessCmd extends CommandBase {
 
 			sb.append(lu.getText(event, "bot.guild.access.view.embed.mod")).append("\n");
 			if (modIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
-			else for (String roleId : modIds) {
+			else for (long roleId : modIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
-					bot.getDBUtil().access.removeRole(roleId);
+					bot.getDBUtil().access.removeRole(guildId, roleId);
 					continue;
 				}
 				sb.append("> %s `%s`\n".formatted(role.getAsMention(), roleId));
 			}
 
 			sb.append("\n").append(lu.getText(event, "bot.guild.access.view.embed.operator")).append("\n");
-			if (userIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
-			else for (String userId : userIds) {
+			if (operatorIds.isEmpty()) sb.append("> %s".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
+			else for (long userId : operatorIds) {
 				UserSnowflake user = User.fromId(userId);
 				sb.append("> %s `%s`\n".formatted(user.getAsMention(), userId));
 			}
@@ -138,9 +137,8 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			String roleId = role.getId();
-			Guild guild = Objects.requireNonNull(event.getGuild());
-			String guildId = guild.getId();
+			long roleId = role.getIdLong();
+			Guild guild = event.getGuild();
 
 			if (role.isPublicRole() || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
 				editError(event, "bot.guild.access.add.incorrect_role");
@@ -152,7 +150,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
-			bot.getDBUtil().access.addRole(guildId, roleId, level);
+			bot.getDBUtil().access.addRole(guild.getIdLong(), roleId, level);
 
 			// Log
 			bot.getLogger().server.onAccessAdded(guild, event.getUser(), null, role, level);
@@ -189,14 +187,14 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			String roleId = role.getId();
+			long roleId = role.getIdLong();
 
 			CmdAccessLevel level = bot.getDBUtil().access.getRoleLevel(roleId);
 			if (level.equals(CmdAccessLevel.ALL)) {
 				editError(event, "bot.guild.access.remove.role.no_access");
 			}
 
-			bot.getDBUtil().access.removeRole(roleId);
+			bot.getDBUtil().access.removeRole(event.getGuild().getIdLong(), roleId);
 
 			// Log
 			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
@@ -234,8 +232,8 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			String userId = member.getId();
-			String guildId = event.getGuild().getId();
+			long userId = member.getIdLong();
+			long guildId = event.getGuild().getIdLong();
 
 			if (member.isOwner() || member.getUser().isBot()) {
 				editError(event, "bot.guild.access.add.incorrect_user");
@@ -246,7 +244,7 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().access.addUser(guildId, userId, CmdAccessLevel.OPERATOR);
+			bot.getDBUtil().access.addOperator(guildId, userId);
 			
 			// Log
 			bot.getLogger().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
@@ -281,8 +279,8 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			String userId = user.getId();
-			String guildId = event.getGuild().getId();
+			long userId = user.getIdLong();
+			long guildId = event.getGuild().getIdLong();
 
 			if (!bot.getDBUtil().access.isOperator(guildId, userId)) {
 				editError(event, "bot.guild.access.remove.operator.not_operator");

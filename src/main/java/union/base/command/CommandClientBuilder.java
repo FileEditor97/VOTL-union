@@ -127,18 +127,6 @@ public class CommandClientBuilder
 	}
 
 	/**
-	 * Sets the {@link net.dv8tion.jda.api.entities.Activity Game} the bot will use as the default:
-	 * 'Playing <b>Type [prefix]help</b>'
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder useDefaultGame()
-	{
-		this.activity = Activity.playing("default");
-		return this;
-	}
-
-	/**
 	 * Sets the {@link net.dv8tion.jda.api.OnlineStatus OnlineStatus} the bot will use once Ready
 	 * This defaults to ONLINE
 	 *

@@ -89,15 +89,15 @@ public class MemberListener extends ListenerAdapter {
 		}
 		// When user leaves guild, check if there are any records in DB that would be better to remove.
 		// This does not consider clearing User DB, when bot leaves guild.
-		String guildId = event.getGuild().getId();
-		String userId = event.getUser().getId();
+		long guildId = event.getGuild().getIdLong();
+		long userId = event.getUser().getIdLong();
 
 		if (db.access.getUserLevel(guildId, userId) != null) {
 			db.access.removeUser(guildId, userId);
 		}
 		db.user.remove(event.getUser().getIdLong());
 		if (db.getTicketSettings(event.getGuild()).autocloseLeftEnabled()) {
-			db.ticket.getOpenedChannel(userId, guildId).forEach(channelId -> {
+			db.ticket.getOpenedChannel(String.valueOf(userId), String.valueOf(guildId)).forEach(channelId -> {
 				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
 				GuildChannel channel = event.getGuild().getGuildChannelById(channelId);
 				if (channel != null) channel.delete().reason("Author left").queue();

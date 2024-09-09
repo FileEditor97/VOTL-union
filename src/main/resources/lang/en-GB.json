@@ -37,7 +37,7 @@
 		},
 		"interaction": {
 			"no_values": "None of the values has been selected.",
-			"no_access": "You cannot perform this action because you do not have the required access level."
+			"no_access": "You cannot perform this action because you do not have the required access."
 		},
 		"timed_out": "Timed out",
 		"no_helper": "Helper bot is disabled. Unable to perform this action"
@@ -75,7 +75,7 @@
 		"roles": "Role management",
 		"strikes": "Strike punishments",
 		"games": "Games",
-		"module_disabled": "This command(module) is disabled."
+		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {
 		"assign": "Assignable",

@@ -556,7 +556,7 @@ public class InteractionListener extends ListenerAdapter {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", roleIds), time);
 				
 				StringBuilder mentions = new StringBuilder(event.getMember().getAsMention());
-				db.access.getRoles(guildId, CmdAccessLevel.MOD).forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
+				db.access.getRoles(guild.getIdLong(), CmdAccessLevel.MOD).forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
 				channel.sendMessage(mentions.toString()).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
 				
 				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());

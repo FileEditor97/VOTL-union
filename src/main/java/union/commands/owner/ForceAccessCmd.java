@@ -42,20 +42,22 @@ public class ForceAccessCmd extends CommandBase {
 		}
 
 		CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
-		String targetId = event.optString("target");
+		long targetId = event.optLong("target");
 		if (event.optInteger("type") == 1) {
 			// Target is role
 			if (level.equals(CmdAccessLevel.ALL)) {
-				bot.getDBUtil().access.removeRole(targetId);
+				bot.getDBUtil().access.removeRole(guild.getIdLong(), targetId);
+			} else {
+				bot.getDBUtil().access.addRole(guild.getIdLong(), targetId, level);
 			}
-			bot.getDBUtil().access.addRole(guild.getId(), targetId, level);
 			createReply(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "Role `"+targetId+"`"));
 		} else {
 			// Target is user
 			if (level.equals(CmdAccessLevel.ALL)) {
-				bot.getDBUtil().access.removeUser(guild.getId(), targetId);
+				bot.getDBUtil().access.removeUser(guild.getIdLong(), targetId);
+			} else {
+				bot.getDBUtil().access.addOperator(guild.getIdLong(), targetId);
 			}
-			bot.getDBUtil().access.addUser(guild.getId(), targetId, level);
 			createReply(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "User `"+targetId+"`"));
 		}
 	}

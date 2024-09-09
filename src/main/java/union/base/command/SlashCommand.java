@@ -229,8 +229,6 @@ public abstract class SlashCommand extends Interaction
 					.moduleEnabled(event, guild, getModule())
 				// check access
 					.hasAccess(event, author, getAccessLevel())
-				// check user perms
-				//	.hasPermissions(event, guild, author, getUserPermissions())
 				// check bots perms
 					.hasPermissions(event, guild, author, true, getBotPermissions());
 			} catch (CheckException ex) {

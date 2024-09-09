@@ -1,6 +1,6 @@
 package union.utils;
 
-import java.util.List;
+import java.util.Map;
 
 import union.App;
 import union.objects.CmdAccessLevel;
@@ -42,23 +42,23 @@ public class CheckUtil {
 		// Is guild's owner
 		if (member.isOwner())
 			return CmdAccessLevel.OWNER;
-		
-		// Check for user level
-		CmdAccessLevel userLevel = bot.getDBUtil().access.getUserLevel(member.getGuild().getId(), member.getId());
-		if (userLevel != null)
-			return userLevel;
+
+		// Check if is operator
+		if (bot.getDBUtil().access.isOperator(member.getGuild().getIdLong(), member.getIdLong()))
+			return CmdAccessLevel.OPERATOR;
 		
 		// Check if user has Administrator privileges
 		if (member.hasPermission(Permission.ADMINISTRATOR))
 			return CmdAccessLevel.ADMIN;
 
 		// Check for role level
-		List<String> roleIds = bot.getDBUtil().access.getAllRoles(member.getGuild().getId());
+		Map<Long, CmdAccessLevel> roleIds = bot.getDBUtil().access.getAllRoles(member.getGuild().getIdLong());
+		if (roleIds == null) return CmdAccessLevel.ALL;
 
         return member.getRoles()
 			.stream()
-			.filter(role -> roleIds.contains(role.getId()))
-			.map(role -> bot.getDBUtil().access.getRoleLevel(role.getId()))
+			.filter(role -> roleIds.containsKey(role.getIdLong()))
+			.map(role -> roleIds.get(role.getIdLong()))
 			.max(CmdAccessLevel::compareTo)
 			.orElse(CmdAccessLevel.ALL);
 	}
@@ -75,7 +75,7 @@ public class CheckUtil {
 	public CheckUtil hasAccess(IReplyCallback replyCallback, Member member, CmdAccessLevel accessLevel) throws CheckException {
 		if (accessLevel.equals(CmdAccessLevel.ALL)) return this;
 		if (accessLevel.isHigherThan(getAccessLevel(member)))
-			throw new CheckException(bot.getEmbedUtil().getError(replyCallback, "errors.interaction.no_access", "Required access level: "+accessLevel.getName()));
+			throw new CheckException(bot.getEmbedUtil().getError(replyCallback, "errors.interaction.no_access", "Required access: "+accessLevel.getName()));
 		return this;
 	}
 

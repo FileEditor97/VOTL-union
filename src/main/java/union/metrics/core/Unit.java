@@ -1,4 +1,4 @@
-package union.metrics;
+package union.metrics.core;
 
 import java.util.Objects;
 

@@ -4,10 +4,11 @@ import ch.qos.logback.classic.Logger;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
-import io.prometheus.metrics.core.metrics.Histogram;
-import io.prometheus.metrics.model.snapshots.Unit;
 import org.slf4j.LoggerFactory;
 import union.App;
+import union.metrics.core.Counter;
+import union.metrics.core.Histogram;
+import union.metrics.core.Unit;
 
 import java.lang.reflect.Modifier;
 
@@ -40,9 +41,8 @@ public class Metrics {
 	public static final Histogram executionTime = Histogram.builder() // commands execution time, excluding terminated ones
 		.name("votl_command_execution_duration_seconds")
 		.help("Command execution time, excluding handling terminated commands.")
-		.labelNames("name")
 		.unit(Unit.SECONDS)
-		.register();
+		.build();
 
 	public static final Counter commandExceptions = Counter.builder()
 		.name("votl_commands_exceptions_total")
@@ -90,8 +90,4 @@ public class Metrics {
 		}
 	}
 
-//	public class Counter {
-//		private final String value;
-//		private int count;
-//	}
 }

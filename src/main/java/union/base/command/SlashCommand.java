@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import io.prometheus.metrics.core.datapoints.Timer;
 import union.metrics.Metrics;
+import union.metrics.core.datapoints.Timer;
 import union.objects.CmdAccessLevel;
 import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
@@ -244,9 +244,9 @@ public abstract class SlashCommand extends Interaction
 		}
 
 		// Metrics
-		Metrics.commandsExecuted.getLabel(event.getFullCommandName()).inc();
+		Metrics.commandsExecuted.labelValue(event.getFullCommandName()).inc();
 		// execute
-		try (Timer ignored = Metrics.executionTime.labelValues(event.getFullCommandName()).startTimer()) {
+		try (Timer ignored = Metrics.executionTime.labelValue(event.getFullCommandName()).startTimer()) {
 			execute(event);
 		} catch (Throwable t) {
 			if (client.getListener() != null) {
@@ -463,7 +463,7 @@ public abstract class SlashCommand extends Interaction
 	}
 
 	private void terminate(SlashCommandEvent event, MessageCreateData message, CommandClient client) {
-		Metrics.commandsTerminated.getLabel(event.getFullCommandName()).inc();
+		Metrics.commandsTerminated.labelValue(event.getFullCommandName()).inc();
 		if (message != null)
 			event.reply(message).setEphemeral(true).queue(null, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 		if (event.getClient().getListener() != null)

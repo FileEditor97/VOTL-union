@@ -31,7 +31,7 @@ public class CommandListener implements union.base.command.CommandListener {
 	
 	@Override
 	public void onSlashCommand(SlashCommandEvent event, SlashCommand command) {
-		Metrics.commandsReceived.getLabel(event.getFullCommandName()).inc();
+		Metrics.commandsReceived.labelValue(event.getFullCommandName()).inc();
 		LOGGER.debug("SlashCommand @ {}\n- Name: '{}'; Full: '{}'\n- Author: {}\n- Guild: {}", event.getResponseNumber(), event.getName(), event.getCommandString(), event.getUser(),
 			(event.getChannelType() != ChannelType.PRIVATE ? "'"+event.getGuild()+"' @ "+event.getChannel() : "PrivateChannel"));
 	}
@@ -65,7 +65,7 @@ public class CommandListener implements union.base.command.CommandListener {
 
 	@Override
 	public void onTerminatedSlashCommand(SlashCommandEvent event, SlashCommand command) {
-		Metrics.commandsTerminated.getLabel(event.getFullCommandName()).inc();
+		Metrics.commandsTerminated.labelValue(event.getFullCommandName()).inc();
 		LOGGER.debug("SlashCommand Terminated @ {}", event.getResponseNumber());
 	}
 
@@ -81,7 +81,7 @@ public class CommandListener implements union.base.command.CommandListener {
 
 	@Override
 	public void onSlashCommandException(SlashCommandEvent event, SlashCommand command, Throwable t) {
-		Metrics.commandExceptions.getLabel(event.getFullCommandName()).inc();
+		Metrics.commandExceptions.labelValue(event.getFullCommandName()).inc();
 		LOGGER.error("SlashCommand Exception", t);
 		if (event.isAcknowledged())
 			event.getHook().sendMessageEmbeds(getErrorEmbed(event, t)).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));

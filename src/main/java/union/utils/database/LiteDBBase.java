@@ -29,7 +29,7 @@ public class LiteDBBase {
 	// Execute statement
 	protected void execute(final String sql) {
 		// Metrics
-		Metrics.databaseLiteQueries.getLabel(sql.split(" ")[0].toUpperCase()).inc();
+		Metrics.databaseLiteQueries.labelValue(sql.split(" ")[0].toUpperCase()).inc();
 
 		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
@@ -43,7 +43,7 @@ public class LiteDBBase {
 	// Select
 	protected <T> T selectOne(final String sql, String selectKey, Class<T> selectClass) {
 		// Metrics
-		Metrics.databaseLiteQueries.getLabel("SELECT").inc();
+		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
 
 		T result = null;
 
@@ -65,7 +65,7 @@ public class LiteDBBase {
 
 	protected <T> List<T> select(final String sql, String selectKey, Class<T> selectClass) {
 		// Metrics
-		Metrics.databaseLiteQueries.getLabel("SELECT").inc();
+		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
 
 		List<T> results = new ArrayList<>();
 
@@ -90,7 +90,7 @@ public class LiteDBBase {
 	@Nullable
 	protected Map<String, Object> selectOne(final String sql, final Set<String> selectKeys) {
 		// Metrics
-		Metrics.databaseLiteQueries.getLabel("SELECT").inc();
+		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
 
 		Map<String, Object> result = new HashMap<>();
 
@@ -111,7 +111,7 @@ public class LiteDBBase {
 
 	protected List<Map<String, Object>> select(final String sql, final Set<String> selectKeys) {
 		// Metrics
-		Metrics.databaseLiteQueries.getLabel("SELECT").inc();
+		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
 
 		List<Map<String, Object>> results = new ArrayList<>();
 
@@ -135,7 +135,7 @@ public class LiteDBBase {
 
 	protected int count(final String sql) {
 		// Metrics
-		Metrics.databaseLiteQueries.getLabel("SELECT").inc();
+		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
 
 		int result = 0;
 

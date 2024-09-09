@@ -1,19 +1,19 @@
-package union.metrics;
+package union.metrics.core;
 
-public final class MetricMetadata {
+public final class Metadata {
 	private final String name;
 	private final String help;
 	private final Unit unit;
 
-	public MetricMetadata(String name) {
+	public Metadata(String name) {
 		this(name, null, null);
 	}
 
-	public MetricMetadata(String name, String help) {
+	public Metadata(String name, String help) {
 		this(name, help, null);
 	}
 
-	public MetricMetadata(String name, String help, Unit unit) {
+	public Metadata(String name, String help, Unit unit) {
 		this.name = name;
 		this.help = help;
 		this.unit = unit;

@@ -8,6 +8,6 @@ public class EventListener extends ListenerAdapter {
 
 	@Override
 	public void onGenericEvent(GenericEvent event) {
-		Metrics.jdaEvents.getLabel(event.getClass().getSimpleName()).inc();
+		Metrics.jdaEvents.labelValue(event.getClass().getSimpleName()).inc();
 	}
 }

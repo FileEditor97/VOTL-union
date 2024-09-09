@@ -158,7 +158,7 @@ public class App {
 				new SettingsCmd(),
 				new DebugCmd(),
 				new MessageCmd(),
-				new StatisticsCmd(),
+				new ViewMetricsCmd(),
 				new SetStatusCmd(),
 				// webhook
 				new WebhookCmd(),

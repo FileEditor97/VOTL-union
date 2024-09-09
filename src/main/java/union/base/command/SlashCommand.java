@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import union.metrics.Metrics;
-import union.metrics.core.datapoints.Timer;
+import union.metrics.datapoints.Timer;
 import union.objects.CmdAccessLevel;
 import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
@@ -463,7 +463,6 @@ public abstract class SlashCommand extends Interaction
 	}
 
 	private void terminate(SlashCommandEvent event, MessageCreateData message, CommandClient client) {
-		Metrics.commandsTerminated.labelValue(event.getFullCommandName()).inc();
 		if (message != null)
 			event.reply(message).setEphemeral(true).queue(null, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 		if (event.getClient().getListener() != null)

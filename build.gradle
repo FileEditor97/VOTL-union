@@ -39,11 +39,8 @@ dependencies {
 	implementation 'org.json:json:20240303'
 
 	// Metrics
-	// https://mvnrepository.com/artifact/io.prometheus/prometheus-metrics-core
-    implementation 'io.prometheus:prometheus-metrics-core:1.3.1'
     // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
     implementation 'io.github.classgraph:classgraph:4.8.175'
-
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy

@@ -1,4 +1,4 @@
-package union.metrics.core.datapoints;
+package union.metrics.datapoints;
 
 public interface CounterDataPoint extends DataPoint {
 	default void inc() {
@@ -12,4 +12,6 @@ public interface CounterDataPoint extends DataPoint {
 	void inc(long amount);
 
 	long get();
+
+	void reset();
 }

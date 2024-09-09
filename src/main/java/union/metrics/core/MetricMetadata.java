@@ -5,7 +5,7 @@ public class MetricMetadata {
 	private final Metadata metadata;
 
 	protected MetricMetadata(Builder<?, ?> builder) {
-		this.metadata = new Metadata(builder.name, builder.help, builder.unit);
+		this.metadata = new Metadata(builder.name, builder.help);
 	}
 
 	protected Metadata getMetadata() {
@@ -15,7 +15,6 @@ public class MetricMetadata {
 	protected static abstract class Builder<B extends MetricMetadata.Builder<B, M>, M extends MetricMetadata> {
 		protected String name;
 		protected String help;
-		protected Unit unit;
 
 		public B name(String name) {
 			this.name = name;
@@ -24,11 +23,6 @@ public class MetricMetadata {
 
 		public B help(String help) {
 			this.help = help;
-			return self();
-		}
-
-		public B unit(Unit unit) {
-			this.unit = unit;
 			return self();
 		}
 

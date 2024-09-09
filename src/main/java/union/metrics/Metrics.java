@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import union.App;
 import union.metrics.core.Counter;
 import union.metrics.core.Histogram;
-import union.metrics.core.Unit;
 
 import java.lang.reflect.Modifier;
 
@@ -41,7 +40,6 @@ public class Metrics {
 	public static final Histogram executionTime = Histogram.builder() // commands execution time, excluding terminated ones
 		.name("votl_command_execution_duration_seconds")
 		.help("Command execution time, excluding handling terminated commands.")
-		.unit(Unit.SECONDS)
 		.build();
 
 	public static final Counter commandExceptions = Counter.builder()

@@ -3,20 +3,14 @@ package union.metrics.core;
 public final class Metadata {
 	private final String name;
 	private final String help;
-	private final Unit unit;
 
 	public Metadata(String name) {
-		this(name, null, null);
+		this(name, null);
 	}
 
 	public Metadata(String name, String help) {
-		this(name, help, null);
-	}
-
-	public Metadata(String name, String help, Unit unit) {
 		this.name = name;
 		this.help = help;
-		this.unit = unit;
 	}
 
 	public String getName() {
@@ -25,9 +19,5 @@ public final class Metadata {
 
 	public String getHelp() {
 		return help;
-	}
-
-	public Unit getUnit() {
-		return unit;
 	}
 }

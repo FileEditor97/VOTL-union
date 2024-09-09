@@ -1,6 +1,6 @@
 package union.metrics.core;
 
-import union.metrics.core.datapoints.CounterDataPoint;
+import union.metrics.datapoints.CounterDataPoint;
 
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
@@ -22,8 +22,14 @@ public class Counter extends StatefulMetric<CounterDataPoint, Counter.DataPoint>
 		getNoLabels().inc(amount);
 	}
 
+	@Override
 	public long get() {
 		return getNoLabels().get();
+	}
+
+	@Override
+	public void reset() {
+		getNoLabels().reset();
 	}
 
 	@Override
@@ -46,7 +52,7 @@ public class Counter extends StatefulMetric<CounterDataPoint, Counter.DataPoint>
 		return new Builder();
 	}
 
-	class DataPoint implements CounterDataPoint {
+	static class DataPoint implements CounterDataPoint {
 		private final LongAdder longValue = new LongAdder();
 
 		private DataPoint() {}

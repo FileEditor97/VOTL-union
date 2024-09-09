@@ -1,6 +1,6 @@
 package union.metrics.core;
 
-import union.metrics.core.datapoints.DataPoint;
+import union.metrics.datapoints.DataPoint;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,6 +32,7 @@ abstract class StatefulMetric<D extends DataPoint, T extends D> extends MetricMe
 
 	public void clearValues() {
 		data.clear();
+		noLabel = null;
 	}
 
 	protected T getNoLabels() {

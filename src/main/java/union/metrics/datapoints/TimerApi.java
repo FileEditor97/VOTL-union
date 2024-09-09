@@ -1,4 +1,4 @@
-package union.metrics.core.datapoints;
+package union.metrics.datapoints;
 
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;

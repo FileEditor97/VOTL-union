@@ -53,7 +53,7 @@ public class CheckUtil {
 
 		// Check for role level
 		Map<Long, CmdAccessLevel> roleIds = bot.getDBUtil().access.getAllRoles(member.getGuild().getIdLong());
-		if (roleIds == null) return CmdAccessLevel.ALL;
+		if (roleIds.isEmpty()) return CmdAccessLevel.ALL;
 
         return member.getRoles()
 			.stream()

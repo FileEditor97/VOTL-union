@@ -19,7 +19,9 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.CaseProofUtil;
 import union.utils.database.managers.CaseManager;
+import union.utils.exception.AttachmentParseException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -37,7 +39,8 @@ public class GameStrikeCmd extends CommandBase {
 				.setChannelTypes(ChannelType.TEXT),
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
 			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help"), true)
-				.setMaxLength(200)
+				.setMaxLength(200),
+			new OptionData(OptionType.ATTACHMENT, "proof", lu.getText(path+".proof.help"))
 		);
 		this.category = CmdCategory.GAMES;
 		this.module = CmdModule.GAMES;
@@ -75,6 +78,15 @@ public class GameStrikeCmd extends CommandBase {
 			}
 		}
 
+		// Get proof
+		final CaseProofUtil.ProofData proofData;
+		try {
+			proofData = CaseProofUtil.getData(event);
+		} catch (AttachmentParseException e) {
+			editError(event, e.getPath(), e.getMessage());
+			return;
+		}
+
 		String reason = event.optString("reason");
 		// Add to DB
 		long guildId = event.getGuild().getIdLong();
@@ -91,7 +103,7 @@ public class GameStrikeCmd extends CommandBase {
 		// Log
 		final int strikeCount = bot.getDBUtil().games.countStrikes(channelId, tm.getIdLong());
 		final int maxStrikes = bot.getDBUtil().games.getMaxStrikes(channelId);
-		bot.getLogger().mod.onNewCase(event.getGuild(), tm.getUser(), strikeData, strikeCount+"/"+maxStrikes);
+		bot.getLogger().mod.onNewCase(event.getGuild(), tm.getUser(), strikeData, proofData, strikeCount+"/"+maxStrikes);
 		// Reply
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(tm.getAsMention(), channel.getAsMention()))

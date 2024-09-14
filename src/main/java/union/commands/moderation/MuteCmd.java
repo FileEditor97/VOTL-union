@@ -13,7 +13,9 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.CaseProofUtil;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.exception.AttachmentParseException;
 import union.utils.exception.FormatterException;
 import union.utils.message.TimeUtil;
 
@@ -34,7 +36,8 @@ public class MuteCmd extends CommandBase {
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help"), true),
 			new OptionData(OptionType.STRING, "time", lu.getText(path+".time.help"), true),
-			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help")).setMaxLength(400)
+			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help")).setMaxLength(400),
+			new OptionData(OptionType.ATTACHMENT, "proof", lu.getText(path+".proof.help"))
 		);
 		this.botPermissions = new Permission[]{Permission.MODERATE_MEMBERS};
 		this.category = CmdCategory.MODERATION;
@@ -67,6 +70,15 @@ public class MuteCmd extends CommandBase {
 		}
 		if (duration.isZero()) {
 			editError(event, path+".abort", "Duration must larger than 1 minute");
+			return;
+		}
+
+		// Get proof
+		final CaseProofUtil.ProofData proofData;
+		try {
+			proofData = CaseProofUtil.getData(event);
+		} catch (AttachmentParseException e) {
+			editError(event, e.getPath(), e.getMessage());
 			return;
 		}
 
@@ -115,7 +127,7 @@ public class MuteCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), duration);
 				CaseData muteDate = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
 				// log mute
-				bot.getLogger().mod.onNewCase(guild, tm.getUser(), muteDate);
+				bot.getLogger().mod.onNewCase(guild, tm.getUser(), muteDate, proofData);
 				
 				// send embed
 				editHookEmbed(event, bot.getModerationUtil().actionEmbed(guild.getLocale(), muteDate.getCaseIdInt(),

@@ -18,7 +18,9 @@ import union.objects.CmdModule;
 import union.objects.PunishActions;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.CaseProofUtil;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.exception.AttachmentParseException;
 import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -48,7 +50,8 @@ public class StrikeCmd extends CommandBase {
 				new Choice(lu.getText(path+".severity.severe"), 2).setNameLocalizations(lu.getLocaleMap(path+".severity.severe")),
 				new Choice(lu.getText(path+".severity.extreme"), 3).setNameLocalizations(lu.getLocaleMap(path+".severity.extreme"))
 			)),
-			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help"), true).setMaxLength(400)
+			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help"), true).setMaxLength(400),
+			new OptionData(OptionType.ATTACHMENT, "proof", lu.getText(path+".proof.help"))
 		);
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.STRIKES;
@@ -86,6 +89,15 @@ public class StrikeCmd extends CommandBase {
 			}
 		}
 
+		// Get proof
+		final CaseProofUtil.ProofData proofData;
+		try {
+			proofData = CaseProofUtil.getData(event);
+		} catch (AttachmentParseException e) {
+			editError(event, e.getPath(), e.getMessage());
+			return;
+		}
+
 		String reason = event.optString("reason");
 		Integer strikeAmount = event.optInteger("severity", 1);
 		CaseType type = CaseType.byType(20 + strikeAmount);
@@ -105,7 +117,7 @@ public class StrikeCmd extends CommandBase {
 		// add strikes
 		Field action = executeStrike(event.getUserLocale(), guild, tm, strikeAmount, caseData.getCaseIdInt());
 		// log
-		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData);
+		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData, proofData);
 		// send reply
 		EmbedBuilder builder = bot.getModerationUtil().actionEmbed(guild.getLocale(), caseData.getCaseIdInt(),
 				path+".success", type.getPath(), tm.getUser(), mod.getUser(), reason);

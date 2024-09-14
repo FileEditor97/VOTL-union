@@ -195,6 +195,11 @@ public class LogEmbedUtil {
 			return this;
 		}
 
+		public LogEmbedBuilder addProof(String fileName) {
+			if (fileName!=null) builder.setImage("attachment://"+fileName);
+			return this;
+		}
+
 		public MessageEmbed build() {
 			return builder.build();
 		}
@@ -226,9 +231,10 @@ public class LogEmbedUtil {
 
 	//  Ban
 	@NotNull
-	public MessageEmbed banEmbed(DiscordLocale locale, CaseData caseData, String userIcon) {
+	public MessageEmbed banEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String proofFileName) {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_DARK)
+			.addProof(proofFileName)
 			.build();
 	}
 
@@ -298,9 +304,10 @@ public class LogEmbedUtil {
 
 	//  Kick
 	@NotNull
-	public MessageEmbed kickEmbed(DiscordLocale locale, CaseData caseData, String userIcon) {
+	public MessageEmbed kickEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String proofFileName) {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_DARK)
+			.addProof(proofFileName)
 			.build();
 	}
 
@@ -328,9 +335,10 @@ public class LogEmbedUtil {
 
 	//  Mute
 	@NotNull
-	public MessageEmbed muteEmbed(DiscordLocale locale, CaseData caseData, String userIcon) {
+	public MessageEmbed muteEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String proofFileName) {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_DARK)
+			.addProof(proofFileName)
 			.build();
 	}
 
@@ -343,9 +351,10 @@ public class LogEmbedUtil {
 	}
 
 	//  Strike
-	public MessageEmbed strikeEmbed(DiscordLocale locale, CaseData caseData, String userIcon) {
+	public MessageEmbed strikeEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String proofFileName) {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(AMBER_LIGHT)
+			.addProof(proofFileName)
 			.build();
 	}
 
@@ -432,9 +441,10 @@ public class LogEmbedUtil {
 
 	//  Game
 	@NotNull
-	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String text) {
+	public MessageEmbed gameStrikeEmbed(DiscordLocale locale, CaseData caseData, String userIcon, String proofFileName, String text) {
 		return moderationEmbedBuilder(locale, caseData, userIcon)
 			.setColor(RED_LIGHT)
+			.addProof(proofFileName)
 			.addField("moderation.game.strikes", text)
 			.build();
 	}

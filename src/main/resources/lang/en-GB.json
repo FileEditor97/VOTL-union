@@ -40,7 +40,9 @@
 			"no_access": "You cannot perform this action because you do not have the required access."
 		},
 		"timed_out": "Timed out",
-		"no_helper": "Helper bot is disabled. Unable to perform this action"
+		"no_helper": "Helper bot is disabled. Unable to perform this action",
+		"proof_type": "Incorrect proof file type provided. Only .png and .jpg/.jpeg are accepted.",
+		"proof_size": "The size of the proof file cannot be larger than 4 MB."
 	},
 	"misc": {
 		"and": "and",
@@ -1151,7 +1153,7 @@
 			"strikes_embed": "### Active strikes: %d\nNext strike removed in %s",
 			"ban": {
 				"help": "Ban member of this server",
-				"usage": "ban <@User | Tag | ID> [duration] [reason] [purge messages?] [dm user?]",
+				"usage": "ban <@User | Tag | ID> [duration] [reason] [proof] [purge messages?] [dm user?]",
 				"user": {
 					"name": "user",
 					"help": "Mention user to be banned from this server"
@@ -1163,6 +1165,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Ban reason (*none*)"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"delete": {
 					"name": "delete",
@@ -1200,7 +1206,7 @@
 			},
 			"kick": {
 				"help": "Kick user from this server",
-				"usage": "kick <@User | Tag | ID> [reason] [dm user?]",
+				"usage": "kick <@User | Tag | ID> [reason] [proof] [dm user?]",
 				"member": {
 					"name": "member",
 					"help": "Mention member to be kicked from this server"
@@ -1208,6 +1214,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Kick reason (*none*)"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"dm": {
 					"name": "dm",
@@ -1227,7 +1237,7 @@
 			},
 			"mute": {
 				"help": "Time out member",
-				"usage": "mute <@User | Tag | ID> <duration> [reason]",
+				"usage": "mute <@User | Tag | ID> <duration> [reason] [proof]",
 				"user": {
 					"name": "user",
 					"help": "Mention user to be timed out"
@@ -1239,6 +1249,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Mute reason (*none*)"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"no_reason": "*Not provided*",
 				"not_found": "Member not found or input error",
@@ -1267,7 +1281,7 @@
 			},
 			"strike": {
 				"help": "Strike a member",
-				"usage": "strike <@User> <severity> <reason>",
+				"usage": "strike <@User> <severity> <reason> [proof]",
 				"user": {
 					"name": "user",
 					"help": "Mention user which to strike"
@@ -1282,6 +1296,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Strike reason"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"not_found": "Member not found or input error",
 				"not_self": "You can't select yourself or the bot.",
@@ -2679,7 +2697,7 @@
 			},
 			"gamestrike": {
 				"help": "Give a user game strike",
-				"usage": "gamestrike <#Channel> <@User> <reason>",
+				"usage": "gamestrike <#Channel> <@User> <reason> [proof]",
 				"channel": {
 					"name": "channel",
 					"help": "Select channel"
@@ -2691,6 +2709,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Enter strike reason"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"not_found": "This channel is not registered.",
 				"not_member": "Selected user is not a member of this server or can't be selected.",

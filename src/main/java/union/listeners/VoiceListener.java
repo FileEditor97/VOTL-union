@@ -74,7 +74,6 @@ public class VoiceListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
-		// TODO log join/leave/switch
 		Long masterVoiceId = db.guildVoice.getChannelId(event.getGuild().getIdLong());
 		AudioChannelUnion channelJoined = event.getChannelJoined();
 		if (channelJoined != null && masterVoiceId != null && channelJoined.getIdLong() == masterVoiceId) {

@@ -234,7 +234,10 @@ public class AutopunishCmd extends CommandBase {
 							} catch (NumberFormatException ex) {
 								break;
 							}
-							builder.append("%s (%s)".formatted(lu.getText(event, action.getPath()), TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
+							if (duration.isZero())
+								builder.append("%s %s".formatted(lu.getText(event, action.getPath()), lu.getText(event, "misc.permanently")));
+							else
+								builder.append("%s (%s)".formatted(lu.getText(event, action.getPath()), TimeUtil.durationToLocalizedString(lu, event.getUserLocale(), duration)));
 							break;
 						case REMOVE_ROLE:
 						case ADD_ROLE:

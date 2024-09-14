@@ -7,7 +7,7 @@ public enum CaseType {
 	BAN(1, "case_type.ban", true),
 	MUTE(2, "case_type.mute", true),
 	KICK(3, "case_type.kick", false),
-	BLACKLIST(10, "case_type.blacklist", true),
+	//BLACKLIST(10, "case_type.blacklist", true),
 	UNBAN(11, "case_type.unban", false),
 	UNMUTE(12, "case_type.unmute", false),
 	GAME_STRIKE(13, "case_type.game_strike", false),

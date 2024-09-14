@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -123,10 +124,6 @@ public class LoggingUtil {
 					logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName);
 				case STRIKE_1, STRIKE_2, STRIKE_3 ->
 					logUtil.strikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName);
-				case BLACKLIST ->
-					null;
-					// TODO huh??????
-					//embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
 				case GAME_STRIKE ->
 					logUtil.gameStrikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName, optionalData);
 			};
@@ -219,6 +216,20 @@ public class LoggingUtil {
 			final long modId = entry.getUserIdLong();
 
 			sendLog(guild, type, () -> logUtil.userKickEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
+
+		public void onUserTimeoutUpdated(AuditLogEntry entry, User target, OffsetDateTime until) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userTimeoutUpdateEmbed(guild.getLocale(), target, entry.getReason(), modId, until));
+		}
+
+		public void onUserTimeoutRemoved(AuditLogEntry entry, User target) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userTimeoutRemoveEmbed(guild.getLocale(), target, entry.getReason(), modId));
 		}
 	}
 

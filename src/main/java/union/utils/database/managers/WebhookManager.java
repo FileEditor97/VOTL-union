@@ -6,7 +6,6 @@ import union.utils.database.LiteDBBase;
 import union.utils.database.ConnectionUtil;
 
 public class WebhookManager extends LiteDBBase {
-	
 	public WebhookManager(ConnectionUtil cu) {
 		super(cu, "webhook");
 	}
@@ -34,5 +33,4 @@ public class WebhookManager extends LiteDBBase {
 	public List<Long> getWebhookIds(long guildId) {
 		return select("SELECT webhookId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "webhookId", Long.class);
 	}
-
 }

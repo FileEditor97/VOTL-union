@@ -14,7 +14,6 @@ import union.utils.file.SettingsManager;
 import static union.utils.CastUtil.castLong;
 
 public class UnionPlayerManager extends SqlDBBase {
-
 	private final String SAM_PLAYERS = "sam_players";
 	private final String AXE_PLAYERS = "axe_players";
 	private final SettingsManager settings;
@@ -134,5 +133,4 @@ public class UnionPlayerManager extends SqlDBBase {
 
 		return map;
 	}
-
 }

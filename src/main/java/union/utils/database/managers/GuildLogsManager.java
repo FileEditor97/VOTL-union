@@ -56,8 +56,9 @@ public class GuildLogsManager extends LiteDBBase {
 			return cache.get(guildId);
 		LogSettings settings = applyNonNull(getData(guildId), LogSettings::new);
 		if (settings == null)
-			return blankSettings;
-		return cache.put(guildId, settings);
+			settings = blankSettings;
+		cache.put(guildId, settings);
+		return settings;
 	}
 
 	private Map<String, Object> getData(long guildId) {

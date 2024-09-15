@@ -51,8 +51,9 @@ public class GuildVoiceManager extends LiteDBBase {
 			return cache.get(guildId);
 		VoiceSettings settings = applyNonNull(getData(guildId), VoiceSettings::new);
 		if (settings == null)
-			return blankSettings;
-		return cache.put(guildId, settings);
+			settings = blankSettings;
+		cache.put(guildId, settings);
+		return settings;
 	}
 
 	private Map<String, Object> getData(long guildId) {

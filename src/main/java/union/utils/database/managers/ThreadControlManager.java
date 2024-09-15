@@ -6,7 +6,6 @@ import union.utils.database.LiteDBBase;
 import java.util.List;
 
 public class ThreadControlManager extends LiteDBBase {
-
 	public ThreadControlManager(ConnectionUtil cu) {
 		super(cu, "threadControl");
 	}

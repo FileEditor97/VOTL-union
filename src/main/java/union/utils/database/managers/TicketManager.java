@@ -10,7 +10,6 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TicketManager extends LiteDBBase {
-
 	public TicketManager(ConnectionUtil cu) {
 		super(cu, "ticket");
 	}
@@ -151,5 +150,4 @@ public class TicketManager extends LiteDBBase {
 	public void setWaitTime(String channelId, long time) {
 		execute("UPDATE %s SET replyWait=%d WHERE (channelId=%s)".formatted(table, time, channelId));
 	}
-
 }

@@ -6,11 +6,11 @@ import union.utils.database.LiteDBBase;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class VoiceChannelManager extends LiteDBBase {
-
 	// Cache
 	private final HashMap<Long, Long> cache = new HashMap<>();
 
@@ -25,7 +25,7 @@ public class VoiceChannelManager extends LiteDBBase {
 	}
 
 	public void remove(long channelId) {
-		cache.remove(channelId);
+		Optional.ofNullable(getUser(channelId)).ifPresent(cache::remove);
 		execute("DELETE FROM %s WHERE (channelId=%d)".formatted(table, channelId));
 	}
 

@@ -8,7 +8,6 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class VerifyCacheManager extends LiteDBBase {
-
 	// Cache
 	// discordId - steam64
 	private final FixedCache<Long, Long> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE*20);
@@ -85,5 +84,4 @@ public class VerifyCacheManager extends LiteDBBase {
 	private void invalidateCache(long discordId) {
 		cache.pull(discordId);
 	}
-	
 }

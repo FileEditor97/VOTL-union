@@ -39,8 +39,7 @@ public class TicketSettingsManager extends LiteDBBase {
 		TicketSettings settings = applyNonNull(getData(guildId), TicketSettings::new);
 		if (settings == null)
 			return defaultSettings;
-		cache.put(guildId, settings);
-		return settings;
+		return cache.put(guildId, settings);
 	}
 
 	private Map<String, Object> getData(long guildId) {

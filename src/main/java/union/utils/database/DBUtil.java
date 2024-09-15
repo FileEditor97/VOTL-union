@@ -18,6 +18,7 @@ import union.utils.database.managers.GuildLogsManager.LogSettings;
 import union.utils.database.managers.GuildSettingsManager.GuildSettings;
 import union.utils.database.managers.TicketSettingsManager.TicketSettings;
 import union.utils.database.managers.VerifySettingsManager.VerifySettings;
+import union.utils.database.managers.GuildVoiceManager.VoiceSettings;
 import union.utils.file.FileManager;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -140,6 +141,10 @@ public class DBUtil {
 
 	public TicketSettings getTicketSettings(Guild guild) {
 		return ticketSettings.getSettings(guild);
+	}
+
+	public VoiceSettings getVoiceSettings(Guild guild) {
+		return guildVoice.getSettings(guild.getIdLong());
 	}
 
 

@@ -305,7 +305,7 @@ public class SetupCmd extends CommandBase {
 			ActionRow row4 = ActionRow.of(permit, reject, perms);
 			ActionRow row5 = ActionRow.of(delete);
 
-			Long channelId = bot.getDBUtil().guildVoice.getChannelId(event.getGuild().getIdLong());
+			Long channelId = bot.getDBUtil().getVoiceSettings(event.getGuild()).getChannelId();
 			channel.sendMessageEmbeds(new EmbedBuilder()
 				.setColor(Constants.COLOR_DEFAULT)
 				.setTitle(lu.getLocalized(event.getGuildLocale(), path+".embed_title"))

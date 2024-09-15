@@ -33,8 +33,7 @@ public class VerifySettingsManager extends LiteDBBase {
 			return cache.get(guildId);
 		VerifySettings settings = applyNonNull(getData(guildId), VerifySettings::new);
 		if (settings == null) settings = blankSettings;
-		cache.put(guildId, settings);
-		return settings;
+		return cache.put(guildId, settings);
 	}
 
 	private Map<String, Object> getData(long guildId) {

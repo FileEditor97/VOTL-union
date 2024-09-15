@@ -69,8 +69,7 @@ public class AccessManager extends LiteDBBase {
 		Map<Long, CmdAccessLevel> data = applyNonNull(getRoleData(guildId), this::parseRoleData);
 		if (data==null || data.isEmpty())
 			return Map.of();
-		roleCache.put(guildId, data);
-		return data;
+		return roleCache.put(guildId, data);
 	}
 
 	public List<Long> getRoles(long guildId, CmdAccessLevel level) {
@@ -83,8 +82,7 @@ public class AccessManager extends LiteDBBase {
 		List<Long> data = getOperatorsData(guildId);
 		if (data==null || data.isEmpty())
 			return List.of();
-		operatorCache.put(guildId, data);
-		return data;
+		return operatorCache.put(guildId, data);
 	}
 
 	public boolean isRole(long roleId) {

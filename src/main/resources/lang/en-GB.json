@@ -77,6 +77,7 @@
 		"roles": "Role management",
 		"strikes": "Strike punishments",
 		"games": "Games",
+		"image": "Images",
 		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {
@@ -1812,6 +1813,7 @@
 					"voice": "Voice",
 					"roles": "Roles",
 					"games": "Games",
+					"image": "Image",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -2718,6 +2720,22 @@
 				"not_member": "Selected user is not a member of this server or can't be selected.",
 				"cooldown": "**Strike cooldown!**\nPlease, wait before giving new strike.\n\nRetry %s.",
 				"done": "User %s received Game strike in %s."
+			}
+		},
+		"image": {
+			"profile": {
+				"help": "Get user profile",
+				"usage": "user [@User]",
+				"user": {
+					"name": "user",
+					"help": "Target user, by default - you"
+				},
+				"id": {
+					"name": "id",
+					"help": "Background ID"
+				},
+				"bad_user": "Can't select this user.",
+				"failed": "Failed to create background."
 			}
 		}
 	},

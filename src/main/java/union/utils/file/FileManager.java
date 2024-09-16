@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
+import org.json.JSONObject;
 import union.App;
 import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
@@ -50,8 +52,14 @@ public class FileManager {
 	public FileManager() {}
 
 	public FileManager addFile(String name, String internal, String external){
-		createUpdateLoad(name, internal, external);
+		createUpdateLoad(name, internal, external, false);
 		
+		return this;
+	}
+
+	public FileManager addFileUpdate(String name, String internal, String external){
+		createUpdateLoad(name, internal, external, true);
+
 		return this;
 	}
 
@@ -72,7 +80,7 @@ public class FileManager {
 		}
 		locales.add(locale);
 
-		return addFile(file, "/lang/" + file + ".json", Constants.DATA_PATH + "lang" + Constants.SEPAR + file + ".json");
+		return addFileUpdate(file, "/lang/" + file + ".json", Constants.DATA_PATH + "lang" + Constants.SEPAR + file + ".json");
 	}
 	
 	public Map<String, File> getFiles() {
@@ -83,7 +91,7 @@ public class FileManager {
 		return locales;
 	}
 	
-	private void createUpdateLoad(String name, String internal, String external) {
+	private void createUpdateLoad(String name, String internal, String external, boolean update) {
 		if (files == null)
 			files = new HashMap<>();
 
@@ -110,8 +118,8 @@ public class FileManager {
 				}
 				return;
 			}
-			if (external.contains("lang")) {
-				File tempFile = File.createTempFile("locale-", ".json");
+			if (update) {
+				File tempFile = File.createTempFile("check-", ".tmp");
 				if (!export(App.class.getResourceAsStream(internal), tempFile.toPath())) {
 					logger.error("Failed to write temp file {}!", tempFile.getName());
 				} else {
@@ -224,38 +232,6 @@ public class FileManager {
 		return text;
 	}
 
-//	@Nullable
-//	public Integer getInteger(String name, String path){
-//		File file = files.get(name);
-//
-//		if (file == null) return null;
-//
-//		try {
-//			return JsonPath.using(CONF).parse(file).read("$." + path);
-//		} catch (FileNotFoundException ex) {
-//			logger.error("Couldn't find file {}.json", name);
-//		} catch (IOException ex) {
-//			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
-//		}
-//		return null;
-//	}
-//
-//	@Nullable
-//	public Boolean getBoolean(String name, String path){
-//		File file = files.get(name);
-//
-//		if (file == null) return null;
-//
-//		try {
-//            return JsonPath.using(CONF).parse(file).read("$." + path);
-//		} catch (FileNotFoundException ex) {
-//			logger.error("Couldn't find file {}.json", name);
-//		} catch (IOException ex) {
-//			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
-//		}
-//		return null;
-//	}
-
 	@NotNull
 	public List<String> getStringList(String name, String path){
 		File file = files.get(name);
@@ -282,31 +258,29 @@ public class FileManager {
 		return Collections.emptyList();
 	}
 
-//	@SuppressWarnings("unchecked")
-//	@NotNull
-//	public Map<String, String> getMap(String name, String path){
-//		File file = files.get(name);
-//		if(file == null) {
-//			logger.error("Couldn't find file {}.json", name);
-//			return Collections.emptyMap();
-//		}
-//
-//		try {
-//			Map<String, String> map = JsonPath.using(CONF).parse(file).read("$." + path, Map.class);
-//
-//			if (map == null || map.isEmpty())
-//				throw new KeyIsNull(path);
-//
-//			return map;
-//		} catch (FileNotFoundException ex) {
-//			logger.error("Couldn't find file {}.json", name);
-//		} catch (KeyIsNull ex) {
-//			logger.warn("Couldn't find \"{}\" in file {}.json", path, name);
-//		} catch (IOException ex) {
-//			logger.warn("Couldn't process file {}.json", name, ex);
-//		}
-//		return Collections.emptyMap();
-//	}
+	@NotNull
+	public JSONObject getJsonObject(String name){
+		File file = files.get(name);
+
+		if (file == null) {
+			logger.error("Couldn't find file {}.json", name);
+			return null;
+		}
+
+		try {
+			JSONObject object = JsonPath.using(CONF.jsonProvider(new JsonOrgJsonProvider())).parse(file).json();
+
+			if (object == null || object.isEmpty())
+				return null;
+
+			return object;
+		} catch (FileNotFoundException ex) {
+			logger.error("Couldn't find file {}.json", name);
+		} catch (IOException ex) {
+			logger.warn("Couldn't process file {}.json", name, ex);
+		}
+		return null;
+	}
 
 	@SuppressWarnings("unchecked")
 	@NotNull

@@ -12,6 +12,7 @@ import union.base.waiter.EventWaiter;
 import union.commands.games.GameCmd;
 import union.commands.games.GameStrikeCmd;
 import union.commands.guild.*;
+import union.commands.image.UserProfileCmd;
 import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
@@ -37,6 +38,7 @@ import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
 import union.utils.file.SettingsManager;
 import union.utils.file.lang.LocaleUtil;
+import union.utils.imagegen.UserBackgroundHandler;
 import union.utils.logs.LogEmbedUtil;
 import union.utils.logs.LoggingUtil;
 import union.utils.logs.WebhookLogger;
@@ -96,6 +98,7 @@ public class App {
 		try {
 			fileManager.addFile("config", "/config.json", Constants.DATA_PATH + "config.json")
 				.addFile("database", "/server.db", Constants.DATA_PATH + "server.db")
+				.addFileUpdate("backgrounds", "/backgrounds/index.json", Constants.DATA_PATH+"backgrounds"+Constants.SEPAR+"main.json")
 				.addSettings("settings", Constants.DATA_PATH + "settings.json")
 				.addLang("en-GB")
 				.addLang("ru");
@@ -211,7 +214,9 @@ public class App {
 				new CheckServerCmd(),
 				// games
 				new GameCmd(),
-				new GameStrikeCmd()
+				new GameStrikeCmd(),
+				// image
+				new UserProfileCmd()
 			)
 			.addContextMenus(
 				new AccountContext(),
@@ -297,6 +302,9 @@ public class App {
 
 		logger.info("Preparing and setting up metrics");
 		Metrics.setup();
+
+		logger.info("Creating user backgrounds");
+		UserBackgroundHandler.getInstance().start();
 
 		logger.info("Success start");
 

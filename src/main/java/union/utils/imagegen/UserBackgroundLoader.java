@@ -4,7 +4,6 @@ import org.json.JSONObject;
 import union.utils.ColorUtil;
 
 import java.awt.*;
-import java.io.FileNotFoundException;
 
 import static union.utils.CastUtil.requireNonNull;
 
@@ -13,7 +12,7 @@ public class UserBackgroundLoader {
 	private final JSONObject colorData;
 	private final UserBackground background;
 
-	UserBackgroundLoader(JSONObject jsonObject) throws FileNotFoundException {
+	UserBackgroundLoader(JSONObject jsonObject) {
 		int id = requireNonNull(jsonObject.getInt("id"));
 
 		String name = requireNonNull(jsonObject.getString("name"));
@@ -47,7 +46,6 @@ public class UserBackgroundLoader {
 		String input = colorData.getString(key);
 		if (input.startsWith("#") && input.length() > 7) {
 			int alpha = Integer.parseInt(input.substring(7,9), 16);
-			String v = input.substring(0,7);
 			return ColorUtil.decode(input.substring(0,7), alpha);
 		}
 		return ColorUtil.decode(input);

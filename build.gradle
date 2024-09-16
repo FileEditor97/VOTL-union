@@ -34,13 +34,13 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
 	implementation 'org.jsoup:jsoup:1.18.1'							// HTML tools
 	// https://mvnrepository.com/artifact/io.github.java-diff-utils/java-diff-utils
-	implementation 'io.github.java-diff-utils:java-diff-utils:4.12'
+	implementation 'io.github.java-diff-utils:java-diff-utils:4.12' // Diff finder
 	// https://mvnrepository.com/artifact/org.json/json
-	implementation 'org.json:json:20240303'
+	implementation 'org.json:json:20240303'                         // JsonObject
 
 	// Metrics
     // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
-    implementation 'io.github.classgraph:classgraph:4.8.175'
+    implementation 'io.github.classgraph:classgraph:4.8.175'        // Class lookup
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy

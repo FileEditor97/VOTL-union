@@ -38,7 +38,7 @@ public class CaseProofUtil {
 
 		/**
 		 * @param caseId Case ID
-		 * @return fileName
+		 * @return fileName like proof_CASEID.png
 		 */
 		public String setFileName(int caseId) {
 			this.fileName = "proof_%s.%s".formatted(caseId, extension);

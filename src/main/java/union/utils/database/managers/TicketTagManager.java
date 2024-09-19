@@ -27,7 +27,7 @@ public class TicketTagManager extends LiteDBBase {
 		super(cu, "ticketTag");
 	}
 
-	public void createTag(String guildId, Integer panelId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public int createTag(String guildId, Integer panelId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
 		List<String> keys = new ArrayList<>(10);
 		List<String> values = new ArrayList<>(10);
 		keys.addAll(List.of("guildId", "panelId", "tagType", "buttonText", "ticketName", "buttonStyle"));
@@ -48,11 +48,7 @@ public class TicketTagManager extends LiteDBBase {
 			keys.add("supportRoles");
 			values.add(quote(supportRoleIds));
 		}
-		execute("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
-	}
-
-	public Integer getIncrement() {
-		return getIncrement(table);
+		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
 	public void deleteTag(Integer tagId) {

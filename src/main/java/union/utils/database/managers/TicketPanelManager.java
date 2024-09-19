@@ -21,7 +21,7 @@ public class TicketPanelManager extends LiteDBBase {
 		super(cu, "ticketPanel");
 	}
 
-	public void createPanel(String guildId, String title, String description, String image, String footer) {
+	public int createPanel(String guildId, String title, String description, String image, String footer) {
 		List<String> keys = new ArrayList<>(5);
 		List<String> values = new ArrayList<>(5);
 		keys.add("guildId");
@@ -40,11 +40,7 @@ public class TicketPanelManager extends LiteDBBase {
 			keys.add("footer");
 			values.add(replaceNewline(footer));
 		}
-		execute("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
-	}
-
-	public Integer getIncrement() {
-		return getIncrement(table);
+		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
 	public void delete(Integer panelId) {

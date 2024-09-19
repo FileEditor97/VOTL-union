@@ -84,7 +84,10 @@ public class LogsCmd extends CommandBase {
 					event.getJDA().retrieveWebhookById(oldData.getWebhookId())
 							.queue(webhook -> webhook.delete(oldData.getToken()).reason("Log disabled").queue());
 				}
-				Icon icon = Icon.from(new URL(Constants.AVATAR_URL).openStream(), IconType.PNG);
+				Icon icon = null;
+				try {
+					icon = Icon.from(new URL(Constants.AVATAR_URL).openStream(), IconType.PNG);
+				} catch (Exception ignored) {}
 				channel.createWebhook(lu.getText(type.getPathName())).setAvatar(icon).reason("By "+event.getUser().getName()).queue(webhook -> {
 					// Add to DB
 					WebhookData data = new WebhookData(channel.getIdLong(), webhook.getIdLong(), webhook.getToken());
@@ -100,7 +103,7 @@ public class LogsCmd extends CommandBase {
 					);
 				});
 			} catch (Exception ex) {
-				editError(event, "errors.error", ex.getMessage());
+				editErrorOther(event, ex.getMessage());
 			}	
 		}
 	}

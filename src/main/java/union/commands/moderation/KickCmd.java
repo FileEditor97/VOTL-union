@@ -17,6 +17,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.CaseProofUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -33,6 +34,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import union.utils.exception.AttachmentParseException;
 
 public class KickCmd extends CommandBase {
 
@@ -44,6 +46,7 @@ public class KickCmd extends CommandBase {
 		this.options = List.of(
 			new OptionData(OptionType.USER, "member", lu.getText(path+".member.help"), true),
 			new OptionData(OptionType.STRING, "reason", lu.getText(path+".reason.help")).setMaxLength(400),
+			new OptionData(OptionType.ATTACHMENT, "proof", lu.getText(path+".proof.help")),
 			new OptionData(OptionType.BOOLEAN, "dm", lu.getText(path+".dm.help"))
 		);
 		this.botPermissions = new Permission[]{Permission.KICK_MEMBERS};
@@ -84,6 +87,15 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
+		// Get proof
+		final CaseProofUtil.ProofData proofData;
+		try {
+			proofData = CaseProofUtil.getData(event);
+		} catch (AttachmentParseException e) {
+			editError(event, e.getPath(), e.getMessage());
+			return;
+		}
+
 		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
 		if (event.optBoolean("dm", true)) {
 			tm.getUser().openPrivateChannel().queue(pm -> {
@@ -95,21 +107,26 @@ public class KickCmd extends CommandBase {
 
 		tm.kick().reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
 			// add info to db
-			bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+			CaseData kickData = bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
 				guild.getIdLong(), reason, Instant.now(), null);
-			CaseData kickData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
-			// log ban
-			bot.getLogger().mod.onNewCase(guild, tm.getUser(), kickData);
-
-			// reply and ask for kick sync
-			event.getHook().editOriginalEmbeds(
-					bot.getModerationUtil().actionEmbed(guild.getLocale(), kickData.getCaseIdInt(),
-							path+".success", tm.getUser(), mod.getUser(), reason)
-			).queue(msg -> {
-				buttonSync(event, msg, tm.getUser(), reason);
+			if (kickData == null) {
+				editErrorOther(event, "Failed to create action data.");
+				return;
+			}
+			// log kick
+			bot.getLogger().mod.onNewCase(guild, tm.getUser(), kickData, proofData).thenAccept(logUrl -> {
+				// Add log url to db
+				bot.getDBUtil().cases.setLogUrl(kickData.getRowId(), logUrl);
+				// reply and ask for kick sync
+				event.getHook().editOriginalEmbeds(
+					bot.getModerationUtil().actionEmbed(guild.getLocale(), kickData.getLocalIdInt(),
+						path+".success", tm.getUser(), mod.getUser(), reason, logUrl)
+				).queue(msg -> {
+					buttonSync(event, msg, tm.getUser(), reason);
+				});
 			});
 		},
-		failure -> editError(event, "errors.error", failure.getMessage()));
+		failure -> editErrorOther(event, failure.getMessage()));
 	}
 
 	private void buttonSync(SlashCommandEvent event, final Message message, User tu, String reason) {

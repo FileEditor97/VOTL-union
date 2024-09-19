@@ -8,7 +8,6 @@ import union.utils.database.SqlDBBase;
 import union.utils.file.SettingsManager;
 
 public class UnionVerifyManager extends SqlDBBase {
-
 	private final String TABLE = "union.users";
 	private final SettingsManager settings;
 
@@ -47,5 +46,4 @@ public class UnionVerifyManager extends SqlDBBase {
 	public void clearUpdated(String steam64) {
 		update(TABLE, "discord_updated", "0", "steam_id", steam64);
 	}
-	
 }

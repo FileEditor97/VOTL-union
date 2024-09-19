@@ -15,7 +15,6 @@ import union.utils.database.LiteDBBase;
 import net.dv8tion.jda.api.entities.Guild;
 
 public class TicketSettingsManager extends LiteDBBase {
-
 	private final Set<String> columns = Set.of(
 		"autocloseTime", "autocloseLeft", "timeToReply",
 		"rowName1", "rowName2", "rowName3", "otherRole"
@@ -38,7 +37,7 @@ public class TicketSettingsManager extends LiteDBBase {
 			return cache.get(guildId);
 		TicketSettings settings = applyNonNull(getData(guildId), TicketSettings::new);
 		if (settings == null)
-			return defaultSettings;
+			settings = defaultSettings;
 		cache.put(guildId, settings);
 		return settings;
 	}
@@ -130,5 +129,4 @@ public class TicketSettingsManager extends LiteDBBase {
 			return timeToReply;
 		}
 	}
-
 }

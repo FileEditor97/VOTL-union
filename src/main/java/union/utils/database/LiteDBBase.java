@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +34,25 @@ public class LiteDBBase {
 
 		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
-			PreparedStatement st = conn.prepareStatement(sql)) {
+			 PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at statement execution\nRequest: {}", sql, ex);
+		}
+	}
+
+	protected int executeWithRow(final String sql) {
+		// Metrics
+		Metrics.databaseLiteQueries.labelValue(sql.split(" ")[0].toUpperCase()).inc();
+
+		util.logger.debug(sql);
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			 PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			st.executeUpdate();
+			return st.getGeneratedKeys().getInt(1);
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at statement execution\nRequest: {}", sql, ex);
+			return 0;
 		}
 	}
 
@@ -155,12 +171,6 @@ public class LiteDBBase {
 		return result;
 	}
 
-	protected int getIncrement(final String table) {
-		Integer data = selectOne("SELECT seq FROM sqlite_sequence WHERE (name=%s)".formatted(quote(table)), "seq", Integer.class);
-		if (data == null) return 0;
-		return data;
-	}
-
 
 	// UTILS
 	protected String quote(Object value) {
@@ -169,7 +179,7 @@ public class LiteDBBase {
 		String str = String.valueOf(value);
 		if (str.equals("NULL")) return str;
 
-		return "'" + String.valueOf(value).replaceAll("'", "''") + "'"; // smt's -> 'smt''s'
+		return String.format("'%s'", String.valueOf(value).replaceAll("'", "''")); // smt's -> 'smt''s'
 	}
 
 	protected <T, V> T applyNonNull(V obj, @NotNull Function<V, T> function) {

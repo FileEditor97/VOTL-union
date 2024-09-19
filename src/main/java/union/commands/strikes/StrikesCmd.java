@@ -54,18 +54,18 @@ public class StrikesCmd extends CommandBase {
 		}
 		String[] strikesInfoArray = strikeData.getRight().split(";");
 		if (strikesInfoArray[0].isEmpty()) {
-			editError(event, "errors.error", "Strikes data is empty.");
+			editErrorOther(event, "Strikes data is empty.");
 			return;
 		}
 
 		StringBuilder builder = new StringBuilder();
 		for (String c : strikesInfoArray) {
 			String[] args = c.split("-");
-			int caseId = Integer.parseInt(args[0]);
+			int caseRowId = Integer.parseInt(args[0]);
 			int strikeAmount = Integer.parseInt(args[1]);
-			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
-			builder.append("`%5d` %s | %s - %s\nBy: %s\n\n".formatted(
-				caseId,
+			CaseData caseData = bot.getDBUtil().cases.getInfo(caseRowId);
+			builder.append("`%4d` %s | %s - %s\nBy: %s\n\n".formatted(
+				caseData.getLocalIdInt(),
 				getSquares(strikeAmount, caseData.getCaseType().getType()-20),
 				MessageUtil.limitString(caseData.getReason(), 50),
 				TimeFormat.DATE_SHORT.format(caseData.getTimeStart()),

@@ -41,25 +41,27 @@ public class CheckRankCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
+
 		Guild guild = event.getGuild();
 		Role role = event.optRole("role");
 		if (role == null) {
-			createError(event, path+".no_role");
+			editError(event, path+".no_role");
 			return;
 		}
 		if (role.isPublicRole() || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
-			createError(event, path+".incorrect_role");
+			editError(event, path+".incorrect_role");
 			return;
 		}
 
 		// Check if this guild has connected DB tables
 		if (!bot.getDBUtil().unionPlayers.isServer(guild.getIdLong())) {
-			createError(event, "errors.error", "This Discord server is not connected to the database. Will not run!");
+			editErrorOther(event, "This Discord server is not connected to the database. Will not run!");
 			return;
 		}
 
 		EmbedBuilder builder = bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".started"));
-		event.replyEmbeds(builder.build()).queue();
+		editHookEmbed(event, builder.build());
 
 		// Retrieve members with this role
 		event.getGuild().findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
@@ -69,7 +71,7 @@ public class CheckRankCmd extends CommandBase {
 				return;
 			}
 			if (maxSize > 200) {
-				editError(event, "errors.error", "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
+				editErrorOther(event, "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
 				return;
 			}
 			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());
@@ -100,7 +102,8 @@ public class CheckRankCmd extends CommandBase {
 			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 				.whenComplete((done, exception) -> {
 					if (exception != null) {
-						editError(event, "errors.unknown", exception.getMessage());
+						bot.getAppLogger().error("At Rank Check, unknown exception.", exception);
+						editErrorUnknown(event, exception.getMessage());
 					} else {
 						int removed = 0;
 						for (CompletableFuture<Void> future : completableFutures) {
@@ -115,7 +118,7 @@ public class CheckRankCmd extends CommandBase {
 						).build());
 					}
 				}).thenRun(guild::pruneMemberCache); // Prune member cache;
-		}).onError(failure -> editError(event, "errors.error", failure.getMessage()));
+		}).onError(failure -> editErrorOther(event, failure.getMessage()));
 	}
 
 }

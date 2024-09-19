@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import union.utils.database.managers.GuildVoiceManager;
 
 public class VoiceListener extends ListenerAdapter {
 	
@@ -74,8 +75,7 @@ public class VoiceListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
-		// TODO log join/leave/switch
-		Long masterVoiceId = db.guildVoice.getChannelId(event.getGuild().getIdLong());
+		Long masterVoiceId = db.getVoiceSettings(event.getGuild()).getChannelId();
 		AudioChannelUnion channelJoined = event.getChannelJoined();
 		if (channelJoined != null && masterVoiceId != null && channelJoined.getIdLong() == masterVoiceId) {
 			handleVoiceCreate(event.getGuild(), event.getMember());
@@ -89,7 +89,6 @@ public class VoiceListener extends ListenerAdapter {
 	}
 
 	private void handleVoiceCreate(Guild guild, Member member) {
-		long guildId = guild.getIdLong();
 		long userId = member.getIdLong();
 		DiscordLocale guildLocale = guild.getLocale();
 
@@ -98,17 +97,18 @@ public class VoiceListener extends ListenerAdapter {
 				.queue(channel -> channel.sendMessage(bot.getLocaleUtil().getLocalized(guildLocale, "bot.voice.listener.cooldown")).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
 			return;
 		}
-		Long categoryId = db.guildVoice.getCategoryId(guildId);
+		GuildVoiceManager.VoiceSettings voiceSettings = db.getVoiceSettings(guild);
+		Long categoryId = voiceSettings.getCategoryId();
 		if (categoryId == null) return;
 
 		String channelName = Optional.ofNullable(db.user.getName(userId))
-			.or(() -> Optional.ofNullable(db.guildVoice.getName(guildId)))
+			.or(() -> Optional.ofNullable(voiceSettings.getDefaultName()))
 			.orElse(bot.getLocaleUtil().getLocalized(guildLocale, "bot.voice.listener.default_name"))
 			.replace("{user}", member.getEffectiveName());
 		channelName = channelName.substring(0, Math.min(100, channelName.length()));
 
 		Integer channelLimit = Optional.ofNullable(db.user.getLimit(userId))
-			.or(() -> Optional.ofNullable(db.guildVoice.getLimit(guildId)))
+			.or(() -> Optional.ofNullable(voiceSettings.getDefaultLimit()))
 			.orElse(0);
 		
 		guild.createVoiceChannel(channelName, guild.getCategoryById(categoryId))

@@ -30,14 +30,15 @@ public class ActiveModlogsContext extends UserContextMenu {
 
 		long guildId = event.getGuild().getIdLong();
 		long userId = user.getIdLong();
-		List<CaseManager.CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, 1, true);
+		final List<CaseManager.CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, 1, true);
 		if (cases.isEmpty()) {
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.modlogs.empty")).build()).queue();
 			return;
 		}
 		int pages = (int) Math.ceil(bot.getDBUtil().cases.countCases(guildId, userId)/10.0);
 
-		event.getHook().editOriginalEmbeds(ModLogsCmd.buildEmbed(lu, event.getUserLocale(), user, cases, 1, pages)
+		event.getHook().editOriginalEmbeds(
+			ModLogsCmd.buildEmbed(lu, event.getUserLocale(), user, cases, 1, pages)
 				.setDescription(lu.getLocalized(event.getUserLocale(), path+".full"))
 				.build()
 		).queue();

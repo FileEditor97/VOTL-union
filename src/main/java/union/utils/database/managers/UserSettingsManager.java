@@ -4,7 +4,6 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class UserSettingsManager extends LiteDBBase {
-
 	public UserSettingsManager(ConnectionUtil cu) {
 		super(cu, "users");
 	}
@@ -28,5 +27,4 @@ public class UserSettingsManager extends LiteDBBase {
 	public Integer getLimit(long userId) {
 		return selectOne("SELECT voiceLimit FROM %s WHERE (userId=%d)".formatted(table, userId), "voiceLimit", Integer.class);
 	}
-
 }

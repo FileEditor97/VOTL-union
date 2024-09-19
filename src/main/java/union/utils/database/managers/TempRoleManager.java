@@ -9,7 +9,6 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class TempRoleManager extends LiteDBBase {
-	
 	public TempRoleManager(ConnectionUtil cu) {
 		super(cu, "tempRoles");
 	}
@@ -53,5 +52,4 @@ public class TempRoleManager extends LiteDBBase {
 		Integer data = selectOne("SELECT deleteAfter FROM %s WHERE (roleId=%s)".formatted(table, roleId), "deleteAfter", Integer.class);
 		return data != null && data == 1;
 	}
-
 }

@@ -82,6 +82,14 @@ public abstract class CommandBase extends SlashCommand {
 		editHookEmbed(event, bot.getEmbedUtil().getError(event, path, reason));
 	}
 
+	public final void editErrorOther(SlashCommandEvent event, String reason) {
+		editHookEmbed(event, bot.getEmbedUtil().getError(event, "errors.error", reason));
+	}
+
+	public final void editErrorUnknown(SlashCommandEvent event, String reason) {
+		editHookEmbed(event, bot.getEmbedUtil().getError(event, "errors.unknown", reason));
+	}
+
 	public final void editErrorDeletable(SlashCommandEvent event, @NotNull String path) {
 		editErrorDeletable(event, path, null);
 	}

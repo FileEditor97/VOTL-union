@@ -112,8 +112,4 @@ public class MemberListener extends ListenerAdapter {
 		}
 	}
 
-	/* @Override
-	 * TODO
-	public void onGuildMemberUpdateAvatar(@NotNull GuildMemberUpdateAvatarEvent event) {} */
-	
 }

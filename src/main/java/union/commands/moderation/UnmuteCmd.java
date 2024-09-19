@@ -50,21 +50,21 @@ public class UnmuteCmd extends CommandBase {
 		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
 		
 		CaseData muteData = bot.getDBUtil().cases.getMemberActive(tm.getIdLong(), guild.getIdLong(), CaseType.MUTE);
-		if (muteData != null) bot.getDBUtil().cases.setInactive(muteData.getCaseIdInt());
+		if (muteData != null) bot.getDBUtil().cases.setInactive(muteData.getRowId());
 
 		if (tm.isTimedOut()) {
 			tm.removeTimeout().reason(reason).queue(done -> {
 				Member mod = event.getMember();
 				// add info to db
-				bot.getDBUtil().cases.add(CaseType.UNMUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+				CaseData unmuteData = bot.getDBUtil().cases.add(CaseType.UNMUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
 					guild.getIdLong(), reason, Instant.now(), null);
-				CaseData unmuteData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
-				// log unban
-				bot.getLogger().mod.onNewCase(guild, tm.getUser(), unmuteData, muteData != null ? muteData.getReason() : null);
-				// reply
-				editHookEmbed(event, bot.getModerationUtil().actionEmbed(guild.getLocale(), unmuteData.getCaseIdInt(),
-						path+".success", tm.getUser(), mod.getUser(), reason)
-				);
+				// log unmute
+				bot.getLogger().mod.onNewCase(guild, tm.getUser(), unmuteData, muteData != null ? muteData.getReason() : null).thenAccept(logUrl -> {
+					// reply
+					editHookEmbed(event, bot.getModerationUtil().actionEmbed(guild.getLocale(), unmuteData.getLocalIdInt(),
+						path+".success", tm.getUser(), mod.getUser(), reason, logUrl)
+					);
+				});
 			},
 			failed -> editError(event, path+".abort", failed.getMessage()));
 		} else {

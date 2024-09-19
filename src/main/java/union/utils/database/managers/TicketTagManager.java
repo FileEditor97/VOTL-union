@@ -23,12 +23,11 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.internal.interactions.component.ButtonImpl;
 
 public class TicketTagManager extends LiteDBBase {
-
 	public TicketTagManager(ConnectionUtil cu) {
 		super(cu, "ticketTag");
 	}
 
-	public void createTag(String guildId, Integer panelId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public int createTag(String guildId, Integer panelId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
 		List<String> keys = new ArrayList<>(10);
 		List<String> values = new ArrayList<>(10);
 		keys.addAll(List.of("guildId", "panelId", "tagType", "buttonText", "ticketName", "buttonStyle"));
@@ -49,11 +48,7 @@ public class TicketTagManager extends LiteDBBase {
 			keys.add("supportRoles");
 			values.add(quote(supportRoleIds));
 		}
-		execute("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
-	}
-
-	public Integer getIncrement() {
-		return getIncrement(table);
+		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
 	public void deleteTag(Integer tagId) {
@@ -90,16 +85,8 @@ public class TicketTagManager extends LiteDBBase {
 		return selectOne("SELECT guildId FROM %s WHERE (tagId=%d)".formatted(table, tagId), "guildId", String.class);
 	}
 
-	public List<Integer> getTagIds(String guildId) {
-		return select("SELECT tagId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "tagId", Integer.class);
-	}
-
 	public Integer countPanelTags(Integer panelId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (panelId=%d)".formatted(table, panelId));
-	}
-
-	public Integer getPanelId(Integer tagId) {
-		return selectOne("SELECT panelId FROM %s WHERE (tagId=%d)".formatted(table, tagId), "panelId", Integer.class);
 	}
 
 	public String getTagText(Integer tagId) {
@@ -211,5 +198,4 @@ public class TicketTagManager extends LiteDBBase {
 			return supportRoles;
 		}
 	}
-	
 }

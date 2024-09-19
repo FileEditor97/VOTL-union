@@ -13,11 +13,10 @@ import union.utils.database.LiteDBBase;
 import net.dv8tion.jda.api.entities.Guild;
 
 public class VerifySettingsManager extends LiteDBBase {
-
 	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled", "minimumPlaytime");
 
 	// Cache
-	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
+	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE/5);
 	private final VerifySettings blankSettings = new VerifySettings();
 
 	public VerifySettingsManager(ConnectionUtil cu) {
@@ -32,7 +31,8 @@ public class VerifySettingsManager extends LiteDBBase {
 		if (cache.contains(guildId))
 			return cache.get(guildId);
 		VerifySettings settings = applyNonNull(getData(guildId), VerifySettings::new);
-		if (settings == null) settings = blankSettings;
+		if (settings == null)
+			settings = blankSettings;
 		cache.put(guildId, settings);
 		return settings;
 	}
@@ -107,5 +107,4 @@ public class VerifySettingsManager extends LiteDBBase {
 			return minimumPlaytime;
 		}
 	}
-
 }

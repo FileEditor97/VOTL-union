@@ -48,7 +48,7 @@ public class UnverifyCmd extends CommandBase {
 		}
 		Role role = guild.getRoleById(roleId);
 		if (role == null) {
-			editError(event, "errors.error", "Role not found by the ID: "+roleId);
+			editErrorOther(event, "Role not found by the ID: "+roleId);
 			return;
 		}
 

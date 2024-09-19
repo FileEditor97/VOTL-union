@@ -215,7 +215,7 @@ public class RoleCmd extends CommandBase {
 					return;
 				}
 				if (maxSize > 400) {
-					editError(event, "errors.error", "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
+					editErrorOther(event, "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
 					return;
 				}
 				editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());
@@ -229,7 +229,8 @@ public class RoleCmd extends CommandBase {
 				CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 					.whenComplete((done, exception) -> {
 						if (exception != null) {
-							editError(event, "errors.unknown", exception.getMessage());
+							bot.getAppLogger().error("At Remove all Roles, unknown exception.", exception);
+							editErrorUnknown(event, exception.getMessage());
 						} else {
 							int removed = 0;
 							for (CompletableFuture<Void> future : completableFutures) {
@@ -243,7 +244,7 @@ public class RoleCmd extends CommandBase {
 							).build());
 						}
 					}).thenRun(guild::pruneMemberCache); // Prune member cache
-			}).onError(failure -> editError(event, "errors.error", failure.getMessage()));
+			}).onError(failure -> editErrorOther(event, failure.getMessage()));
 		}
 		
 	}

@@ -54,7 +54,6 @@ public class SettingsManager {
 
 	public void addBotWhitelisted(long value) {
 		botWhitelist.add(value);
-		System.out.println(botWhitelist);
 		writeChange("$.botWhitelist", botWhitelist);
 	}
 

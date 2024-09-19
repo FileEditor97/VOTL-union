@@ -3,37 +3,66 @@ package union.utils.database.managers;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class VoiceChannelManager extends LiteDBBase {
-	
+	// Cache
+	private final HashMap<Long, Long> cache = new HashMap<>();
+
 	public VoiceChannelManager(ConnectionUtil cu) {
 		super(cu, "voiceChannels");
+		cache.putAll(getDbCache());
 	}
 
 	public void add(long userId, long channelId) {
+		cache.put(userId, channelId);
 		execute("INSERT INTO %s(userId, channelId) VALUES (%d, %d) ON CONFLICT(channelId) DO UPDATE SET channelId=%<d".formatted(table, userId, channelId));
 	}
 
 	public void remove(long channelId) {
+		Optional.ofNullable(getUser(channelId)).ifPresent(cache::remove);
 		execute("DELETE FROM %s WHERE (channelId=%d)".formatted(table, channelId));
 	}
 
 	public boolean existsUser(long userId) {
-		return getChannel(userId) != null;
+		return cache.containsKey(userId);
 	}
 
 	public boolean existsChannel(long channelId) {
-		return getUser(channelId) != null;
+		return cache.containsValue(channelId);
 	}
 
-	public void setUser(long channelId, long userId) {
+	public void setUser(long userId, long channelId) {
+		// Remove user with same channelId
+		cache.entrySet().stream()
+			.filter((e) -> e.getValue().equals(channelId))
+			.map(Map.Entry::getKey)
+			.findFirst().ifPresent(cache::remove);
+		// Add new user
+		cache.put(userId, channelId);
 		execute("UPDATE %s SET userId=%s WHERE (channelId=%d)".formatted(table, userId, channelId));
 	}
 
 	public Long getChannel(long userId) {
-		return selectOne("SELECT channelId FROM %s WHERE (userId=%d)".formatted(table, userId), "channelId", Long.class);
+		return cache.get(userId);
 	}
 
 	public Long getUser(long channelId) {
-		return selectOne("SELECT userId FROM %s WHERE (channelId=%d)".formatted(table, channelId), "userId", Long.class);
+		return cache.entrySet().stream()
+			.filter((e) -> e.getValue().equals(channelId))
+			.map(Map.Entry::getKey)
+			.findAny().orElse(null);
+	}
+
+	private Map<Long, Long> getDbCache() {
+		List<Map<String, Object>> data = select("SELECT * FROM %s".formatted(table), Set.of("channelId", "userId"));
+		if (data.isEmpty()) return Map.of();
+		return data.stream()
+			.collect(Collectors.toMap(s -> (Long) s.get("userId"), s -> (Long) s.get("channelId")));
 	}
 }

@@ -74,11 +74,11 @@ public class GroupCmd extends CommandBase {
 				try {
 					appealGuildId = Long.parseLong(event.optString("appeal_server"));
 				} catch (NumberFormatException ex) {
-					editError(event, "errors.error", ex.getMessage());
+					editErrorOther(event, ex.getMessage());
 					return;
 				}
 				if (appealGuildId != 0L && event.getJDA().getGuildById(appealGuildId) == null) {
-					editError(event, "errors.error", "Unknown appeal server ID.\nReceived: "+appealGuildId);
+					editErrorOther(event, "Unknown appeal server ID.\nReceived: "+appealGuildId);
 					return;
 				}
 			}
@@ -97,15 +97,21 @@ public class GroupCmd extends CommandBase {
 						editError(event, path+".invalid_invite", "Link `%s`".formatted(invite.getUrl()));
 						return;
 					}
-					bot.getDBUtil().group.create(guildId, groupName, appealGuildIdTemp, invite.getUrl());
-					int groupId = bot.getDBUtil().group.getIncrement();
+					int groupId = bot.getDBUtil().group.create(guildId, groupName, appealGuildIdTemp, invite.getUrl());
+					if (groupId == 0) {
+						editErrorOther(event, "Group creation failed.");
+						return;
+					}
 					bot.getLogger().group.onCreation(event, groupId, groupName);
 
 					sendSuccess(event, groupName, groupId, true);
 				}, failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
 			} else {
-				bot.getDBUtil().group.create(guildId, groupName, appealGuildId, null);
-				int groupId = bot.getDBUtil().group.getIncrement();
+				int groupId = bot.getDBUtil().group.create(guildId, groupName, appealGuildId, null);
+				if (groupId == 0) {
+					editErrorOther(event, "Group creation failed.");
+					return;
+				}
 				bot.getLogger().group.onCreation(event, groupId, groupName);
 
 				sendSuccess(event, groupName, groupId, false);
@@ -197,7 +203,7 @@ public class GroupCmd extends CommandBase {
 			try {
 				targetId = Long.parseLong(event.optString("server"));
 			} catch (NumberFormatException ex) {
-				editError(event, "errors.error", ex.getMessage());
+				editErrorOther(event, ex.getMessage());
 				return;
 			}
 			if (event.getGuild().getIdLong() == targetId) {
@@ -397,11 +403,11 @@ public class GroupCmd extends CommandBase {
 				try {
 					appealGuildId = Long.parseLong(event.optString("appeal_server"));
 				} catch (NumberFormatException ex) {
-					editError(event, "errors.error", ex.getMessage());
+					editErrorOther(event, ex.getMessage());
 					return;
 				}
 				if (appealGuildId != 0L && event.getJDA().getGuildById(appealGuildId) == null) {
-					editError(event, "errors.error", "Unknown appeal server ID.\nReceived: "+appealGuildId);
+					editErrorOther(event, "Unknown appeal server ID.\nReceived: "+appealGuildId);
 					return;
 				}
 
@@ -568,10 +574,8 @@ public class GroupCmd extends CommandBase {
 						StringBuilder builder = new StringBuilder(lu.getText(event, path+".done")
 							.formatted(targetGuild.getName(), groupName));
 
-						if (canManage!=null) {
-							bot.getDBUtil().group.setManage(groupId, targetId, canManage);
-							builder.append(lu.getText(event, path+".manage_change").formatted(canManage ? Constants.SUCCESS : Constants.FAILURE));
-						}
+						bot.getDBUtil().group.setManage(groupId, targetId, canManage);
+						builder.append(lu.getText(event, path+".manage_change").formatted(canManage ? Constants.SUCCESS : Constants.FAILURE));
 
 						event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setDescription(builder.toString()).build()

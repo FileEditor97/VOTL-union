@@ -1,0 +1,34 @@
+{
+  "themes": [
+    {
+      "id": 0,
+      "name": "Discord Dark Theme",
+      "image": null,
+      "colors": {
+        "background": "#2f3136",
+        "mainText": "#e2e2e5d9",
+        "secondaryText": "#a6a6a6d9"
+      }
+    },
+    {
+      "id": 1,
+      "name": "Discord Light Theme",
+      "image": null,
+      "colors": {
+        "background": "#f3f3f3",
+        "mainText": "#2a2a2acc",
+        "secondaryText": "#727272cc"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Mountain Ranges",
+      "image": "mountain-range.jpg",
+      "colors": {
+        "background": "#373746",
+        "mainText": "#e2e2dcd9",
+        "secondaryText": "#a6a6a6d9"
+      }
+    }
+  ]
+}

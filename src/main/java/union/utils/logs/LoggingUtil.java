@@ -2,14 +2,18 @@ package union.utils.logs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import net.dv8tion.jda.api.utils.AttachmentProxy;
 import union.App;
 import union.base.command.SlashCommandEvent;
 import union.listeners.MessageListener.MessageData;
@@ -19,6 +23,7 @@ import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
+import union.utils.CaseProofUtil;
 import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
@@ -67,59 +72,68 @@ public class LoggingUtil {
 		bot.getGuildLogger().sendMessageEmbed(guild, type, embedSupplier);
 	}
 
-	private void sendLog(@NotNull IncomingWebhookClientImpl webhookClient, MessageEmbed embed) {
-		webhookClient.sendMessageEmbeds(embed).queue();
+	private CompletableFuture<String> submitLog(@NotNull IncomingWebhookClientImpl webhookClient, MessageEmbed embed) {
+		return webhookClient.sendMessageEmbeds(embed).submit()
+			.exceptionally(ex -> null)
+			.thenApply(msg -> msg==null ? null : msg.getJumpUrl());
+	}
+
+	private CompletableFuture<String> submitLog(@NotNull IncomingWebhookClientImpl webhookClient, MessageEmbed embed, CaseProofUtil.ProofData proofData) {
+		try (final InputStream is = new AttachmentProxy(proofData.proxyUrl).download().join()) {
+			return webhookClient.sendMessageEmbeds(embed).addFiles(FileUpload.fromData(is.readAllBytes(), proofData.fileName)).submit()
+				.exceptionally(ex -> null)
+				.thenApply(msg -> msg==null ? null : msg.getJumpUrl());
+		} catch (IOException e) {
+			bot.getAppLogger().error("Exception at log submission.", e);
+			return submitLog(webhookClient, embed);
+		}
 	}
 
 	// Moderation actions
 	public class ModerationLogs {
 		private final LogType type = LogType.MODERATION;
 
-		public void onNewCase(Guild guild, User target, CaseData caseData) {
-			onNewCase(guild, target, caseData, null);
+		public CompletableFuture<String> onNewCase(Guild guild, User target, CaseData caseData) {
+			return onNewCase(guild, target, caseData, null, null);
+		}
+
+		public CompletableFuture<String> onNewCase(Guild guild, User target, CaseData caseData, String optionalData) {
+			return onNewCase(guild, target, caseData, null, optionalData);
+		}
+
+		public CompletableFuture<String> onNewCase(Guild guild, User target, CaseData caseData, CaseProofUtil.ProofData proofData) {
+			return onNewCase(guild, target, caseData, proofData, null);
 		}
 		
-		public void onNewCase(Guild guild, User target, @NotNull CaseData caseData, String optionalData) {
+		public CompletableFuture<String> onNewCase(Guild guild, User target, @NotNull CaseData caseData, @Nullable CaseProofUtil.ProofData proofData, String optionalData) {
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
-			if (client == null) return;
+			if (client == null) return CompletableFuture.completedFuture(null);
 
 			if (caseData == null) {
 				bot.getAppLogger().warn("Unknown case provided with interaction");
-				return;
+				return CompletableFuture.completedFuture(null);
 			}
 
-			MessageEmbed embed = null;
-			switch (caseData.getCaseType()) {
-				case BAN:
-					embed = logUtil.banEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
-					break;
-				case UNBAN:
-					embed = logUtil.unbanEmbed(guild.getLocale(), caseData, optionalData);
-					break;
-				case MUTE:
-					embed = logUtil.muteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
-					break;
-				case UNMUTE:
-					embed = logUtil.unmuteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), optionalData);
-					break;
-				case KICK:
-					embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
-					break;
-				case STRIKE_1:
-				case STRIKE_2:
-				case STRIKE_3:
-					embed = logUtil.strikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
-					break;
-				case BLACKLIST:
-					embed = logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl());
-					break;
-				case GAME_STRIKE:
-					embed = logUtil.gameStrikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), optionalData);
-					break;
-				default:
-					break;
-			}
-			if (embed!=null) sendLog(client, embed);
+			String proofFileName = proofData==null ? null : proofData.setFileName(caseData.getLocalIdInt());
+			MessageEmbed embed = switch (caseData.getCaseType()) {
+				case BAN ->
+					logUtil.banEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName);
+				case UNBAN ->
+					logUtil.unbanEmbed(guild.getLocale(), caseData, optionalData);
+				case MUTE ->
+					logUtil.muteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName);
+				case UNMUTE ->
+					logUtil.unmuteEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), optionalData);
+				case KICK ->
+					logUtil.kickEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName);
+				case STRIKE_1, STRIKE_2, STRIKE_3 ->
+					logUtil.strikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName);
+				case GAME_STRIKE ->
+					logUtil.gameStrikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName, optionalData);
+			};
+			if (embed == null) return CompletableFuture.completedFuture(null);
+
+			return proofData==null ? submitLog(client, embed) : submitLog(client, embed, proofData);
 		}
 
 		public void onStrikesCleared(IReplyCallback event, User target) {
@@ -127,9 +141,9 @@ public class LoggingUtil {
 				event.getUser().getIdLong()));
 		}
 
-		public void onStrikeDeleted(IReplyCallback event, User target, int caseId, int deletedAmount, int maxAmount) {
+		public void onStrikeDeleted(IReplyCallback event, User target, int caseLocalId, int deletedAmount, int maxAmount) {
 			sendLog(event.getGuild(), type, () -> logUtil.strikeDeletedEmbed(event.getGuild().getLocale(), target.getName(), target.getIdLong(),
-				event.getUser().getIdLong(), caseId, deletedAmount, maxAmount));
+				event.getUser().getIdLong(), caseLocalId, deletedAmount, maxAmount));
 		}
 
 		public void onAutoUnban(CaseData caseData, Guild guild) {
@@ -205,6 +219,20 @@ public class LoggingUtil {
 			final long modId = entry.getUserIdLong();
 
 			sendLog(guild, type, () -> logUtil.userKickEmbed(guild.getLocale(), target, entry.getReason(), modId));
+		}
+
+		public void onUserTimeoutUpdated(AuditLogEntry entry, User target, OffsetDateTime until) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userTimeoutUpdateEmbed(guild.getLocale(), target, entry.getReason(), modId, until));
+		}
+
+		public void onUserTimeoutRemoved(AuditLogEntry entry, User target) {
+			final Guild guild = entry.getGuild();
+			final long modId = entry.getUserIdLong();
+
+			sendLog(guild, type, () -> logUtil.userTimeoutRemoveEmbed(guild.getLocale(), target, entry.getReason(), modId));
 		}
 	}
 

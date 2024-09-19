@@ -15,7 +15,6 @@ import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.Emotes;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
@@ -296,17 +295,17 @@ public class SetupCmd extends CommandBase {
 			Button unlock = Button.success("voice:unlock", lu.getLocalized(event.getGuildLocale(), path+".unlock")).withEmoji(Emoji.fromUnicode("🔓"));
 			Button ghost = Button.danger("voice:ghost", lu.getLocalized(event.getGuildLocale(), path+".ghost")).withEmoji(Emoji.fromUnicode("👻"));
 			Button unghost = Button.success("voice:unghost", lu.getLocalized(event.getGuildLocale(), path+".unghost")).withEmoji(Emoji.fromUnicode("👁️"));
-			Button permit = Button.success("voice:permit", lu.getLocalized(event.getGuildLocale(), path+".permit")).withEmoji(Emotes.ADDUSER.getEmoji());
-			Button reject = Button.danger("voice:reject", lu.getLocalized(event.getGuildLocale(), path+".reject")).withEmoji(Emotes.REMOVEUSER.getEmoji());
-			Button perms = Button.secondary("voice:perms", lu.getLocalized(event.getGuildLocale(), path+".perms")).withEmoji(Emotes.SETTINGS_2.getEmoji());
-			Button delete = Button.danger("voice:delete", lu.getLocalized(event.getGuildLocale(), path+".delete")).withEmoji(Emoji.fromUnicode("🔴"));
+			Button permit = Button.success("voice:permit", lu.getLocalized(event.getGuildLocale(), path+".permit")).withEmoji(Emoji.fromUnicode("➕"));
+			Button reject = Button.danger("voice:reject", lu.getLocalized(event.getGuildLocale(), path+".reject")).withEmoji(Emoji.fromUnicode("➖"));
+			Button perms = Button.secondary("voice:perms", lu.getLocalized(event.getGuildLocale(), path+".perms")).withEmoji(Emoji.fromUnicode("⚙️"));
+			Button delete = Button.danger("voice:delete", lu.getLocalized(event.getGuildLocale(), path+".delete")).withEmoji(Emoji.fromUnicode("🗑️"));
 
 			ActionRow row1 = ActionRow.of(unlock, lock);
 			ActionRow row2 = ActionRow.of(unghost, ghost);
 			ActionRow row4 = ActionRow.of(permit, reject, perms);
 			ActionRow row5 = ActionRow.of(delete);
 
-			Long channelId = bot.getDBUtil().guildVoice.getChannelId(event.getGuild().getIdLong());
+			Long channelId = bot.getDBUtil().getVoiceSettings(event.getGuild()).getChannelId();
 			channel.sendMessageEmbeds(new EmbedBuilder()
 				.setColor(Constants.COLOR_DEFAULT)
 				.setTitle(lu.getLocalized(event.getGuildLocale(), path+".embed_title"))

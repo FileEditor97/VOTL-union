@@ -40,7 +40,9 @@
 			"no_access": "You cannot perform this action because you do not have the required access."
 		},
 		"timed_out": "Timed out",
-		"no_helper": "Helper bot is disabled. Unable to perform this action"
+		"no_helper": "Helper bot is disabled. Unable to perform this action",
+		"proof_type": "Incorrect proof file type provided. Only .png and .jpg/.jpeg are accepted.",
+		"proof_size": "The size of the proof file cannot be larger than 4 MB."
 	},
 	"misc": {
 		"and": "and",
@@ -75,6 +77,7 @@
 		"roles": "Role management",
 		"strikes": "Strike punishments",
 		"games": "Games",
+		"image": "Images",
 		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {
@@ -167,6 +170,7 @@
 			"success": "Success rate",
 			"timeout": "Member timed out | %s",
 			"remove_timeout": "Timeout removed | %s",
+			"log_url": "[*View log (press)*](%s)",
 			"ban": {
 				"title": "Member banned | %s",
 				"short_title": "Ban info",
@@ -1151,7 +1155,7 @@
 			"strikes_embed": "### Active strikes: %d\nNext strike removed in %s",
 			"ban": {
 				"help": "Ban member of this server",
-				"usage": "ban <@User | Tag | ID> [duration] [reason] [purge messages?] [dm user?]",
+				"usage": "ban <@User | Tag | ID> [duration] [reason] [proof] [purge messages?] [dm user?]",
 				"user": {
 					"name": "user",
 					"help": "Mention user to be banned from this server"
@@ -1163,6 +1167,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Ban reason (*none*)"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"delete": {
 					"name": "delete",
@@ -1200,7 +1208,7 @@
 			},
 			"kick": {
 				"help": "Kick user from this server",
-				"usage": "kick <@User | Tag | ID> [reason] [dm user?]",
+				"usage": "kick <@User | Tag | ID> [reason] [proof] [dm user?]",
 				"member": {
 					"name": "member",
 					"help": "Mention member to be kicked from this server"
@@ -1208,6 +1216,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Kick reason (*none*)"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"dm": {
 					"name": "dm",
@@ -1227,7 +1239,7 @@
 			},
 			"mute": {
 				"help": "Time out member",
-				"usage": "mute <@User | Tag | ID> <duration> [reason]",
+				"usage": "mute <@User | Tag | ID> <duration> [reason] [proof]",
 				"user": {
 					"name": "user",
 					"help": "Mention user to be timed out"
@@ -1239,6 +1251,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Mute reason (*none*)"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"no_reason": "*Not provided*",
 				"not_found": "Member not found or input error",
@@ -1267,7 +1283,7 @@
 			},
 			"strike": {
 				"help": "Strike a member",
-				"usage": "strike <@User> <severity> <reason>",
+				"usage": "strike <@User> <severity> <reason> [proof]",
 				"user": {
 					"name": "user",
 					"help": "Mention user which to strike"
@@ -1282,6 +1298,10 @@
 				"reason": {
 					"name": "reason",
 					"help": "Strike reason"
+				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
 				"not_found": "Member not found or input error",
 				"not_self": "You can't select yourself or the bot.",
@@ -1391,7 +1411,7 @@
 				},
 				"not_found": "Could not find case by specified ID",
 				"not_active": "Specified case is not active and can't be edited.",
-				"done": "Successfully changed Case `{id}` reason to:\n`{reason}`"
+				"done": "Successfully changed case `#%s` reason to:\n> `%s`"
 			},
 			"duration": {
 				"help": "Change ban/mute duration",
@@ -1406,7 +1426,7 @@
 				},
 				"not_found": "Could not find case by specified ID",
 				"is_expired": "Specified case has expired or can't be edited.",
-				"done": "Successfully changed cases Case `{id}` duration to: {duration}"
+				"done": "Successfully changed cases case `#%s` duration to:\n> %s"
 			},
 			"group": {
 				"help": "Server Groups management",
@@ -1794,6 +1814,7 @@
 					"voice": "Voice",
 					"roles": "Roles",
 					"games": "Games",
+					"image": "Image",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -2168,7 +2189,7 @@
 						},
 						"max_panels": "This server has maximum panels created. Delete unused or modify existing.",
 						"image_not_valid": "Provided image URL link is not valid.",
-						"done": "Successfully created new panel!\nTitle: `{title}`\nPanel's ID: `{id}`"
+						"done": "Successfully created new panel!\nTitle: `%s`\nPanel's ID: `%s`"
 					},
 					"modify": {
 						"help": "Modify existing embed panel",
@@ -2281,7 +2302,7 @@
 						"not_found": "Panel by the provided ID not found.",
 						"max_tags": "Used panel has maximum tags attached. Delete unused or modify existing.",
 						"too_many_roles": "Too many support roles provided, maximum is 6.",
-						"done": "Successfully attached new tag to panel with ID `{panel}`!\nTag's ID: `{tag}`"
+						"done": "Successfully attached new tag to panel with ID `%s`!\nTag's ID: `%s`"
 					},
 					"modify": {
 						"help": "Create new ticket tag",
@@ -2679,7 +2700,7 @@
 			},
 			"gamestrike": {
 				"help": "Give a user game strike",
-				"usage": "gamestrike <#Channel> <@User> <reason>",
+				"usage": "gamestrike <#Channel> <@User> <reason> [proof]",
 				"channel": {
 					"name": "channel",
 					"help": "Select channel"
@@ -2692,10 +2713,30 @@
 					"name": "reason",
 					"help": "Enter strike reason"
 				},
+				"proof": {
+					"name": "proof",
+					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
+				},
 				"not_found": "This channel is not registered.",
 				"not_member": "Selected user is not a member of this server or can't be selected.",
 				"cooldown": "**Strike cooldown!**\nPlease, wait before giving new strike.\n\nRetry %s.",
 				"done": "User %s received Game strike in %s."
+			}
+		},
+		"image": {
+			"profile": {
+				"help": "Get user profile",
+				"usage": "user [@User]",
+				"user": {
+					"name": "user",
+					"help": "Target user, by default - you"
+				},
+				"id": {
+					"name": "id",
+					"help": "Background ID"
+				},
+				"bad_user": "Can't select this user.",
+				"failed": "Failed to create background."
 			}
 		}
 	},

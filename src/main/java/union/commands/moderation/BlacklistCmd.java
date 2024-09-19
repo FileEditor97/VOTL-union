@@ -130,7 +130,7 @@ public class BlacklistCmd extends CommandBase {
 					try {
 						steam64 = Long.parseLong(input);
 					} catch (NumberFormatException ex) {
-						editError(event, "errors.error", ex.getMessage());
+						editErrorOther(event, ex.getMessage());
 						return;
 					}
 				}
@@ -186,7 +186,7 @@ public class BlacklistCmd extends CommandBase {
 				try {
 					steam64 = Long.parseLong(input);
 				} catch (NumberFormatException ex) {
-					editError(event, "errors.error", ex.getMessage());
+					editErrorOther(event, ex.getMessage());
 					return;
 				}
 			}
@@ -256,7 +256,7 @@ public class BlacklistCmd extends CommandBase {
 					try {
 						steam64 = Long.parseLong(input);
 					} catch (NumberFormatException ex) {
-						editError(event, "errors.error", ex.getMessage());
+						editErrorOther(event, ex.getMessage());
 						return;
 					}
 				}

@@ -135,7 +135,7 @@ public class TempRoleCmd extends CommandBase {
 											.replace("{until}", TimeUtil.formatTime(until, true)))
 										.build()
 									);
-								}, failure -> editError(event, "errors.error", failure.getMessage()));
+								}, failure -> editErrorOther(event, failure.getMessage()));
 							},
 							20,
 							TimeUnit.SECONDS,
@@ -153,7 +153,7 @@ public class TempRoleCmd extends CommandBase {
 							.replace("{until}", TimeUtil.formatTime(until, true)))
 						.build()
 					);
-				}, failure -> editError(event, "errors.error", failure.getMessage()));
+				}, failure -> editErrorOther(event, failure.getMessage()));
 			}
 		}
 

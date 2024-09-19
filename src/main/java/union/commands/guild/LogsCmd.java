@@ -103,7 +103,7 @@ public class LogsCmd extends CommandBase {
 					);
 				});
 			} catch (Exception ex) {
-				editError(event, "errors.error", ex.getMessage());
+				editErrorOther(event, ex.getMessage());
 			}	
 		}
 	}

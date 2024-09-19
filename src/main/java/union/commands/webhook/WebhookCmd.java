@@ -273,7 +273,7 @@ public class WebhookCmd extends CommandBase {
 								);
 							},
 							failure -> {
-								editError(event, "errors.error", failure.getMessage());
+								editErrorOther(event, failure.getMessage());
 							}
 						);
 					} else {
@@ -325,7 +325,7 @@ public class WebhookCmd extends CommandBase {
 								);
 							},
 							failure -> {
-								editError(event, "errors.error", failure.getMessage());
+								editErrorOther(event, failure.getMessage());
 							}
 						);
 					} else {

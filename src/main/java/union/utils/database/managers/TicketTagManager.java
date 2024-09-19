@@ -85,16 +85,8 @@ public class TicketTagManager extends LiteDBBase {
 		return selectOne("SELECT guildId FROM %s WHERE (tagId=%d)".formatted(table, tagId), "guildId", String.class);
 	}
 
-	public List<Integer> getTagIds(String guildId) {
-		return select("SELECT tagId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "tagId", Integer.class);
-	}
-
 	public Integer countPanelTags(Integer panelId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (panelId=%d)".formatted(table, panelId));
-	}
-
-	public Integer getPanelId(Integer tagId) {
-		return selectOne("SELECT panelId FROM %s WHERE (tagId=%d)".formatted(table, tagId), "panelId", Integer.class);
 	}
 
 	public String getTagText(Integer tagId) {

@@ -74,12 +74,16 @@ public class DeleteStikeCmd extends CommandBase {
 		}
 		String[] cases = strikeData.getRight().split(";");
 		if (cases[0].isEmpty()) {
-			editError(event, "errors.unknown", "Strikes data is empty");
+			bot.getAppLogger().error("Strikes data is empty for user {} @ {}.\nStrike amount {}",
+				tu.toString(), event.getGuild().toString(), strikeData.getLeft());
+			editErrorUnknown(event, "Strikes data is empty");
 			return;
 		}
 		List<SelectOption> options = buildOptions(cases);
 		if (options.isEmpty()) {
-			editError(event, "errors.unknown", "Strikes options are empty");
+			bot.getAppLogger().error("Strikes options are empty for user {} @ {}.",
+				tu.toString(), event.getGuild().toString());
+			editErrorUnknown(event, "Strikes options are empty");
 			return;
 		}
 		StringSelectMenu caseSelectMenu = StringSelectMenu.create("delete-strike")

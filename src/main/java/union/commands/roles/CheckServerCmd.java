@@ -73,7 +73,7 @@ public class CheckServerCmd extends CommandBase {
 				return;
 			}
 			if (maxSize > 400) {
-				editError(event, "errors.error", "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
+				editErrorOther(event, "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
 				return;
 			}
 			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(Math.round(maxSize*0.7))).build());
@@ -102,7 +102,8 @@ public class CheckServerCmd extends CommandBase {
 			CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
 				.whenComplete((done, exception) -> {
 					if (exception != null) {
-						editError(event, "errors.unknown", exception.getMessage());
+						bot.getAppLogger().error("At Check Server, unknown exception.", exception);
+						editErrorUnknown(event, exception.getMessage());
 					} else {
 						int removed = 0;
 						for (CompletableFuture<Boolean> future : completableFutures) {
@@ -110,7 +111,7 @@ public class CheckServerCmd extends CommandBase {
 								if (!future.isCompletedExceptionally() && future.get().equals(true)) removed++;
 							} catch (InterruptedException | ExecutionException ex) {
 								bot.getAppLogger().error("At CheckServerCmd\n", ex);
-								editError(event, "errors.unknown", ex.getLocalizedMessage());
+								editErrorUnknown(event, ex.getLocalizedMessage());
 							}
 						}
 
@@ -127,7 +128,7 @@ public class CheckServerCmd extends CommandBase {
 					guild.pruneMemberCache();
 					targetGuild.pruneMemberCache();
 				});
-		}).onError(failure -> editError(event, "errors.error", failure.getMessage()));
+		}).onError(failure -> editErrorOther(event, failure.getMessage()));
 	}
 
 }

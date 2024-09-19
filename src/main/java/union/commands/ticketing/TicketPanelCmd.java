@@ -185,7 +185,7 @@ public class TicketPanelCmd extends CommandBase {
 				event.getHook().editOriginalEmbeds(buildPanelEmbed(event.getGuild(), panelId)).queue();
 			else
 				event.getHook().editOriginalEmbeds(buildPanelEmbed(event.getGuild(), panelId)).setComponents(ActionRow.of(buttons).asDisabled()).queue(null, failure -> {
-					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", failure.getMessage())).queue();
+					editErrorOther(event, failure.getMessage());
 				});
 		}
 
@@ -234,7 +234,7 @@ public class TicketPanelCmd extends CommandBase {
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
 						.build()
 					).queue();
-				}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", failure.getMessage())).queue());
+				}, failure -> editErrorOther(event, failure.getMessage()));
 			}
 		}
 

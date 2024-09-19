@@ -55,10 +55,6 @@ public class TicketPanelManager extends LiteDBBase {
 		return selectOne("SELECT guildId FROM %s WHERE (panelId=%d)".formatted(table, panelId), "guildId", String.class);
 	}
 
-	public List<Integer> getPanelIds(String guildId) {
-		return select("SELECT panelId FROM %s WHERE (guildId=%s)".formatted(table, guildId), "panelId", Integer.class);
-	}
-
 	public void updatePanel(Integer panelId, String title, String description, String image, String footer) {
 		List<String> values = new ArrayList<>();
 		if (title != null)

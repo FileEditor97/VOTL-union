@@ -134,7 +134,7 @@ public class MuteCmd extends CommandBase {
 						path+".success", tm.getUser(), mod.getUser(), reason, duration)
 				);
 			},
-			failed -> editError(event, "errors.error", failed.getMessage()));
+			failed -> editErrorOther(event, failed.getMessage()));
 		}
 	}
 

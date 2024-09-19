@@ -371,7 +371,7 @@ public class VoiceCmd extends CommandBase {
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", vc.getAsMention()))
 						.build()
 					);
-				}, failure -> editError(event, "errors.error", failure.getMessage())
+				}, failure -> editErrorOther(event, failure.getMessage())
 			);
 		}
 	}

@@ -54,7 +54,7 @@ public class StrikesCmd extends CommandBase {
 		}
 		String[] strikesInfoArray = strikeData.getRight().split(";");
 		if (strikesInfoArray[0].isEmpty()) {
-			editError(event, "errors.error", "Strikes data is empty.");
+			editErrorOther(event, "Strikes data is empty.");
 			return;
 		}
 

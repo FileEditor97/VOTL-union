@@ -118,7 +118,7 @@ public class BanCmd extends CommandBase {
 						).queue();
 					});
 				} else {
-					// already has temporal ban (show caseID and use /duration to change time)
+					// already has temporal ban (return case ID and use /duration to change time)
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getLocalId()))
 						.build();

@@ -134,6 +134,7 @@ public class ModerationUtil {
 		return new ActionEmbedBuilder(locale, localCaseId, target, mod, reason)
 			.setDescription(lu.getLocalized(locale, actionPath)
 				.formatted(lu.getLocalized(locale, typePath)))
+			.setLink(logUrl)
 			.getBuilder();
 	}
 

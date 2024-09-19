@@ -30,7 +30,7 @@ public class ModlogsContext extends UserContextMenu {
 
 		long guildId = event.getGuild().getIdLong();
 		long userId = user.getIdLong();
-		List<CaseManager.CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, 1);
+		final List<CaseManager.CaseData> cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, 1);
 		if (cases.isEmpty()) {
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.modlogs.empty")).build()).queue();
 			return;

@@ -115,37 +115,26 @@ public class ModerationUtil {
 		return builder.toString();
 	}
 
-	public MessageEmbed actionEmbed(DiscordLocale locale, int caseId, String actionPath, User target, User mod, String reason, Duration duration) {
-		return new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getLocalized(locale, actionPath)
-					.formatted(TimeUtil.formatDuration(lu, locale, Instant.now(), duration)))
-			.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
-			.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
-			.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
-			.setTimestamp(Instant.now())
-			.setFooter("#"+caseId)
+	public MessageEmbed actionEmbed(DiscordLocale locale, int localCaseId, String actionPath, User target, User mod, String reason, String logUrl) {
+		return new ActionEmbedBuilder(locale, localCaseId, target, mod, reason)
+			.setDescription(lu.getLocalized(locale, actionPath))
+			.setLink(logUrl)
 			.build();
 	}
 
-	public MessageEmbed actionEmbed(DiscordLocale locale, int caseId, String actionPath, User target, User mod, String reason) {
-		return new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getLocalized(locale, actionPath))
-				.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
-				.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
-				.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
-				.setTimestamp(Instant.now())
-				.setFooter("#"+caseId)
-				.build();
+	public MessageEmbed actionEmbed(DiscordLocale locale, int localCaseId, String actionPath, User target, User mod, String reason, Duration duration, String logUrl) {
+		return new ActionEmbedBuilder(locale, localCaseId, target, mod, reason)
+			.setDescription(lu.getLocalized(locale, actionPath)
+				.formatted(TimeUtil.formatDuration(lu, locale, Instant.now(), duration)))
+			.setLink(logUrl)
+			.build();
 	}
 
-	public EmbedBuilder actionEmbed(DiscordLocale locale, int caseId, String actionPath, String typePath, User target, User mod, String reason) {
-		return new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getLocalized(locale, actionPath).formatted(lu.getLocalized(locale, typePath)))
-				.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
-				.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
-				.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
-				.setTimestamp(Instant.now())
-				.setFooter("#"+caseId);
+	public EmbedBuilder actionEmbed(DiscordLocale locale, int localCaseId, String actionPath, String typePath, User target, User mod, String reason, String logUrl) {
+		return new ActionEmbedBuilder(locale, localCaseId, target, mod, reason)
+			.setDescription(lu.getLocalized(locale, actionPath)
+				.formatted(lu.getLocalized(locale, typePath)))
+			.getBuilder();
 	}
 
 	@Nullable
@@ -156,5 +145,39 @@ public class ModerationUtil {
 		return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
 			.setDescription(formatText(text, channel.getGuild(), reason, null, level >= 3 ? mod : null))
 			.build();
+	}
+
+	public class ActionEmbedBuilder {
+		private final DiscordLocale locale;
+		private final EmbedBuilder embedBuilder = new EmbedBuilder();
+
+		public ActionEmbedBuilder(DiscordLocale locale, int localCaseId, User target, User mod, String reason) {
+			embedBuilder.setColor(Constants.COLOR_SUCCESS)
+				.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
+				.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
+				.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
+				.setTimestamp(Instant.now())
+				.setFooter("#"+localCaseId);
+			this.locale = locale;
+		}
+
+		public ActionEmbedBuilder setDescription(String text) {
+			embedBuilder.setDescription(text);
+			return this;
+		}
+
+		public ActionEmbedBuilder setLink(String logUrl) {
+			if (logUrl != null)
+				embedBuilder.addField("", lu.getLocalized(locale, "logger.moderation.log_url").formatted(logUrl), false);
+			return this;
+		}
+
+		public EmbedBuilder getBuilder() {
+			return embedBuilder;
+		}
+
+		public MessageEmbed build() {
+			return embedBuilder.build();
+		}
 	}
 }

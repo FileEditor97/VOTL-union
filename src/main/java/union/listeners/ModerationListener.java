@@ -46,7 +46,7 @@ public class ModerationListener extends ListenerAdapter {
     public void onGuildUnban(@NotNull GuildUnbanEvent event) {
 		CaseData banData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.BAN);
 		if (banData != null) {
-			db.cases.setInactive(banData.getCaseIdInt());
+			db.cases.setInactive(banData.getRowId());
 		}
 		// Log
 		if (!db.getLogSettings(event.getGuild()).enabled(LogType.MODERATION)) return;
@@ -68,7 +68,7 @@ public class ModerationListener extends ListenerAdapter {
 			CaseData timeoutData = db.cases.getMemberActive(event.getUser().getIdLong(), event.getGuild().getIdLong(), CaseType.MUTE);
 			if (timeoutData != null) {
 				// Remove active case for time-out
-				db.cases.setInactive(timeoutData.getCaseIdInt());
+				db.cases.setInactive(timeoutData.getRowId());
 			}
 			// Log
 			if (!db.getLogSettings(event.getGuild()).enabled(LogType.MODERATION)) return;

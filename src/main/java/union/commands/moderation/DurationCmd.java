@@ -36,9 +36,9 @@ public class DurationCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-		Integer caseId = event.optInteger("id");
-		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
-		if (caseData == null || event.getGuild().getIdLong() != caseData.getGuildId()) {
+		Integer localId = event.optInteger("id");
+		CaseData caseData = bot.getDBUtil().cases.getInfo(event.getGuild().getIdLong(), localId);
+		if (caseData == null) {
 			editError(event, path+".not_found");
 			return;
 		}
@@ -68,15 +68,15 @@ public class DurationCmd extends CommandBase {
 				} else {
 					// time will be expired, remove time out
 					target.removeTimeout().reason("Expired").queue();
-					bot.getDBUtil().cases.setInactive(caseId);
+					bot.getDBUtil().cases.setInactive(caseData.getRowId());
 				}
 			});
 		}
-		bot.getDBUtil().cases.updateDuration(caseId, newDuration);
+		bot.getDBUtil().cases.updateDuration(caseData.getRowId(), newDuration);
 		
 		String newTime = TimeUtil.formatDuration(lu, event.getUserLocale(), caseData.getTimeStart(), newDuration);
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-			.setDescription(lu.getText(event, path+".done").replace("{id}", caseId.toString()).replace("{duration}", newTime))
+			.setDescription(lu.getText(event, path+".done").formatted(localId, newTime))
 			.build();
 		editHookEmbed(event, embed);
 

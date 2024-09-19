@@ -53,13 +53,10 @@ public class ModLogsCmd extends CommandBase {
 
 		long guildId = event.getGuild().getIdLong();
 		long userId = tu.getIdLong();
-		Integer page = event.optInteger("page", 1);
-		List<CaseData> cases;
-		if (event.optBoolean("only_active", false)) {
-			cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, page, true);
-		} else {
-			cases = bot.getDBUtil().cases.getGuildUser(guildId, userId, page);
-		}
+		final int page = event.optInteger("page", 1);
+		final List<CaseData> cases = event.optBoolean("only_active", false) ?
+			bot.getDBUtil().cases.getGuildUser(guildId, userId, page, true) :
+			bot.getDBUtil().cases.getGuildUser(guildId, userId, page);
 		if (cases.isEmpty()) {
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty")).build());
 			return;
@@ -81,7 +78,7 @@ public class ModLogsCmd extends CommandBase {
 				stringBuilder.append(lu.getLocalized(locale, "bot.moderation.modlogs.duration").formatted(TimeUtil.formatDuration(lu, locale, c.getTimeStart(), c.getDuration())));
 			stringBuilder.append(lu.getLocalized(locale, "bot.moderation.modlogs.reason").formatted(c.getReason()));
 
-			builder.addField("%s  #`%s`| %s".formatted(c.isActive()?"🟥":"⬛", c.getCaseIdInt(), lu.getLocalized(locale, c.getCaseType().getPath())),
+			builder.addField("%s  #`%s`| %s".formatted(c.isActive()?"🟥":"⬛", c.getLocalIdInt(), lu.getLocalized(locale, c.getCaseType().getPath())),
 					stringBuilder.toString(), false);
 		});
 

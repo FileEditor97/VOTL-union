@@ -111,26 +111,26 @@ public class StrikeCmd extends CommandBase {
 		});
 		
 		// add info to db
-		bot.getDBUtil().cases.add(type, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+		CaseData caseData = bot.getDBUtil().cases.add(type, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
 			guild.getIdLong(), reason, Instant.now(), null);
-		CaseData caseData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guild.getIdLong());
 		// add strikes
-		Field action = executeStrike(guild.getLocale(), guild, tm, strikeAmount, caseData.getCaseIdInt());
+		Field action = executeStrike(guild.getLocale(), guild, tm, strikeAmount, caseData.getRowId());
 		// log
-		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData, proofData);
-		// send reply
-		EmbedBuilder builder = bot.getModerationUtil().actionEmbed(guild.getLocale(), caseData.getCaseIdInt(),
-				path+".success", type.getPath(), tm.getUser(), mod.getUser(), reason);
-		if (action != null) builder.addField(action);
+		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData, proofData).thenAccept(logUrl -> {
+			// send reply
+			EmbedBuilder builder = bot.getModerationUtil().actionEmbed(guild.getLocale(), caseData.getLocalIdInt(),
+				path+".success", type.getPath(), tm.getUser(), mod.getUser(), reason, logUrl);
+			if (action != null) builder.addField(action);
 
-		editHookEmbed(event, builder.build());
+			editHookEmbed(event, builder.build());
+		});
 	}
 
-	private Field executeStrike(DiscordLocale locale, Guild guild, Member target, Integer addAmount, Integer caseId) {
+	private Field executeStrike(DiscordLocale locale, Guild guild, Member target, Integer addAmount, int caseRowId) {
 		// Add strike(-s) to DB
 		bot.getDBUtil().strike.addStrikes(guild.getIdLong(), target.getIdLong(),
 			Instant.now().plus(bot.getDBUtil().getGuildSettings(guild).getStrikeExpires(), ChronoUnit.DAYS),
-			addAmount, caseId+"-"+addAmount);
+			addAmount, caseRowId+"-"+addAmount);
 		// Get strike new strike amount
 		Integer strikes = bot.getDBUtil().strike.getStrikeCount(guild.getIdLong(), target.getIdLong());
 		// Get actions for strike amount
@@ -166,9 +166,8 @@ public class StrikeCmd extends CommandBase {
 
 			guild.kick(target).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
 				// add case to DB
-				bot.getDBUtil().cases.add(CaseType.KICK, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
+				CaseData caseData = bot.getDBUtil().cases.add(CaseType.KICK, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 					guild.getIdLong(), reason, Instant.now(), null);
-				CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
 				// log case
 				bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 			},
@@ -193,9 +192,8 @@ public class StrikeCmd extends CommandBase {
 
 				guild.ban(target, 0, TimeUnit.SECONDS).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
 					// add case to DB
-					bot.getDBUtil().cases.add(CaseType.BAN, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
+					CaseData caseData = bot.getDBUtil().cases.add(CaseType.BAN, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 						guild.getIdLong(), reason, Instant.now(), durationCopy);
-					CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
 					// log case
 					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 				},
@@ -263,9 +261,8 @@ public class StrikeCmd extends CommandBase {
 				Duration durationCopy = duration;
 				guild.timeoutFor(target, duration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
 						// add case to DB
-						bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
+						CaseData caseData = bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 							guild.getIdLong(), reason, Instant.now(), durationCopy);
-						CaseData caseData = bot.getDBUtil().cases.getMemberLast(target.getIdLong(), guild.getIdLong());
 						// log case
 						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
 					},

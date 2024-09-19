@@ -170,6 +170,7 @@
 			"success": "Success rate",
 			"timeout": "Member timed out | %s",
 			"remove_timeout": "Timeout removed | %s",
+			"log_url": "[*View log (press)*](%s)",
 			"ban": {
 				"title": "Member banned | %s",
 				"short_title": "Ban info",
@@ -1410,7 +1411,7 @@
 				},
 				"not_found": "Could not find case by specified ID",
 				"not_active": "Specified case is not active and can't be edited.",
-				"done": "Successfully changed Case `{id}` reason to:\n`{reason}`"
+				"done": "Successfully changed case `#%s` reason to:\n> `%s`"
 			},
 			"duration": {
 				"help": "Change ban/mute duration",
@@ -1425,7 +1426,7 @@
 				},
 				"not_found": "Could not find case by specified ID",
 				"is_expired": "Specified case has expired or can't be edited.",
-				"done": "Successfully changed cases Case `{id}` duration to: {duration}"
+				"done": "Successfully changed cases case `#%s` duration to:\n> %s"
 			},
 			"group": {
 				"help": "Server Groups management",

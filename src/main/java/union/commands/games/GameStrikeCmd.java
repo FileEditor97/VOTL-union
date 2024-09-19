@@ -90,9 +90,8 @@ public class GameStrikeCmd extends CommandBase {
 		String reason = event.optString("reason");
 		// Add to DB
 		long guildId = event.getGuild().getIdLong();
-		bot.getDBUtil().cases.add(CaseType.GAME_STRIKE, tm.getIdLong(), tm.getUser().getName(), event.getUser().getIdLong(), event.getUser().getName(),
+		CaseManager.CaseData strikeData = bot.getDBUtil().cases.add(CaseType.GAME_STRIKE, tm.getIdLong(), tm.getUser().getName(), event.getUser().getIdLong(), event.getUser().getName(),
 			guildId, reason, Instant.now(), null);
-		CaseManager.CaseData strikeData = bot.getDBUtil().cases.getMemberLast(tm.getIdLong(), guildId);
 		bot.getDBUtil().games.addStrike(guildId, channelId, tm.getIdLong());
 		// Inform user
 		tm.getUser().openPrivateChannel().queue(pm -> {
@@ -107,7 +106,7 @@ public class GameStrikeCmd extends CommandBase {
 		// Reply
 		editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(tm.getAsMention(), channel.getAsMention()))
-			.setFooter("#"+strikeData.getCaseId())
+			.setFooter("#"+strikeData.getLocalId())
 			.build());
 		// Check if reached limit
 		if (strikeCount >= maxStrikes) {

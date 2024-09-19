@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -95,28 +96,31 @@ public class BanCmd extends CommandBase {
 				// Active temporal ban
 				if (duration.isZero()) {
 					// make current temporary ban inactive
-					bot.getDBUtil().cases.setInactive(oldBanData.getCaseIdInt());
+					bot.getDBUtil().cases.setInactive(oldBanData.getRowId());
 					// create new entry
 					Member mod = event.getMember();
-					bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+					CaseData newBanData = bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
 						guild.getIdLong(), reason, Instant.now(), duration);
-					CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
+					if (newBanData == null) {
+						editErrorOther(event, "Failed to create action data.");
+						return;
+					}
 					// log ban
-					bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData);
-
-					// reply and add blacklist button
-					event.getHook().editOriginalEmbeds(
-							bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getCaseIdInt(),
-									path+".success", tu, mod.getUser(), reason, duration)
-					).setActionRow(
-						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
-						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
-						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
-					).queue();
+					bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData).thenAccept(logUrl -> {
+						// reply and add blacklist button
+						event.getHook().editOriginalEmbeds(
+							bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getLocalIdInt(),
+								path+".success", tu, mod.getUser(), reason, duration, logUrl)
+						).setActionRow(
+							Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+							Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+							Button.secondary("sync_kick:"+tu.getId(), "Group kick")
+						).queue();
+					});
 				} else {
 					// already has temporal ban (show caseID and use /duration to change time)
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
-						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getCaseId()))
+						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getLocalId()))
 						.build();
 					event.getHook().editOriginalEmbeds(embed).queue();
 				}
@@ -124,25 +128,26 @@ public class BanCmd extends CommandBase {
 				// user has permanent ban, but not in DB
 				// create new case for manual ban (that is not in DB)
 				Member mod = event.getMember();
-				bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+				CaseData newBanData = bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
 					guild.getIdLong(), reason, Instant.now(), Duration.ZERO);
-				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
-				// log
-				bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData);
-				// create embed
-				MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
-					.setDescription(lu.getText(event, path+".already_banned"))
-					.addField(lu.getText(event, "logger.moderation.ban.short_title"), lu.getText(event, "logger.moderation.ban.short_info")
-						.replace("{username}", ban.getUser().getEffectiveName())
-						.replace("{reason}", Optional.ofNullable(ban.getReason()).orElse("*none*"))
-						, false)
-					.build();
-				// reply and add blacklist button
-				event.getHook().editOriginalEmbeds(embed).setActionRow(
-					Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
-					Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
-					Button.secondary("sync_kick:"+tu.getId(), "Group kick")
-				).queue();
+				// log ban
+				bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData).thenAccept(logUrl -> {
+					// create embed
+					EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
+						.setDescription(lu.getText(event, path+".already_banned"))
+						.addField(lu.getText(event, "logger.moderation.ban.short_title"), lu.getText(event, "logger.moderation.ban.short_info")
+								.replace("{username}", ban.getUser().getEffectiveName())
+								.replace("{reason}", Optional.ofNullable(ban.getReason()).orElse("*none*"))
+							, false);
+					if (logUrl != null)
+						embedBuilder.addField("", lu.getText(event, "logger.moderation.log_url").formatted(logUrl), false);
+					// reply and add blacklist button
+					event.getHook().editOriginalEmbeds(embedBuilder.build()).setActionRow(
+						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
+					).queue();
+				});
 			}
 		},
 		failure -> {
@@ -180,27 +185,26 @@ public class BanCmd extends CommandBase {
 				// fail-safe check if user has temporal ban (to prevent auto unban)
 				CaseData oldBanData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 				if (oldBanData != null) {
-					bot.getDBUtil().cases.setInactive(oldBanData.getCaseIdInt());
+					bot.getDBUtil().cases.setInactive(oldBanData.getRowId());
 				}
 				// add info to db
-				bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+				CaseData newBanData = bot.getDBUtil().cases.add(CaseType.BAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
 					guild.getIdLong(), reason, Instant.now(), duration);
-				CaseData newBanData = bot.getDBUtil().cases.getMemberLast(tu.getIdLong(), guild.getIdLong());
-				// create embed
-				MessageEmbed embed = bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getCaseIdInt(),
-						path+".success", tu, mod.getUser(), reason, duration);
 				// log ban
-				bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData);
-
-				// if permanent - add button to blacklist target
-				if (duration.isZero())
-					event.getHook().editOriginalEmbeds(embed).setActionRow(
-						Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
-						Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
-						Button.secondary("sync_kick:"+tu.getId(), "Group kick")
-					).queue();
-				else
-					event.getHook().editOriginalEmbeds(embed).queue();
+				bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData).thenAccept(logUrl -> {
+					// create embed
+					MessageEmbed embed = bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getLocalIdInt(),
+						path+".success", tu, mod.getUser(), reason, duration, logUrl);
+					// if permanent - add button to blacklist target
+					if (duration.isZero())
+						event.getHook().editOriginalEmbeds(embed).setActionRow(
+							Button.danger("blacklist:"+tu.getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
+							Button.secondary("sync_ban:"+tu.getId(), "Group ban"),
+							Button.secondary("sync_kick:"+tu.getId(), "Group kick")
+						).queue();
+					else
+						event.getHook().editOriginalEmbeds(embed).queue();
+				});
 			},
 			failed -> editError(event, path+".ban_abort", failed.getMessage()));
 		});

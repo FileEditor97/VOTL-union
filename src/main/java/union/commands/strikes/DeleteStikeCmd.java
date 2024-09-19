@@ -113,13 +113,13 @@ public class DeleteStikeCmd extends CommandBase {
 
 		List<String> strikesInfo = new ArrayList<>(List.of(strikesInfoArray));
 		String[] selected = event.getValues().get(0).split("-");
-		Integer caseId = Integer.valueOf(selected[0]);
+		int caseRowId = Integer.parseInt(selected[0]);
 		
-		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
+		CaseData caseData = bot.getDBUtil().cases.getInfo(caseRowId);
 		if (!caseData.isActive()) {
 			msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Case is not active (strike can't be removed)"))
 				.setComponents().queue();
-			bot.getAppLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
+			bot.getAppLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase row ID: {}", caseRowId);
 			return;
 		}
 
@@ -130,7 +130,7 @@ public class DeleteStikeCmd extends CommandBase {
 			
 			strikesInfo.remove(event.getValues().get(0));
 
-			bot.getDBUtil().cases.setInactive(caseId);
+			bot.getDBUtil().cases.setInactive(caseData.getRowId());
 			if (strikesInfo.isEmpty())
 				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
 			else
@@ -146,7 +146,7 @@ public class DeleteStikeCmd extends CommandBase {
 				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 			});
 			// Log
-			bot.getLogger().mod.onStrikeDeleted(event, tu, caseId, 1, activeAmount);
+			bot.getLogger().mod.onStrikeDeleted(event, tu, caseData.getLocalIdInt(), 1, activeAmount);
 			// Reply
 			msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done_one").formatted(caseData.getReason(), tu.getName()))
@@ -157,9 +157,9 @@ public class DeleteStikeCmd extends CommandBase {
 			int max = caseData.getCaseType().getType()-20;
 			List<Button> buttons = new ArrayList<>();
 			for (int i=1; i<activeAmount; i++) {
-				buttons.add(Button.secondary(caseId+"-"+i, getSquares(activeAmount, i, max)));
+				buttons.add(Button.secondary(caseRowId+"-"+i, getSquares(activeAmount, i, max)));
 			}
-			buttons.add(Button.secondary(caseId+"-"+activeAmount,
+			buttons.add(Button.secondary(caseRowId+"-"+activeAmount,
 				lu.getText(event, path+".button_all")+" "+getSquares(activeAmount, activeAmount, max)));
 			
 			msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed()
@@ -182,13 +182,13 @@ public class DeleteStikeCmd extends CommandBase {
 	private void buttonPressed(ButtonInteractionEvent event, Message msg, List<String> cases, User tu, int activeAmount) {
 		event.deferEdit().queue();
 		String[] value = event.getComponentId().split("-");
-		int caseId = Integer.parseInt(value[0]);
+		int caseRowId = Integer.parseInt(value[0]);
 
-		CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
+		CaseData caseData = bot.getDBUtil().cases.getInfo(caseRowId);
 		if (!caseData.isActive()) {
 			msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", "Case is not active (strike can't be removed)"))
 				.setComponents().queue();
-			bot.getAppLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase ID: {}", caseId);
+			bot.getAppLogger().error("At DeleteStrike: Case inside strikes info is not active. Unable to remove. Perform manual removal.\nCase row ID: {}", caseRowId);
 			return;
 		}
 
@@ -198,7 +198,7 @@ public class DeleteStikeCmd extends CommandBase {
 			
 			// Delete all strikes, set case inactive
 			cases.remove(event.getComponentId());
-			bot.getDBUtil().cases.setInactive(caseId);
+			bot.getDBUtil().cases.setInactive(caseRowId);
 			if (cases.isEmpty())
 				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
 			else
@@ -208,7 +208,7 @@ public class DeleteStikeCmd extends CommandBase {
 				);
 		} else {
 			// Delete selected amount of strikes (not all)
-			Collections.replaceAll(cases, caseId+"-"+activeAmount, caseId+"-"+(activeAmount-removeAmount));
+			Collections.replaceAll(cases, caseRowId+"-"+activeAmount, caseRowId+"-"+(activeAmount-removeAmount));
 			bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
 				Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 				removeAmount, String.join(";", cases)
@@ -221,7 +221,7 @@ public class DeleteStikeCmd extends CommandBase {
 			pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 		});
 		// Log
-		bot.getLogger().mod.onStrikeDeleted(event, tu, caseId, removeAmount, activeAmount);
+		bot.getLogger().mod.onStrikeDeleted(event, tu, caseData.getLocalIdInt(), removeAmount, activeAmount);
 		// Reply
 		msg.editMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(removeAmount, activeAmount, caseData.getReason(), tu.getName()))
@@ -233,12 +233,12 @@ public class DeleteStikeCmd extends CommandBase {
 		List<SelectOption> options = new ArrayList<>();
 		for (String c : cases) {
 			String[] args = c.split("-");
-			int caseId = Integer.parseInt(args[0]);
+			int caseRowId = Integer.parseInt(args[0]);
 			int strikeAmount = Integer.parseInt(args[1]);
-			CaseData caseData = bot.getDBUtil().cases.getInfo(caseId);
+			CaseData caseData = bot.getDBUtil().cases.getInfo(caseRowId);
 			options.add(SelectOption.of(
 				"%s | %s".formatted(getSquares(strikeAmount, caseData.getCaseType().getType()-20), MessageUtil.limitString(caseData.getReason(), 50)),
-				caseId+"-"+strikeAmount
+				caseRowId+"-"+strikeAmount
 			).withDescription(TimeUtil.timeToString(caseData.getTimeStart())+" | By: "+caseData.getModTag()));
 		}
 		return options;

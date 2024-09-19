@@ -95,7 +95,7 @@ public class BanCmd extends CommandBase {
 			if (oldBanData != null) {
 				// Active temporal ban
 				if (duration.isZero()) {
-					// make current temporary ban inactive
+					// set current ban inactive
 					bot.getDBUtil().cases.setInactive(oldBanData.getRowId());
 					// create new entry
 					Member mod = event.getMember();
@@ -107,6 +107,8 @@ public class BanCmd extends CommandBase {
 					}
 					// log ban
 					bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData).thenAccept(logUrl -> {
+						// Add log url to db
+						bot.getDBUtil().cases.setLogUrl(newBanData.getRowId(), logUrl);
 						// reply and add blacklist button
 						event.getHook().editOriginalEmbeds(
 							bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getLocalIdInt(),
@@ -132,6 +134,8 @@ public class BanCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), Duration.ZERO);
 				// log ban
 				bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData).thenAccept(logUrl -> {
+					// Add log url to db
+					bot.getDBUtil().cases.setLogUrl(newBanData.getRowId(), logUrl);
 					// create embed
 					EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 						.setDescription(lu.getText(event, path+".already_banned"))
@@ -139,8 +143,6 @@ public class BanCmd extends CommandBase {
 								.replace("{username}", ban.getUser().getEffectiveName())
 								.replace("{reason}", Optional.ofNullable(ban.getReason()).orElse("*none*"))
 							, false);
-					if (logUrl != null)
-						embedBuilder.addField("", lu.getText(event, "logger.moderation.log_url").formatted(logUrl), false);
 					// reply and add blacklist button
 					event.getHook().editOriginalEmbeds(embedBuilder.build()).setActionRow(
 						Button.danger("blacklist:"+ban.getUser().getId(), "Blacklist").withEmoji(Emoji.fromUnicode("🔨")),
@@ -192,6 +194,8 @@ public class BanCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), duration);
 				// log ban
 				bot.getLogger().mod.onNewCase(guild, tu, newBanData, proofData).thenAccept(logUrl -> {
+					// Add log url to db
+					bot.getDBUtil().cases.setLogUrl(newBanData.getRowId(), logUrl);
 					// create embed
 					MessageEmbed embed = bot.getModerationUtil().actionEmbed(guild.getLocale(), newBanData.getLocalIdInt(),
 						path+".success", tu, mod.getUser(), reason, duration, logUrl);

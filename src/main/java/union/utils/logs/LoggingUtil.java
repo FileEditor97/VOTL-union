@@ -107,11 +107,11 @@ public class LoggingUtil {
 		
 		public CompletableFuture<String> onNewCase(Guild guild, User target, @NotNull CaseData caseData, @Nullable CaseProofUtil.ProofData proofData, String optionalData) {
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
-			if (client == null) return null;
+			if (client == null) return CompletableFuture.completedFuture(null);
 
 			if (caseData == null) {
 				bot.getAppLogger().warn("Unknown case provided with interaction");
-				return null;
+				return CompletableFuture.completedFuture(null);
 			}
 
 			String proofFileName = proofData==null ? null : proofData.setFileName(caseData.getLocalIdInt());
@@ -131,7 +131,7 @@ public class LoggingUtil {
 				case GAME_STRIKE ->
 					logUtil.gameStrikeEmbed(guild.getLocale(), caseData, target.getEffectiveAvatarUrl(), proofFileName, optionalData);
 			};
-			if (embed == null) return null;
+			if (embed == null) return CompletableFuture.completedFuture(null);
 
 			return proofData==null ? submitLog(client, embed) : submitLog(client, embed, proofData);
 		}

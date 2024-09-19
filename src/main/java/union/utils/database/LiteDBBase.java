@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,8 +47,9 @@ public class LiteDBBase {
 
 		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
-			 PreparedStatement st = conn.prepareStatement(sql)) {
-			return st.executeUpdate();
+			 PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			st.executeUpdate();
+			return st.getGeneratedKeys().getInt(1);
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at statement execution\nRequest: {}", sql, ex);
 			return 0;

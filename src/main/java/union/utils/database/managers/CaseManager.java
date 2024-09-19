@@ -17,7 +17,9 @@ import union.utils.database.LiteDBBase;
 
 public class CaseManager extends LiteDBBase {
 
-	private final Set<String> fullCaseKeys = Set.of("rowId", "localId", "type", "targetId", "targetTag", "modId", "modTag", "guildId", "reason", "timeStart", "duration", "active");
+	private final Set<String> fullCaseKeys = Set.of("rowId", "localId", "type", "targetId",
+		"targetTag", "modId", "modTag", "guildId", "reason",
+		"timeStart", "duration", "active", "logUrl");
 	
 	public CaseManager(ConnectionUtil cu) {
 		super(cu, "cases");
@@ -28,6 +30,8 @@ public class CaseManager extends LiteDBBase {
 		int rowId = executeWithRow("INSERT INTO %s(type, targetId, targetTag, modId, modTag, guildId, reason, timeStart, duration, active) VALUES (%d, %d, %s, %d, %s, %d, %s, %d, %d, %d)"
 			.formatted(table, type.getType(), userId, quote(userName), modId, quote(modName), guildId, quote(reason),
 			timeStart.getEpochSecond(), duration == null ? -1 : duration.getSeconds(), type.isActiveInt()));
+		if (rowId == 0) return null;
+		execute("UPDATE %s SET localId=(SELECT IFNULL(MAX(localId), 0) + 1 FROM cases WHERE guildId=%s) WHERE rowId=%s;".formatted(table, guildId, rowId));
 		return getInfo(rowId);
 	}
 
@@ -44,6 +48,11 @@ public class CaseManager extends LiteDBBase {
 	// set case inactive
 	public void setInactive(int rowId) {
 		execute("UPDATE %s SET active=0 WHERE (rowId=%d)".formatted(table, rowId));
+	}
+
+	public void setLogUrl(int rowId, String logUrl) {
+		if (logUrl==null) return;
+		execute("UPDATE %s SET logUrl=%s WHERE (rowId=%d)".formatted(table, quote(logUrl), rowId));
 	}
 
 	// get case info
@@ -138,7 +147,7 @@ public class CaseManager extends LiteDBBase {
 		private final CaseType type;
 		private final long targetId, guildId;
 		private final Long modId;
-		private final String targetTag, modTag, reason;
+		private final String targetTag, modTag, reason, logUrl;
 		private final Instant timeStart;
 		private final Duration duration;
 		private final boolean active;
@@ -156,6 +165,7 @@ public class CaseManager extends LiteDBBase {
 			this.timeStart = Instant.ofEpochSecond(getOrDefault(map.get("timeStart"), 0L));
 			this.duration = Duration.ofSeconds(getOrDefault(map.get("duration"), 0L));
 			this.active = ((Integer) requireNonNull(map.get("active"))) == 1;
+			this.logUrl = getOrDefault(map.get("logUrl"), null);
 		}
 
 		public int getRowId() {
@@ -204,6 +214,10 @@ public class CaseManager extends LiteDBBase {
 
 		public boolean isActive() {
 			return active;
+		}
+
+		public String getLogUrl() {
+			return logUrl;
 		}
 	}
 

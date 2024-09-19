@@ -127,6 +127,8 @@ public class MuteCmd extends CommandBase {
 					guild.getIdLong(), reason, Instant.now(), duration);
 				// log mute
 				bot.getLogger().mod.onNewCase(guild, tm.getUser(), newMuteData, proofData).thenAccept(logUrl -> {
+					// Add log url to db
+					bot.getDBUtil().cases.setLogUrl(newMuteData.getRowId(), logUrl);
 					// send embed
 					editHookEmbed(event, bot.getModerationUtil().actionEmbed(guild.getLocale(), newMuteData.getLocalIdInt(),
 						path+".success", tm.getUser(), mod.getUser(), reason, duration, logUrl)

@@ -38,9 +38,9 @@ public class ModlogsContext extends UserContextMenu {
 		int pages = (int) Math.ceil(bot.getDBUtil().cases.countCases(guildId, userId)/10.0);
 
 		event.getHook().editOriginalEmbeds(
-				ModLogsCmd.buildEmbed(lu, event.getUserLocale(), user, cases, 1, pages)
-						.setDescription(lu.getLocalized(event.getUserLocale(), path+".full"))
-						.build()
+			ModLogsCmd.buildEmbed(lu, event.getUserLocale(), user, cases, 1, pages)
+				.setDescription(lu.getLocalized(event.getUserLocale(), path+".full"))
+				.build()
 		).queue();
 	}
 

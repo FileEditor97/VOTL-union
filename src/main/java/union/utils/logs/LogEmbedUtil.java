@@ -133,6 +133,11 @@ public class LogEmbedUtil {
 			return this;
 		}
 
+		public LogEmbedBuilder addEmptyField(String value) {
+			builder.addField("", value, false);
+			return this;
+		}
+
 		public LogEmbedBuilder addField(String path, String value) {
 			return addField(path, value, true);
 		}
@@ -228,7 +233,10 @@ public class LogEmbedUtil {
 	}
 
 	public MessageEmbed getCaseEmbed(DiscordLocale locale, CaseData caseData) {
-		return moderationEmbedBuilder(locale, caseData).build();
+		LogEmbedBuilder embedBuilder = moderationEmbedBuilder(locale, caseData);
+		if (caseData.getLogUrl() != null)
+			embedBuilder.addEmptyField(lu.getLocalized(locale, "logger.moderation.log_url").formatted(caseData.getLogUrl()));
+		return embedBuilder.build();
 	}
 
 	//  Ban

@@ -117,6 +117,8 @@ public class StrikeCmd extends CommandBase {
 		Field action = executeStrike(guild.getLocale(), guild, tm, strikeAmount, caseData.getRowId());
 		// log
 		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData, proofData).thenAccept(logUrl -> {
+			// Add log url to db
+			bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
 			// send reply
 			EmbedBuilder builder = bot.getModerationUtil().actionEmbed(guild.getLocale(), caseData.getLocalIdInt(),
 				path+".success", type.getPath(), tm.getUser(), mod.getUser(), reason, logUrl);
@@ -169,7 +171,9 @@ public class StrikeCmd extends CommandBase {
 				CaseData caseData = bot.getDBUtil().cases.add(CaseType.KICK, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 					guild.getIdLong(), reason, Instant.now(), null);
 				// log case
-				bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
+				bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
+					bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
+				});
 			},
 			failure -> bot.getAppLogger().error("Strike punishment execution, Kick member", failure));
 			builder.append(lu.getLocalized(locale, PunishActions.KICK.getPath()))
@@ -195,7 +199,9 @@ public class StrikeCmd extends CommandBase {
 					CaseData caseData = bot.getDBUtil().cases.add(CaseType.BAN, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 						guild.getIdLong(), reason, Instant.now(), durationCopy);
 					// log case
-					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
+					bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
+						bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
+					});
 				},
 				failure -> bot.getAppLogger().error("Strike punishment execution, Ban member", failure));
 				builder.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
@@ -264,7 +270,9 @@ public class StrikeCmd extends CommandBase {
 						CaseData caseData = bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 							guild.getIdLong(), reason, Instant.now(), durationCopy);
 						// log case
-						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData);
+						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
+							bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
+						});
 					},
 					failure -> bot.getAppLogger().error("Strike punishment execution, Mute member", failure));
 				builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))

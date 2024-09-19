@@ -130,8 +130,8 @@ public class ModStatsCmd extends CommandBase {
 			.append(sevenText).append(" | ")
 			.append(thirtyText).append(" | ")
 			.append(lu.getText(event, path+".all")).append("\n");
-		final int length7 = sevenText.length();
-		final int length30 = thirtyText.length();
+		final int length7 = sevenText.length()-1;
+		final int length30 = thirtyText.length()-1;
 
 		builder.append(buildLine(lu.getText(event, path+".strikes"), countStrikes(count7), countStrikes(count30), countStrikes(countTotal), length7, length30))
 			.append(buildLine(lu.getText(event, path+".game_strikes"), getCount(count7, CaseType.GAME_STRIKE), getCount(count30, CaseType.GAME_STRIKE), getCount(countTotal, CaseType.GAME_STRIKE), length7, length30))
@@ -147,7 +147,7 @@ public class ModStatsCmd extends CommandBase {
 	}
 
 	private String buildLine(String text, int count7, int count30, int countTotal, int length7, int length30) {
-		return String.format("%-10s %-"+length7+"s | %-"+length30+"s | %s\n", text, count7, count30, countTotal);
+		return String.format("%-10s %-"+length7+"s |  %-"+length30+"s |  %s\n", text, count7, count30, countTotal);
 	}
 
 	private String buildLine(String text, int count) {
@@ -155,7 +155,7 @@ public class ModStatsCmd extends CommandBase {
 	}
 
 	private String buildTotal(String text, int count7, int count30, int countTotal, int length7, int length30) {
-		return String.format("%-10s %-"+length7+"s | %-"+length30+"s | %s\n", "-"+text+"-", count7, count30, countTotal);
+		return String.format("%-10s %-"+length7+"s |  %-"+length30+"s |  %s\n", "-"+text+"-", count7, count30, countTotal);
 	}
 
 	private String buildTotal(String text, int count) {

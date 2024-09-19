@@ -115,6 +115,8 @@ public class KickCmd extends CommandBase {
 			}
 			// log kick
 			bot.getLogger().mod.onNewCase(guild, tm.getUser(), kickData, proofData).thenAccept(logUrl -> {
+				// Add log url to db
+				bot.getDBUtil().cases.setLogUrl(kickData.getRowId(), logUrl);
 				// reply and ask for kick sync
 				event.getHook().editOriginalEmbeds(
 					bot.getModerationUtil().actionEmbed(guild.getLocale(), kickData.getLocalIdInt(),

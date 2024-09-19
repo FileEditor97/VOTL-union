@@ -42,7 +42,7 @@ public class VerifyCacheManager extends LiteDBBase {
 		Long steam64 = selectOne("SELECT steam64 FROM %s WHERE (discordId=%s)".formatted(table, discordId), "steam64", Long.class);
 		if (steam64 == null)
 			return null;
-		cache.put(discordId, steam64)
+		cache.put(discordId, steam64);
 		return steam64;
 	}
 

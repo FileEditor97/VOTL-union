@@ -118,7 +118,7 @@ public class ModerationUtil {
 	public MessageEmbed actionEmbed(DiscordLocale locale, int localCaseId, String actionPath, User target, User mod, String reason, String logUrl) {
 		return new ActionEmbedBuilder(locale, localCaseId, target, mod, reason)
 			.setDescription(lu.getLocalized(locale, actionPath))
-			.setFooter(logUrl)
+			.addLink(logUrl)
 			.build();
 	}
 
@@ -126,7 +126,7 @@ public class ModerationUtil {
 		return new ActionEmbedBuilder(locale, localCaseId, target, mod, reason)
 			.setDescription(lu.getLocalized(locale, actionPath)
 				.formatted(TimeUtil.formatDuration(lu, locale, Instant.now(), duration)))
-			.setFooter(logUrl)
+			.addLink(logUrl)
 			.build();
 	}
 
@@ -134,7 +134,7 @@ public class ModerationUtil {
 		return new ActionEmbedBuilder(locale, localCaseId, target, mod, reason)
 			.setDescription(lu.getLocalized(locale, actionPath)
 				.formatted(lu.getLocalized(locale, typePath)))
-			.setFooter(logUrl)
+			.addLink(logUrl)
 			.getBuilder();
 	}
 
@@ -149,16 +149,17 @@ public class ModerationUtil {
 	}
 
 	public class ActionEmbedBuilder {
+		private final DiscordLocale locale;
 		private final EmbedBuilder embedBuilder = new EmbedBuilder();
-		private final int caseLocalId;
 
 		public ActionEmbedBuilder(DiscordLocale locale, int caseLocalId, User target, User mod, String reason) {
 			embedBuilder.setColor(Constants.COLOR_SUCCESS)
 				.addField(lu.getLocalized(locale, "logger.user"), "%s (%s)".formatted(target.getName(), target.getAsMention()), true)
 				.addField(lu.getLocalized(locale, "logger.reason"), reason, true)
 				.addField(lu.getLocalized(locale, "logger.moderation.mod"), "%s (%s)".formatted(mod.getName(), mod.getAsMention()), false)
-				.setTimestamp(Instant.now());
-			this.caseLocalId = caseLocalId;
+				.setTimestamp(Instant.now())
+				.setFooter("#"+caseLocalId);
+			this.locale = locale;
 		}
 
 		public ActionEmbedBuilder setDescription(String text) {
@@ -166,12 +167,11 @@ public class ModerationUtil {
 			return this;
 		}
 
-		public ActionEmbedBuilder setFooter(String logUrl) {
-			embedBuilder.setFooter(
-				logUrl==null ?
-				"#"+caseLocalId :
-				"[#%s (link)](%s)".formatted(caseLocalId, logUrl)
-			);
+		public ActionEmbedBuilder addLink(String logUrl) {
+			if (logUrl!=null)
+				embedBuilder.appendDescription(
+					lu.getLocalized(locale, "logger.moderation.log_url").formatted(logUrl)
+				);
 			return this;
 		}
 

@@ -170,7 +170,7 @@
 			"success": "Success rate",
 			"timeout": "Member timed out | %s",
 			"remove_timeout": "Timeout removed | %s",
-			"log_url": "[*View log (press)*](%s)",
+			"log_url": "\n[*View log (press)*](%s)",
 			"ban": {
 				"title": "Member banned | %s",
 				"short_title": "Ban info",

@@ -9,7 +9,6 @@ import union.utils.imagegen.Fonts;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class ModStatsRender extends Renderer {
 	}
 
 	@Override
-	protected BufferedImage handleRender() throws IOException {
+	protected BufferedImage handleRender() {
 		// Create image
 		final int startingX = 20;
 		final int startingY = 40;

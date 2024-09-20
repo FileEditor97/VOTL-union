@@ -68,8 +68,6 @@ public class App {
 	
 	private final Logger logger = (Logger) LoggerFactory.getLogger(App.class);
 
-    private static Helper helper;
-
 	public final String VERSION = Optional.ofNullable(App.class.getPackage().getImplementationVersion()).map(ver -> "v"+ver).orElse("DEVELOPMENT");
 
 	public final JDA JDA;
@@ -300,25 +298,24 @@ public class App {
 
 		createWebhookAppender();
 
-		logger.info("Preparing and setting up metrics");
+		logger.info("Preparing and setting up metrics.");
 		Metrics.setup();
 
-		logger.info("Creating user backgrounds");
+		logger.info("Creating user backgrounds...");
 		try {
 			UserBackgroundHandler.getInstance().start();
 		} catch (Throwable ex) {
 			logger.error("Error starting background handler", ex);
 		}
 
-		logger.info("Success start");
-
 		try {
-			helper = new Helper(instance, instance.getFileManager().getNullableString("config", "helper-token"));
-			helper.getLogger().info("Helper started");
+			logger.info("Starting helper...");
+			Helper.start();
 		} catch (Throwable ex) {
-			instance.logger.info("Unable to start helper");
-			helper = null;
+			instance.logger.info("Unable to start helper: {}", ex.getMessage());
 		}
+
+		logger.info("Success start");
 	}
 
 	public static App getInstance() {
@@ -379,10 +376,6 @@ public class App {
 
 	public SettingsManager getSettings() {
 		return settings;
-	}
-
-	public Helper getHelper() {
-		return helper;
 	}
 
 	private void createWebhookAppender() {

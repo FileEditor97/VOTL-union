@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import union.App;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
-import union.utils.file.SettingsManager;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LoggingUtil;
 
@@ -29,37 +28,44 @@ import ch.qos.logback.classic.Logger;
 
 public class Helper {
 
-	private final JDA JDA;
-	private final JDA mainJDA;
-	private final DBUtil db;
-	private final LoggingUtil logUtil;
-	private final LocaleUtil localeUtil;
-	private final SettingsManager settings;
+	private static Helper instance;
 	private final Logger logger = (Logger) LoggerFactory.getLogger(Helper.class);
 
-    public Helper(App instance, final String token) {
-		this.mainJDA = instance.JDA;
-		this.db = instance.getDBUtil();
-		this.logUtil = instance.getLogger();
-		this.localeUtil = instance.getLocaleUtil();
-		this.settings = instance.getSettings();
+	private final JDA JDA;
+	private final DBUtil db;
+	private final LoggingUtil logUtil;
+
+    private Helper() {
+		this.db = App.getInstance().getDBUtil();
+		this.logUtil = App.getInstance().getLogger();
 
         GuildListener guildListener = new GuildListener(this);
 		
-		JDABuilder helperBuilder = JDABuilder.createLight(token)
+		JDABuilder helperBuilder = JDABuilder.createLight(
+				App.getInstance().getFileManager().getNullableString("config", "helper-token")
+			)
 			.setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=RWU3o_kDixc"))
 			.enableIntents(GatewayIntent.GUILD_MEMBERS)
 			.addEventListeners(guildListener);
 
         this.JDA = helperBuilder.build();
+		logger.info("Helper started");
     }
+
+	public static Helper getInstance() {
+		return instance;
+	}
+
+	public static void start() {
+		instance = new Helper();
+	}
 
 	public JDA getJDA() {
 		return JDA;
 	}
 
 	public JDA getMainJDA() {
-		return mainJDA;
+		return App.getInstance().JDA;
 	}
 
 	public DBUtil getDBUtil() {
@@ -71,11 +77,7 @@ public class Helper {
 	}
 
 	public LocaleUtil getLocaleUtil() {
-		return localeUtil;
-	}
-
-	public SettingsManager getSettings() {
-		return settings;
+		return App.getInstance().getLocaleUtil();
 	}
 
 	public Logger getLogger() {

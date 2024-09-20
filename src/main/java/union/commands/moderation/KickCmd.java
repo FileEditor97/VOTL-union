@@ -12,6 +12,7 @@ import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
+import union.helper.Helper;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
@@ -157,7 +158,7 @@ public class KickCmd extends CommandBase {
 					
 					for (SelectOption option : selected) {
 						int groupId = Integer.parseInt(option.getValue());
-						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runKick(groupId, event.getGuild(), tu, reason));
+						Optional.ofNullable(Helper.getInstance()).ifPresent(helper -> helper.runKick(groupId, event.getGuild(), tu, reason));
 					}
 
 					selectEvent.editMessageEmbeds(builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".sync.done")).build())

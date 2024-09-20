@@ -304,7 +304,11 @@ public class App {
 		Metrics.setup();
 
 		logger.info("Creating user backgrounds");
-		UserBackgroundHandler.getInstance().start();
+		try {
+			UserBackgroundHandler.getInstance().start();
+		} catch (Throwable ex) {
+			logger.error("Error starting background handler", ex);
+		}
 
 		logger.info("Success start");
 

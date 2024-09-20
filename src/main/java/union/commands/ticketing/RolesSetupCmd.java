@@ -263,12 +263,12 @@ public class RolesSetupCmd extends CommandBase {
 			);
 		}
 
-		Pattern rolePattern = Pattern.compile("^<@[\\d+]>$");
+		Pattern rolePattern = Pattern.compile("^<@&(\\d+)>$");
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			String input = event.optString("id");
+			String input = event.optString("id").trim();
 
 			Matcher matcher = rolePattern.matcher(input);
 			String roleId = matcher.find() ? matcher.group(1) : input;

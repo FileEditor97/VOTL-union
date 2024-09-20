@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.helper.Helper;
 import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
@@ -50,12 +51,12 @@ public class CheckServerCmd extends CommandBase {
 		}
 
 		// Check if guild is accessible by helper bot
-		if (bot.getHelper() == null) {
+		if (Helper.getInstance() == null) {
 			createError(event, path+".no_helper");
 			return;
 		}
 		String guildId = event.optString("server");
-		Guild targetGuild = bot.getHelper().getJDA().getGuildById(guildId);
+		Guild targetGuild = Helper.getInstance().getJDA().getGuildById(guildId);
 		if (targetGuild == null || targetGuild.equals(guild)) {
 			createError(event, path+".no_guild");
 			return;

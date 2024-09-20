@@ -8,6 +8,7 @@ import union.App;
 import union.objects.annotation.NotNull;
 import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
+import union.utils.file.ResourceLoaderUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -68,7 +69,7 @@ public class UserBackgroundHandler {
 
 	public void start() {
 		try {
-			List<UserBackground> userBackgrounds = getResourceFiles();
+			List<UserBackground> userBackgrounds = getIndexFile();
 			if (userBackgrounds != null)
 				backgrounds.addAll(userBackgrounds);
 		} catch (IOException e) {
@@ -79,12 +80,13 @@ public class UserBackgroundHandler {
 
 	private void copyBackgrounds() {
 		try {
-			for (File file : new File(App.class.getResource("/backgrounds").getPath()).listFiles()) {
+			List<String> resourceFiles = ResourceLoaderUtil.getFiles(UserBackgroundHandler.class, "backgrounds");
+			for (String fileName : resourceFiles) {
+				File file = new File(App.class.getClassLoader().getResource("backgrounds/"+fileName).getPath());
 				if (!isValidBackgroundImage(file)) continue;
 				log.debug("Copying background image file: {}", file.getAbsolutePath());
-
 				InputStream inputStream = new FileInputStream(file);
-				Files.copy(inputStream, Paths.get(backgroundsDirectory+Constants.SEPAR+file.getName()), StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(inputStream, Paths.get(backgroundsDirectory+Constants.SEPAR+fileName), StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (IOException e) {
 			log.error("Failed to copy over user backgrounds files: {}", e.getMessage(), e);
@@ -97,7 +99,7 @@ public class UserBackgroundHandler {
 			&& (file.getName().endsWith(".png") || file.getName().endsWith(".jpg"));
 	}
 
-	private List<UserBackground> getResourceFiles() throws IOException {
+	private List<UserBackground> getIndexFile() throws IOException {
 		List<UserBackground> localBackgrounds = new ArrayList<>();
 
 		JSONObject jsonData = App.getInstance().getFileManager().getJsonObject("backgrounds");

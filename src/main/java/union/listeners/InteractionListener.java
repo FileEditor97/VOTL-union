@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.entities.channel.ChannelType;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
+import union.helper.Helper;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
@@ -1032,7 +1033,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		if (bot.getHelper() == null) {
+		if (Helper.getInstance() == null) {
 			sendError(event, "errors.no_helper");
 			return;
 		}
@@ -1079,7 +1080,7 @@ public class InteractionListener extends ListenerAdapter {
 							if (!db.blacklist.inGroupUser(groupId, caseData.getTargetId()))
 								db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, caseData.getReason(), selectEvent.getUser().getIdLong());
 	
-							bot.getHelper().runBan(groupId, event.getGuild(), user, caseData.getReason());
+							Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason());
 						});
 
 						// Log to master
@@ -1110,7 +1111,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		if (bot.getHelper() == null) {
+		if (Helper.getInstance() == null) {
 			sendError(event, "errors.no_helper");
 			return;
 		}
@@ -1152,7 +1153,7 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
-						selected.forEach(groupId -> bot.getHelper().runBan(groupId, event.getGuild(), user, caseData.getReason()));
+						selected.forEach(groupId -> Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason()));
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
@@ -1179,7 +1180,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		if (bot.getHelper() == null) {
+		if (Helper.getInstance() == null) {
 			sendError(event, "errors.no_helper");
 			return;
 		}
@@ -1220,7 +1221,7 @@ public class InteractionListener extends ListenerAdapter {
 								bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
 							}
 	
-							bot.getHelper().runUnban(groupId, event.getGuild(), user, "Sync group unban, by "+event.getUser().getName());
+							Helper.getInstance().runUnban(groupId, event.getGuild(), user, "Sync group unban, by "+event.getUser().getName());
 						});
 
 						// Reply
@@ -1249,7 +1250,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		if (bot.getHelper() == null) {
+		if (Helper.getInstance() == null) {
 			sendError(event, "errors.no_helper");
 			return;
 		}
@@ -1291,7 +1292,7 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
-						selected.forEach(groupId -> bot.getHelper().runKick(groupId, event.getGuild(), user, caseData.getReason()));
+						selected.forEach(groupId -> Helper.getInstance().runKick(groupId, event.getGuild(), user, caseData.getReason()));
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)

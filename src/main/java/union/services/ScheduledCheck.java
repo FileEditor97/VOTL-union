@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 
 import net.dv8tion.jda.api.entities.Message;
 import union.App;
+import union.helper.Helper;
 import union.objects.CaseType;
 import union.utils.database.DBUtil;
 
@@ -309,7 +310,7 @@ public class ScheduledCheck {
 
 			db.tempBan.getExpired().forEach(data -> {
 				db.tempBan.remove(data.getLeft(), data.getRight());
-				Optional.ofNullable(bot.getHelper()).ifPresent(h -> h.unban(data.getLeft(), data.getRight(), "Remove temp ban"));
+				Optional.ofNullable(Helper.getInstance()).ifPresent(h -> h.unban(data.getLeft(), data.getRight(), "Remove temp ban"));
 			});
 		} catch (Throwable t) {
 			logger.error("Exception caught during scheduled unban.", t);

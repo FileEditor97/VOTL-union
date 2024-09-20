@@ -170,7 +170,7 @@
 			"success": "Success rate",
 			"timeout": "Member timed out | %s",
 			"remove_timeout": "Timeout removed | %s",
-			"log_url": "[*View log (press)*](%s)",
+			"log_url": "\n[*View log (press)*](%s)",
 			"ban": {
 				"title": "Member banned | %s",
 				"short_title": "Ban info",
@@ -1611,9 +1611,14 @@
 					"name": "end_date",
 					"help": "Enter end date (day-month-year)"
 				},
+				"as_text": {
+					"name": "as_text",
+					"help": "Return full table as text?"
+				},
 				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
 				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"no_user": "User not found.",
+				"failed_image": "Failed to generate image.",
 				"empty": "No statistics for this user.",
 				"title": "Moderation statistics",
 				"seven": "7 days",

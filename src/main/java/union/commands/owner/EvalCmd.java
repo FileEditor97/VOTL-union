@@ -5,6 +5,7 @@ import java.util.Map;
 
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.helper.Helper;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.message.MessageUtil;
@@ -57,7 +58,7 @@ public class EvalCmd extends CommandBase {
 			"jda", event.getJDA(),
 			"guild", (event.isFromGuild() ? event.getGuild() : "null"),
 			"client", event.getClient(),
-			"helper", (bot.getHelper() != null ? bot.getHelper() : "null")
+			"helper", (Helper.getInstance() != null ? Helper.getInstance() : "null")
 		);
 
 		Binding binding = new Binding(variables);

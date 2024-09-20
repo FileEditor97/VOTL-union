@@ -9,6 +9,7 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
+import union.helper.Helper;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
@@ -100,7 +101,7 @@ public class SyncCmd extends CommandBase {
 							.build()
 						).setComponents().queue();
 						// Perform action using Helper bot
-						Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.runKick(groupId, event.getGuild(), target, "Manual kick"));
+						Optional.ofNullable(Helper.getInstance()).ifPresent(helper -> helper.runKick(groupId, event.getGuild(), target, "Manual kick"));
 					},
 					20,
 					TimeUnit.SECONDS,

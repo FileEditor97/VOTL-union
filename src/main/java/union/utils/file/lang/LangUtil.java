@@ -60,7 +60,7 @@ public final class LangUtil {
 		String result = getNullableString(lang, path);
 		if (result == null) {
 			logger.warn("Couldn't find \"{}\" in file {}.json", path, lang);
-			return "PATH ERROR: invalid";
+			return "path_error_invalid";
 		}
 		return result;
 	}

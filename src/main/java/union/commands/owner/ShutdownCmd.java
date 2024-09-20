@@ -2,6 +2,7 @@ package union.commands.owner;
 
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.helper.Helper;
 import union.objects.constants.CmdCategory;
 
 import java.util.Optional;
@@ -23,8 +24,8 @@ public class ShutdownCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		createReply(event, "Shutting down...");
 		event.getJDA().getPresence().setPresence(OnlineStatus.IDLE, Activity.competing("Shutting down..."));
-		Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.getLogger().info("Shutting down"));
-		Optional.ofNullable(bot.getHelper()).ifPresent(helper -> helper.getJDA().shutdown());
+		Optional.ofNullable(Helper.getInstance()).ifPresent(helper -> helper.getLogger().info("Shutting down"));
+		Optional.ofNullable(Helper.getInstance()).ifPresent(helper -> helper.getJDA().shutdown());
 		bot.getAppLogger().info("Shutting down, by '%s'".formatted(event.getUser().getName()));
 		event.getJDA().shutdown();
 	}

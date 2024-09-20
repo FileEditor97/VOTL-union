@@ -40,11 +40,11 @@ dependencies {
 
 	// Metrics
     // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
-    implementation 'io.github.classgraph:classgraph:4.8.175'        // Class lookup
+    implementation 'io.github.classgraph:classgraph:4.8.176'        // Class lookup
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
-	implementation 'org.apache.groovy:groovy:4.0.22'				// Groovy - code evaluation
+	implementation 'org.apache.groovy:groovy:4.0.23'				// Groovy - code evaluation
 }
 
 javadoc {

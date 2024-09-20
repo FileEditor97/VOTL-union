@@ -12,6 +12,7 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
+import union.helper.Helper;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
@@ -226,7 +227,7 @@ public class GroupCmd extends CommandBase {
 				return;
 			} 
 			if (guild == null) {
-				guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
+				guild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
 				if (guild == null) {
 					editError(event, path+".no_guild", "Server ID: `%d`".formatted(targetId));
 					return;
@@ -274,7 +275,7 @@ public class GroupCmd extends CommandBase {
 			List<Guild> guilds = bot.getDBUtil().group.getGroupMembers(groupId).stream().map(id -> {
 				Guild guild = event.getJDA().getGuildById(id);
 				if (guild == null) {
-					guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
+					guild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
 				}
                 return guild;
 			}).filter(Objects::nonNull).toList();
@@ -323,7 +324,7 @@ public class GroupCmd extends CommandBase {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
 						if (targetGuild == null)
-							targetGuild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
+							targetGuild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
 
 						bot.getDBUtil().group.remove(groupId, targetId);
 						if (targetGuild != null)
@@ -518,7 +519,7 @@ public class GroupCmd extends CommandBase {
 			List<Guild> guilds = bot.getDBUtil().group.getGroupMembers(groupId).stream().map(id -> {
 				Guild guild = event.getJDA().getGuildById(id);
 				if (guild == null) {
-					guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
+					guild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(id)).orElse(null);
 				}
 				return guild;
 			}).filter(Objects::nonNull).toList();
@@ -568,7 +569,7 @@ public class GroupCmd extends CommandBase {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
 						if (targetGuild == null) {
-							targetGuild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
+							targetGuild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
 						}
 
 						StringBuilder builder = new StringBuilder(lu.getText(event, path+".done")
@@ -642,7 +643,7 @@ public class GroupCmd extends CommandBase {
 					for (Long memberId : memberIds) {
 						Guild guild = event.getJDA().getGuildById(memberId);
 						if (guild == null) {
-							guild = Optional.ofNullable(bot.getHelper()).map(helper -> helper.getJDA().getGuildById(memberId)).orElse(null);
+							guild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(memberId)).orElse(null);
 							if (guild == null) continue;
 						}
 	

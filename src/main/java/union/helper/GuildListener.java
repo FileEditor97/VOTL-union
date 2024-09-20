@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import union.App;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.audit.ActionType;
@@ -119,7 +120,7 @@ public class GuildListener extends ListenerAdapter {
 	@Override
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
 		long userId = event.getUser().getIdLong();
-		if (event.getUser().isBot() && helper.getSettings().isBotWhitelisted(userId)) return;
+		if (event.getUser().isBot() && App.getInstance().getSettings().isBotWhitelisted(userId)) return;
 		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> {
 			int verifyValue = helper.getDBUtil().group.getVerifyValue(groupId);
 			if (verifyValue < 0) return;

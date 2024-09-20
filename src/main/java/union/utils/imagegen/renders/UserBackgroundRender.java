@@ -94,26 +94,25 @@ public class UserBackgroundRender extends Renderer {
 	}
 
 	private void createUserGraphics(Graphics2D g) {
-		g.setFont(Fonts.bold.deriveFont(Font.PLAIN, 26F));
+		g.setFont(Fonts.Montserrat.bold.deriveFont(Font.PLAIN, 26F));
 		g.setColor(background.getColors().getMainTextColor());
 
 		String name = globalName==null?"USER":globalName;
 		g.drawString(name, startingX + 5, startingY);
 
-		FontMetrics fontMetrics = g.getFontMetrics();
-
-		g.setFont(Fonts.medium.deriveFont(Font.PLAIN, 17));
+		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 17));
 		g.setColor(background.getColors().getSecondaryTextColor());
 
 		g.drawString("@" + userName, startingX + 5, startingY + 26);
 
 		String formattedTime = timeCreated.format(formatter);
 		g.setColor(background.getColors().getCardColor());
-		g.fillRoundRect(startingX + 5, startingY + 35,
-			fontMetrics.stringWidth(formattedTime)-20, fontMetrics.getHeight(),
+		FontMetrics fontMetrics = g.getFontMetrics();
+		g.fillRoundRect(startingX + 5, startingY + 37,
+			fontMetrics.stringWidth(formattedTime)+20, fontMetrics.getHeight()+6,
 			30, 30);
 
 		g.setColor(background.getColors().getMainTextColor());
-		g.drawString(timeCreated.format(formatter), startingX + 20, startingY + 57);
+		g.drawString(formattedTime, startingX + 15, startingY + 57);
 	}
 }

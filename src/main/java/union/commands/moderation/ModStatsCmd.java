@@ -1,5 +1,7 @@
 package union.commands.moderation;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -8,6 +10,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
+import net.dv8tion.jda.api.utils.FileUpload;
+import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -21,6 +25,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import union.utils.imagegen.renders.ModStatsRender;
 
 public class ModStatsCmd extends CommandBase {
 	
@@ -30,7 +35,8 @@ public class ModStatsCmd extends CommandBase {
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
 			new OptionData(OptionType.STRING, "start_date", lu.getText(path+".start_date.help")),
-			new OptionData(OptionType.STRING, "end_date", lu.getText(path+".end_date.help"))
+			new OptionData(OptionType.STRING, "end_date", lu.getText(path+".end_date.help")),
+			new OptionData(OptionType.BOOLEAN, "as_text", lu.getText(path+".as_text.help"))
 		);
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
@@ -43,11 +49,10 @@ public class ModStatsCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 
-		if (event.hasOption("start_date") || event.hasOption("end_date")) {
+		if (event.hasOption("start_date") || event.hasOption("end_date"))
 			returnIntervalStats(event);
-		} else {
+		else
 			returnFullStats(event);
-		}
 	}
 
 	private void returnIntervalStats(SlashCommandEvent event) {
@@ -117,6 +122,30 @@ public class ModStatsCmd extends CommandBase {
 
 		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(7, ChronoUnit.DAYS));
 		final int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(7, ChronoUnit.DAYS), true);
+
+		if (!event.optBoolean("as_text", false)) {
+			ModStatsRender render = new ModStatsRender(event.getGuildLocale(), mod.getName(),
+				countTotal, count30, count7, rolesTotal, roles30, roles7);
+
+			String attachmentName = "%s-%s-modstats-%s.png".formatted(event.getGuild().getId(), mod.getId(), Instant.now().getEpochSecond());
+
+			EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+				.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())
+				.setImage("attachment://" + attachmentName)
+				.setFooter("ID: "+mod.getId())
+				.setTimestamp(Instant.now());
+
+			try {
+				event.getHook().editOriginalEmbeds(embedBuilder.build()).setFiles(FileUpload.fromData(
+					new ByteArrayInputStream(render.renderToBytes()),
+					attachmentName
+				)).queue();
+			} catch (IOException e) {
+				App.getInstance().getAppLogger().error("Failed to generate the rank background: {}", e.getMessage(), e);
+				editError(event, path+".failed_image", "Rendering exception");
+			}
+			return;
+		}
 
 		EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())

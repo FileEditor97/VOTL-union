@@ -8,11 +8,11 @@ import java.io.IOException;
 public class Fonts {
 
 	public static class Montserrat {
-		public static final Font regular, light, medium, bold, extraBold;
+		public static final Font light, regular, medium, bold, extraBold;
 
 		static {
-			regular = loadFont("Montserrat-Regular.ttf");
 			light = loadFont("Montserrat-Light.ttf");
+			regular = loadFont("Montserrat-Regular.ttf");
 			medium = loadFont("Montserrat-Medium.ttf");
 			bold = loadFont("Montserrat-Bold.ttf");
 			extraBold = loadFont("Montserrat-ExtraBold.ttf");
@@ -20,10 +20,11 @@ public class Fonts {
 	}
 
 	public static class Roboto {
-		public static final Font light, medium;
+		public static final Font light, regular, medium;
 
 		static {
 			light = loadFont("RobotoMono-Light.ttf");
+			regular = loadFont("RobotoMono-Regular.ttf");
 			medium = loadFont("RobotoMono-Medium.ttf");
 		}
 	}

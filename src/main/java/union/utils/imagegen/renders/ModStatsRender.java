@@ -53,10 +53,12 @@ public class ModStatsRender extends Renderer {
 
 	@Override
 	protected BufferedImage handleRender() {
+		final int WIDTH = 600;
+		final int HEIGHT = 400;
 		// Create image
 		final int startingX = 20;
 		final int startingY = 40;
-		BufferedImage image = new BufferedImage(500, 360, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
 
 		Graphics2D g = image.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -64,22 +66,22 @@ public class ModStatsRender extends Renderer {
 		// Fill background
 		final Color backgroundColor = ColorUtil.decode("#2f3136");
 		g.setColor(backgroundColor);
-		g.fillRect(0, 0, 500, 360);
+		g.fillRect(0, 0, WIDTH, HEIGHT);
 
 		// Add title
 		final Color mainTextColor = ColorUtil.decode("#e5e5e9");
-		g.setFont(Fonts.Roboto.medium.deriveFont(Font.BOLD, 24F));
+		g.setFont(Fonts.Roboto.medium.deriveFont(Font.BOLD, 26F));
 		g.setColor(mainTextColor);
 
 		String title = getText("title");
 		g.drawString(title, startingX, startingY);
 
 		// Add user
-		g.setFont(Fonts.Roboto.medium.deriveFont(Font.PLAIN, 18F));
-		g.drawString("> @%s - %s".formatted(username, timeCreated.format(formatter)), startingX, startingY+30);
+		g.setFont(Fonts.Roboto.medium.deriveFont(Font.PLAIN, 22F));
+		g.drawString("> @%s - %s".formatted(username, timeCreated.format(formatter)), startingX, startingY+36);
 
 		// Add text
-		g.setFont(Fonts.Roboto.regular.deriveFont(Font.PLAIN, 16F));
+		g.setFont(Fonts.Roboto.regular.deriveFont(Font.PLAIN, 20F));
 		g.setColor(ColorUtil.decode("#c6c6c6"));
 
 		String[][] data = generateTableText();
@@ -89,7 +91,7 @@ public class ModStatsRender extends Renderer {
 		final int maxHeaderX = fontMetrics.stringWidth(data[0][2])+16;
 		final int nextRowStep = fontMetrics.getHeight()+6;
 
-		int y = startingY+70;
+		int y = startingY+80;
 		for (int row=0;row<9;row++) {
 			int x = startingX;
 			g.drawString(data[row][0], x, y);

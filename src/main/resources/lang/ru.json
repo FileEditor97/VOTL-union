@@ -1624,10 +1624,10 @@
 				"seven": "7 дней",
 				"thirty": "30 дней",
 				"all": "Всё время",
-				"mutes": "Мьют",
-				"kicks": "Кикнут",
+				"mutes": "Мут",
+				"kicks": "Кик",
 				"bans": "Бан",
-				"strikes": "Strike",
+				"strikes": "Страйк",
 				"game_strikes": "Игр.страйк",
 				"roles": "Роли",
 				"total": "Всего"

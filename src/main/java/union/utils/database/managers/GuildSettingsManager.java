@@ -23,7 +23,7 @@ import static union.utils.CastUtil.resolveOrDefault;
 public class GuildSettingsManager extends LiteDBBase {
 
 	private final Set<String> columns = Set.of(
-		"color", "lastWebhookId", "appealLink", "reportChannelId",
+		"color", "lastWebhookId", "appealLink", "reportChannelId", "rulesLink",
 		"strikeExpires", "strikeCooldown", "modulesOff", "anticrash", "anticrashPing",
 		"informBan", "informKick", "informMute", "informStrike", "informDelstrike"
 	);
@@ -77,6 +77,11 @@ public class GuildSettingsManager extends LiteDBBase {
 	public void setAppealLink(long guildId, String link) {
 		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, appealLink) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET appealLink=%<s".formatted(table, guildId, quote(link)));
+	}
+
+	public void setRulesLink(long guildId, String link) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, rulesLink) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET rulesLink=%<s".formatted(table, guildId, quote(link)));
 	}
 
 	public void setReportChannelId(long guildId, @Nullable Long channelId) {
@@ -151,7 +156,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public static class GuildSettings {
 		private final Long lastWebhookId, reportChannelId;
 		private final int color, strikeExpires, strikeCooldown, modulesOff;
-		private final String appealLink, anticrashPing;
+		private final String appealLink, anticrashPing, rulesLink;
 		private final AnticrashAction anticrash;
 		private final ModerationInformLevel informBan, informKick, informMute, informStrike, informDelstrike;
 
@@ -159,6 +164,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.color = Constants.COLOR_DEFAULT;
 			this.lastWebhookId = null;
 			this.appealLink = null;
+			this.rulesLink = null;
 			this.reportChannelId = null;
 			this.strikeExpires = 7;
 			this.strikeCooldown = 0;
@@ -176,6 +182,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.color = resolveOrDefault(data.get("color"), obj -> Integer.decode(obj.toString()), Constants.COLOR_DEFAULT);
 			this.lastWebhookId = getOrDefault(data.get("lastWebhookId"), null);
 			this.appealLink = getOrDefault(data.get("appealLink"), null);
+			this.rulesLink = getOrDefault(data.get("rulesLink"), null);
 			this.reportChannelId = getOrDefault(data.get("reportChannelId"), null);
 			this.strikeExpires = getOrDefault(data.get("strikeExpires"), 7);
 			this.strikeCooldown = getOrDefault(data.get("strikeCooldown"), 0);
@@ -199,6 +206,10 @@ public class GuildSettingsManager extends LiteDBBase {
 
 		public String getAppealLink() {
 			return appealLink;
+		}
+
+		public String getRulesLink() {
+			return rulesLink;
 		}
 
 		public Long getReportChannelId() {

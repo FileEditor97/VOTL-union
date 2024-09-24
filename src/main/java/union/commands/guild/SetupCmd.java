@@ -85,34 +85,47 @@ public class SetupCmd extends CommandBase {
 			this.name = "appeal";
 			this.path = "bot.guild.setup.appeal";
 			this.options = List.of(
-				new OptionData(OptionType.STRING, "link", lu.getText(path+".link.help"), true)
+				new OptionData(OptionType.STRING, "link", lu.getText(path+".link.help"), true),
+				new OptionData(OptionType.STRING, "rules_link", lu.getText(path+".rules_link.help"))
 			);
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			long guildId = event.getGuild().getIdLong();
-			String text = event.optString("link");
+			String link = event.optString("link");
 
-			if (!isValidURL(text)) {
-				createError(event, path+".not_valid", "Received invalid URL: `%s`".formatted(text));
+			if (isInvalidURL(link)) {
+				editError(event, path+".not_valid", "Received invalid appeal URL: `%s`".formatted(link));
 				return;
 			}
 
-			bot.getDBUtil().guildSettings.setAppealLink(guildId, text);
+			bot.getDBUtil().guildSettings.setAppealLink(guildId, link);
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".add_appeal").replace("{link}", link));
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").replace("{link}", text))
-				.build());
+			if (event.hasOption("rules_link")) {
+				String rulesLink = event.optString("rules_link");
+				if (isInvalidURL(rulesLink)) {
+					editError(event, path+".not_valid", "Received invalid rules URL: `%s`".formatted(rulesLink));
+					return;
+				}
+				bot.getDBUtil().guildSettings.setRulesLink(guildId, rulesLink);
+				builder.appendDescription(lu.getText(event, path+".add_rules").replace("{link}", rulesLink));
+			}
+
+			editHookEmbed(event, builder.build());
 		}
 
-		private boolean isValidURL(String urlString) {
+		private boolean isInvalidURL(String urlString) {
+			if (urlString.equalsIgnoreCase("NULL")) return false;
 			try {
 				URL url = new URL(urlString);
 				url.toURI();
-				return true;
-			} catch (Exception e) {
 				return false;
+			} catch (Exception e) {
+				return true;
 			}
 		}
 	}

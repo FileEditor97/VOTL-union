@@ -233,7 +233,9 @@ public class BlacklistCmd extends CommandBase {
 				User user = event.optUser("user");
 				Map<String, Object> data = bot.getDBUtil().blacklist.getByUserId(groupId, user.getIdLong());
 				if (data == null) {
-					editError(event, path+".not_found", "Received: "+user.getAsMention());
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+						.setDescription(lu.getText(event, path+".not_found").formatted(user.getAsMention()))
+						.build());
 					return;
 				}
 
@@ -263,7 +265,9 @@ public class BlacklistCmd extends CommandBase {
 
 				Map<String, Object> data = bot.getDBUtil().blacklist.getBySteam64(groupId, steam64);
 				if (data == null) {
-					editError(event, path+".not_found", "Received: "+steam64);
+					editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+						.setDescription(lu.getText(event, path+".not_found").formatted(steam64))
+						.build());
 					return;
 				}
 

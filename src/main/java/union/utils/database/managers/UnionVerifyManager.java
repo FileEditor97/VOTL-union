@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import java.util.List;
 import java.util.Map;
 
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
 import union.utils.file.SettingsManager;
@@ -23,11 +24,11 @@ public class UnionVerifyManager extends SqlDBBase {
 		return data;
 	}
 
-	public String getSteamAvatarUrl(String steam64) {
+	public Pair<String, String> getSteamInfo(String steam64) {
 		if (settings.isDbVerifyDisabled()) return null;
-		String data = selectOne(TABLE, "avatar", "steam_id", steam64);
-		if (data == null || data.isBlank()) return null;
-		return data;
+		Map<String, String> data = selectOne(TABLE, List.of("avatar", "name"), "steam_id", steam64);
+		if (data == null || data.isEmpty()) return null;
+		return Pair.of(data.get("name"), data.get("avatar"));
 	}
 
 	public Long getSteam64(String discordId) {

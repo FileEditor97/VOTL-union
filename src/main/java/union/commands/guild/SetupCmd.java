@@ -10,6 +10,7 @@ import java.util.Set;
 
 import net.dv8tion.jda.api.entities.Mentions;
 
+import net.dv8tion.jda.api.interactions.commands.Command;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -17,6 +18,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.GuildSettingsManager.AnticrashAction;
 import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
 import union.utils.message.MessageUtil;
 
@@ -83,34 +85,47 @@ public class SetupCmd extends CommandBase {
 			this.name = "appeal";
 			this.path = "bot.guild.setup.appeal";
 			this.options = List.of(
-				new OptionData(OptionType.STRING, "link", lu.getText(path+".link.help"), true)
+				new OptionData(OptionType.STRING, "link", lu.getText(path+".link.help"), true),
+				new OptionData(OptionType.STRING, "rules_link", lu.getText(path+".rules_link.help"))
 			);
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			long guildId = event.getGuild().getIdLong();
-			String text = event.optString("link");
+			String link = event.optString("link");
 
-			if (!isValidURL(text)) {
-				createError(event, path+".not_valid", "Received invalid URL: `%s`".formatted(text));
+			if (isInvalidURL(link)) {
+				editError(event, path+".not_valid", "Received invalid appeal URL: `%s`".formatted(link));
 				return;
 			}
 
-			bot.getDBUtil().guildSettings.setAppealLink(guildId, text);
+			bot.getDBUtil().guildSettings.setAppealLink(guildId, link);
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".add_appeal").replace("{link}", link));
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").replace("{link}", text))
-				.build());
+			if (event.hasOption("rules_link")) {
+				String rulesLink = event.optString("rules_link");
+				if (isInvalidURL(rulesLink)) {
+					editError(event, path+".not_valid", "Received invalid rules URL: `%s`".formatted(rulesLink));
+					return;
+				}
+				bot.getDBUtil().guildSettings.setRulesLink(guildId, rulesLink);
+				builder.appendDescription(lu.getText(event, path+".add_rules").replace("{link}", rulesLink));
+			}
+
+			editHookEmbed(event, builder.build());
 		}
 
-		private boolean isValidURL(String urlString) {
+		private boolean isInvalidURL(String urlString) {
+			if (urlString.equalsIgnoreCase("NULL")) return false;
 			try {
 				URL url = new URL(urlString);
 				url.toURI();
-				return true;
-			} catch (Exception e) {
 				return false;
+			} catch (Exception e) {
+				return true;
 			}
 		}
 	}
@@ -147,7 +162,13 @@ public class SetupCmd extends CommandBase {
 			this.name = "anticrash";
 			this.path = "bot.guild.setup.anticrash";
 			this.options = List.of(
-				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help"), true),
+				new OptionData(OptionType.INTEGER, "action", lu.getText(path+".action.help"), true)
+					.addChoices(
+						new Command.Choice("Disabled", 0),
+						new Command.Choice("Remove all roles", 1),
+						new Command.Choice("Kick", 2),
+						new Command.Choice("Ban", 3)
+					),
 				new OptionData(OptionType.STRING, "ping", lu.getText(path+".ping.help"))
 			);
 			this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -155,10 +176,10 @@ public class SetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			boolean enabled = event.optBoolean("enabled");
+			AnticrashAction action = AnticrashAction.byValue(event.optInteger("action", 0));
 
 			long guildId = event.getGuild().getIdLong();
-			bot.getDBUtil().guildSettings.setAnticrash(guildId, enabled);
+			bot.getDBUtil().guildSettings.setAnticrash(guildId, action);
 
 			if (event.hasOption("ping")) {
 				Mentions mentions = event.optMentions("ping");
@@ -174,13 +195,13 @@ public class SetupCmd extends CommandBase {
 
 				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_full").formatted(
-						enabled ? Constants.SUCCESS : Constants.FAILURE,
+						action.name().toLowerCase(),
 						ping==null ? "developer" : ping
 					))
 					.build());
 			} else {
 				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").formatted(enabled ? Constants.SUCCESS : Constants.FAILURE))
+					.setDescription(lu.getText(event, path+".done").formatted(action.name().toLowerCase()))
 					.build());
 			}
 		}

@@ -177,7 +177,7 @@ public class LiteDBBase {
 		// Convert to string and replace '(single quote) with ''(2 single quotes) for sql
 		if (value == null) return "NULL";
 		String str = String.valueOf(value);
-		if (str.equals("NULL")) return str;
+		if (str.equalsIgnoreCase("NULL")) return str.toUpperCase();
 
 		return String.format("'%s'", String.valueOf(value).replaceAll("'", "''")); // smt's -> 'smt''s'
 	}

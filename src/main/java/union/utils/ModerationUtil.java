@@ -75,6 +75,9 @@ public class ModerationUtil {
 			if (link != null && canAppeal)
 				builder.appendDescription(lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link));
 		}
+		String rulesLink = dbUtil.getGuildSettings(guild).getRulesLink();
+		if (rulesLink != null)
+			builder.appendDescription(lu.getLocalized(locale, "logger_embed.pm.rules").formatted(rulesLink));
 
 		return builder.build();
 	}

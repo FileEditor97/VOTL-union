@@ -146,6 +146,7 @@
 			"button_strikes": "View active strikes",
 			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
 			"appeal": "\nAppeal this action by following this link:\n> %s",
+			"rules": "-# [View server Rules (press)](%s)",
 			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
 			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s.",
 			"gamestrike": "You received Game strike in [__#%s__](%s) in {guild} server."
@@ -532,14 +533,19 @@
 					"done": "Embed color updated to `{color}`"
 				},
 				"appeal": {
-					"help": "Set appeal link, that will be send to users before getting banned/kicked",
-					"usage": "appeal <URL link>",
+					"help": "Set links, that will be send to users before getting banned",
+					"usage": "appeal <Appeal link> [Rules link]",
 					"link": {
 						"name": "link",
-						"help": "Enter appeal URL link"
+						"help": "Enter appeal URL (discord invite)"
+					},
+					"rules_link": {
+						"name": "rules_link",
+						"help": "Enter Rules URL"
 					},
 					"not_valid": "Provided URL link is not valid.",
-					"done": "Appeal link set to `{link}`"
+					"add_appeal": "> Appeal link set to `{link}`",
+					"add_rules": "\n> Rules link set to `{link}`"
 				},
 				"report": {
 					"help": "Assign channel for receiving user reports/complains",
@@ -554,16 +560,16 @@
 				"anticrash": {
 					"help": "Manage server's anti-crash protection",
 					"usage": "anticrash <enabled?> [ping]",
-					"enabled": {
-						"name": "enabled",
-						"help": "Enable anti-crash protection?"
+					"action": {
+						"name": "action",
+						"help": "Enable anticrash and what to do with offender?"
 					},
 					"ping": {
 						"name": "ping",
 						"help": "Mentions roles and/or users to be mentioned on action"
 					},
-					"done": "Anti-crash protecting enabled - %s.",
-					"done_full": "Anti-crash protecting enabled - %s.\nBot will ping [ %s ]"
+					"done": "Anti-crash protection - %s.",
+					"done_full": "Anti-crash protection - %s.\nBot will ping [ %s ]"
 				},
 				"voice": {
 					"help": "Manage custom voice channel settings",
@@ -1605,22 +1611,23 @@
 				},
 				"start_date": {
 					"name": "start_date",
-					"help": "Enter start date (day-month-year)"
+					"help": "Enter start date (day/month/year)"
 				},
 				"end_date": {
 					"name": "end_date",
-					"help": "Enter end date (day-month-year)"
+					"help": "Enter end date (day/month/year)"
 				},
 				"as_text": {
 					"name": "as_text",
 					"help": "Return full table as text?"
 				},
-				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
+				"failed_parse": "Failed to parse input date! Use format `day/month/year`.",
 				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"no_user": "User not found.",
 				"failed_image": "Failed to generate image.",
 				"empty": "No statistics for this user.",
 				"title": "Moderation statistics",
+				"title_report": "Moderation report",
 				"seven": "7 days",
 				"thirty": "30 days",
 				"all": "All time",
@@ -1631,6 +1638,43 @@
 				"game_strikes": "Gm strike",
 				"roles": "Roles",
 				"total": "Total"
+			},
+			"modreport": {
+				"help": "Automatic moderation reports",
+				"usage": "modreport",
+				"setup": {
+					"help": "Setup automatic moderation reports",
+					"usage": "setup <#Channel> <period> <@Roles> [first report]",
+					"channel": {
+						"name": "channel",
+						"help": "Select channel to which send the report"
+					},
+					"interval": {
+						"name": "interval",
+						"help": "How often to create report"
+					},
+					"weekly": "Weekly (7 days)",
+					"biweekly": "Biweekly (14 days)",
+					"monthly": "Monthly (1 month)",
+					"roles": {
+						"name": "roles",
+						"help": "Users with which roles will be included (one or more)"
+					},
+					"first_report": {
+						"name": "first_report",
+						"help": "When to send the first report (use 'dd/MM/yyyy' or 'dd/MM/yyyy HH:mm' format)"
+					},
+					"no_roles": "No roles provided (use @Role) or more than 4.",
+					"invalid_role": "Invalid role provided.",
+					"failed_parse": "Failed to parse input date! Use format `day/month/year`.",
+					"wrong_date": "Wrong dates provided (next report date is before now).",
+					"done": "Next report will be sent at %s to %s channel.\nIt will repeat every `%s` days.\nInclude roles: %s"
+				},
+				"delete": {
+					"help": "Delete automatic moderation reports creation",
+					"usage": "delete",
+					"done": "Setup deleted!"
+				}
 			},
 			"blacklist": {
 				"help": "Manage group's blacklist",
@@ -1705,7 +1749,7 @@
 					},
 					"cant_view": "Can't view selected group. (Not group's owner or manager)",
 					"no_options": "No options provided. Either select *user* or enter *SteamID*.",
-					"not_found": "User not found.",
+					"not_found": "**User not found.**\nInput: %s",
 					"value": "User: %s\nSteamID: `%s`\nServer: `%s`\nModerator: %s\nReason: `%s`\n*Group ID*: `%s`"
 				},
 				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
@@ -2075,13 +2119,13 @@
 				},
 				"start_date": {
 					"name": "start_date",
-					"help": "Enter start date (day-month-year)"
+					"help": "Enter start date (day/month/year)"
 				},
 				"end_date": {
 					"name": "end_date",
-					"help": "Enter end date (day-month-year)"
+					"help": "Enter end date (day/month/year)"
 				},
-				"failed_parse": "Failed to parse input date! Use format `day-month-year`.",
+				"failed_parse": "Failed to parse input date! Use format `day/month/year`.",
 				"wrong_date": "Wrong dates provided (before and after inputs).",
 				"done": "Moderator: {user} ({id})\nAccepted role tickets: `{roles}`\nClaimed tickets: `{other}`"
 			},

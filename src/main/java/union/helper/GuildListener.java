@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.events.guild.UnavailableGuildLeaveEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import union.utils.database.managers.GuildSettingsManager.AnticrashAction;
 
 public class GuildListener extends ListenerAdapter {
 
@@ -49,38 +50,59 @@ public class GuildListener extends ListenerAdapter {
 			if (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser())) return;
 			// Check if anticrash enabled in this guild or group's master guild
 			long guildId = event.getGuild().getIdLong();
-			Boolean enabled = helper.getDBUtil().guildSettings.isAnticrashEnabled(guildId);
-			if (enabled == null) {
-				enabled = helper.getDBUtil().getGuildSettings(guildId).anticrashEnabled()
-					|| helper.getDBUtil().group.getGuildGroups(guildId)
+			AnticrashAction action = helper.getDBUtil().guildSettings.getAnticrashAction(guildId);
+			if (action == null) {
+				// cache is empty
+				action = helper.getDBUtil().getGuildSettings(guildId).anticrashAction();
+				if (!action.isEnabled())
+					action = helper.getDBUtil().group.getGuildGroups(guildId)
 						.stream()
 						.map(group -> helper.getDBUtil().group.getOwner(group))
-						.map(owner -> helper.getDBUtil().getGuildSettings(owner).anticrashEnabled())
-						.filter(on -> on)
+						.map(owner -> helper.getDBUtil().getGuildSettings(owner).anticrashAction())
+						.filter(AnticrashAction::isEnabled)
 						.findFirst()
-						.orElse(false);
+						.orElse(AnticrashAction.DISABLED);
 
-				helper.getDBUtil().guildSettings.anticrashCache.put(guildId, enabled);
+				helper.getDBUtil().guildSettings.addAnticrashCache(guildId, action);
 			}
-			if (!enabled) return;
+			if (!action.isEnabled()) return;
 
 			// add 1 point for action
 			helper.getDBUtil().alerts.addPoint(guildId, admin.getIdLong());
 			int amount = helper.getDBUtil().alerts.getPoints(guildId, admin.getIdLong());
 			if (amount >= triggerAmount && amount < triggerAmount+3) {
 				// Threshold amount reached - possible harmful behaviour
+				AnticrashAction finalAction = action;
 				event.getGuild().retrieveMember(admin).queue(member -> {
 					try {
-						member.ban(0, TimeUnit.DAYS).reason("Possible misconduct, staff notified!").queue(done -> {
-							// Get master guilds IDs and send logs to them
-							helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId -> 
-								helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User banned!", event.getEntry().getType().name())
-							);
-						});
+						switch (finalAction) {
+							case BAN:
+								member.ban(0, TimeUnit.DAYS).reason("Possible misconduct, staff notified!").queue(done -> {
+									// Get master guilds IDs and send logs to them
+									helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
+										helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User banned!", event.getEntry().getType().name())
+									);
+								});
+							case KICK:
+								member.kick().reason("Possible misconduct, staff notified!").queue(done -> {
+									// Get master guilds IDs and send logs to them
+									helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
+										helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User kicked!", event.getEntry().getType().name())
+									);
+								});
+							case ROLES:
+								event.getGuild().modifyMemberRoles(member, List.of()).reason("Possible misconduct, staff notified!").queue(done -> {
+									// Get master guilds IDs and send logs to them
+									helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
+										helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User's roles cleared!", event.getEntry().getType().name())
+									);
+								});
+							default: {}
+						}
 					} catch (Exception ex) {
 						// Get master guilds IDs and send logs to them
 						helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId -> 
-							helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, Constants.WARNING+" Unable to ban user!\n"+ex.getMessage(), event.getEntry().getType().name())
+							helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, Constants.WARNING+" Unable to punish user!\n"+ex.getMessage(), event.getEntry().getType().name())
 						);
 					}
 				});

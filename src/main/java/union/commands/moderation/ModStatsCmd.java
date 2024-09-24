@@ -64,7 +64,7 @@ public class ModStatsCmd extends CommandBase {
 		Instant afterTime;
 		Instant beforeTime;
 
-		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		try {
 			beforeTime = beforeDate!=null
 				? LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant()
@@ -73,18 +73,18 @@ public class ModStatsCmd extends CommandBase {
 				? LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant()
 				: Instant.now().minus(7, ChronoUnit.DAYS);
 		} catch (Exception ex) {
-			editError(event, path+".failed_parse", ex.getMessage());
+			editErrorDeletable(event, path+".failed_parse", ex.getMessage());
 			return;
 		}
 		if (beforeTime.isBefore(afterTime)) {
-			editError(event, path+".wrong_date");
+			editErrorDeletable(event, path+".wrong_date");
 			return;
 		}
 
 		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), afterTime, beforeTime, true);
 		Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), afterTime, beforeTime);
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
 		String intervalText = "%s\n`%s` - `%s`".formatted(lu.getText(event, path+".title"), formatter.format(afterTime), formatter.format(beforeTime));
 		EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())
@@ -113,7 +113,7 @@ public class ModStatsCmd extends CommandBase {
 		Map<Integer, Integer> countTotal = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong());
 		final int rolesTotal = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), true);
 		if (countTotal.isEmpty() && rolesTotal==0) {
-			editError(event, path+".empty");
+			editErrorDeletable(event, path+".empty");
 			return;
 		}
 

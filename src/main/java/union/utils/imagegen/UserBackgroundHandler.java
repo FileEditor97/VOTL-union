@@ -11,7 +11,6 @@ import union.objects.constants.Constants;
 import union.utils.file.ResourceLoaderUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -82,10 +81,9 @@ public class UserBackgroundHandler {
 		try {
 			List<String> resourceFiles = ResourceLoaderUtil.getFiles(UserBackgroundHandler.class, "backgrounds");
 			for (String fileName : resourceFiles) {
-				File file = new File(App.class.getClassLoader().getResource("backgrounds/"+fileName).getPath());
-				if (!isValidBackgroundImage(file)) continue;
-				log.debug("Copying background image file: {}", file.getAbsolutePath());
-				InputStream inputStream = new FileInputStream(file);
+				if (!isValidBackgroundImage(fileName)) continue;
+				log.debug("Copying background image file: backgrounds/{}", fileName);
+				InputStream inputStream = App.class.getClassLoader().getResourceAsStream("backgrounds/"+fileName);
 				Files.copy(inputStream, Paths.get(backgroundsDirectory+Constants.SEPAR+fileName), StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (IOException e) {
@@ -93,10 +91,8 @@ public class UserBackgroundHandler {
 		}
 	}
 
-	private boolean isValidBackgroundImage(File file) {
-		return !file.isDirectory()
-			&& !file.isHidden()
-			&& (file.getName().endsWith(".png") || file.getName().endsWith(".jpg"));
+	private boolean isValidBackgroundImage(String fileName) {
+		return fileName.endsWith(".png") || fileName.endsWith(".jpg");
 	}
 
 	private List<UserBackground> getIndexFile() throws IOException {

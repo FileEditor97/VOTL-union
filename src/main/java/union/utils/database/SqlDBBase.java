@@ -129,6 +129,29 @@ public class SqlDBBase {
 		return result;
 	}
 
+	protected Map<String, String> selectOne(final String table, final List<String> selectKeys, final String condKey, final Object condValue) {
+		// Metrics
+		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
+
+		String sql = "SELECT %s FROM %s WHERE %s=%s".formatted(String.join(", ", selectKeys), table, condKey, quote(condValue));
+
+		Map<String, String> result = new HashMap<>();
+
+		cu.logger.debug(sql);
+		try (Connection conn = DriverManager.getConnection(url);
+			 PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+
+			if (rs.next())
+				for (String key : selectKeys) {
+					result.put(key, rs.getString(key));
+				}
+		} catch (SQLException ex) {
+			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
+		}
+		return result.isEmpty() ? null : result;
+	}
+
 	// SELECT with database selection
 	protected String selectOne(final String database, final String table, final String selectKey, final String condKey, final Object condValue) {
 		// Metrics

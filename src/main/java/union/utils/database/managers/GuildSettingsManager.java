@@ -23,14 +23,14 @@ import static union.utils.CastUtil.resolveOrDefault;
 public class GuildSettingsManager extends LiteDBBase {
 
 	private final Set<String> columns = Set.of(
-		"color", "lastWebhookId", "appealLink", "reportChannelId",
+		"color", "lastWebhookId", "appealLink", "reportChannelId", "rulesLink",
 		"strikeExpires", "strikeCooldown", "modulesOff", "anticrash", "anticrashPing",
 		"informBan", "informKick", "informMute", "informStrike", "informDelstrike"
 	);
 
 	// Cache
 	private final FixedCache<Long, GuildSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
-	public final FixedCache<Long, Boolean> anticrashCache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
+	private final FixedCache<Long, AnticrashAction> anticrashCache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
 	private final GuildSettings blankSettings = new GuildSettings();
 	
 	public GuildSettingsManager(ConnectionUtil cu) {
@@ -55,7 +55,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
 	}
 
-	public Boolean isAnticrashEnabled(long guildId) {
+	public AnticrashAction getAnticrashAction(long guildId) {
 		return anticrashCache.get(guildId);
 	}
 
@@ -79,6 +79,11 @@ public class GuildSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, appealLink) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET appealLink=%<s".formatted(table, guildId, quote(link)));
 	}
 
+	public void setRulesLink(long guildId, String link) {
+		invalidateCache(guildId);
+		execute("INSERT INTO %s(guildId, rulesLink) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET rulesLink=%<s".formatted(table, guildId, quote(link)));
+	}
+
 	public void setReportChannelId(long guildId, @Nullable Long channelId) {
 		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, reportChannelId) VALUES (%s, %s) ON CONFLICT(guildId) DO UPDATE SET reportChannelId=%<s".formatted(table, guildId, channelId==null ? "NULL" : channelId));
@@ -99,10 +104,10 @@ public class GuildSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, modulesOff) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET modulesOff=%<d".formatted(table, guildId, modulesOff));
 	}
 
-	public void setAnticrash(long guildId, boolean enabled) {
+	public void setAnticrash(long guildId, AnticrashAction action) {
 		invalidateCache(guildId);
 		invalidateAnticrashCache(guildId);
-		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d".formatted(table, guildId, enabled ? 1 : 0));
+		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d".formatted(table, guildId, action.getValue()));
 	}
 
 	public void setAnticrashPing(long guildId, String ping) {
@@ -136,6 +141,10 @@ public class GuildSettingsManager extends LiteDBBase {
 	}
 
 
+	public void addAnticrashCache(long guildId, AnticrashAction action) {
+		anticrashCache.put(guildId, action);
+	}
+
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
@@ -147,19 +156,20 @@ public class GuildSettingsManager extends LiteDBBase {
 	public static class GuildSettings {
 		private final Long lastWebhookId, reportChannelId;
 		private final int color, strikeExpires, strikeCooldown, modulesOff;
-		private final String appealLink, anticrashPing;
-		private final boolean anticrash;
+		private final String appealLink, anticrashPing, rulesLink;
+		private final AnticrashAction anticrash;
 		private final ModerationInformLevel informBan, informKick, informMute, informStrike, informDelstrike;
 
 		public GuildSettings() {
 			this.color = Constants.COLOR_DEFAULT;
 			this.lastWebhookId = null;
 			this.appealLink = null;
+			this.rulesLink = null;
 			this.reportChannelId = null;
 			this.strikeExpires = 7;
 			this.strikeCooldown = 0;
 			this.modulesOff = 0;
-			this.anticrash = false;
+			this.anticrash = AnticrashAction.DISABLED;
 			this.anticrashPing = null;
 			this.informBan = ModerationInformLevel.DEFAULT;
 			this.informKick = ModerationInformLevel.DEFAULT;
@@ -172,11 +182,12 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.color = resolveOrDefault(data.get("color"), obj -> Integer.decode(obj.toString()), Constants.COLOR_DEFAULT);
 			this.lastWebhookId = getOrDefault(data.get("lastWebhookId"), null);
 			this.appealLink = getOrDefault(data.get("appealLink"), null);
+			this.rulesLink = getOrDefault(data.get("rulesLink"), null);
 			this.reportChannelId = getOrDefault(data.get("reportChannelId"), null);
 			this.strikeExpires = getOrDefault(data.get("strikeExpires"), 7);
 			this.strikeCooldown = getOrDefault(data.get("strikeCooldown"), 0);
 			this.modulesOff = getOrDefault(data.get("modulesOff"), 0);
-			this.anticrash = getOrDefault(data.get("anticrash"), 0) == 1;
+			this.anticrash = AnticrashAction.byValue(getOrDefault(data.get("anticrash"), 0));
 			this.anticrashPing = getOrDefault(data.get("anticrashPing"), null);
 			this.informBan = ModerationInformLevel.byLevel(getOrDefault(data.get("informBan"), 1));
 			this.informKick = ModerationInformLevel.byLevel(getOrDefault(data.get("informKick"), 1));
@@ -195,6 +206,10 @@ public class GuildSettingsManager extends LiteDBBase {
 
 		public String getAppealLink() {
 			return appealLink;
+		}
+
+		public String getRulesLink() {
+			return rulesLink;
 		}
 
 		public Long getReportChannelId() {
@@ -221,7 +236,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			return (modulesOff & module.getValue()) == module.getValue();
 		}
 
-		public boolean anticrashEnabled() {
+		public AnticrashAction anticrashAction() {
 			return anticrash;
 		}
 
@@ -247,6 +262,39 @@ public class GuildSettingsManager extends LiteDBBase {
 
 		public ModerationInformLevel getInformDelstrike() {
 			return informDelstrike;
+		}
+	}
+
+	public enum AnticrashAction {
+		DISABLED(0),
+		ROLES(1),
+		KICK(2),
+		BAN(3);
+
+		private final int value;
+
+		private static final Map<Integer, AnticrashAction> BY_VALUE = new HashMap<>();
+
+		static {
+			for (AnticrashAction action : AnticrashAction.values()) {
+				BY_VALUE.put(action.getValue(), action);
+			}
+		}
+
+		AnticrashAction(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+
+		public boolean isEnabled() {
+			return this != DISABLED;
+		}
+
+		public static AnticrashAction byValue(int value) {
+			return BY_VALUE.get(value);
 		}
 	}
 

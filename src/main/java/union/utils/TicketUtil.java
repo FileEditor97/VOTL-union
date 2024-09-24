@@ -53,17 +53,22 @@ public class TicketUtil {
 				closeHandle.accept(failure);
 			});
 		} else {
+			final String finalReason = reasonClosed==null ? "-" : (
+				reasonClosed.equals("activity") || reasonClosed.equals("time") ?
+				bot.getLocaleUtil().getLocalized(guild.getLocale(), "logger.ticket.autoclose") :
+				reasonClosed);
+
 			DiscordHtmlTranscripts transcripts = DiscordHtmlTranscripts.getInstance();
 			transcripts.queueCreateTranscript(channel,
 				file -> {
-					channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
-						db.ticket.closeTicket(now, channelId, reasonClosed);
+					channel.delete().reason(finalReason).queueAfter(4, TimeUnit.SECONDS, done -> {
+						db.ticket.closeTicket(now, channelId, finalReason);
 
 						String authorId = db.ticket.getUserId(channelId);
 
 						bot.JDA.retrieveUserById(authorId).queue(user -> {
 							user.openPrivateChannel().queue(pm -> {
-								MessageEmbed embed = bot.getLogEmbedUtil().ticketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, reasonClosed);
+								MessageEmbed embed = bot.getLogEmbedUtil().ticketClosedPmEmbed(guild.getLocale(), channel, now, userClosed, finalReason);
 								if (file == null) {
 									pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 								} else {

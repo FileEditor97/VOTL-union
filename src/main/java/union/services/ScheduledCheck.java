@@ -1,18 +1,29 @@
 package union.services;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.Period;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.utils.FileUpload;
 import union.App;
 import union.helper.Helper;
 import union.objects.CaseType;
+import union.objects.ReportData;
 import union.utils.database.DBUtil;
 
 import static union.utils.CastUtil.castLong;
@@ -36,6 +47,7 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import union.utils.imagegen.renders.ModReportRender;
 import union.utils.message.TimeUtil;
 
 
@@ -56,8 +68,9 @@ public class ScheduledCheck {
 	// each 10-15 minutes
 	public void timedChecks() {
 		CompletableFuture.runAsync(this::checkTicketStatus)
-				.thenRunAsync(this::checkExpiredTempRoles)
-				.thenRunAsync(this::checkExpiredStrikes);
+			.thenRunAsync(this::checkExpiredTempRoles)
+			.thenRunAsync(this::checkExpiredStrikes)
+			.thenRunAsync(this::generateReport);
 	}
 
 	private void checkTicketStatus() {
@@ -97,7 +110,7 @@ public class ScheduledCheck {
 					bot.getDBUtil().ticket.forceCloseTicket(channelId);
 					return;
 				}
-				bot.getTicketUtil().closeTicket(channelId, null, "Auto closure", failure -> {
+				bot.getTicketUtil().closeTicket(channelId, null, "time", failure -> {
 					logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 					db.ticket.setRequestStatus(channelId, -1L);
 				});
@@ -115,7 +128,7 @@ public class ScheduledCheck {
 						Message msg = list.get(0);
 						if (msg.getAuthor().isBot()) {
 							// Last message is bot - close ticket
-							bot.getTicketUtil().closeTicket(channelId, null, "No activity", failure -> {
+							bot.getTicketUtil().closeTicket(channelId, null, "activity", failure -> {
 								logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 								db.ticket.setWaitTime(channelId, -1L);
 							});
@@ -222,11 +235,80 @@ public class ScheduledCheck {
 		}
 	}
 
+	private void generateReport() {
+		try {
+			List<Map<String, Object>> expired = db.modReport.getExpired(LocalDateTime.now());
+			if (expired.isEmpty()) return;
+
+			expired.forEach(data -> {
+				long channelId = castLong(data.get("channelId"));
+				TextChannel channel = bot.JDA.getTextChannelById(channelId);
+				if (channel == null) {
+					long guildId = castLong(data.get("guildId"));
+					logger.warn("Channel for modReport @ '{}' not found. Deleting.", guildId);
+					db.modReport.removeGuild(guildId);
+					return;
+				}
+
+				Guild guild = channel.getGuild();
+				String[] roleIds = ((String) data.get("roleIds")).split(";");
+				List<Role> roles = Stream.of(roleIds)
+					.map(guild::getRoleById)
+					.toList();
+				if (roles.isEmpty()) {
+					logger.warn("Roles for modReport @ '{}' not found. Deleting.", guild.getId());
+					db.modReport.removeGuild(guild.getIdLong());
+					return;
+				}
+
+				int interval = (Integer) data.get("interval");
+				LocalDateTime nextReport = interval==30 ?
+					LocalDateTime.now().plusMonths(1) :
+					LocalDateTime.now().plusDays(interval);
+				// Update next report date
+				db.modReport.updateNext(channelId, nextReport);
+
+				// Search for members with any of required roles (Mod, Admin, ...)
+				guild.findMembers(m -> !Collections.disjoint(m.getRoles(), roles)).setTimeout(10, TimeUnit.SECONDS).onSuccess(members -> {
+					if (members.isEmpty() || members.size() > 20) return; // TODO normal reply - too much users
+					Instant now = Instant.now();
+					Instant previous = (interval==30 ?
+						now.minus(Period.ofMonths(1)) :
+						now.minus(Period.ofDays(interval))
+					).atZone(ZoneId.systemDefault()).toInstant();
+
+					List<ReportData> reportData = new ArrayList<>(members.size());
+					members.forEach(m -> {
+						int countRoles = bot.getDBUtil().ticket.countTicketsByMod(guild.getId(), m.getId(), previous, now, true);
+						Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guild.getIdLong(), m.getIdLong(), previous, now);
+						reportData.add(new ReportData(m, countRoles, countCases));
+					});
+
+					ModReportRender render = new ModReportRender(guild.getLocale(), bot.getLocaleUtil(),
+						previous, now, reportData);
+
+					String attachmentName = "%s-modreport-%s.png".formatted(guild.getId(), now.getEpochSecond());
+
+					try {
+						channel.sendFiles(FileUpload.fromData(
+							new ByteArrayInputStream(render.renderToBytes()),
+							attachmentName
+						)).queue();
+					} catch (IOException e) {
+						logger.error("Exception caught during rendering of modReport.", e);
+					}
+				});
+			});
+		} catch (Throwable t) {
+			logger.error("Exception caught during modReport schedule check.", t);
+		}
+	}
+
 	// Each 2-5 minutes
 	public void regularChecks() {
 		CompletableFuture.runAsync(this::checkUnbans)
-				.thenRunAsync(this::checkAccountUpdates)
-				.thenRunAsync(this::removeAlertPoints);
+			.thenRunAsync(this::checkAccountUpdates)
+			.thenRunAsync(this::removeAlertPoints);
 	}
 
 	private void checkAccountUpdates() {

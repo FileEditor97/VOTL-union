@@ -554,16 +554,16 @@
 				"anticrash": {
 					"help": "Manage server's anti-crash protection",
 					"usage": "anticrash <enabled?> [ping]",
-					"enabled": {
-						"name": "enabled",
-						"help": "Enable anti-crash protection?"
+					"action": {
+						"name": "action",
+						"help": "Enable anticrash and what to do with offender?"
 					},
 					"ping": {
 						"name": "ping",
 						"help": "Mentions roles and/or users to be mentioned on action"
 					},
-					"done": "Anti-crash protecting enabled - %s.",
-					"done_full": "Anti-crash protecting enabled - %s.\nBot will ping [ %s ]"
+					"done": "Anti-crash protection - %s.",
+					"done_full": "Anti-crash protection - %s.\nBot will ping [ %s ]"
 				},
 				"voice": {
 					"help": "Manage custom voice channel settings",

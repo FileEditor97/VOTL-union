@@ -33,7 +33,7 @@ public class ModStatsRender extends Renderer {
 		int roleTotal,
 		int role30,
 		int role7
-		) {
+	) {
 		this.locale = locale;
 		this.lu = App.getInstance().getLocaleUtil();
 		this.username = username;
@@ -113,6 +113,9 @@ public class ModStatsRender extends Renderer {
 	private String[][] generateTableText() {
 		String[][] data = new String[9][4];
 
+		int total7 = 0;
+		int total30 = 0;
+		int totalAll = 0;
 		// Set top headers
 		data[0][0] = "#";
 		data[0][1] = getText("seven");
@@ -120,24 +123,30 @@ public class ModStatsRender extends Renderer {
 		data[0][3] = getText("all");
 		// Strikes row
 		data[1][0] = getText("strikes");
-		data[1][1] = countStrikes(count7);
-		data[1][2] = countStrikes(count30);
-		data[1][3] = countStrikes(countTotal);
+		int v = countStrikes(count7); total7+=v;
+		data[1][1] = String.valueOf(v);
+		v = countStrikes(count30); total30+=v;
+		data[1][2] = String.valueOf(v);
+		v = countStrikes(countTotal); totalAll+=v;
+		data[1][3] = String.valueOf(v);
 		// Fill rows
 		java.util.List<CaseType> types = java.util.List.of(CaseType.GAME_STRIKE, CaseType.MUTE, CaseType.KICK, CaseType.BAN);
 		for (int i=0;i<types.size();i++) {
 			CaseType type = types.get(i);
 			int row = i+2;
 			data[row][0] = lu.getLocalized(locale, type.getPath());
-			data[row][1] = getCount(count7, type);
-			data[row][2] = getCount(count30, type);
-			data[row][3] = getCount(countTotal, type);
+			v = getCount(count7, type); total7+=v;
+			data[row][1] = String.valueOf(v);
+			v = getCount(count30, type); total30+=v;
+			data[row][2] = String.valueOf(v);
+			v = getCount(countTotal, type); totalAll+=v;
+			data[row][3] = String.valueOf(v);
 		}
 		// Total row
 		data[6][0] = "-"+getText("total")+"-";
-		data[6][1] = getTotal(count7);
-		data[6][2] = getTotal(count30);
-		data[6][3] = getTotal(countTotal);
+		data[6][1] = String.valueOf(total7);
+		data[6][2] = String.valueOf(total30);
+		data[6][3] = String.valueOf(totalAll);
 		// Empty row
 		for (int n=0;n<4;n++) {
 			data[7][n] = "";
@@ -151,18 +160,12 @@ public class ModStatsRender extends Renderer {
 		return data;
 	}
 
-	private String countStrikes(Map<Integer, Integer> data) {
-		return Integer.toString(
-			getCountInt(data, CaseType.STRIKE_1)+getCountInt(data, CaseType.STRIKE_2)+getCountInt(data, CaseType.STRIKE_3)
-		);
+	private int countStrikes(Map<Integer, Integer> data) {
+		return getCountInt(data, CaseType.STRIKE_1)+getCountInt(data, CaseType.STRIKE_2)+getCountInt(data, CaseType.STRIKE_3);
 	}
 
-	private String getTotal(Map<Integer, Integer> data) {
-		return data.values().stream().reduce(0, Integer::sum).toString();
-	}
-
-	private String getCount(Map<Integer, Integer> data, CaseType type) {
-		return data.getOrDefault(type.getType(), 0).toString();
+	private int getCount(Map<Integer, Integer> data, CaseType type) {
+		return data.getOrDefault(type.getType(), 0);
 	}
 
 	private int getCountInt(Map<Integer, Integer> data, CaseType type) {

@@ -176,6 +176,7 @@ public class App {
 				new UnmuteCmd(),
 				new ModLogsCmd(),
 				new ModStatsCmd(),
+				new ModReportCmd(),
 				new BlacklistCmd(),
 				// strikes
 				new StrikeCmd(),

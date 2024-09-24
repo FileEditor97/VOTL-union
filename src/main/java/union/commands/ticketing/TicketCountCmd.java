@@ -38,7 +38,7 @@ public class TicketCountCmd extends CommandBase {
 		Instant afterTime = null;
 		Instant beforeTime = null;
 
-		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		try {
 			if (afterDate != null) afterTime = LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
 			if (beforeDate != null) beforeTime = LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
@@ -58,7 +58,7 @@ public class TicketCountCmd extends CommandBase {
 		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, true);
 		int countOther = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, false);
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
 		createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle("`"+formatter.format(afterTime)+"` - `"+formatter.format(beforeTime)+"`")
 			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId())

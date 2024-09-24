@@ -97,7 +97,7 @@ public class ScheduledCheck {
 					bot.getDBUtil().ticket.forceCloseTicket(channelId);
 					return;
 				}
-				bot.getTicketUtil().closeTicket(channelId, null, "Auto closure", failure -> {
+				bot.getTicketUtil().closeTicket(channelId, null, "time", failure -> {
 					logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 					db.ticket.setRequestStatus(channelId, -1L);
 				});
@@ -115,7 +115,7 @@ public class ScheduledCheck {
 						Message msg = list.get(0);
 						if (msg.getAuthor().isBot()) {
 							// Last message is bot - close ticket
-							bot.getTicketUtil().closeTicket(channelId, null, "No activity", failure -> {
+							bot.getTicketUtil().closeTicket(channelId, null, "activity", failure -> {
 								logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 								db.ticket.setWaitTime(channelId, -1L);
 							});

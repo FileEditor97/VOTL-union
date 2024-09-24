@@ -10,7 +10,9 @@ import union.metrics.Metrics;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public class ViewMetricsCmd extends CommandBase {
 	public ViewMetricsCmd() {
@@ -74,7 +76,9 @@ public class ViewMetricsCmd extends CommandBase {
 
 			StringBuilder builder = new StringBuilder("```\n");
 			Metrics.commandsReceived.collect()
-				.forEach((k,v) -> builder.append("%4d | %s\n".formatted(v, k)));
+				.entrySet()
+				.stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+				.forEach(e -> builder.append("%4d | %s\n".formatted(e.getValue(), e.getKey())));
 
 			if (builder.length() < 6) {
 				event.getHook().editOriginal(Constants.FAILURE+" Empty").queue();

@@ -13,8 +13,6 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import java.util.concurrent.TimeUnit;
 
 public abstract class CommandBase extends SlashCommand {
-	
-	public CommandBase() {}
 
 	// reply to event
 	public final void createReply(SlashCommandEvent event, @NotNull String msg) {
@@ -97,6 +95,12 @@ public abstract class CommandBase extends SlashCommand {
 	public final void editErrorDeletable(SlashCommandEvent event, @NotNull String path, String reason) {
 		event.getHook().editOriginal(lu.getText(event, "misc.temp_msg"))
 			.setEmbeds(bot.getEmbedUtil().getError(event, path, reason))
+			.queue(msg -> msg.delete().queueAfter(10, TimeUnit.SECONDS));
+	}
+
+	public final void editErrorUnknownDeletable(SlashCommandEvent event, String reason) {
+		event.getHook().editOriginal(lu.getText(event, "misc.temp_msg"))
+			.setEmbeds(bot.getEmbedUtil().getError(event, "errors.unknown", reason))
 			.queue(msg -> msg.delete().queueAfter(10, TimeUnit.SECONDS));
 	}
 

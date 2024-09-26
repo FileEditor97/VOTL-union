@@ -112,10 +112,13 @@ public class ModReportCmd extends CommandBase {
 				.collect(Collectors.joining(";"));
 
 			// Add to DB
-			bot.getDBUtil().modReport.setup(
+			if (!bot.getDBUtil().modReport.setup(
 				event.getGuild().getIdLong(), channel.getIdLong(), roleIds,
 				firstReport, interval
-			);
+			)) {
+				editErrorUnknownDeletable(event, "Database error.");
+				return;
+			}
 			// Reply
 			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(
@@ -134,8 +137,12 @@ public class ModReportCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			bot.getDBUtil().modReport.removeGuild(event.getGuild().getIdLong());
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			event.deferReply().queue();
+			if (!bot.getDBUtil().modReport.removeGuild(event.getGuild().getIdLong())) {
+				editErrorUnknownDeletable(event, "Database error.");
+				return;
+			}
+			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build());
 		}

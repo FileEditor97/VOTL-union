@@ -80,6 +80,7 @@ public class GuildListener extends ListenerAdapter {
 		db.threadControl.removeAll(guildIdLong);
 		db.games.removeGuild(guildIdLong);
 		db.modReport.removeGuild(guildIdLong);
+		db.persistent.removeGuild(guildIdLong);
 		
 		db.guildSettings.remove(guildIdLong);
 

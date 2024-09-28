@@ -931,6 +931,36 @@
 					"title": "Managed channels",
 					"none": "*No channels.*"
 				}
+			},
+			"persistent": {
+				"help": "Setup persistent roles",
+				"usage": "persistent",
+				"add": {
+					"help": "Add persistent role",
+					"usage": "add <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"incorrect_role": "Incorrect role provided.",
+					"limit": "Reached limit amount of persistent roles.",
+					"done": "Role %s set as persistent role.\nIf a user with this role leaves the server and enters back, he will automatically be assigned this role."
+				},
+				"remove": {
+					"help": "Remove persistent role",
+					"usage": "remove <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"done": "Role %s removed as persistent role."
+				},
+				"view": {
+					"help": "View persistent roles",
+					"usage": "view",
+					"empty": "No roles.",
+					"title": "Persistent roles"
+				}
 			}
 		},
 		"voice": {

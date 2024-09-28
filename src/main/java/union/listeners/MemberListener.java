@@ -5,7 +5,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import union.App;
 import union.objects.annotation.NotNull;
 import union.objects.logs.LogType;
@@ -37,21 +40,44 @@ public class MemberListener extends ListenerAdapter {
 		if (db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) {
 			bot.getLogger().member.onJoined(event.getMember());
 		}
-		// Checks cache on local DB, if user is verified, gives out the role
+
 		long userId = event.getUser().getIdLong();
-		
+		Guild guild = event.getGuild();
+		long guildId = guild.getIdLong();
+		// Check for persistent role
+		try {
+			List<Role> roles = new ArrayList<>();
+			for (Long roleId : db.persistent.getUserRoles(guildId, userId)) {
+				Role role = guild.getRoleById(roleId);
+				if (role == null) {
+					// Role is deleted
+					db.persistent.removeRole(guildId, roleId);
+					continue;
+				}
+				roles.add(role);
+			}
+			if (!roles.isEmpty()) {
+				List<Role> newRoles = new ArrayList<>(event.getMember().getRoles());
+				newRoles.addAll(roles);
+				guild.modifyMemberRoles(event.getMember(), newRoles).queueAfter(3, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
+			}
+		} catch (Exception e) {
+			bot.getAppLogger().warn("Failed to assign persistent roles for {} @ {}\n{}", userId, guildId, e.getMessage());
+		}
+
+
+		// Checks cache on local DB, if user is verified, gives out the role
 		if (db.verifyCache.isVerified(userId)) {
-			Guild guild = event.getGuild();
 			// Check if user is blacklisted
 			List<Integer> groupIds = new ArrayList<>();
-			groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
-			groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
+			groupIds.addAll(db.group.getOwnedGroups(guildId));
+			groupIds.addAll(db.group.getGuildGroups(guildId));
 			Long cachedSteam64 = db.verifyCache.getSteam64(userId);
 			for (int groupId : groupIds) {
 				// if user is blacklisted in group either by discordID or Steam64
 				// and joined server is not appeal server - do not add verify role
-				if (db.blacklist.inGroupUser(groupId, userId) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) return;
-				if (cachedSteam64!=null && db.blacklist.inGroupSteam64(groupId, cachedSteam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) return;
+				if (db.blacklist.inGroupUser(groupId, userId) && db.group.getAppealGuildId(groupId)!=guildId) return;
+				if (cachedSteam64!=null && db.blacklist.inGroupSteam64(groupId, cachedSteam64) && db.group.getAppealGuildId(groupId)!=guildId) return;
 			}
 
 			Long roleId = db.getVerifySettings(guild).getRoleId();
@@ -87,11 +113,27 @@ public class MemberListener extends ListenerAdapter {
 					bot.getLogger().member.onLeft(event.getGuild(), event.getMember(), event.getUser());
 				});
 		}
-		// When user leaves guild, check if there are any records in DB that would be better to remove.
-		// This does not consider clearing User DB, when bot leaves guild.
+
 		long guildId = event.getGuild().getIdLong();
 		long userId = event.getUser().getIdLong();
-
+		// Add persistent roles
+		try {
+			List<Role> roles = event.getMember().getRoles();
+			if (!roles.isEmpty()) {
+				List<Long> persistentRoleIds = db.persistent.getRoles(guildId);
+				if (!persistentRoleIds.isEmpty()) {
+					List<Long> common = new ArrayList<>(roles.stream().map(Role::getIdLong).toList());
+					common.retainAll(persistentRoleIds);
+					if (!common.isEmpty()) {
+						db.persistent.addUser(guildId, userId, common);
+					}
+				}
+			}
+		} catch (Exception e) {
+			bot.getAppLogger().warn("Failed to save persistent roles for {} @ {}\n{}", userId, guildId, e.getMessage());
+		}
+		// When user leaves guild, check if there are any records in DB that would be better to remove.
+		// This does not consider clearing User DB, when bot leaves guild.
 		if (db.access.getUserLevel(guildId, userId) != null) {
 			db.access.removeUser(guildId, userId);
 		}

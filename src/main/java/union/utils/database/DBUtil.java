@@ -62,6 +62,7 @@ public class DBUtil {
 	public final GameStrikeManager games;
 	public final TempBanManager tempBan;
 	public final ModReportManager modReport;
+	public final PersistentManager persistent;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -116,6 +117,7 @@ public class DBUtil {
 		games = new GameStrikeManager(connectionUtil);
 		tempBan = new TempBanManager(connectionUtil);
 		modReport = new ModReportManager(connectionUtil);
+		persistent = new PersistentManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, settings, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, settings, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);

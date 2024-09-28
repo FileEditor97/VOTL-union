@@ -64,13 +64,14 @@ public class GameStrikeCmd extends CommandBase {
 			return;
 		}
 
+		// Check strike cooldown
 		long channelId = channel.getIdLong();
 		int strikeCooldown = bot.getDBUtil().getGuildSettings(event.getGuild()).getStrikeCooldown();
 		if (strikeCooldown > 0) {
 			Instant lastUpdate = bot.getDBUtil().games.getLastUpdate(channelId, tm.getIdLong());
 			if (lastUpdate != null && lastUpdate.isAfter(Instant.now().minus(strikeCooldown, ChronoUnit.MINUTES))) {
 				// Cooldown between strikes
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_FAILURE)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_FAILURE)
 					.setDescription(lu.getText(event, path+".cooldown").formatted(TimeFormat.RELATIVE.format(lastUpdate.plus(strikeCooldown, ChronoUnit.MINUTES))))
 					.build()
 				);
@@ -90,9 +91,12 @@ public class GameStrikeCmd extends CommandBase {
 		String reason = event.optString("reason");
 		// Add to DB
 		long guildId = event.getGuild().getIdLong();
+		if (!bot.getDBUtil().games.addStrike(guildId, channelId, tm.getIdLong())) {
+			editErrorUnknown(event, "Database error.");
+			return;
+		}
 		CaseManager.CaseData strikeData = bot.getDBUtil().cases.add(CaseType.GAME_STRIKE, tm.getIdLong(), tm.getUser().getName(), event.getUser().getIdLong(), event.getUser().getName(),
 			guildId, reason, Instant.now(), null);
-		bot.getDBUtil().games.addStrike(guildId, channelId, tm.getIdLong());
 		// Inform user
 		tm.getUser().openPrivateChannel().queue(pm -> {
 			MessageEmbed embed = bot.getModerationUtil().getGameStrikeEmbed(channel, event.getUser(), reason);
@@ -104,7 +108,7 @@ public class GameStrikeCmd extends CommandBase {
 		final int maxStrikes = bot.getDBUtil().games.getMaxStrikes(channelId);
 		bot.getLogger().mod.onNewCase(event.getGuild(), tm.getUser(), strikeData, proofData, strikeCount+"/"+maxStrikes);
 		// Reply
-		editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+		editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(tm.getAsMention(), channel.getAsMention()))
 			.setFooter("#"+strikeData.getLocalId())
 			.build());

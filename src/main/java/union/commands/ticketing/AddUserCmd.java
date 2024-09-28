@@ -33,11 +33,13 @@ public class AddUserCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
+
 		String channelId = event.getChannel().getId();
 		String authorId = bot.getDBUtil().ticket.getUserId(channelId);
 		if (authorId == null) {
 			// If this channel is not a ticket
-			createError(event, path+".not_ticket");
+			editError(event, path+".not_ticket");
 			return;
 		}
 		if (bot.getDBUtil().ticket.isClosed(channelId)) {
@@ -47,10 +49,9 @@ public class AddUserCmd extends CommandBase {
 		}
 		User user = event.optUser("user");
 		if (user.equals(event.getUser()) || user.equals(bot.JDA.getSelfUser()) || user.getId().equals(authorId)) {
-			createError(event, path+".not_self");
+			editError(event, path+".not_self");
 			return;
 		}
-		event.deferReply().queue();
 
 		if (event.getChannelType().equals(ChannelType.GUILD_PRIVATE_THREAD)) {
 			// Thread

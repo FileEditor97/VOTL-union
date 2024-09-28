@@ -72,13 +72,16 @@ public class DurationCmd extends CommandBase {
 				}
 			});
 		}
-		bot.getDBUtil().cases.updateDuration(caseData.getRowId(), newDuration);
+		if (!bot.getDBUtil().cases.updateDuration(caseData.getRowId(), newDuration)) {
+			editErrorUnknown(event, "Database error.");
+			return;
+		}
 		
 		String newTime = TimeUtil.formatDuration(lu, event.getUserLocale(), caseData.getTimeStart(), newDuration);
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(localId, newTime))
 			.build();
-		editHookEmbed(event, embed);
+		editEmbed(event, embed);
 
 		bot.getLogger().mod.onChangeDuration(event, caseData, event.getMember(), newTime);
 	}

@@ -31,7 +31,7 @@ public class AccountCmd extends CommandBase {
 		this.category = CmdCategory.VERIFICATION;
 		this.module = CmdModule.VERIFICATION;
 		this.accessLevel = CmdAccessLevel.HELPER;
-		this.cooldown = 5;
+		this.cooldown = 10;
 		this.cooldownScope = CooldownScope.USER;
 	}
 
@@ -45,7 +45,7 @@ public class AccountCmd extends CommandBase {
 			
 			Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
 			if (steam64 == null || steam64 == 0L) {
-				editErrorDeletable(event, path+".not_found_steam", "Received: "+userId);
+				editError(event, path+".not_found_steam", "Received: "+userId);
 				return;
 			}
 
@@ -60,7 +60,7 @@ public class AccountCmd extends CommandBase {
 				try {
 					steam64 = Long.parseLong(input);
 				} catch (NumberFormatException ex) {
-					editErrorDeletable(event, "errors.error", ex.getMessage());
+					editError(event, "errors.error", ex.getMessage());
 					return;
 				}
 			}
@@ -72,11 +72,11 @@ public class AccountCmd extends CommandBase {
 				Long steam64copy = steam64;
 				event.getJDA().retrieveUserById(discordId).queue(
 					user -> replyAccountFull(event, steam64copy, user),
-					failed -> editErrorDeletable(event, path+".not_found_user", "User ID: "+discordId)
+					failed -> editError(event, path+".not_found_user", "User ID: "+discordId)
 				);
 			}
 		} else {
-			editErrorDeletable(event, path+".no_options");
+			editError(event, path+".no_options");
 		}
 	}
 
@@ -85,7 +85,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			editErrorDeletable(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 
@@ -110,7 +110,7 @@ public class AccountCmd extends CommandBase {
 			builder.addField(playerInfo.getServerTitle(), value, false);
 		});
 		
-		editHookEmbed(event, builder.build());
+		editEmbed(event, builder.build());
 	}
 
 	private void replyAccountSteam(SlashCommandEvent event, final Long steam64) {
@@ -118,7 +118,7 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			editErrorDeletable(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 
@@ -136,7 +136,7 @@ public class AccountCmd extends CommandBase {
 			builder.addField(playerInfo.getServerTitle(), value, false);
 		});
 		
-		editHookEmbed(event, builder.build());
+		editEmbed(event, builder.build());
 	}
 
 }

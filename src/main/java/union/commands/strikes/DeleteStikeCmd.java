@@ -69,7 +69,7 @@ public class DeleteStikeCmd extends CommandBase {
 
 		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(event.getGuild().getIdLong(), tu.getIdLong());
 		if (strikeData == null) {
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_strikes")).build());
+			editEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_strikes")).build());
 			return;
 		}
 		String[] cases = strikeData.getRight().split(";");

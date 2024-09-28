@@ -10,12 +10,12 @@ public class ThreadControlManager extends LiteDBBase {
 		super(cu, "threadControl");
 	}
 
-	public void add(long guildId, long channelId) {
-		execute("INSERT INTO %s(guildId, channelId) VALUES (%s, %s)".formatted(table, guildId, channelId));
+	public boolean add(long guildId, long channelId) {
+		return execute("INSERT INTO %s(guildId, channelId) VALUES (%s, %s)".formatted(table, guildId, channelId));
 	}
 
-	public void remove(long channelId) {
-		execute("DELETE FROM %s WHERE (channelId=%s)".formatted(table, channelId));
+	public boolean remove(long channelId) {
+		return execute("DELETE FROM %s WHERE (channelId=%s)".formatted(table, channelId));
 	}
 
 	public void removeAll(long guildId) {

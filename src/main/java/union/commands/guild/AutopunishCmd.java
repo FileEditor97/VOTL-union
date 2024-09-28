@@ -35,7 +35,6 @@ public class AutopunishCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Add extends SlashCommand {
-
 		public Add() {
 			this.name = "add";
 			this.path = "bot.guild.autopunish.add";
@@ -136,14 +135,15 @@ public class AutopunishCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().autopunish.addAction(event.getGuild().getIdLong(), strikeCount, actions, String.join(";", data));
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setColor(Constants.COLOR_SUCCESS).setDescription(builder.toString()).build());
+			if (!bot.getDBUtil().autopunish.addAction(event.getGuild().getIdLong(), strikeCount, actions, String.join(";", data))) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed().setColor(Constants.COLOR_SUCCESS).setDescription(builder.toString()).build());
 		}
-
 	}
 
 	private class Remove extends SlashCommand {
-
 		public Remove() {
 			this.name = "remove";
 			this.path = "bot.guild.autopunish.remove";
@@ -162,13 +162,15 @@ public class AutopunishCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().autopunish.removeAction(event.getGuild().getIdLong(), strikeCount);
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+			if (!bot.getDBUtil().autopunish.removeAction(event.getGuild().getIdLong(), strikeCount)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed()
 				.setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(strikeCount))
 				.build());
 		}
-		
 	}
 
 	// TODO
@@ -189,7 +191,6 @@ public class AutopunishCmd extends CommandBase {
 	} */
 
 	private class View extends SlashCommand {
-
 		public View() {
 			this.name = "view";
 			this.path = "bot.guild.autopunish.view";
@@ -257,11 +258,10 @@ public class AutopunishCmd extends CommandBase {
 				builder.append("\n");
 			}
 
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+			editEmbed(event, bot.getEmbedUtil().getEmbed()
 				.setDescription(builder.toString())
 				.build());
 		}
-		
 	}
 	
 }

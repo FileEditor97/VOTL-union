@@ -78,7 +78,7 @@ public class StatusCmd extends CommandBase {
 			.setTimestamp(event.getClient().getStartTime())
 			.build();
 		
-		editHookEmbed(event, embed);
+		editEmbed(event, embed);
 	}
 
 	private String memoryUsage(LocaleUtil lu, DiscordLocale locale) {

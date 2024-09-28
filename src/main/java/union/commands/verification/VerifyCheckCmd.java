@@ -36,13 +36,17 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			if (bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId() == null) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 
-			bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), true);
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			if (!bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), true)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build()
 			);
@@ -57,8 +61,13 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), false);
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			event.deferReply().queue();
+
+			if (!bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), false)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build()
 			);
@@ -74,9 +83,10 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			List<Long> list = bot.getDBUtil().verifyCache.getForcedUsers();
 			if (list.isEmpty()) {
-				createReply(event, lu.getText(event, path+".empty"));
+				editMsg(event, lu.getText(event, path+".empty"));
 				return;
 			}
 
@@ -84,7 +94,7 @@ public class VerifyCheckCmd extends CommandBase {
 			list.forEach(
 				userId -> buffer.append(String.format("%s `%s`\n", User.fromId(userId).getAsMention(), userId))
 			);
-			createReply(event, buffer.toString());
+			editMsg(event, buffer.toString());
 		}
 	}
 
@@ -100,25 +110,26 @@ public class VerifyCheckCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			if (bot.getDBUtil().getVerifySettings(event.getGuild()).getRoleId() == null) {
-				createError(event, path+".no_role");
+				editError(event, path+".no_role");
 				return;
 			}
 
 			int hours = event.optInteger("hours");
 			bot.getDBUtil().verifySettings.setRequiredPlaytime(event.getGuild().getIdLong(), hours);
 			if (hours == -1)
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_disabled"))
 					.build()
 				);
 			else if (hours == 0)
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_once"))
 					.build()
 				);
 			else
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_hours").formatted(hours))
 					.build()
 				);

@@ -40,18 +40,22 @@ public class ThreadsCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			GuildChannel channel = event.optGuildChannel("channel");
 			if (channel == null) {
-				createError(event, path+".no_channel");
+				editError(event, path+".no_channel");
 				return;
 			}
 			if (bot.getDBUtil().threadControl.exist(channel.getIdLong())) {
-				createError(event, path+".exists");
+				editError(event, path+".exists");
 				return;
 			}
 
-			bot.getDBUtil().threadControl.add(event.getGuild().getIdLong(), channel.getIdLong());
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			if (!bot.getDBUtil().threadControl.add(event.getGuild().getIdLong(), channel.getIdLong())) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(channel.getAsMention()))
 				.build());
 		}
@@ -68,21 +72,25 @@ public class ThreadsCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			long channelId;
 			try {
 				channelId = Long.parseLong(event.optString("channel"));
 			} catch (NumberFormatException e) {
-				createError(event, path+".no_channel", e.getMessage());
+				editError(event, path+".no_channel", e.getMessage());
 				return;
 			}
 			Long guildId = bot.getDBUtil().threadControl.getGuildId(channelId);
 			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
-				createError(event, path+".not_found");
+				editError(event, path+".not_found");
 				return;
 			}
 
-			bot.getDBUtil().threadControl.remove(channelId);
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			if (!bot.getDBUtil().threadControl.remove(channelId)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(channelId))
 				.build());
 		}
@@ -103,7 +111,7 @@ public class ThreadsCmd extends CommandBase {
 
 			List<Long> channelIds = bot.getDBUtil().threadControl.getChannelIds(event.getGuild().getIdLong());
 			if (channelIds.isEmpty()) {
-				editHookEmbed(event, builder
+				editEmbed(event, builder
 					.setDescription(lu.getText(event, path+".none"))
 					.build()
 				);
@@ -112,7 +120,7 @@ public class ThreadsCmd extends CommandBase {
 
 			channelIds.forEach(id -> builder.appendDescription("<#%s>\n".formatted(id)));
 
-			editHookEmbed(event, builder.build());
+			editEmbed(event, builder.build());
 		}
 	}
 

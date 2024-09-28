@@ -47,18 +47,24 @@ public class ClearStrikesCmd extends CommandBase {
 		long guildId = event.getGuild().getIdLong();
 		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(guildId, tu.getIdLong());
 		if (strikeData == null) {
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_strikes")).build());
+			editEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_strikes")).build());
 			return;
 		}
 		int activeCount = strikeData.getLeft();
 		// Clear strike DB
-		bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
+		if (!bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong())) {
+			editErrorUnknown(event, "Database error.");
+			return;
+		}
 		// Set all strikes cases inactive
-		bot.getDBUtil().cases.setInactiveStrikeCases(guildId, tu.getIdLong());
+		if (!bot.getDBUtil().cases.setInactiveStrikeCases(guildId, tu.getIdLong())) {
+			editErrorUnknown(event, "Database error.");
+			return;
+		}
 		// Log
 		bot.getLogger().mod.onStrikesCleared(event, tu);
 		// Reply
-		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+		editEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setColor(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(activeCount, tu.getName()))
 			.build()

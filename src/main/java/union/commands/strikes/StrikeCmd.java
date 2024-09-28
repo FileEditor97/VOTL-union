@@ -81,7 +81,7 @@ public class StrikeCmd extends CommandBase {
 			Instant lastAddition = bot.getDBUtil().strike.getLastAddition(guild.getIdLong(), tm.getIdLong());
 			if (lastAddition != null && lastAddition.isAfter(Instant.now().minus(strikeCooldown, ChronoUnit.MINUTES))) {
 				// Cooldown active
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_FAILURE)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_FAILURE)
 					.setDescription(lu.getText(event, path+".cooldown").formatted(TimeFormat.RELATIVE.format(lastAddition.plus(strikeCooldown, ChronoUnit.MINUTES))))
 					.build()
 				);
@@ -124,7 +124,7 @@ public class StrikeCmd extends CommandBase {
 				path+".success", type.getPath(), tm.getUser(), mod.getUser(), reason, logUrl);
 			if (action != null) builder.addField(action);
 
-			editHookEmbed(event, builder.build());
+			editEmbed(event, builder.build());
 		});
 	}
 

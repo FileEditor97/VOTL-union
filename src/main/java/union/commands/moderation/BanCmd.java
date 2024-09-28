@@ -124,7 +124,7 @@ public class BanCmd extends CommandBase {
 					MessageEmbed embed = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 						.setDescription(lu.getText(event, path+".already_temp").replace("{id}", oldBanData.getLocalId()))
 						.build();
-					event.getHook().editOriginalEmbeds(embed).queue();
+					editEmbed(event, embed);
 				}
 			} else {
 				// user has permanent ban, but not in DB
@@ -207,7 +207,7 @@ public class BanCmd extends CommandBase {
 							Button.secondary("sync_kick:"+tu.getId(), "Group kick")
 						).queue();
 					else
-						event.getHook().editOriginalEmbeds(embed).queue();
+						editEmbed(event, embed);
 				});
 			},
 			failed -> editError(event, path+".ban_abort", failed.getMessage()));

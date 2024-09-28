@@ -27,14 +27,15 @@ public class MessageCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
 		String channelId = event.optString("channel_id");
 		GuildMessageChannel channel = event.getJDA().getChannelById(GuildMessageChannel.class, channelId);
 		if (channel == null) {
-			createReply(event, Constants.FAILURE+" Channel not found.");
+			editErrorOther(event, Constants.FAILURE+" Channel not found.");
 			return;
 		}
 
 		channel.sendMessage(event.optString("content")).queue();
-		createReply(event, Constants.SUCCESS);
+		editMsg(event, Constants.SUCCESS);
 	}
 }

@@ -27,7 +27,7 @@ public class LiteDBBase {
 		this.table = table;
 	}
 
-	// Execute statement and return true if no exception
+	// Execute statement and return true if exception
 	protected boolean execute(final String sql) {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue(sql.split(" ")[0].toUpperCase()).inc();

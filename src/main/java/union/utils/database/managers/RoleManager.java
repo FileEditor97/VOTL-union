@@ -17,13 +17,13 @@ public class RoleManager extends LiteDBBase {
 		super(cu, "requestRole");
 	}
 
-	public void add(String guildId, String roleId, String description, Integer row, RoleType roleType, String discordInvite) {
-		execute("INSERT INTO %s(guildId, roleId, description, type, row, discordInvite) VALUES (%s, %s, %s, %d, %d, %s)"
+	public boolean add(String guildId, String roleId, String description, Integer row, RoleType roleType, String discordInvite) {
+		return execute("INSERT INTO %s(guildId, roleId, description, type, row, discordInvite) VALUES (%s, %s, %s, %d, %d, %s)"
 			.formatted(table, guildId, roleId, quote(description), roleType.getType(), Optional.ofNullable(row).orElse(0), quote(discordInvite)));
 	}
 
-	public void remove(String roleId) {
-		execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
+	public boolean remove(String roleId) {
+		return execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
 	}
 
 	public void removeAll(String guildId) {
@@ -92,16 +92,16 @@ public class RoleManager extends LiteDBBase {
 		return selectOne("SELECT discordInvite FROM %s WHERE (roleId=%s)".formatted(table, roleId), "discordInvite", String.class);
 	}
 
-	public void setDescription(String roleId, String description) {
-		execute("UPDATE %s SET description=%s WHERE (roleId=%s)".formatted(table, quote(description), roleId));
+	public boolean setDescription(String roleId, String description) {
+		return execute("UPDATE %s SET description=%s WHERE (roleId=%s)".formatted(table, quote(description), roleId));
 	}
 
-	public void setRow(String roleId, Integer row) {
-		execute("UPDATE %s SET row=%d WHERE (roleId=%s)".formatted(table, Optional.ofNullable(row).orElse(0), roleId));
+	public boolean setRow(String roleId, Integer row) {
+		return execute("UPDATE %s SET row=%d WHERE (roleId=%s)".formatted(table, Optional.ofNullable(row).orElse(0), roleId));
 	}
 
-	public void setInvite(String roleId, String discordInvite) {
-		execute("UPDATE %s SET discordInvite=%s WHERE (roleId=%s)".formatted(table, quote(discordInvite), roleId));
+	public boolean setInvite(String roleId, String discordInvite) {
+		return execute("UPDATE %s SET discordInvite=%s WHERE (roleId=%s)".formatted(table, quote(discordInvite), roleId));
 	}
 
 	public boolean isToggleable(String roleId) {

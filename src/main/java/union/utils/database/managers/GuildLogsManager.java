@@ -25,20 +25,21 @@ public class GuildLogsManager extends LiteDBBase {
 		super(cu, "logWebhooks");
 	}
 
-	public void setLogWebhook(LogType type, long guildId, WebhookData webhookData) {
+	public boolean setLogWebhook(LogType type, long guildId, WebhookData webhookData) {
 		invalidateCache(guildId);
 		String data = webhookData==null ? "NULL" : webhookData.encodeData();
-		execute("INSERT INTO %s(guildId, %s) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET %2$s=%4$s".formatted(table, type.getName(), guildId, quote(data)));
+		return execute("INSERT INTO %s(guildId, %s) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET %2$s=%4$s"
+			.formatted(table, type.getName(), guildId, quote(data)));
 	}
 
-	public void removeLogWebhook(LogType type, long guildId) {
+	public boolean removeLogWebhook(LogType type, long guildId) {
 		invalidateCache(guildId);
-		execute("UPDATE %s SET %s=NULL WHERE (guildId=%d)".formatted(table, type.getName(), guildId));
+		return execute("UPDATE %s SET %s=NULL WHERE (guildId=%d)".formatted(table, type.getName(), guildId));
 	}
 
-	public void removeGuild(long guildId) {
+	public boolean removeGuild(long guildId) {
 		invalidateCache(guildId);
-		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
+		return execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
 	public WebhookData getLogWebhook(LogType type, long guildId) {

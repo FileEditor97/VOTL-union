@@ -23,9 +23,9 @@ public class GuildVoiceManager extends LiteDBBase {
 		super(cu, "guildVoice");
 	}
 
-	public void setup(long guildId, long categoryId, long channelId) {
+	public boolean setup(long guildId, long categoryId, long channelId) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, categoryId, channelId) VALUES (%d, %d, %d) ON CONFLICT(guildId) DO UPDATE SET categoryId=%3$d, channelId=%4$d"
+		return execute("INSERT INTO %s(guildId, categoryId, channelId) VALUES (%d, %d, %d) ON CONFLICT(guildId) DO UPDATE SET categoryId=%3$d, channelId=%4$d"
 			.formatted(table, guildId, categoryId, channelId));
 	}
 
@@ -34,15 +34,15 @@ public class GuildVoiceManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public void setName(long guildId, String defaultName) {
+	public boolean setName(long guildId, String defaultName) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, defaultName) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET defaultName=%<s"
+		return execute("INSERT INTO %s(guildId, defaultName) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET defaultName=%<s"
 			.formatted(table, guildId, quote(defaultName)));
 	}
 
-	public void setLimit(long guildId, int defaultLimit) {
+	public boolean setLimit(long guildId, int defaultLimit) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, defaultLimit) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET defaultLimit=%<d"
+		return execute("INSERT INTO %s(guildId, defaultLimit) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET defaultLimit=%<d"
 			.formatted(table, guildId, defaultLimit));
 	}
 

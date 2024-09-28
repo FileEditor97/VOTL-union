@@ -49,7 +49,7 @@ public class StrikesCmd extends CommandBase {
 
 		Pair<Integer, String> strikeData = bot.getDBUtil().strike.getData(event.getGuild().getIdLong(), tu.getIdLong());
 		if (strikeData == null) {
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_active")).build());
+			editEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".no_active")).build());
 			return;
 		}
 		String[] strikesInfoArray = strikeData.getRight().split(";");
@@ -73,7 +73,7 @@ public class StrikesCmd extends CommandBase {
 			));
 		}
 		
-		editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+		editEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle(lu.getText(event, path+".title").formatted(strikeData.getLeft(), tu.getName(), tu.getId()))
 			.setDescription(builder.toString())
 			.build()

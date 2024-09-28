@@ -34,7 +34,6 @@ public class AccessCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class View extends SlashCommand {
-
 		public View() {
 			this.name = "view";
 			this.path = "bot.guild.access.view";
@@ -56,7 +55,7 @@ public class AccessCmd extends CommandBase {
 				.setTitle(lu.getText(event, "bot.guild.access.view.embed.title"));
 
 			if (exceptIds.isEmpty() && helperIds.isEmpty() && modIds.isEmpty() && operatorIds.isEmpty()) {
-				editHookEmbed(event, 
+				editEmbed(event,
 					embedBuilder.setDescription(
 						lu.getText(event, "bot.guild.access.view.embed.none_found")
 					).build()
@@ -107,13 +106,11 @@ public class AccessCmd extends CommandBase {
 			}
 
 			embedBuilder.setDescription(sb);
-			editHookEmbed(event, embedBuilder.build());
+			editEmbed(event, embedBuilder.build());
 		}
-
 	}
 
 	private class AddRole extends SlashCommand {
-
 		public AddRole() {
 			this.name = "role";
 			this.path = "bot.guild.access.add.role";
@@ -129,7 +126,7 @@ public class AccessCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply(true).queue();
+			event.deferReply().queue();
 
 			Role role = event.optRole("role");
 			if (role == null) {
@@ -150,12 +147,15 @@ public class AccessCmd extends CommandBase {
 			}
 
 			CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
-			bot.getDBUtil().access.addRole(guild.getIdLong(), roleId, level);
+			if (!bot.getDBUtil().access.addRole(guild.getIdLong(), roleId, level)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 
 			// Log
 			bot.getLogger().server.onAccessAdded(guild, event.getUser(), null, role, level);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.role.done")
 					.replace("{role}", role.getAsMention())
 					.replace("{level}", level.getName())
@@ -163,11 +163,9 @@ public class AccessCmd extends CommandBase {
 				.build()
 			);
 		}
-
 	}
 
 	private class RemoveRole extends SlashCommand {
-
 		public RemoveRole() {
 			this.name = "role";
 			this.path = "bot.guild.access.remove.role";
@@ -179,7 +177,7 @@ public class AccessCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply(true).queue();
+			event.deferReply().queue();
 
 			Role role = event.optRole("role");
 			if (role == null) {
@@ -194,12 +192,15 @@ public class AccessCmd extends CommandBase {
 				editError(event, "bot.guild.access.remove.role.no_access");
 			}
 
-			bot.getDBUtil().access.removeRole(event.getGuild().getIdLong(), roleId);
+			if (!bot.getDBUtil().access.removeRole(event.getGuild().getIdLong(), roleId)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 
 			// Log
 			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.role.done")
 					.replace("{role}", role.getAsMention())
 					.replace("{level}", level.getName())
@@ -207,11 +208,9 @@ public class AccessCmd extends CommandBase {
 				.build()
 			);
 		}
-
 	}
 
 	private class AddOperator extends SlashCommand {
-
 		public AddOperator() {
 			this.name = "operator";
 			this.path = "bot.guild.access.add.operator";
@@ -224,7 +223,7 @@ public class AccessCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply(true).queue();
+			event.deferReply().queue();
 
 			Member member = event.optMember("user");
 			if (member == null) {
@@ -244,21 +243,22 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().access.addOperator(guildId, userId);
+			if (!bot.getDBUtil().access.addOperator(guildId, userId)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 			
 			// Log
 			bot.getLogger().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.operator.done").replace("{user}", member.getAsMention()))
 				.build()
 			);
 		}
-
 	}
 
 	private class RemoveOperator extends SlashCommand {
-
 		public RemoveOperator() {
 			this.name = "operator";
 			this.path = "bot.guild.access.remove.operator";
@@ -271,7 +271,7 @@ public class AccessCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply(true).queue();
+			event.deferReply().queue();
 
 			User user = event.optUser("user");
 			if (user == null) {
@@ -287,17 +287,19 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().access.removeUser(guildId, userId);
+			if (!bot.getDBUtil().access.removeUser(guildId, userId)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 
 			// Log
 			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
 			// Send reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.operator.done").replace("{user}", user.getAsMention()))
 				.build()
 			);
 		}
-
 	}
 
 }

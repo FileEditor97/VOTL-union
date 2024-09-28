@@ -62,7 +62,7 @@ public class BlacklistCmd extends CommandBase {
 			Integer page = event.optInteger("page", 1);
 			List<Map<String, Object>> list = bot.getDBUtil().blacklist.getByPage(groupId, page);
 			if (list.isEmpty()) {
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty").formatted(page)).build());
+				editEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty").formatted(page)).build());
 				return;
 			}
 			int pages = (int) Math.ceil(bot.getDBUtil().blacklist.countEntries(groupId) / 20.0);
@@ -78,7 +78,7 @@ public class BlacklistCmd extends CommandBase {
 				), true)
 			);
 
-			editHookEmbed(event, builder.build());
+			editEmbed(event, builder.build());
 		}
 	}
 
@@ -108,11 +108,14 @@ public class BlacklistCmd extends CommandBase {
 			if (event.hasOption("user")) {
 				User user = event.optUser("user");
 				if (bot.getDBUtil().blacklist.inGroupUser(groupId, user.getIdLong())) {
-					bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong());
+					if (!bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong())) {
+						editErrorUnknown(event, "Database error.");
+						return;
+					}
 					// Log into master
 					bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
 					// Reply
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_user").formatted(user.getAsMention(), user.getId(), groupId))
 						.build()
 					);
@@ -136,11 +139,14 @@ public class BlacklistCmd extends CommandBase {
 				}
 
 				if (bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
-					bot.getDBUtil().blacklist.removeSteam64(groupId, steam64);
+					if (!bot.getDBUtil().blacklist.removeSteam64(groupId, steam64)) {
+						editErrorUnknown(event, "Database error.");
+						return;
+					}
 					// Log into master
 					bot.getLogger().mod.onBlacklistRemoved(event.getUser(), null, steam64, groupId);
 					// Reply
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done_steam").formatted(SteamUtil.convertSteam64toSteamID(steam64), groupId))
 						.build()
 					);
@@ -192,11 +198,14 @@ public class BlacklistCmd extends CommandBase {
 			}
 
 			if (!bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
-				bot.getDBUtil().blacklist.addSteam(guildId, groupId, steam64, event.getUser().getIdLong());
+				if (!bot.getDBUtil().blacklist.addSteam(guildId, groupId, steam64, event.getUser().getIdLong())) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
 				// Log into master
 				bot.getLogger().mod.onBlacklistAdded(event.getUser(), null, steam64, List.of(groupId));
 				// Reply
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").formatted(SteamUtil.convertSteam64toSteamID(steam64), groupId))
 						.build()
 				);
@@ -219,7 +228,7 @@ public class BlacklistCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply().queue();
+			event.deferReply(true).queue();
 
 			Integer groupId = event.optInteger("group");
 			long guildId = event.getGuild().getIdLong();
@@ -233,13 +242,13 @@ public class BlacklistCmd extends CommandBase {
 				User user = event.optUser("user");
 				Map<String, Object> data = bot.getDBUtil().blacklist.getByUserId(groupId, user.getIdLong());
 				if (data == null) {
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+					editEmbed(event, bot.getEmbedUtil().getEmbed()
 						.setDescription(lu.getText(event, path+".not_found").formatted(user.getAsMention()))
 						.build());
 					return;
 				}
 
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+				editEmbed(event, bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, path+".value").formatted(
 						"%s `%s`".formatted(user.getAsMention(), user.getId()),
 						Optional.ofNullable(castLong(data.get("steam64"))).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
@@ -265,13 +274,13 @@ public class BlacklistCmd extends CommandBase {
 
 				Map<String, Object> data = bot.getDBUtil().blacklist.getBySteam64(groupId, steam64);
 				if (data == null) {
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+					editEmbed(event, bot.getEmbedUtil().getEmbed()
 						.setDescription(lu.getText(event, path+".not_found").formatted(steam64))
 						.build());
 					return;
 				}
 
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed()
+				editEmbed(event, bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, path+".value").formatted(
 						Optional.ofNullable(castLong(data.get("userId"))).map("<@%s> `%<s`"::formatted).orElse("-"),
 						SteamUtil.convertSteam64toSteamID(steam64),

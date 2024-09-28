@@ -43,7 +43,6 @@ public class SyncCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Kick extends SlashCommand {
-		
 		public Kick() {
 			this.name = "kick";
 			this.path = "bot.moderation.sync.kick";

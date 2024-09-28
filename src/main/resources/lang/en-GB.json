@@ -64,7 +64,7 @@
 		"ban_expired": "Temporary ban expired",
 		"verify_instruct": "## Complete verification to join `%s`!\nYou must connect your account by joining the server bellow.\n*After completing verification there, you will be able to rejoin this server.*\n\n> --> %s <--",
 		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||",
-		"temp_msg": "-# This message will be deleted in 10 seconds."
+		"temp_msg": "-# This message will be deleted in 30 seconds."
 	},
 	"modules": {
 		"webhook": "Webhook commands",

@@ -40,7 +40,6 @@ public class VerifyPanelCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Create extends SlashCommand {
-		
 		public Create() {
 			this.name = "create";
 			this.path = "bot.verification.vfpanel.create";
@@ -76,16 +75,14 @@ public class VerifyPanelCmd extends CommandBase {
 				.build()
 			).addActionRow(next).queue();
 
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
 				.build()
 			);
 		}
-
 	}
 
 	private class Preview extends SlashCommand {
-
 		public Preview() {
 			this.name = "preview";
 			this.path = "bot.verification.vfpanel.preview";
@@ -93,6 +90,7 @@ public class VerifyPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
 			Guild guild = event.getGuild();
 			int color = bot.getDBUtil().getGuildSettings(guild).getColor();
 			
@@ -107,12 +105,11 @@ public class VerifyPanelCmd extends CommandBase {
 				.addField(lu.getLocalized(event.getGuildLocale(), "bot.verification.embed.howto"), lu.getLocalized(event.getGuildLocale(), "bot.verification.embed.guide"), false)
 				.build();
 			
-			event.replyEmbeds(main, help).setEphemeral(true).queue();
+			editEmbed(event, main, help);
 		}
 	}
 
 	private class SetText extends SlashCommand {
-		
 		public SetText() {
 			this.name = "text";
 			this.path = "bot.verification.vfpanel.text";
@@ -127,7 +124,6 @@ public class VerifyPanelCmd extends CommandBase {
 
 			event.replyModal(Modal.create("vfpanel", lu.getText(event, path+".panel")).addActionRow(main).build()).queue();
 		}
-
 	}
 
 }

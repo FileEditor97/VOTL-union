@@ -28,6 +28,8 @@ public class AboutCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply(event.isFromGuild() && !event.optBoolean("show", false)).queue();
+
 		DiscordLocale userLocale = event.getUserLocale();
 		MessageEmbed embed = bot.getEmbedUtil().getEmbed()
 			.setAuthor(event.getJDA().getSelfUser().getName(), event.getJDA().getSelfUser().getEffectiveAvatarUrl())
@@ -88,7 +90,7 @@ public class AboutCmd extends CommandBase {
 			)
 			.build();
 		
-		createReplyEmbed(event, event.isFromGuild() && !event.optBoolean("show", false), embed);
+		editEmbed(event, embed);
 	}
 
 }

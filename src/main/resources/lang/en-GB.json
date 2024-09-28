@@ -64,7 +64,7 @@
 		"ban_expired": "Temporary ban expired",
 		"verify_instruct": "## Complete verification to join `%s`!\nYou must connect your account by joining the server bellow.\n*After completing verification there, you will be able to rejoin this server.*\n\n> --> %s <--",
 		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||",
-		"temp_msg": "-# This message will be deleted in 10 seconds."
+		"temp_msg": "-# This message will be deleted in 30 seconds."
 	},
 	"modules": {
 		"webhook": "Webhook commands",
@@ -214,7 +214,8 @@
 			"game": {
 				"strike": "Game strike | %s",
 				"strikes": "Strike count"
-			}
+			},
+			"purge": "Messages purged"
 		},
 		"groups": {
 			"name": "Group logs",
@@ -929,6 +930,36 @@
 					"usage": "view",
 					"title": "Managed channels",
 					"none": "*No channels.*"
+				}
+			},
+			"persistent": {
+				"help": "Setup persistent roles",
+				"usage": "persistent",
+				"add": {
+					"help": "Add persistent role",
+					"usage": "add <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"incorrect_role": "Incorrect role provided.",
+					"limit": "Reached limit amount of persistent roles.",
+					"done": "Role %s set as persistent role.\nIf a user with this role leaves the server and enters back, he will automatically be assigned this role."
+				},
+				"remove": {
+					"help": "Remove persistent role",
+					"usage": "remove <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"done": "Role %s removed as persistent role."
+				},
+				"view": {
+					"help": "View persistent roles",
+					"usage": "view",
+					"empty": "No roles.",
+					"title": "Persistent roles"
 				}
 			}
 		},
@@ -1758,6 +1789,22 @@
 				"value": "Select group/-s",
 				"no_user": "Unknown user.",
 				"done": "User blacklisted and banned in group's servers. Results will be posted in logs channel."
+			},
+			"purge": {
+				"help": "Deletes up to 60 chat messages in any channel",
+				"usage": "purge [@User] [count]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
+				"count": {
+					"name": "count",
+					"help": "Enter message count to be deleted (1-60)"
+				},
+				"empty": "Unable to delete any message.",
+				"empty_user": "Unable to delete any message by `%s`.",
+				"done": "Purged %s messages!",
+				"done_user": "Purged %s messages by `%s`!"
 			}
 		},
 		"other": {

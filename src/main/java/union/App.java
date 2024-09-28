@@ -151,6 +151,7 @@ public class App {
 				new LogsCmd(),
 				new AutopunishCmd(),
 				new ThreadsCmd(),
+				new PersistentRoleCmd(),
 				// owner
 				new ShutdownCmd(),
 				new EvalCmd(),
@@ -178,6 +179,7 @@ public class App {
 				new ModStatsCmd(),
 				new ModReportCmd(),
 				new BlacklistCmd(),
+				new PurgeCmd(),
 				// strikes
 				new StrikeCmd(),
 				new DeleteStikeCmd(WAITER),

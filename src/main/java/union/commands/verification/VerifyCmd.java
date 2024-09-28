@@ -32,7 +32,7 @@ public class VerifyCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(true).queue();
+		event.deferReply().queue();
 
 		Member member = event.optMember("user");
 		if (member == null || member.getUser().isBot()) {
@@ -61,7 +61,7 @@ public class VerifyCmd extends CommandBase {
 					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
 					bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
 
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")).build());
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")).build());
 				},
 				failure -> {
 					editError(event, "bot.verification.failed_role");

@@ -36,13 +36,13 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// update case reason
-	public void updateReason(int rowId, String reason) {
-		execute("UPDATE %s SET reason=%s WHERE (rowId=%d)".formatted(table, quote(reason), rowId));
+	public boolean updateReason(int rowId, String reason) {
+		return execute("UPDATE %s SET reason=%s WHERE (rowId=%d)".formatted(table, quote(reason), rowId));
 	}
 
 	// update case duration
-	public void updateDuration(int rowId, Duration duration) {
-		execute("UPDATE %s SET duration=%d WHERE (rowId=%d)".formatted(table, duration.getSeconds(), rowId));
+	public boolean updateDuration(int rowId, Duration duration) {
+		return execute("UPDATE %s SET duration=%d WHERE (rowId=%d)".formatted(table, duration.getSeconds(), rowId));
 	}
 
 	// set case inactive
@@ -94,8 +94,8 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// set all ban cases for user inactive
-	public void setInactiveStrikeCases(long userId, long guildId) {
-		execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
+	public boolean setInactiveStrikeCases(long userId, long guildId) {
+		return execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
 	}
 
 	// set all strike cases for user inactive

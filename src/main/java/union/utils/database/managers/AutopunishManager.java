@@ -16,12 +16,12 @@ public class AutopunishManager extends LiteDBBase {
 		super(cu, "autopunish");
 	}
 
-	public void addAction(long guildId, int atStrikeCount, List<PunishActions> actions, String data) {
-		execute("INSERT INTO %s(guildId, strike, actions, data) VALUES (%d, %d, %d, %s)".formatted(table, guildId, atStrikeCount, PunishActions.encodeActions(actions), quote(data)));
+	public boolean addAction(long guildId, int atStrikeCount, List<PunishActions> actions, String data) {
+		return execute("INSERT INTO %s(guildId, strike, actions, data) VALUES (%d, %d, %d, %s)".formatted(table, guildId, atStrikeCount, PunishActions.encodeActions(actions), quote(data)));
 	}
 
-	public void removeAction(long guildId, int atStrikeCount) {
-		execute("DELETE FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount));
+	public boolean removeAction(long guildId, int atStrikeCount) {
+		return execute("DELETE FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount));
 	}
 
 	public void removeGuild(long guildId) {

@@ -51,15 +51,15 @@ public class TicketTagManager extends LiteDBBase {
 		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
-	public void deleteTag(Integer tagId) {
-		execute("DELETE FROM %s WHERE (tagId=%d)".formatted(table, tagId));
+	public boolean deleteTag(Integer tagId) {
+		return execute("DELETE FROM %s WHERE (tagId=%d)".formatted(table, tagId));
 	}
 
 	public void deleteAll(String guildId) {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public void updateTag(Integer tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public boolean updateTag(Integer tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
 		List<String> values = new ArrayList<>();
 		if (tagType != null) 
 			values.add("tagType="+tagType);
@@ -78,7 +78,8 @@ public class TicketTagManager extends LiteDBBase {
 		if (buttonStyle != -1) 
 			values.add("buttonStyle="+buttonStyle);
 		
-		if (!values.isEmpty()) execute("UPDATE %s SET %s WHERE (tagId=%d)".formatted(table, String.join(", ", values), tagId));
+		if (!values.isEmpty()) return execute("UPDATE %s SET %s WHERE (tagId=%d)".formatted(table, String.join(", ", values), tagId));
+		return false;
 	}
 
 	public String getGuildId(Integer tagId) {

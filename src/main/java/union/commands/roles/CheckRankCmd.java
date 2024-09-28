@@ -61,7 +61,7 @@ public class CheckRankCmd extends CommandBase {
 		}
 
 		EmbedBuilder builder = bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".started"));
-		editHookEmbed(event, builder.build());
+		editEmbed(event, builder.build());
 
 		// Retrieve members with this role
 		event.getGuild().findMembersWithRoles(role).setTimeout(4, TimeUnit.SECONDS).onSuccess(members -> {
@@ -74,7 +74,7 @@ public class CheckRankCmd extends CommandBase {
 				editErrorOther(event, "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
 				return;
 			}
-			editHookEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());
+			editEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());
 
 			String requiredRank = event.optString("rank");
 
@@ -113,7 +113,7 @@ public class CheckRankCmd extends CommandBase {
 						// Log
 						bot.getLogger().role.onCheckRank(guild, event.getUser(), role, requiredRank);
 						// Send reply
-						editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
+						editEmbed(event, builder.setColor(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")
 							.replace("{role}", role.getName()).replace("{count}", Integer.toString(removed)).replace("{max}", Integer.toString(maxSize))
 						).build());
 					}

@@ -40,7 +40,6 @@ public class ModuleCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Show extends SlashCommand {
-
 		public Show() {
 			this.name = "show";
 			this.path = "bot.guild.module.show";
@@ -48,6 +47,7 @@ public class ModuleCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
 			long guildId = event.getGuild().getIdLong();
 
 			StringBuilder builder = new StringBuilder();
@@ -57,7 +57,7 @@ public class ModuleCmd extends CommandBase {
 					.append("\n");
 			}
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
+			editEmbed(event, bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed.title"))
 				.setDescription(lu.getText(event, path+".embed.value"))
 				.addField(lu.getText(event, path+".embed.field"), builder.toString(), false)
@@ -68,11 +68,9 @@ public class ModuleCmd extends CommandBase {
 		private String format(String sModule, boolean check) {
 			return (check ? Emotes.CROSS_C : Emotes.CHECK_C).getEmote() + " | " + sModule;
 		}
-
 	}
 
 	private class Disable extends SlashCommand {
-
 		public Disable() {
 			this.name = "disable";
 			this.path = "bot.guild.module.disable";
@@ -92,7 +90,7 @@ public class ModuleCmd extends CommandBase {
 			if (enabled.isEmpty()) {
 				embed.setDescription(lu.getText(event, path+".none"))
 					.setColor(Constants.COLOR_FAILURE);
-				editHookEmbed(event, embed.build());
+				editEmbed(event, embed.build());
 				return;
 			}
 
@@ -119,7 +117,10 @@ public class ModuleCmd extends CommandBase {
 						}
 						// set new data
 						final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() + sModule.getValue();
-						bot.getDBUtil().guildSettings.setModuleDisabled(guildId, newData);
+						if (!bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData)) {
+							editErrorUnknown(event, "Database error.");
+							return;
+						}
 						// Send reply
 						hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 							.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
@@ -138,11 +139,9 @@ public class ModuleCmd extends CommandBase {
 				);
 			});
 		}
-
 	}
 
 	private class Enable extends SlashCommand {
-
 		public Enable() {
 			this.name = "enable";
 			this.path = "bot.guild.module.enable";
@@ -162,7 +161,7 @@ public class ModuleCmd extends CommandBase {
 			if (enabled.isEmpty()) {
 				embed.setDescription(lu.getText(event, path+".none"))
 					.setColor(Constants.COLOR_FAILURE);
-				editHookEmbed(event, embed.build());
+				editEmbed(event, embed.build());
 				return;
 			}
 
@@ -191,7 +190,10 @@ public class ModuleCmd extends CommandBase {
 								}
 								// set new data
 								final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() - sModule.getValue();
-								bot.getDBUtil().guildSettings.setModuleDisabled(guildId, newData);
+								if (!bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData)) {
+									editErrorUnknown(event, "Database error.");
+									return;
+								}
 								// Send reply
 								hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 									.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
@@ -213,7 +215,6 @@ public class ModuleCmd extends CommandBase {
 				);
 			});
 		}
-
 	}
 
 	private Set<CmdModule> getModules(long guildId, boolean on) {

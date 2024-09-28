@@ -71,7 +71,7 @@ public class LogsCmd extends CommandBase {
 				bot.getCheckUtil().hasPermissions(event, event.getGuild(), event.getMember(), true, channel,
 					new Permission[]{Permission.VIEW_CHANNEL, Permission.MANAGE_WEBHOOKS});
 			} catch (CheckException ex) {
-				editHook(event, ex.getEditData());
+				editMsg(event, ex.getEditData());
 				return;
 			}
 
@@ -91,13 +91,16 @@ public class LogsCmd extends CommandBase {
 				channel.createWebhook(lu.getText(type.getPathName())).setAvatar(icon).reason("By "+event.getUser().getName()).queue(webhook -> {
 					// Add to DB
 					WebhookData data = new WebhookData(channel.getIdLong(), webhook.getIdLong(), webhook.getToken());
-					bot.getDBUtil().logs.setLogWebhook(type, event.getGuild().getIdLong(), data);
+					if (!bot.getDBUtil().logs.setLogWebhook(type, event.getGuild().getIdLong(), data)) {
+						editErrorUnknown(event, "Database error.");
+						return;
+					}
 					// Reply
 					webhook.sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
 						.setDescription(lu.getLocalized(event.getGuildLocale(), path+".as_log").formatted(text))
 						.build()
 					).queue();
-					editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").formatted(channel.getAsMention(), text))
 						.build()
 					);
@@ -136,9 +139,12 @@ public class LogsCmd extends CommandBase {
 					}
 				}
 				// Remove guild from db
-				bot.getDBUtil().logs.removeGuild(guildId);
+				if (!bot.getDBUtil().logs.removeGuild(guildId)) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
 				// Reply
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_all"))
 					.build()
 				);
@@ -147,10 +153,13 @@ public class LogsCmd extends CommandBase {
 				WebhookData data = bot.getDBUtil().logs.getLogWebhook(type, guildId);
 				if (data != null) {
 					event.getJDA().retrieveWebhookById(data.getWebhookId())
-							.queue(webhook -> webhook.delete(data.getToken()).reason("Log disabled").queue());
+						.queue(webhook -> webhook.delete(data.getToken()).reason("Log disabled").queue());
 				}
-				bot.getDBUtil().logs.removeLogWebhook(type, guildId);
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				if (!bot.getDBUtil().logs.removeLogWebhook(type, guildId)) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").formatted(lu.getText(event, type.getPathName())))
 					.build()
 				);
@@ -175,7 +184,7 @@ public class LogsCmd extends CommandBase {
 
 			LogSettings settings = bot.getDBUtil().getLogSettings(guild);
 			if (settings == null || settings.isEmpty()) {
-				editHookEmbed(event, builder
+				editEmbed(event, builder
 					.setDescription(lu.getText(event, path+".none"))
 					.build()
 				);
@@ -187,7 +196,7 @@ public class LogsCmd extends CommandBase {
 				builder.appendDescription("%s - %s\n".formatted(lu.getText(event, type.getPathName()), text));
 			});
 
-			editHookEmbed(event, builder.build());
+			editEmbed(event, builder.build());
 		}
 	}
 
@@ -225,15 +234,14 @@ public class LogsCmd extends CommandBase {
 					return;
 				}
 			}
-			bot.getDBUtil().logExceptions.addException(guildId, channelUnion.getIdLong());
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			if (!bot.getDBUtil().logExceptions.addException(guildId, channelUnion.getIdLong())) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(channelUnion.getName()))
 				.build()
 			);
-
-			
-			
-			
 		}
 	}
 
@@ -263,8 +271,11 @@ public class LogsCmd extends CommandBase {
 				editError(event, path+".not_found", "Provided ID: "+targetId);
 				return;
 			}
-			bot.getDBUtil().logExceptions.removeException(guildId, targetId);
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			if (!bot.getDBUtil().logExceptions.removeException(guildId, targetId)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted("'"+targetId+"'"))
 				.build()
 			);
@@ -289,7 +300,7 @@ public class LogsCmd extends CommandBase {
 			} else {
 				targets.forEach(id -> builder.appendDescription("<#%s> (%<s)\n".formatted(id)));
 			}
-			editHookEmbed(event, builder.build());
+			editEmbed(event, builder.build());
 		}
 	}
 }

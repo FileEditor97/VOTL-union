@@ -69,12 +69,12 @@ public class EvalCmd extends CommandBase {
 		try {
 			String reply = String.valueOf(shell.evaluate(args));
 
-			editHookEmbed(event, formatEvalEmbed(userLocale, args, reply,
+			editEmbed(event, formatEvalEmbed(userLocale, args, reply,
 				lu.getLocalized(userLocale, "bot.owner.eval.time")
 					.replace("{time}", String.valueOf(System.currentTimeMillis() - startTime))
 	 			, true));
 		} catch (PowerAssertionError | Exception ex) {
-			editHookEmbed(event, formatEvalEmbed(userLocale, args, ex.getMessage(),
+			editEmbed(event, formatEvalEmbed(userLocale, args, ex.getMessage(),
 				lu.getLocalized(userLocale, "bot.owner.eval.time")
 					.replace("{time}", String.valueOf(System.currentTimeMillis() - startTime))
 				, false));

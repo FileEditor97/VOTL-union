@@ -60,7 +60,7 @@ public class ViewMetricsCmd extends CommandBase {
 				.addField("Execution time", "Average: `%.2f` ms\n95%%: `%.2f` ms | 90%%: `%.2f` ms".formatted(average, percentile95, percentile90), false)
 				.build();
 
-			editHookEmbed(event, embed);
+			editEmbed(event, embed);
 		}
 	}
 

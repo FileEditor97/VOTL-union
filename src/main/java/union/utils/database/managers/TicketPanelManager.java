@@ -43,8 +43,8 @@ public class TicketPanelManager extends LiteDBBase {
 		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
-	public void delete(Integer panelId) {
-		execute("DELETE FROM %s WHERE (panelId=%d)".formatted(table, panelId));
+	public boolean delete(Integer panelId) {
+		return execute("DELETE FROM %s WHERE (panelId=%d)".formatted(table, panelId));
 	}
 
 	public void deleteAll(String guildId) {
@@ -55,7 +55,7 @@ public class TicketPanelManager extends LiteDBBase {
 		return selectOne("SELECT guildId FROM %s WHERE (panelId=%d)".formatted(table, panelId), "guildId", String.class);
 	}
 
-	public void updatePanel(Integer panelId, String title, String description, String image, String footer) {
+	public boolean updatePanel(Integer panelId, String title, String description, String image, String footer) {
 		List<String> values = new ArrayList<>();
 		if (title != null)
 			values.add("title="+quote(title));
@@ -66,7 +66,8 @@ public class TicketPanelManager extends LiteDBBase {
 		if (footer != null)
 			values.add("footer="+replaceNewline(footer));
 
-		if (!values.isEmpty()) execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
+		if (!values.isEmpty()) return execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
+		return false;
 	}
 
 	public Panel getPanel(Integer panelId) {

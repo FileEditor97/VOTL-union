@@ -51,7 +51,6 @@ public class TicketPanelCmd extends CommandBase {
 	// Panel tools
 
 	private class NewPanel extends SlashCommand {
-
 		public NewPanel() {
 			this.name = "new";
 			this.path = "bot.ticketing.ticket.panels.new";
@@ -93,16 +92,14 @@ public class TicketPanelCmd extends CommandBase {
 				return;
 			}
 
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(title, panelId))
 				.build()
 			);
 		}
-
 	}
 
 	private class ModifyPanel extends SlashCommand {
-
 		public ModifyPanel() {
 			this.name = "modify";
 			this.path = "bot.ticketing.ticket.panels.modify";
@@ -149,16 +146,17 @@ public class TicketPanelCmd extends CommandBase {
 				return;
 			}
 
-			bot.getDBUtil().panels.updatePanel(panelId, title, description, image, footer);
-			editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
+			if (!bot.getDBUtil().panels.updatePanel(panelId, title, description, image, footer)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
 				.setTitle(lu.getText(event, path+".done"))
 				.build());
 		}
-
 	}
 
 	private class ViewPanel extends SlashCommand {
-
 		public ViewPanel() {
 			this.name = "view";
 			this.path = "bot.ticketing.ticket.panels.view";
@@ -188,11 +186,9 @@ public class TicketPanelCmd extends CommandBase {
 					editErrorOther(event, failure.getMessage());
 				});
 		}
-
 	}
 
 	private class SendPanel extends SlashCommand {
-
 		public SendPanel() {
 			this.name = "send";
 			this.path = "bot.ticketing.ticket.panels.send";
@@ -237,11 +233,9 @@ public class TicketPanelCmd extends CommandBase {
 				}, failure -> editErrorOther(event, failure.getMessage()));
 			}
 		}
-
 	}
 
 	private class DeletePanel extends SlashCommand {
-
 		public DeletePanel() {
 			this.name = "delete";
 			this.path = "bot.ticketing.ticket.panels.delete";
@@ -254,28 +248,30 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			Integer panelId = event.optInteger("panel_id");
 			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
-				createError(event, path+".not_found", "Received ID: %s".formatted(panelId));
+				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
 
-			bot.getDBUtil().panels.delete(panelId);
+			if (!bot.getDBUtil().panels.delete(panelId)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(panelId))
 				.build()
 			);
 		}
-
 	}
 
 
 	// Tag tools
 
 	private class CreateTag extends SlashCommand {
-
 		public CreateTag() {
 			this.name = "create";
 			this.path = "bot.ticketing.ticket.tags.create";
@@ -342,16 +338,14 @@ public class TicketPanelCmd extends CommandBase {
 				return;
 			}
 
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(tagId, panelId))
 				.build()
 			);
 		}
-
 	}
 
 	private class ModifyTag extends SlashCommand {
-
 		public ModifyTag() {
 			this.name = "modify";
 			this.path = "bot.ticketing.ticket.tags.modify";
@@ -420,18 +414,21 @@ public class TicketPanelCmd extends CommandBase {
 			if (builder.getFields().isEmpty()) {
 				editError(event, path+".no_options");
 			} else {
-				bot.getDBUtil().tags.updateTag(tagId, type, buttonText, emoji, Optional.ofNullable(category).map(Category::getId).orElse(null), message, supportRoleIds, ticketName, buttonStyle.getKey());
-				editHookEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
+				if (!bot.getDBUtil().tags.updateTag(tagId, type, buttonText, emoji,
+						Optional.ofNullable(category).map(Category::getId).orElse(null), message,
+						supportRoleIds, ticketName, buttonStyle.getKey())) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
+				editEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
 					.setTitle(lu.getText(event, path+".done"))
 					.build()
 				);
 			}
 		}
-
 	}
 
 	private class ViewTag extends SlashCommand {
-
 		public ViewTag() {
 			this.name = "view";
 			this.path = "bot.ticketing.ticket.tags.view";
@@ -473,11 +470,9 @@ public class TicketPanelCmd extends CommandBase {
 			
 			event.getHook().editOriginalEmbeds(builder.build()).setActionRow(tag.previewButton()).queue();
 		}
-
 	}
 
 	private class DeleteTag extends SlashCommand {
-
 		public DeleteTag() {
 			this.name = "delete";
 			this.path = "bot.ticketing.ticket.tags.delete";
@@ -490,27 +485,29 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			Integer tagId = event.optInteger("tag_id");
 			String guildId = bot.getDBUtil().tags.getGuildId(tagId);
 			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
-				createError(event, path+".not_found", "Received ID: %s".formatted(tagId));
+				editError(event, path+".not_found", "Received ID: %s".formatted(tagId));
 				return;
 			}
 
-			bot.getDBUtil().tags.deleteTag(tagId);
+			if (!bot.getDBUtil().tags.deleteTag(tagId)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(tagId))
 				.build()
 			);
 		}
-
 	}
 
 
 	// Ticket autoclose
 	private class Automation extends SlashCommand {
-
 		public Automation() {
 			this.name = "automation";
 			this.path = "bot.ticketing.ticket.automation";
@@ -532,31 +529,39 @@ public class TicketPanelCmd extends CommandBase {
 			StringBuilder response = new StringBuilder();
 			if (event.hasOption("autoclose")) {
 				int time = event.optInteger("autoclose");
-				bot.getDBUtil().ticketSettings.setAutocloseTime(guildId, time);
+				if (!bot.getDBUtil().ticketSettings.setAutocloseTime(guildId, time)) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
 				response.append(lu.getText(event, path+".changed_autoclose").formatted(time));
 			}
 			if (event.hasOption("author_left")) {
 				boolean left = event.optBoolean("author_left");
-				bot.getDBUtil().ticketSettings.setAutocloseLeft(guildId, left);
+				if (!bot.getDBUtil().ticketSettings.setAutocloseLeft(guildId, left)) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
 				response.append(lu.getText(event, path+".changed_left").formatted(left ? Constants.SUCCESS : Constants.FAILURE));
 			}
 			if (event.hasOption("reply_time")) {
 				int time = event.optInteger("reply_time");
-				bot.getDBUtil().ticketSettings.setTimeToReply(guildId, time);
+				if (!bot.getDBUtil().ticketSettings.setTimeToReply(guildId, time)) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
 				response.append(lu.getText(event, path+".changed_reply").formatted(time));
 			}
 			
 			if (response.isEmpty()) {
 				editError(event, path+".no_options");
 			} else {
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".embed_title"))
 					.appendDescription(response.toString())
 					.build()
 				);
 			}
 		}
-
 	}
 
 	private boolean isInvalidURL(String urlString) {

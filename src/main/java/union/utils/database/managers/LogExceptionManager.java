@@ -18,14 +18,14 @@ public class LogExceptionManager extends LiteDBBase {
 		super(cu, "logExceptions");
 	}
 
-	public void addException(long guildId, long targetId) {
+	public boolean addException(long guildId, long targetId) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, targetId) VALUES (%s, %s)".formatted(table, guildId, targetId));
+		return execute("INSERT INTO %s(guildId, targetId) VALUES (%s, %s)".formatted(table, guildId, targetId));
 	}
 
-	public void removeException(long guildId, long targetId) {
+	public boolean removeException(long guildId, long targetId) {
 		invalidateCache(guildId);
-		execute("DELETE FROM %s WHERE (guildId=%s AND targetId=%s)".formatted(table, guildId, targetId));
+		return execute("DELETE FROM %s WHERE (guildId=%s AND targetId=%s)".formatted(table, guildId, targetId));
 	}
 
 	public void removeGuild(long guildId) {

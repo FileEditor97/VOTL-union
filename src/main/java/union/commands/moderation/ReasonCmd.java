@@ -45,7 +45,10 @@ public class ReasonCmd extends CommandBase {
 		}
 
 		String newReason = event.optString("reason");
-		bot.getDBUtil().cases.updateReason(caseData.getRowId(), newReason);
+		if (!bot.getDBUtil().cases.updateReason(caseData.getRowId(), newReason)) {
+			editErrorUnknown(event, "Database error.");
+			return;
+		}
 
 		switch (caseData.getCaseType()) {
 			case MUTE -> {
@@ -73,7 +76,7 @@ public class ReasonCmd extends CommandBase {
 			default -> {}
 		}
 
-		editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+		editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(localId, newReason))
 			.build()
 		);

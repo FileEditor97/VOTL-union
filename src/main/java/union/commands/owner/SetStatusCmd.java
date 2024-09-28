@@ -39,12 +39,12 @@ public class SetStatusCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(true).queue();
+		event.deferReply().queue();
 
 		ActivityType type = parseType(event.optString("type"));
 		if (type == null) {
 			event.getJDA().getPresence().setActivity(null);
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".clear"))
 				.build());
 			return;
@@ -54,7 +54,7 @@ public class SetStatusCmd extends CommandBase {
 		switch (type) {
 			case PLAYING, LISTENING, WATCHING, CUSTOM_STATUS -> {
 				event.getJDA().getPresence().setActivity(Activity.of(type, text));
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".set").formatted(activityString(type), text))
 					.build());
 			}
@@ -65,7 +65,7 @@ public class SetStatusCmd extends CommandBase {
 					return;
 				}
 				event.getJDA().getPresence().setActivity(Activity.of(type, text, url));
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".set").formatted(activityString(type), text+"\n> URL: "+url ))
 					.build());
 			}

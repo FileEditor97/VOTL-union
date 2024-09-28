@@ -27,8 +27,8 @@ public class LiteDBBase {
 		this.table = table;
 	}
 
-	// Execute statement
-	protected void execute(final String sql) {
+	// Execute statement and return true if exception
+	protected boolean execute(final String sql) {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue(sql.split(" ")[0].toUpperCase()).inc();
 
@@ -38,7 +38,9 @@ public class LiteDBBase {
 			st.executeUpdate();
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at statement execution\nRequest: {}", sql, ex);
+			return false;
 		}
+		return true;
 	}
 
 	protected int executeWithRow(final String sql) {

@@ -36,13 +36,13 @@ public class GenerateListCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply(true).queue();
+
 		List<SlashCommand> commands = event.getClient().getSlashCommands();
 		if (commands.isEmpty()) {
-			createReply(event, "Commands not found");
+			editMsg(event, "Commands not found");
 			return;
 		}
-
-		event.deferReply(true).queue();
 
 		JSONArray commandArray = new JSONArray();
 		for (SlashCommand cmd : commands) {

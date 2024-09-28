@@ -58,12 +58,12 @@ public class ModLogsCmd extends CommandBase {
 			bot.getDBUtil().cases.getGuildUser(guildId, userId, page, true) :
 			bot.getDBUtil().cases.getGuildUser(guildId, userId, page);
 		if (cases.isEmpty()) {
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty")).build());
+			editEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty")).build());
 			return;
 		}
 		int pages = (int) Math.ceil(bot.getDBUtil().cases.countCases(guildId, userId)/10.0);
 
-		editHookEmbed(event, buildEmbed(lu, event.getUserLocale(), tu, cases, page, pages).build());
+		editEmbed(event, buildEmbed(lu, event.getUserLocale(), tu, cases, page, pages).build());
 	}
 
 	public static EmbedBuilder buildEmbed(LocaleUtil lu, DiscordLocale locale, User tu, List<CaseData> cases, int page, int pages) {

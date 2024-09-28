@@ -20,8 +20,8 @@ public class BlacklistManager extends LiteDBBase {
 			.formatted(table, guildId, groupId, userId, steam64, quote(reason), modId));
 	}
 
-	public void addSteam(long guildId, int groupId, @NotNull Long steam64, long modId) {
-		execute("INSERT INTO %s(guildId, groupId, userId, steam64, modId) VALUES (%d, %d, -1, %d, %s)"
+	public boolean addSteam(long guildId, int groupId, @NotNull Long steam64, long modId) {
+		return execute("INSERT INTO %s(guildId, groupId, userId, steam64, modId) VALUES (%d, %d, -1, %d, %s)"
 			.formatted(table, guildId, groupId, steam64, modId));
 	}
 
@@ -33,12 +33,12 @@ public class BlacklistManager extends LiteDBBase {
 		return selectOne("SELECT steam64 FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64), "steam64", Long.class) != null;
 	}
 
-	public void removeUser(int groupId, long userId) {
-		execute("DELETE FROM %s WHERE (groupId=%d AND userId=%d)".formatted(table, groupId, userId));
+	public boolean removeUser(int groupId, long userId) {
+		return execute("DELETE FROM %s WHERE (groupId=%d AND userId=%d)".formatted(table, groupId, userId));
 	}
 
-	public void removeSteam64(int groupId, long steam64) {
-		execute("DELETE FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64));
+	public boolean removeSteam64(int groupId, long steam64) {
+		return execute("DELETE FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64));
 	}
 
 	public List<Map<String, Object>> getByPage(int groupId, int page) {

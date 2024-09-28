@@ -77,7 +77,7 @@ public class ModReportCmd extends CommandBase {
 
 			List<Role> roles = event.optMentions("roles").getRoles();
 			if (roles.isEmpty() || roles.size()>4) {
-				editErrorDeletable(event, path+".no_roles");
+				editError(event, path+".no_roles");
 				return;
 			}
 
@@ -90,7 +90,7 @@ public class ModReportCmd extends CommandBase {
 					firstReport = LocalDateTime.parse(input, DATE_TIME_FORMAT);
 				} catch (DateTimeParseException ex) {
 					System.out.println(ex.getMessage());
-					editErrorDeletable(event, path+".failed_parse", ex.getMessage());
+					editError(event, path+".failed_parse", ex.getMessage());
 					return;
 				}
 			} else {
@@ -101,7 +101,7 @@ public class ModReportCmd extends CommandBase {
 					firstReport = LocalDateTime.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)).withHour(3);
 			}
 			if (firstReport.isBefore(LocalDateTime.now())) {
-				editErrorDeletable(event, path+".wrong_date");
+				editError(event, path+".wrong_date");
 				return;
 			}
 
@@ -112,12 +112,15 @@ public class ModReportCmd extends CommandBase {
 				.collect(Collectors.joining(";"));
 
 			// Add to DB
-			bot.getDBUtil().modReport.setup(
+			if (!bot.getDBUtil().modReport.setup(
 				event.getGuild().getIdLong(), channel.getIdLong(), roleIds,
 				firstReport, interval
-			);
+			)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 			// Reply
-			editHookEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(
 					TimeFormat.DATE_TIME_SHORT.format(firstReport.atZone(ZoneId.systemDefault())), channel.getAsMention(),
 					interval, roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "))
@@ -134,8 +137,12 @@ public class ModReportCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			bot.getDBUtil().modReport.removeGuild(event.getGuild().getIdLong());
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			event.deferReply().queue();
+			if (!bot.getDBUtil().modReport.removeGuild(event.getGuild().getIdLong())) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done"))
 				.build());
 		}

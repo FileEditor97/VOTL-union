@@ -46,9 +46,9 @@ public class VerifySettingsManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public void setVerifyRole(long guildId, long roleId) {
+	public boolean setVerifyRole(long guildId, long roleId) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET roleId=%<d".formatted(table, guildId, roleId));
+		return execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET roleId=%<d".formatted(table, guildId, roleId));
 	}
 
 	public void setMainText(long guildId, String text) {
@@ -57,9 +57,9 @@ public class VerifySettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, mainText) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET mainText=%<s".formatted(table, guildId, textParsed));
 	}
 
-	public void setCheckState(long guildId, boolean enabled) {
+	public boolean setCheckState(long guildId, boolean enabled) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET checkEnabled=%<d".formatted(table, guildId, enabled?1:0));
+		return execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET checkEnabled=%<d".formatted(table, guildId, enabled?1:0));
 	}
 
 	public void setRequiredPlaytime(long guildId, int hours) {

@@ -35,9 +35,10 @@ public class ForceAccessCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
 		Guild guild = bot.JDA.getGuildById(event.optString("server"));
 		if (guild == null) {
-			createError(event, path+".no_guild");
+			editError(event, path+".no_guild");
 			return;
 		}
 
@@ -50,7 +51,7 @@ public class ForceAccessCmd extends CommandBase {
 			} else {
 				bot.getDBUtil().access.addRole(guild.getIdLong(), targetId, level);
 			}
-			createReply(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "Role `"+targetId+"`"));
+			editMsg(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "Role `"+targetId+"`"));
 		} else {
 			// Target is user
 			if (level.equals(CmdAccessLevel.ALL)) {
@@ -58,7 +59,7 @@ public class ForceAccessCmd extends CommandBase {
 			} else {
 				bot.getDBUtil().access.addOperator(guild.getIdLong(), targetId);
 			}
-			createReply(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "User `"+targetId+"`"));
+			editMsg(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "User `"+targetId+"`"));
 		}
 	}
 

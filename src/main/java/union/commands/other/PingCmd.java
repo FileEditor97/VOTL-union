@@ -15,10 +15,10 @@ public class PingCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		createReply(event, lu.getText(event, path+".loading"));
+		event.reply(lu.getText(event, path+".loading")).setEphemeral(true).queue();
 
 		event.getJDA().getRestPing().queue(time -> {
-			editHook(event,
+			editMsg(event,
 				lu.getText(event, "bot.other.ping.info_full")
 					.replace("{websocket}", event.getJDA().getGatewayPing()+"")
 					.replace("{rest}", time+"")

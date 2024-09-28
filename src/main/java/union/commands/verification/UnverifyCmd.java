@@ -32,7 +32,7 @@ public class UnverifyCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
-		event.deferReply(true).queue();
+		event.deferReply().queue();
 
 		Member member = event.optMember("user");
 		if (member == null) {
@@ -63,7 +63,7 @@ public class UnverifyCmd extends CommandBase {
 			success -> {
 				bot.getLogger().verify.onUnverified(member.getUser(), null, guild, reason);
 				bot.getDBUtil().verifyCache.removeByDiscord(member.getIdLong());
-				editHookEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".done")).build());
+				editEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".done")).build());
 			},
 			failure -> {
 				editError(event, "bot.verification.failed_role");

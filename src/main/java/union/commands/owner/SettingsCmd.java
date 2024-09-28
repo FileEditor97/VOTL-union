@@ -37,6 +37,7 @@ public class SettingsCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			StringBuilder builder = new StringBuilder("Database settings changed\n");
 			if (event.hasOption("player")) {
 				boolean enabled = event.optBoolean("player");
@@ -48,7 +49,7 @@ public class SettingsCmd extends CommandBase {
 				bot.getSettings().setDbVerifyEnabled(enabled);
 				builder.append("> Verify database enabled: ").append(enabled ? Constants.SUCCESS : Constants.FAILURE).append("\n");
 			}
-			createReply(event, builder.toString());
+			editMsg(event, builder.toString());
 		}
 	}
 
@@ -64,22 +65,23 @@ public class SettingsCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			long id;
 			try {
 				id = event.optLong("bot_id");
 			} catch (NumberFormatException ex) {
-				createError(event, "errors.unknown", ex.getMessage());
+				editErrorUnknown(event, ex.getMessage());
 				return;
 			}
 			if (event.optBoolean("add")) {
 				bot.getSettings().addBotWhitelisted(id);
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_add").formatted(id))
 					.build()
 				);
 			} else {
 				bot.getSettings().removeBotWhitelisted(id);
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_remove").formatted(id))
 					.build()
 				);

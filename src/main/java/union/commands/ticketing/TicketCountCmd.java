@@ -33,6 +33,8 @@ public class TicketCountCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
+
 		String afterDate = event.optString("start_date");
 		String beforeDate = event.optString("end_date");
 		Instant afterTime = null;
@@ -43,14 +45,14 @@ public class TicketCountCmd extends CommandBase {
 			if (afterDate != null) afterTime = LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
 			if (beforeDate != null) beforeTime = LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
 		} catch (Exception ex) {
-			createError(event, path+".failed_parse", ex.getMessage());
+			editError(event, path+".failed_parse", ex.getMessage());
 			return;
 		}
 
 		if (beforeTime == null) beforeTime = Instant.now();
 		if (afterTime == null) afterTime = Instant.now().minus(7, ChronoUnit.DAYS);
 		if (beforeTime.isBefore(afterTime)) {
-			createError(event, path+".wrong_date");
+			editError(event, path+".wrong_date");
 			return;
 		}
 
@@ -59,7 +61,7 @@ public class TicketCountCmd extends CommandBase {
 		int countOther = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, false);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
-		createReplyEmbed(event, bot.getEmbedUtil().getEmbed()
+		editEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle("`"+formatter.format(afterTime)+"` - `"+formatter.format(beforeTime)+"`")
 			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId())
 				.replace("{roles}", Integer.toString(countRoles)).replace("{other}", Integer.toString(countOther)))

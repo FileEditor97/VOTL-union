@@ -73,11 +73,11 @@ public class ModStatsCmd extends CommandBase {
 				? LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant()
 				: Instant.now().minus(7, ChronoUnit.DAYS);
 		} catch (Exception ex) {
-			editErrorDeletable(event, path+".failed_parse", ex.getMessage());
+			editError(event, path+".failed_parse", ex.getMessage());
 			return;
 		}
 		if (beforeTime.isBefore(afterTime)) {
-			editErrorDeletable(event, path+".wrong_date");
+			editError(event, path+".wrong_date");
 			return;
 		}
 
@@ -103,7 +103,7 @@ public class ModStatsCmd extends CommandBase {
 			buildLine(lu.getText(event, path + ".roles"), countRoles) +
 			"```";
 
-		editHookEmbed(event, embedBuilder.setDescription(builder).build());
+		editEmbed(event, embedBuilder.setDescription(builder).build());
 	}
 
 	private void returnFullStats(SlashCommandEvent event) {
@@ -113,7 +113,7 @@ public class ModStatsCmd extends CommandBase {
 		Map<Integer, Integer> countTotal = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong());
 		final int rolesTotal = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), true);
 		if (countTotal.isEmpty() && rolesTotal==0) {
-			editErrorDeletable(event, path+".empty");
+			editError(event, path+".empty");
 			return;
 		}
 
@@ -172,7 +172,7 @@ public class ModStatsCmd extends CommandBase {
 			.append(buildLine(lu.getText(event, path+".roles"), roles7, roles30, rolesTotal, length7, length30))
 			.append("```");
 
-		editHookEmbed(event, embedBuilder.setDescription(builder.toString()).build());
+		editEmbed(event, embedBuilder.setDescription(builder.toString()).build());
 	}
 
 	private String buildLine(String text, int count7, int count30, int countTotal, int length7, int length30) {

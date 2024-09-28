@@ -51,31 +51,31 @@ public class TicketSettingsManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public void setRowText(long guildId, int row, String text) {
+	public boolean setRowText(long guildId, int row, String text) {
 		if (row < 1 || row > 3)
 			throw new IndexOutOfBoundsException(row);
 		invalidateCache(guildId);
-		execute("INSERT INTO %1$s(guildId, rowName%2$d) VALUES (%3$d, %4$s) ON CONFLICT(guildId) DO UPDATE SET rowName%2$d=%4$s".formatted(table, row, guildId, quote(text)));
+		return execute("INSERT INTO %1$s(guildId, rowName%2$d) VALUES (%3$d, %4$s) ON CONFLICT(guildId) DO UPDATE SET rowName%2$d=%4$s".formatted(table, row, guildId, quote(text)));
 	}
 
-	public void setAutocloseTime(long guildId, int hours) {
+	public boolean setAutocloseTime(long guildId, int hours) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%<d".formatted(table, guildId, hours));
+		return execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%<d".formatted(table, guildId, hours));
 	}
 
-	public void setAutocloseLeft(long guildId, boolean close) {
+	public boolean setAutocloseLeft(long guildId, boolean close) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close ? 1 : 0));
+		return execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close ? 1 : 0));
 	}
 
-	public void setTimeToReply(long guildId, int hours) {
+	public boolean setTimeToReply(long guildId, int hours) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, timeToReply) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET timeToReply=%<d".formatted(table, guildId, hours));
+		return execute("INSERT INTO %s(guildId, timeToReply) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET timeToReply=%<d".formatted(table, guildId, hours));
 	}
 
-	public void setOtherRole(long guildId, boolean otherRole) {
+	public boolean setOtherRole(long guildId, boolean otherRole) {
 		invalidateCache(guildId);
-		execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole ? 1 : 0));
+		return execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole ? 1 : 0));
 	}
 
 	private void invalidateCache(long guildId) {

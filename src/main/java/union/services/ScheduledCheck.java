@@ -70,7 +70,8 @@ public class ScheduledCheck {
 		CompletableFuture.runAsync(this::checkTicketStatus)
 			.thenRunAsync(this::checkExpiredTempRoles)
 			.thenRunAsync(this::checkExpiredStrikes)
-			.thenRunAsync(this::generateReport);
+			.thenRunAsync(this::generateReport)
+			.thenRunAsync(this::checkExpiredPersistentRoles);
 	}
 
 	private void checkTicketStatus() {
@@ -301,6 +302,14 @@ public class ScheduledCheck {
 			});
 		} catch (Throwable t) {
 			logger.error("Exception caught during modReport schedule check.", t);
+		}
+	}
+
+	private void checkExpiredPersistentRoles() {
+		try {
+			db.persistent.removeExpired();
+		} catch (Throwable t) {
+			logger.error("Exception caught during expired persistent roles check.", t);
 		}
 	}
 

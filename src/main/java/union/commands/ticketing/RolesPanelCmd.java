@@ -54,18 +54,19 @@ public class RolesPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
 			TextChannel channel =  (TextChannel) event.optGuildChannel("channel");
 			if (channel == null) {
-				createError(event, path+".no_channel", "Received: No channel");
+				editError(event, path+".no_channel", "Received: No channel");
 				return;
 			}
 
 			Integer assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN);
 			List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
 			if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
-				createError(event, path+".empty_roles");
+				editError(event, path+".empty_roles");
 				return;
 			}
 			List<ActionRow> actionRows = new ArrayList<>();
@@ -99,7 +100,7 @@ public class RolesPanelCmd extends CommandBase {
 
 			channel.sendMessageEmbeds(embed).addComponents(actionRows).queue();
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
 				.build()
 			);
@@ -118,11 +119,13 @@ public class RolesPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
 			Guild guild = event.getGuild();
 			String guildId = guild.getId();
 			GuildChannel channel = event.optGuildChannel("channel");
 			if (channel == null) {
-				createError(event, path+".no_channel", "Received: No channel");
+				editError(event, path+".no_channel", "Received: No channel");
 				return;
 			}
 			TextChannel tc = (TextChannel) channel;
@@ -130,14 +133,14 @@ public class RolesPanelCmd extends CommandBase {
 			String latestId = tc.getLatestMessageId();
 			tc.retrieveMessageById(latestId).queue(msg -> {
 				if (!msg.getAuthor().equals(event.getJDA().getSelfUser())) {
-					createError(event, path+".not_found", "Not bot's message");
+					editError(event, path+".not_found", "Not bot's message");
 					return;
 				}
 
 				Integer assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN);
 				List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
 				if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
-					createError(event, path+".empty_roles");
+					editError(event, path+".empty_roles");
 					return;
 				}
 				List<ActionRow> actionRows = new ArrayList<>();
@@ -164,12 +167,12 @@ public class RolesPanelCmd extends CommandBase {
 				
 				msg.editMessageComponents(actionRows).queue();
 
-				createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
 					.build()
 				);
 			},
-			failure -> createError(event, path+".not_found", failure.getMessage()));
+			failure -> editError(event, path+".not_found", failure.getMessage()));
 		}
 	}
 
@@ -187,12 +190,17 @@ public class RolesPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
 			Integer row = event.optInteger("row");
 			String text = event.optString("text");
 
-			bot.getDBUtil().ticketSettings.setRowText(event.getGuild().getIdLong(), row, text);
+			if (!bot.getDBUtil().ticketSettings.setRowText(event.getGuild().getIdLong(), row, text)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))
 				.build());
 		}
@@ -209,14 +217,18 @@ public class RolesPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
 			boolean enabled = event.optBoolean("enabled");
 
-			bot.getDBUtil().ticketSettings.setOtherRole(event.getGuild().getIdLong(), enabled);
+			if (!bot.getDBUtil().ticketSettings.setOtherRole(event.getGuild().getIdLong(), enabled)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 
-			createReplyEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(String.valueOf(enabled)))
 				.build());
 		}
-
 	}
+
 }

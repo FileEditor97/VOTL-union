@@ -85,7 +85,7 @@ public class HelpCmd extends CommandBase {
 				.setFooter(lu.getLocalized(userLocale, "bot.help.command_info.usage_subvalue"))
 				.build();
 			
-			editHookEmbed(event, embed);
+			editEmbed(event, embed);
 		}
 		
 	}
@@ -152,6 +152,6 @@ public class HelpCmd extends CommandBase {
 			builder.addField(fieldTitle, fieldValue.toString(), false);
 		}
 		
-		editHookEmbed(event, builder.build());
+		editEmbed(event, builder.build());
 	}
 }

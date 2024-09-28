@@ -45,8 +45,8 @@ public class StrikeManager extends LiteDBBase {
 		execute("UPDATE %s SET expireAfter=%d, count=count-%d, data=%s WHERE (guildId=%d AND userId=%d)".formatted(table, expireAfter.getEpochSecond(), amount, quote(newData), guildId, userId));
 	}
 
-	public void removeGuildUser(long guildId, long userId) {
-		execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId));
+	public boolean removeGuildUser(long guildId, long userId) {
+		return execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId));
 	}
 
 	public void removeGuild(long guildId) {

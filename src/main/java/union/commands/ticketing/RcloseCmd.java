@@ -37,11 +37,12 @@ public class RcloseCmd extends CommandBase {
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
+		event.deferReply().queue();
 		String channelId = event.getChannel().getId();
 		String authorId = bot.getDBUtil().ticket.getUserId(channelId);
 		if (authorId == null) {
 			// If this channel is not a ticket
-			createError(event, path+".not_ticket");
+			editError(event, path+".not_ticket");
 			return;
 		}
 		if (bot.getDBUtil().ticket.isClosed(channelId)) {
@@ -51,11 +52,9 @@ public class RcloseCmd extends CommandBase {
 		}
 		if (bot.getDBUtil().ticket.getTimeClosing(channelId) > 0) {
 			// If request already exists (if there is no cancel button - GG)
-			createError(event, path+".already_requested");
+			editError(event, path+".already_requested");
 			return;
 		}
-
-		event.deferReply().queue();
 		
 		Guild guild = event.getGuild();
 		UserSnowflake user = User.fromId(bot.getDBUtil().ticket.getUserId(channelId));

@@ -36,7 +36,7 @@ public class CaseCmd extends CommandBase {
 		}
 		MessageEmbed embed = bot.getLogEmbedUtil().getCaseEmbed(event.getUserLocale(), caseData);
 
-		editHookEmbed(event, embed);
+		editEmbed(event, embed);
 	}
 
 }

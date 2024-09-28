@@ -234,6 +234,12 @@ public class LoggingUtil {
 
 			sendLog(guild, type, () -> logUtil.userTimeoutRemoveEmbed(guild.getLocale(), target, entry.getReason(), modId));
 		}
+
+		public void onMessagePurge(User mod, User target, int msgCount, GuildChannel channel) {
+			final Guild guild = channel.getGuild();
+
+			sendLog(guild, type, () -> logUtil.messagePurge(guild.getLocale(), mod, target, msgCount, channel));
+		}
 	}
 
 	// Roles actions

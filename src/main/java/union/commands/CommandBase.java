@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public abstract class CommandBase extends SlashCommand {
 
@@ -64,4 +65,9 @@ public abstract class CommandBase extends SlashCommand {
 	public final void editPermError(SlashCommandEvent event, Permission perm, boolean self) {
 		editError(event, MessageEditData.fromCreateData(bot.getEmbedUtil().createPermError(event, perm, self)));
 	}
+
+
+	protected static final Consumer<Throwable> ignoreRest = ignored -> {
+		// Nothing to see here
+	};
 }

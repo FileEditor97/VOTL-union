@@ -214,7 +214,8 @@
 			"game": {
 				"strike": "Game strike | %s",
 				"strikes": "Strike count"
-			}
+			},
+			"purge": "Messages purged"
 		},
 		"groups": {
 			"name": "Group logs",
@@ -1758,6 +1759,22 @@
 				"value": "Select group/-s",
 				"no_user": "Unknown user.",
 				"done": "User blacklisted and banned in group's servers. Results will be posted in logs channel."
+			},
+			"purge": {
+				"help": "Deletes up to 60 chat messages in any channel",
+				"usage": "purge [@User] [count]",
+				"user": {
+					"name": "user",
+					"help": "Select user"
+				},
+				"count": {
+					"name": "count",
+					"help": "Enter message count to be deleted (1-60)"
+				},
+				"empty": "Unable to delete any message.",
+				"empty_user": "Unable to delete any message by `%s`.",
+				"done": "Purged %s messages!",
+				"done_user": "Purged %s messages by `%s`!"
 			}
 		},
 		"other": {

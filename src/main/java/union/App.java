@@ -178,6 +178,7 @@ public class App {
 				new ModStatsCmd(),
 				new ModReportCmd(),
 				new BlacklistCmd(),
+				new PurgeCmd(),
 				// strikes
 				new StrikeCmd(),
 				new DeleteStikeCmd(WAITER),

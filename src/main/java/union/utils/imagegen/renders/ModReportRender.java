@@ -5,6 +5,7 @@ import union.objects.ReportData;
 import union.utils.ColorUtil;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.imagegen.Fonts;
+import union.utils.message.MessageUtil;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -44,8 +45,13 @@ public class ModReportRender extends Renderer {
 
 	@Override
 	protected BufferedImage handleRender() {
+		// Filter unusable entries
+		final int dataSize = (int) reportData.stream()
+			.filter(d -> !d.getMember().getUser().isBot() && d.getCountTotalInt()>0)
+			.peek(ReportData::dontSkip)
+			.count();
 		final int WIDTH = 900;
-		final int HEIGHT = 200+(reportData.size()*40); // TODO
+		final int HEIGHT = 200+(dataSize*50);
 		// Create image
 		final int startingX = 20;
 		final int startingY = 40;
@@ -96,19 +102,27 @@ public class ModReportRender extends Renderer {
 
 		// List users
 		y += 40;
-		g.setFont(Fonts.Roboto.regular.deriveFont(Font.PLAIN, 20F));
+		Font username = Fonts.Roboto.regular.deriveFont(Font.BOLD, 20F);
+		Font name = Fonts.Roboto.regular.deriveFont(Font.PLAIN, 16F);
+		Font plain = Fonts.Roboto.regular.deriveFont(Font.PLAIN, 20F);
 
 		for (ReportData data : reportData) {
+			// Ignore bots and with 0 value
+			if (data.skip()) continue;
 			x = startingX;
-			g.drawString("@"+data.getMember().getUser().getName(), x, y); // Name
+			g.setFont(username);
+			g.drawString(MessageUtil.limitString(data.getMember().getEffectiveName(), 32), x, y-6); // Username
+			g.setFont(name);
+			g.drawString("@"+data.getMember().getUser().getName(), x, y+12); // Name
 			x += 400;
+			g.setFont(plain);
 			for (String v : data.getCountValues()) {
 				g.drawString(v, x, y);
 				x+=labelStepX;
 			}
 			x += 30;
 			g.drawString(data.getCountTotal(), x, y);
-			y += 40;
+			y += 50;
 		}
 
 		return image;

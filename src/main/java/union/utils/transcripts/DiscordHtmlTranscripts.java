@@ -55,7 +55,7 @@ public class DiscordHtmlTranscripts {
 
     public void queueCreateTranscript(GuildMessageChannel channel, @NotNull Consumer<FileUpload> action, @NotNull Consumer<? super Throwable> failure) {
         channel.getIterableHistory()
-            .deadline(System.currentTimeMillis() + 4000)
+            .deadline(System.currentTimeMillis() + 3000)
             .takeAsync(200)
             .thenAcceptAsync(list -> {
                 if (list.size() < 2) action.accept(null); // Probably one message is from bot and to be ignored.

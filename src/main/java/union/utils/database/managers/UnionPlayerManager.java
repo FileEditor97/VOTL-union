@@ -60,11 +60,13 @@ public class UnionPlayerManager extends SqlDBBase {
 		Map<String, String> dbs = servers.get(guildId);
 		if (dbs == null) return List.of();
 		// Get data from database table
-		List<PlayerInfo> data = new ArrayList<>(dbs.size());
+		Map<String, PlayerInfo> data = selectPlayerInfoList(dbs, SAM_PLAYERS, steamId);
+		List<PlayerInfo> newData = new ArrayList<>(dbs.size());
 		dbs.forEach((db,title) -> {
-			data.add(selectPlayerInfo(db, SAM_PLAYERS, steamId).setServerTitle(title));
+			if (data.containsKey(db)) newData.add(data.get(db));
+			else newData.add(new PlayerInfo(title));
 		});
-		return data;
+		return newData;
 	}
 
 	public boolean existsAxePlayer(long guildId, @NotNull String steamId) throws Exception {
@@ -84,19 +86,16 @@ public class UnionPlayerManager extends SqlDBBase {
 		private final String rank;
 		private final Long playedHours; // in hours
 
-		public PlayerInfo() {
+		public PlayerInfo(String serverTitle) {
+			this.serverTitle = serverTitle;
 			this.rank = null;
 			this.playedHours = null;
 		}
 
-		public PlayerInfo(String rank, Long playTimeSeconds) {
+		public PlayerInfo(String serverTitle, String rank, Long playTimeSeconds) {
+			this.serverTitle = serverTitle;
 			this.rank = rank;
 			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
-		}
-
-		public PlayerInfo setServerTitle(String serverTitle) {
-			this.serverTitle = serverTitle;
-			return this;
 		}
 
 		public String getServerTitle() {

@@ -2155,6 +2155,17 @@
 						"help": "Enable other roles request?"
 					},
 					"done": "Other roles request enabled - `%s`."
+				},
+				"support": {
+					"help": "Set support roles for role requests",
+					"usage": "support <@Roles>",
+					"roles": {
+						"name": "roles",
+						"help": "Mention role/-s to set or enter 'null' to clear"
+					},
+					"bad_input": "Incorrect role mentions provided.",
+					"done_clear": "Support roles cleared.",
+					"done": "Roles %s will be pinged in role requests."
 				}
 			},
 			"tcount": {

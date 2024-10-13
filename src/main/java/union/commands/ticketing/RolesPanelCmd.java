@@ -3,7 +3,9 @@ package union.commands.ticketing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import net.dv8tion.jda.api.entities.*;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -16,9 +18,6 @@ import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -32,7 +31,7 @@ public class RolesPanelCmd extends CommandBase {
 	public RolesPanelCmd() {
 		this.name = "rolespanel";
 		this.path = "bot.ticketing.rolespanel";
-		this.children = new SlashCommand[]{new Create(), new Update(), new RowText(), new OtherRole()};
+		this.children = new SlashCommand[]{new Create(), new Update(), new RowText(), new OtherRole(), new SupportRole()};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
@@ -228,6 +227,48 @@ public class RolesPanelCmd extends CommandBase {
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(String.valueOf(enabled)))
 				.build());
+		}
+	}
+
+	private class SupportRole extends SlashCommand {
+		public SupportRole() {
+			this.name = "support";
+			this.path = "bot.ticketing.rolespanel.support";
+			this.options = List.of(
+				new OptionData(OptionType.STRING, "roles", lu.getText(path+".roles.help"), true)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			if (event.optString("roles").equalsIgnoreCase("null")) {
+				// Clear roles
+				if (!bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), null)) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
+
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done_clear"))
+					.build());
+			} else {
+				// Set roles
+				List<Role> roles = event.optMentions("roles").getRoles();
+				if (roles.isEmpty() || roles.size()>3) {
+					editError(event, path+".bad_input");
+					return;
+				}
+				if (!bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), roles.stream().map(Role::getIdLong).toList())) {
+					editErrorUnknown(event, "Database error.");
+					return;
+				}
+
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done").formatted(roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "))))
+					.build());
+			}
 		}
 	}
 

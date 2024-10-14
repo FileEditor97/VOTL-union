@@ -42,7 +42,9 @@ public class CloseCmd extends CommandBase {
 
 		String reason = event.optString(
 			"reason",
-			bot.getDBUtil().ticket.getUserId(channelId).equals(event.getUser().getId()) ? "Closed by ticket's author" : "Closed by Support"
+			bot.getDBUtil().ticket.getUserId(channelId).equals(event.getUser().getId())
+				? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_author")
+				: lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_support")
 		);
 		event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown"))

@@ -64,7 +64,7 @@
 		"ban_expired": "Temporary ban expired",
 		"verify_instruct": "## Complete verification to join `%s`!\nYou must connect your account by joining the server bellow.\n*After completing verification there, you will be able to rejoin this server.*\n\n> --> %s <--",
 		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||",
-		"temp_msg": "-# This message will be deleted in 20 seconds."
+		"temp_msg": "\n-# This message will be deleted in 20 seconds."
 	},
 	"modules": {
 		"webhook": "Webhook commands",
@@ -2101,6 +2101,8 @@
 				"claimed": "The ticket has been successfully claimed by {user}.",
 				"unclaimed": "The ticket has been successfully un-claimed.",
 				"delete_countdown": "This ticket will be closed in 5 seconds.",
+				"closed_author": "Closed by ticket's author",
+				"closed_support": "Closed by Support",
 				"invites": {
 					"button": "Show server invites",
 					"none": "No server invites with your roles",

@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
@@ -29,6 +30,7 @@ import union.utils.CastUtil;
 import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.TicketTagManager.Tag;
 import union.utils.exception.FormatterException;
 import union.utils.file.lang.LocaleUtil;
@@ -410,16 +412,15 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private ActionRow createRoleRow(final Guild guild, int row) {
-		List<Map<String, Object>> assignRoles = bot.getDBUtil().role.getAssignableByRow(guild.getId(), row);
+		List<RoleManager.RoleData> assignRoles = bot.getDBUtil().role.getAssignableByRow(guild.getId(), row);
 		if (assignRoles.isEmpty()) return null;
 		List<SelectOption> options = new ArrayList<>();
-		for (Map<String, Object> data : assignRoles) {
+		for (RoleManager.RoleData data : assignRoles) {
 			if (options.size() >= 25) break;
-			String roleId = (String) data.getOrDefault("roleId", "0");
-			Role role = guild.getRoleById(roleId);
+			Role role = guild.getRoleById(data.getIdLong());
 			if (role == null) continue;
-			String description = (String) data.getOrDefault("description", "-");
-			options.add(SelectOption.of(role.getName(), roleId).withDescription(description));
+			String description = data.getDescription("-");
+			options.add(SelectOption.of(role.getName(), data.getId()).withDescription(description));
 		}
 		StringSelectMenu menu = StringSelectMenu.create("menu:role_row:"+row)
 			.setPlaceholder(db.getTicketSettings(guild).getRowText(row))
@@ -556,7 +557,7 @@ public class InteractionListener extends ListenerAdapter {
 		List<String> finalRoleIds = new ArrayList<>();
 		add.forEach(role -> {
 			String id = role.getId();
-			if (db.role.isToggleable(id))
+			if (db.role.isTemp(id))
 				finalRoleIds.add("t"+id);
 			else
 				finalRoleIds.add(id);
@@ -569,7 +570,11 @@ public class InteractionListener extends ListenerAdapter {
 				db.ticket.addRoleTicket(ticketId, event.getMember().getId(), guildId, channel.getId(), String.join(";", finalRoleIds), time);
 				
 				StringBuilder mentions = new StringBuilder(event.getMember().getAsMention());
-				db.ticketSettings.getSettings(guild).getRoleSupportIds().forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
+				// Get either support roles or use mod roles
+				List<Long> supportRoleIds = db.ticketSettings.getSettings(guild).getRoleSupportIds();
+				if (supportRoleIds.isEmpty()) supportRoleIds = db.access.getRoles(guild.getIdLong(), CmdAccessLevel.MOD);
+				supportRoleIds.forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
+				// Send message
 				channel.sendMessage(mentions.toString()).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
 				
 				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
@@ -635,21 +640,39 @@ public class InteractionListener extends ListenerAdapter {
 			});
 			if (!tempRoles.isEmpty()) {
 				// Has temp roles - send modal
-				List<TextInput> inputs = new ArrayList<>();
+				List<ActionRow> rows = new ArrayList<>();
 				for (Role role : tempRoles) {
-					if (inputs.size() >= 5) continue;
+					if (rows.size() >= 5) continue;
 					TextInput input = TextInput.create(role.getId(), role.getName(), TextInputStyle.SHORT)
 						.setPlaceholder("1w - 1 Week, 30d - 30 Days")
 						.setRequired(true)
 						.setMaxLength(10)
 						.build();
-					inputs.add(input);
+					rows.add(ActionRow.of(input));
 				}
 
 				Modal modal = Modal.create("ticket:role_temp:"+channelId, lu.getText(event, "bot.ticketing.listener.temp_time"))
-					.addActionRow(inputs)
+					.addComponents(rows)
 					.build();
-				event.replyModal(modal).queue();
+				String buttonUuid = UUID.randomUUID().toString();
+				Button continueButton = Button.success(buttonUuid, "Continue");
+				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+					.setDescription(lu.getText(event, "bot.ticketing.listener.temp_continue").formatted(rows.size()))
+					.build()
+				).setActionRow(continueButton).setEphemeral(true).queue(msg -> {
+					waiter.waitForEvent(
+						ButtonInteractionEvent.class,
+						e -> e.getComponentId().equals(buttonUuid),
+						buttonEvent -> {
+							buttonEvent.replyModal(modal).queue();
+							msg.delete().queue();
+							// Maybe reply, that other mod started to fill modal
+						},
+						10,
+						TimeUnit.SECONDS,
+						() -> msg.delete().queue()
+					);
+				});
 				return;
 			}
 			if (roles.isEmpty()) {
@@ -1486,7 +1509,7 @@ public class InteractionListener extends ListenerAdapter {
 
 	@Override
 	public void onModalInteraction(@NotNull ModalInteractionEvent event) {
-		event.deferReply(true).queue();
+		event.deferEdit().queue();
 		String modalId = event.getModalId();
 
 		if (modalId.equals("vfpanel")) {
@@ -1498,10 +1521,10 @@ public class InteractionListener extends ListenerAdapter {
 			String main = event.getValue("main").getAsString();
 			db.verifySettings.setMainText(event.getGuild().getIdLong(), main.isBlank() ? "NULL" : main);
 
-			event.getHook().editOriginalEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))
 				.build()
-			).queue();
+			).setEphemeral(true).queue();
 		} else if (modalId.startsWith("ticket:role_temp")) {
 			// Check if ticket is open
 			String channelId = modalId.split(":")[2];
@@ -1538,7 +1561,7 @@ public class InteractionListener extends ListenerAdapter {
 			event.getGuild().retrieveMemberById(userId).queue(member -> {
 				// Add role durations to list
 				Map<String, Duration> roleDurations = new HashMap<>();
-				event.getValues().forEach(map -> {
+				for (ModalMapping map : event.getValues()) {
 					String roleId = map.getId();
 					String value = map.getAsString();
 					// Check duration
@@ -1554,7 +1577,7 @@ public class InteractionListener extends ListenerAdapter {
 						return;
 					}
 					roleDurations.put(roleId, duration);
-				});
+				}
 
 				String ticketId = db.ticket.getTicketId(channelId);
 				// Modify roles

@@ -48,6 +48,6 @@ public enum RoleType {
 			if (rt.toString().equalsIgnoreCase(name))
 				return rt;
 		}
-		return null;
+		throw new IllegalArgumentException("No RoleType with name " + name);
 	}
 }

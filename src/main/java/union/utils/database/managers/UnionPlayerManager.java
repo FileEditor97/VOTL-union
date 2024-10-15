@@ -82,7 +82,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	}
 
 	public static class PlayerInfo {
-		private String serverTitle = null;
+		private final String serverTitle;
 		private final String rank;
 		private final Long playedHours; // in hours
 

@@ -204,7 +204,7 @@ public class SqlDBBase {
 
 		List<String> requests = new ArrayList<>();
 		for (String database : databases.keySet()) {
-			requests.add("SELECT '%1$s' as server, %2$s.rank, play_time FROM %1$s.%2$s WHERE steamid=%3$s;"
+			requests.add("SELECT '%1$s' as server, %2$s.rank, play_time FROM %1$s.%2$s WHERE steamid=%3$s"
 				.formatted(database, table, quote(steamId)));
 		}
 		final String sql = String.join("\nUNION ALL\n", requests) + ";";

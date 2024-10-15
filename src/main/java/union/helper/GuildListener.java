@@ -78,28 +78,28 @@ public class GuildListener extends ListenerAdapter {
 				event.getGuild().retrieveMember(admin).queue(member -> {
 					try {
 						switch (finalAction) {
-							case BAN:
+							case BAN ->
 								member.ban(0, TimeUnit.DAYS).reason("Possible misconduct, staff notified!").queue(done -> {
 									sendAlert(event.getGuild(), member, "User banned!", event.getEntry().getType());
 								}, failure -> {
 									helper.getLogger().warn("Unable to ban user", failure);
 									sendAlert(event.getGuild(), member, Constants.WARNING+" Failed to ban!\n"+failure.getMessage(), event.getEntry().getType());
 								});
-							case KICK:
+							case KICK ->
 								member.kick().reason("Possible misconduct, staff notified!").queue(done -> {
 									sendAlert(event.getGuild(), member, "User kicked!", event.getEntry().getType());
 								}, failure -> {
 									helper.getLogger().warn("Unable to kick user", failure);
 									sendAlert(event.getGuild(), member, Constants.WARNING+" Failed to kick!\n"+failure.getMessage(), event.getEntry().getType());
 								});
-							case ROLES:
+							case ROLES ->
 								event.getGuild().modifyMemberRoles(member, List.of()).reason("Possible misconduct, staff notified!").queue(done -> {
 									sendAlert(event.getGuild(), member, "User's roles cleared!", event.getEntry().getType());
 								}, failure -> {
 									helper.getLogger().warn("Unable to clear roles", failure);
 									sendAlert(event.getGuild(), member, Constants.WARNING+" Failed to clear roles!\n"+failure.getMessage(), event.getEntry().getType());
 								});
-							default: {}
+							default -> {} //ignore
 						}
 					} catch (Exception ex) {
 						// Report exception

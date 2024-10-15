@@ -30,20 +30,20 @@ public class RoleManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public List<Map<String, Object>> getAll(String guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%s)".formatted(table, guildId), Set.of("roleId", "description", "type"));
-	}
-
 	public List<Map<String, Object>> getRolesByType(String guildId, RoleType type) {
 		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, type.getType()), Set.of("roleId", "description"));
 	}
 
 	public List<Map<String, Object>> getAssignable(String guildId) {
-		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.ASSIGN.getType()), Set.of("roleId", "description", "row"));
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type IN (%d, %d))"
+			.formatted(table, guildId, RoleType.ASSIGN.getType(), RoleType.ASSIGN_TEMP.getType()),
+			Set.of("roleId", "description", "row")
+		);
 	}
 
 	public List<Map<String, Object>> getAssignableByRow(String guildId, Integer row) {
-		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d AND row=%d)".formatted(table, guildId, RoleType.ASSIGN.getType(), row),
+		return select("SELECT * FROM %s WHERE (guildId=%s AND type IN (%d, %d) AND row=%d)"
+			.formatted(table, guildId, RoleType.ASSIGN.getType(), RoleType.ASSIGN_TEMP.getType(), row),
 			Set.of("roleId", "description", "discordInvite")
 		);
 	}
@@ -80,16 +80,6 @@ public class RoleManager extends LiteDBBase {
 		Integer data = selectOne("SELECT type FROM %s WHERE (roleId=%s)".formatted(table, roleId), "type", Integer.class);
 		if (data == null) return null;
 		return RoleType.byType(data);
-	}
-
-	public Integer getRow(String roleId) {
-		Integer data = selectOne("SELECT row FROM %s WHERE (roleId=%s)".formatted(table, roleId), "row", Integer.class);
-		if (data == null) return 0;
-		return data;
-	}
-
-	public String getInvite(String roleId) {
-		return selectOne("SELECT discordInvite FROM %s WHERE (roleId=%s)".formatted(table, roleId), "discordInvite", String.class);
 	}
 
 	public boolean setDescription(String roleId, String description) {

@@ -62,7 +62,8 @@ public class RolesPanelCmd extends CommandBase {
 				return;
 			}
 
-			Integer assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN);
+			int assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN)
+				+ bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN_TEMP);
 			List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
 			if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
 				editError(event, path+".empty_roles");
@@ -136,7 +137,8 @@ public class RolesPanelCmd extends CommandBase {
 					return;
 				}
 
-				Integer assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN);
+				int assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN)
+					+ bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN_TEMP);
 				List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
 				if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
 					editError(event, path+".empty_roles");

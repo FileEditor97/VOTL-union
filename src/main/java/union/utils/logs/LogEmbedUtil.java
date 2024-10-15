@@ -595,6 +595,19 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
+	public MessageEmbed tempRoleAddedEmbed(DiscordLocale locale, User mod, User user, String roleId, Duration duration, boolean deleteAfter) {
+		return new LogEmbedBuilder(locale, GREEN_LIGHT)
+			.setHeaderIcon("roles.temp_added", user.getEffectiveAvatarUrl())
+			.setUser(user.getIdLong())
+			.addField("roles.role", "<@&"+roleId+">")
+			.addField("duration", TimeUtil.durationToLocalizedString(lu, locale, duration))
+			.addField("roles.temp_delete", deleteAfter?Constants.SUCCESS:Constants.FAILURE)
+			.setMod(mod.getIdLong())
+			.setId(user.getIdLong())
+			.build();
+	}
+
+	@NotNull
 	public MessageEmbed tempRoleRemovedEmbed(DiscordLocale locale, User mod, User user, Role role) {
 		return new LogEmbedBuilder(locale, RED_LIGHT)
 			.setHeaderIcon("roles.temp_removed", user.getEffectiveAvatarUrl())

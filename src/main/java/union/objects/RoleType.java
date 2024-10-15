@@ -5,10 +5,11 @@ import java.util.Map;
 
 public enum RoleType {
 	ASSIGN(0, "role_type.assign"),
-	TOGGLE(1, "role_type.toggle"),
-	CUSTOM(2, "role_type.custom");
+	ASSIGN_TEMP(1, "role_type.assign_temp"),
+	TOGGLE(2, "role_type.toggle"),
+	CUSTOM(3, "role_type.custom");
 
-	private final Integer type;
+	private final int type;
 	private final String path;
 
 	private static final Map<Integer, RoleType> BY_TYPE;
@@ -20,12 +21,12 @@ public enum RoleType {
 		}
 	}
 
-	RoleType(Integer type, String path) {
+	RoleType(int type, String path) {
 		this.type = type;
 		this.path = path;
 	}
 
-	public Integer getType() {
+	public int getType() {
 		return type;
 	}
 
@@ -40,5 +41,13 @@ public enum RoleType {
 
 	public static RoleType byType(int type) {
 		return BY_TYPE.get(type);
+	}
+
+	public static RoleType byName(String name) {
+		for (RoleType rt : RoleType.values()) {
+			if (rt.toString().equalsIgnoreCase(name))
+				return rt;
+		}
+		return null;
 	}
 }

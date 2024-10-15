@@ -82,6 +82,7 @@
 	},
 	"role_type": {
 		"assign": "Assignable",
+		"assign_temp": "Temporary assignable",
 		"toggle": "Toggleable",
 		"custom": "Custom"
 	},
@@ -2090,6 +2091,8 @@
 				"created": "Ticket created {channel}.",
 				"close_failed": "Couldn't close this ticket. Report this to bot developer.",
 				"no_member": "User that is requesting roles not found. Maybe, they left this server.",
+				"temp_time": "Enter duration for temporal roles.",
+				"time_limit": "Provided duration must be between 10m <-> 150d.",
 				"role_failed": "I was unable to assign roles to the user.",
 				"role_added": "Request approved, roles assigned to user.",
 				"role_dm": "{server}\n> Roles [{roles}] requested in ticket `role-{id}` assigned!\n-{mod}",

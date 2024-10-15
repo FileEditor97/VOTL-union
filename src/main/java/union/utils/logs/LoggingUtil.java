@@ -283,6 +283,10 @@ public class LoggingUtil {
 			sendLog(guild, type, () -> logUtil.tempRoleAddedEmbed(guild.getLocale(), mod, target, role, duration, deleteAfter));
 		}
 
+		public void onTempRoleAdded(Guild guild, User mod, User target, String roleId, Duration duration, boolean deleteAfter) {
+			sendLog(guild, type, () -> logUtil.tempRoleAddedEmbed(guild.getLocale(), mod, target, roleId, duration, deleteAfter));
+		}
+
 		public void onTempRoleRemoved(Guild guild, User mod, User target, Role role) {
 			sendLog(guild, type, () -> logUtil.tempRoleRemovedEmbed(guild.getLocale(), mod, target, role));
 		}

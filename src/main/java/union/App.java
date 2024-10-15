@@ -142,7 +142,7 @@ public class App {
 			.setServerInvite(Links.DISCORD)
 			.setScheduleExecutor(scheduledExecutor)
 			.setStatus(OnlineStatus.ONLINE)
-			.setActivity(Activity.customStatus(">>>  /help  <<<"))
+			.setActivity(Activity.customStatus("/about | unionteams.ru"))
 			.addSlashCommands(
 				// guild
 				new SetupCmd(),

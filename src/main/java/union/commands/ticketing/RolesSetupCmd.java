@@ -2,7 +2,6 @@ package union.commands.ticketing;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,6 +15,7 @@ import union.objects.CmdModule;
 import union.objects.RoleType;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.RoleManager;
 import union.utils.invite.InviteImpl;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -42,7 +42,6 @@ public class RolesSetupCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {}
 
 	private class Add extends SlashCommand {
-
 		public Add() {
 			this.name = "add";
 			this.path = "bot.ticketing.rolesetup.add";
@@ -51,6 +50,7 @@ public class RolesSetupCmd extends CommandBase {
 				new OptionData(OptionType.STRING, "type", lu.getText(path+".type.help"), true)
 					.addChoices(List.of(
 						new Choice(lu.getText(RoleType.ASSIGN.getPath()), RoleType.ASSIGN.toString()),
+						new Choice(lu.getText(RoleType.ASSIGN_TEMP.getPath()), RoleType.ASSIGN_TEMP.toString()),
 						new Choice(lu.getText(RoleType.TOGGLE.getPath()), RoleType.TOGGLE.toString()),
 						new Choice(lu.getText(RoleType.CUSTOM.getPath()), RoleType.CUSTOM.toString())
 					)),
@@ -85,78 +85,81 @@ public class RolesSetupCmd extends CommandBase {
 				editError(event, path+".exists");
 				return;
 			}
-			
-			String type = event.optString("type");
-			if (type.equals(RoleType.ASSIGN.toString())) {
-				int row = event.optInteger("row", 0);
-				if (row == 0) {
-					for (int i = 1; i <= 3; i++) {
-						if (bot.getDBUtil().role.getRowSize(guildId, i) < 25) {
-							row = i;
-							break;
-						}
-					}
+
+			RoleType type = RoleType.byName(event.optString("type"));
+			switch (type) {
+				case ASSIGN, ASSIGN_TEMP -> {
+					int row = event.optInteger("row", 0);
 					if (row == 0) {
-						editError(event, path+".rows_max");
-						return;
-					}
-				} else {
-					if (bot.getDBUtil().role.getRowSize(guildId, row) >= 25) {
-						editError(event, path+".row_max", "Row: %s".formatted(row));
-						return;
-					}
-				}
-				String link = event.optString("invite", "").replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim();
-				if (!link.isBlank()) {
-					final int rowTemp = row;
-					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
-						if (!invite.isFromGuild() || invite.isTemporal()) {
-							editError(event, path+".invalid_invite", "Not server type invite");
+						for (int i = 1; i <= 3; i++) {
+							if (bot.getDBUtil().role.getRowSize(guildId, i) < 25) {
+								row = i;
+								break;
+							}
+						}
+						if (row == 0) {
+							editError(event, path+".rows_max");
 							return;
 						}
-						if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), rowTemp, RoleType.ASSIGN, invite.getUrl())) {
+					} else {
+						if (bot.getDBUtil().role.getRowSize(guildId, row) >= 25) {
+							editError(event, path+".row_max", "Row: %s".formatted(row));
+							return;
+						}
+					}
+					String link = event.optString("invite", "").replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim();
+					if (!link.isBlank()) {
+						final int rowTemp = row;
+						InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
+								if (!invite.isFromGuild() || invite.isTemporal()) {
+									editError(event, path+".invalid_invite", "Not server type invite");
+									return;
+								}
+								if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), rowTemp, type, invite.getUrl())) {
+									editErrorUnknown(event, "Database error.");
+									return;
+								}
+								sendSuccess(event, type, role);
+							},
+							failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
+					} else {
+						if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, type, "NULL")) {
 							editErrorUnknown(event, "Database error.");
 							return;
 						}
 						sendSuccess(event, type, role);
-					},
-					failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
-				} else {
-					if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, RoleType.ASSIGN, "NULL")) {
+					}
+				}
+				case TOGGLE -> {
+					if (bot.getDBUtil().role.getToggleable(guildId).size() >= 5) {
+						editError(event, path+".toggle_max");
+						return;
+					}
+					String description = event.optString("description", role.getName());
+					if (!bot.getDBUtil().role.add(guildId, role.getId(), description, null, RoleType.TOGGLE, "NULL")) {
 						editErrorUnknown(event, "Database error.");
 						return;
 					}
 					sendSuccess(event, type, role);
 				}
-			} else if (type.equals(RoleType.TOGGLE.toString())) {
-				if (bot.getDBUtil().role.getToggleable(guildId).size() >= 5) {
-					editError(event, path+".toggle_max");
-					return;
+				case CUSTOM -> {
+					if (bot.getDBUtil().role.getCustom(guildId).size() >= 25) {
+						editError(event, path+".custom_max");
+						return;
+					}
+					if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), null, RoleType.CUSTOM, "NULL")) {
+						editErrorUnknown(event, "Database error.");
+						return;
+					}
+					sendSuccess(event, type, role);
 				}
-				String description = event.optString("description", role.getName());
-				if (!bot.getDBUtil().role.add(guildId, role.getId(), description, null, RoleType.TOGGLE, "NULL")) {
-					editErrorUnknown(event, "Database error.");
-					return;
-				}
-				sendSuccess(event, type, role);
-			} else if (type.equals(RoleType.CUSTOM.toString())) {
-				if (bot.getDBUtil().role.getCustom(guildId).size() >= 25) {
-					editError(event, path+".custom_max");
-					return;
-				}
-				if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), null, RoleType.CUSTOM, "NULL")) {
-					editErrorUnknown(event, "Database error.");
-					return;
-				}
-				sendSuccess(event, type, role);
-			} else {
-				editError(event, path+".no_type");
+				default -> editError(event, path+".no_type");
 			}
 		}
 
-		private void sendSuccess(SlashCommandEvent event, String type, Role role) {
+		private void sendSuccess(SlashCommandEvent event, RoleType type, Role role) {
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{type}", type))
+				.setDescription(lu.getText(event, path+".done").replace("{role}", role.getAsMention()).replace("{type}", lu.getText(event, type.getPath())))
 				.build());
 		}
 	}
@@ -327,44 +330,47 @@ public class RolesSetupCmd extends CommandBase {
 			String guildId = guild.getId();
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".title"));
-			
+
 			for (RoleType type : RoleType.values()) {
-				if (type.equals(RoleType.ASSIGN)) {
-					for (int row = 1; row <= 3; row++) {
-						List<Map<String, Object>> roles = bot.getDBUtil().role.getAssignableByRow(guildId, row);
-						String title = "%s-%s | %s".formatted(lu.getText(event, type.getPath()), row, bot.getDBUtil().getTicketSettings(guild).getRowText(row));
+				switch (type) {
+					case ASSIGN -> {
+						for (int row = 1; row <= 3; row++) {
+							List<RoleManager.RoleData> roles = bot.getDBUtil().role.getAssignableByRow(guildId, row);
+							String title = "%s-%s | %s".formatted(lu.getText(event, type.getPath()), row, bot.getDBUtil().getTicketSettings(guild).getRowText(row));
+							if (roles.isEmpty()) {
+								builder.addField(title, lu.getText(event, path + ".none"), false);
+							} else {
+								generateField(guild, title, roles).forEach(builder::addField);
+							}
+						}
+					}
+					case TOGGLE, CUSTOM -> {
+						List<RoleManager.RoleData> roles = bot.getDBUtil().role.getRolesByType(guildId, type);
+						String title = lu.getText(event, type.getPath());
 						if (roles.isEmpty()) {
 							builder.addField(title, lu.getText(event, path+".none"), false);
 						} else {
 							generateField(guild, title, roles).forEach(builder::addField);
 						}
 					}
-				} else {
-					List<Map<String, Object>> roles = bot.getDBUtil().role.getRolesByType(guildId, type);
-					String title = lu.getText(event, type.getPath());
-					if (roles.isEmpty()) {
-						builder.addField(title, lu.getText(event, path+".none"), false);
-					} else {
-						generateField(guild, title, roles).forEach(builder::addField);
-					}
+					default -> {} // ignore other
 				}
 			}
 
 			event.getHook().editOriginalEmbeds(builder.build()).queue();
 		}
 
-		private List<Field> generateField(final Guild guild, final String title, final List<Map<String, Object>> roles) {
+		private List<Field> generateField(final Guild guild, final String title, final List<RoleManager.RoleData> roles) {
 			List<Field> fields = new ArrayList<>();
 			StringBuffer buffer = new StringBuffer();
 			roles.forEach(data -> {
-				String roleId = data.get("roleId").toString();
-				Role role = guild.getRoleById(roleId);
+				Role role = guild.getRoleById(data.getIdLong());
 				if (role == null) {
-					bot.getDBUtil().role.remove(roleId);
+					bot.getDBUtil().role.remove(data.getId());
 					return;
 				}
-				String withLink = Optional.ofNullable(data.get("discordInvite")).map(l -> "[`%s`](%s)".formatted(roleId, l)).orElse("`%s`".formatted(roleId));
-				buffer.append(String.format("%s %s | %s\n", role.getAsMention(), withLink, data.get("description")));
+				String withLink = Optional.ofNullable(data.getDiscordInvite()).map(l -> "[`%s`](%s)".formatted(data.getId(), l)).orElse("`%s`".formatted(data.getId()));
+				buffer.append("%s%s %s | %s\n".formatted(data.isTemp()?"⏰ ":"", role.getAsMention(), withLink, data.getDescription("")));
 				if (buffer.length() > 900) {
 					fields.add(new Field((fields.isEmpty() ? title : ""), buffer.toString(), false));
 					buffer.setLength(0);

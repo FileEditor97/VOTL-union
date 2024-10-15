@@ -2,11 +2,7 @@ package union.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.Period;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -263,9 +259,8 @@ public class ScheduledCheck {
 				}
 
 				int interval = (Integer) data.get("interval");
-				LocalDateTime nextReport = interval==30 ?
-					LocalDateTime.now().plusMonths(1) :
-					LocalDateTime.now().plusDays(interval);
+				LocalDateTime nextReport = LocalDateTime.ofEpochSecond(castLong(data.get("nextReport")), 0, ZoneOffset.UTC);
+				nextReport = interval==30 ? nextReport.plusMonths(1) : nextReport.plusDays(interval);
 				// Update next report date
 				db.modReport.updateNext(channelId, nextReport);
 

@@ -64,7 +64,7 @@
 		"ban_expired": "Temporary ban expired",
 		"verify_instruct": "## Complete verification to join `%s`!\nYou must connect your account by joining the server bellow.\n*After completing verification there, you will be able to rejoin this server.*\n\n> --> %s <--",
 		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||",
-		"temp_msg": "-# This message will be deleted in 30 seconds."
+		"temp_msg": "\n-# This message will be deleted in 20 seconds."
 	},
 	"modules": {
 		"webhook": "Webhook commands",
@@ -82,6 +82,7 @@
 	},
 	"role_type": {
 		"assign": "Assignable",
+		"assign_temp": "Temporary assignable",
 		"toggle": "Toggleable",
 		"custom": "Custom"
 	},
@@ -146,7 +147,7 @@
 			"button_strikes": "View active strikes",
 			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
 			"appeal": "\nAppeal this action by following this link:\n> %s",
-			"rules": "-# [View server Rules (press)](%s)",
+			"rules": "\n-# [View server Rules (press)](%s)",
 			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
 			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s.",
 			"gamestrike": "You received Game strike in [__#%s__](%s) in {guild} server."
@@ -2090,6 +2091,9 @@
 				"created": "Ticket created {channel}.",
 				"close_failed": "Couldn't close this ticket. Report this to bot developer.",
 				"no_member": "User that is requesting roles not found. Maybe, they left this server.",
+				"temp_continue": "Some requested roles require duration to be set. Continue?",
+				"temp_time": "Enter duration for temporal roles.",
+				"time_limit": "Provided duration must be between 10m <-> 150d.",
 				"role_failed": "I was unable to assign roles to the user.",
 				"role_added": "Request approved, roles assigned to user.",
 				"role_dm": "{server}\n> Roles [{roles}] requested in ticket `role-{id}` assigned!\n-{mod}",
@@ -2101,6 +2105,8 @@
 				"claimed": "The ticket has been successfully claimed by {user}.",
 				"unclaimed": "The ticket has been successfully un-claimed.",
 				"delete_countdown": "This ticket will be closed in 5 seconds.",
+				"closed_author": "Closed by ticket's author",
+				"closed_support": "Closed by Support",
 				"invites": {
 					"button": "Show server invites",
 					"none": "No server invites with your roles",
@@ -2155,6 +2161,17 @@
 						"help": "Enable other roles request?"
 					},
 					"done": "Other roles request enabled - `%s`."
+				},
+				"support": {
+					"help": "Set support roles for role requests",
+					"usage": "support <@Roles>",
+					"roles": {
+						"name": "roles",
+						"help": "Mention role/-s to set or enter 'null' to clear"
+					},
+					"bad_input": "Incorrect role mentions provided.",
+					"done_clear": "Support roles cleared.",
+					"done": "Roles %s will be pinged in role requests."
 				}
 			},
 			"tcount": {

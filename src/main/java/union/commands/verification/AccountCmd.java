@@ -91,13 +91,16 @@ public class AccountCmd extends CommandBase {
 
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64.toString());
+		String profileName = Optional.ofNullable(profileInfo)
+			.map(Pair::getLeft)
+			.orElse("*Not found*");
 		String avatarUrl = Optional.ofNullable(profileInfo)
 			.map(Pair::getRight)
 			.map("https://avatars.cloudflare.steamstatic.com/%s_full.jpg"::formatted)
 			.orElse(null);
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
-			.setTitle(profileInfo.getLeft(), profileUrl)
+			.setTitle(profileName, profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)

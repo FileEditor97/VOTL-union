@@ -5,6 +5,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import union.App;
 import union.objects.constants.Constants;
@@ -76,38 +78,43 @@ public class GuildListener extends ListenerAdapter {
 				event.getGuild().retrieveMember(admin).queue(member -> {
 					try {
 						switch (finalAction) {
-							case BAN:
+							case BAN ->
 								member.ban(0, TimeUnit.DAYS).reason("Possible misconduct, staff notified!").queue(done -> {
-									// Get master guilds IDs and send logs to them
-									helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
-										helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User banned!", event.getEntry().getType().name())
-									);
+									sendAlert(event.getGuild(), member, "User banned!", event.getEntry().getType());
+								}, failure -> {
+									helper.getLogger().warn("Unable to ban user", failure);
+									sendAlert(event.getGuild(), member, Constants.WARNING+" Failed to ban!\n"+failure.getMessage(), event.getEntry().getType());
 								});
-							case KICK:
+							case KICK ->
 								member.kick().reason("Possible misconduct, staff notified!").queue(done -> {
-									// Get master guilds IDs and send logs to them
-									helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
-										helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User kicked!", event.getEntry().getType().name())
-									);
+									sendAlert(event.getGuild(), member, "User kicked!", event.getEntry().getType());
+								}, failure -> {
+									helper.getLogger().warn("Unable to kick user", failure);
+									sendAlert(event.getGuild(), member, Constants.WARNING+" Failed to kick!\n"+failure.getMessage(), event.getEntry().getType());
 								});
-							case ROLES:
+							case ROLES ->
 								event.getGuild().modifyMemberRoles(member, List.of()).reason("Possible misconduct, staff notified!").queue(done -> {
-									// Get master guilds IDs and send logs to them
-									helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
-										helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, "User's roles cleared!", event.getEntry().getType().name())
-									);
+									sendAlert(event.getGuild(), member, "User's roles cleared!", event.getEntry().getType());
+								}, failure -> {
+									helper.getLogger().warn("Unable to clear roles", failure);
+									sendAlert(event.getGuild(), member, Constants.WARNING+" Failed to clear roles!\n"+failure.getMessage(), event.getEntry().getType());
 								});
-							default: {}
+							default -> {} //ignore
 						}
 					} catch (Exception ex) {
-						// Get master guilds IDs and send logs to them
-						helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId -> 
-							helper.getLogUtil().group.helperAlertTriggered(groupId, event.getGuild(), member, Constants.WARNING+" Unable to punish user!\n"+ex.getMessage(), event.getEntry().getType().name())
-						);
+						// Report exception
+						sendAlert(event.getGuild(), member, Constants.WARNING+" Unable to punish user!\n"+ex.getMessage(), event.getEntry().getType());
 					}
 				});
 			}
 		}
+	}
+
+	private void sendAlert(Guild trigerGuild, Member trigerMember, String text, ActionType actionType) {
+		// Get master guilds IDs and send log
+		helper.getDBUtil().group.getGuildGroups(trigerGuild.getIdLong()).forEach(groupId ->
+			helper.getLogUtil().group.helperAlertTriggered(groupId, trigerGuild, trigerMember, text, actionType.name())
+		);
 	}
 
 	@Override

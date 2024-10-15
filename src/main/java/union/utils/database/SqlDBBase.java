@@ -45,7 +45,7 @@ public class SqlDBBase {
 		List<String> results = new ArrayList<>();
 		cu.logger.debug(sql.toString());
 		try (Connection conn = DriverManager.getConnection(url);
-		PreparedStatement st = conn.prepareStatement(sql.toString())) {
+			 PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
 				results.add(rs.getString(selectKey));
@@ -86,7 +86,7 @@ public class SqlDBBase {
 
 		cu.logger.debug(sql.toString());
 		try (Connection conn = DriverManager.getConnection(url);
-		PreparedStatement st = conn.prepareStatement(sql.toString())) {
+			 PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
 			List<String> keys = new ArrayList<>();
 
@@ -120,7 +120,7 @@ public class SqlDBBase {
 		String result = null;
 		cu.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
@@ -162,7 +162,7 @@ public class SqlDBBase {
 		String result = null;
 		cu.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLException ex) {
@@ -180,7 +180,7 @@ public class SqlDBBase {
 
 		cu.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+			 PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at UPDATE\nrequest: {}", sql, ex);
@@ -198,21 +198,34 @@ public class SqlDBBase {
 
 
 	// Specific SELECT
-	protected PlayerInfo selectPlayerInfo(final String database, final String table, final String steamId) {
+	protected Map<String, PlayerInfo> selectPlayerInfoList(final Map<String, String> databases, final String table, final String steamId) {
 		// Metrics
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
-		String sql = "SELECT rank, play_time FROM %s.%s WHERE steamid=%s;".formatted(database, table, quote(steamId));
+		List<String> requests = new ArrayList<>();
+		for (String database : databases.keySet()) {
+			requests.add("SELECT '%1$s' as server, %2$s.rank, play_time FROM %1$s.%2$s WHERE steamid=%3$s"
+				.formatted(database, table, quote(steamId)));
+		}
+		final String sql = String.join("\nUNION ALL\n", requests) + ";";
 
-		PlayerInfo result = null;
+		Map<String, PlayerInfo> result = new HashMap<>();
 		cu.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
-		PreparedStatement st = conn.prepareStatement(sql)) {
+			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
-			if (rs.next()) result = new PlayerInfo(rs.getString("rank"), rs.getLong("play_time"));
+			while (rs.next()) {
+				String name = rs.getString("server");
+				result.put(name, new PlayerInfo(
+					databases.get(name),
+					rs.getString("rank"),
+					rs.getLong("play_time")
+				));
+			}
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
+			return Map.of();
 		}
-		return result==null ? new PlayerInfo() : result;
+		return result;
 	}
 }

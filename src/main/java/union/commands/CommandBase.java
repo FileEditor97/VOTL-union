@@ -33,7 +33,7 @@ public abstract class CommandBase extends SlashCommand {
 		event.getHook().editOriginal(data)
 			.queue(msg -> {
 				if (!msg.isEphemeral())
-					msg.delete().queueAfter(30, TimeUnit.SECONDS);
+					msg.delete().queueAfter(20, TimeUnit.SECONDS);
 			});
 	}
 

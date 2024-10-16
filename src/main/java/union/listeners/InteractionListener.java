@@ -1538,15 +1538,11 @@ public class InteractionListener extends ListenerAdapter {
 			// Get roles and tempRoles
 			List<Role> roles = new ArrayList<>();
 			db.ticket.getRoleIds(channelId).forEach(v -> {
-				if (v.charAt(0) == 't') {
-					long roleId = CastUtil.castLong(v.substring(1));
-					Role role = guild.getRoleById(roleId);
-					if (role != null) roles.add(role);
-				} else {
-					long roleId = CastUtil.castLong(v);
-					Role role = guild.getRoleById(roleId);
-					if (role != null) roles.add(role);
-				}
+				long roleId = CastUtil.castLong(
+					v.charAt(0) == 't' ? v.substring(1) : v
+				);
+				Role role = guild.getRoleById(roleId);
+				if (role != null) roles.add(role);
 			});
 			if (roles.isEmpty()) {
 				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
@@ -1572,11 +1568,14 @@ public class InteractionListener extends ListenerAdapter {
 						sendError(event, ex.getPath());
 						return;
 					}
-					if (duration.toMinutes() < 10 || duration.toDays() > 150) {
-						sendError(event, "bot.ticketing.listener.time_limit", "Received: "+duration);
-						return;
+					// Add to temp only if duration not zero and between 10 minutes and 150 days
+					if (!duration.isZero()) {
+						if (duration.toMinutes() < 10 || duration.toDays() > 150) {
+							sendError(event, "bot.ticketing.listener.time_limit", "Received: "+duration);
+							return;
+						}
+						roleDurations.put(roleId, duration);
 					}
-					roleDurations.put(roleId, duration);
 				}
 
 				String ticketId = db.ticket.getTicketId(channelId);

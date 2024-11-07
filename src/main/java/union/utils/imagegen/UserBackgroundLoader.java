@@ -30,16 +30,12 @@ public class UserBackgroundLoader {
 		colors.setMainTextColor(loadColorFromString("mainText"));
 		colors.setSecondaryTextColor(loadColorFromString("secondaryText"));
 
-		if (colorData.has("backgroundCover")) {
-			colors.setBackgroundCoverColor(loadColorFromString("backgroundCover"));
-		}
-
 		return colors;
 	}
 
 	// Formats
 	//  #ffffff - without alpha
-	//  #ffffff05 - with alpha 5%
+	//  #ffffff05 - with alpha 5
 	private Color loadColorFromString(String key) {
 		if (!colorData.has(key))
 			return null;

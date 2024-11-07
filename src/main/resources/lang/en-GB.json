@@ -66,6 +66,13 @@
 		"verify_reserve": "\n\n||If unable to join the server above -> <%s>||",
 		"temp_msg": "\n-# This message will be deleted in 20 seconds."
 	},
+	"imagegen": {
+		"profile": {
+			"time_full": "Time: %d hours",
+			"time_short": "%dh",
+			"rank": "Rank: %s"
+		}
+	},
 	"modules": {
 		"webhook": "Webhook commands",
 		"language": "Language commands",

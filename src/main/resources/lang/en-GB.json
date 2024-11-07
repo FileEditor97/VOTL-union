@@ -458,6 +458,51 @@
 					},
 					"done_add": "Added ID `%s` to the whitelist.",
 					"done_remove": "Removed ID `%s` from the whitelist."
+				},
+				"gameserver": {
+					"help": "Manage game servers/databases",
+					"add": {
+						"name": "add",
+						"help": "Add (or remove)?"
+					},
+					"db_name": {
+						"name": "db_name",
+						"help": "Database name"
+					},
+					"title": {
+						"name": "title",
+						"help": "Server title"
+					},
+					"color": {
+						"name": "color",
+						"help": "Enter color, either hex (1234AC) or RGB (12,34,250)"
+					},
+					"no_title": "No title provided.",
+					"no_color": "No color provided.",
+					"done_add": "Added database `%s`('%s', `#%06X`) to the settings.",
+					"done_remove": "Removed database `%s` from the settings."
+				},
+				"server": {
+					"help": "Manage servers",
+					"add": {
+						"name": "add",
+						"help": "Add (or remove)?"
+					},
+					"server_id": {
+						"name": "server_id",
+						"help": "Enter server ID"
+					},
+					"dbs": {
+						"name": "dbs",
+						"help": "Enter database names (first;second;...)"
+					},
+					"guild_not_found": "Server not found by ID.",
+					"no_dbs": "No dbs provided.",
+					"done_add": "Added server `%s` with dbs `%s` to the settings.",
+					"done_remove": "Removed server `%s` from the settings."
+				},
+				"view": {
+					"help": "View settings"
 				}
 			},
 			"debug": {

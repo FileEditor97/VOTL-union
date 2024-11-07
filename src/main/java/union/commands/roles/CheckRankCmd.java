@@ -55,7 +55,7 @@ public class CheckRankCmd extends CommandBase {
 		}
 
 		// Check if this guild has connected DB tables
-		if (!bot.getDBUtil().unionPlayers.isServer(guild.getIdLong())) {
+		if (!bot.getSettings().isServer(guild.getIdLong())) {
 			editErrorOther(event, "This Discord server is not connected to the database. Will not run!");
 			return;
 		}

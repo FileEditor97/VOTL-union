@@ -120,7 +120,7 @@ public class DBUtil {
 		persistent = new PersistentManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, settings, urlWebsite, userWebsite, passWebsite);
-		unionPlayers = new UnionPlayerManager(connectionUtil, settings, fileManager.getMapObject("config", "central-dbs"), urlCentralTemp, userCentral, passCentral);
+		unionPlayers = new UnionPlayerManager(connectionUtil, settings, urlCentralTemp, userCentral, passCentral);
 
 		updateDB();
 

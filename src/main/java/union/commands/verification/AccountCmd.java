@@ -110,7 +110,7 @@ public class AccountCmd extends CommandBase {
 			String value = playerInfo.exists()
 				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
 				: lu.getText(event, "bot.verification.account.no_data");
-			builder.addField(playerInfo.getServerTitle(), value, false);
+			builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
 		});
 		
 		editEmbed(event, builder.build());
@@ -136,7 +136,7 @@ public class AccountCmd extends CommandBase {
 			String value = playerInfo.exists()
 				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
 				: lu.getText(event, "bot.verification.account.no_data");
-			builder.addField(playerInfo.getServerTitle(), value, false);
+			builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
 		});
 		
 		editEmbed(event, builder.build());

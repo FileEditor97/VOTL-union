@@ -151,6 +151,29 @@ public class LiteDBBase {
 		return results;
 	}
 
+	// Exists
+	protected boolean exists(final String sql) {
+		// Metrics
+		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
+
+		boolean result = false;
+
+		util.logger.debug(sql);
+		try (Connection conn = DriverManager.getConnection(util.getUrlSQLite());
+			 PreparedStatement st = conn.prepareStatement(sql)) {
+			ResultSet rs = st.executeQuery();
+
+			try {
+				if (rs.next()) result = rs.getBoolean(1);
+			} catch (SQLException ex) {
+				if (!rs.wasNull()) throw ex;
+			}
+		} catch (SQLException ex) {
+			util.logger.warn("DB SQLite: Error at SELECT\nRequest: {}", sql, ex);
+		}
+		return result;
+	}
+
 	protected int count(final String sql) {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
@@ -179,8 +202,7 @@ public class LiteDBBase {
 		// Convert to string and replace '(single quote) with ''(2 single quotes) for sql
 		if (value == null) return "NULL";
 		String str = String.valueOf(value);
-		if (str.isBlank()) return "NULL";
-		if (str.equalsIgnoreCase("NULL")) return str.toUpperCase();
+		if (str.isBlank() || str.equalsIgnoreCase("NULL")) return "NULL";
 
 		return String.format("'%s'", String.valueOf(value).replaceAll("'", "''")); // smt's -> 'smt''s'
 	}

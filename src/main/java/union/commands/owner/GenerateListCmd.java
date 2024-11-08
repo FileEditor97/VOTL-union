@@ -31,7 +31,6 @@ public class GenerateListCmd extends CommandBase {
 		this.path = "bot.owner.generate";
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;
-		this.guildOnly = false;
 	}
 
 	@Override

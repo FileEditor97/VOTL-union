@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import union.App;
 import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
@@ -114,6 +113,6 @@ public class UnionPlayerManager extends SqlDBBase {
 
 	@NotNull
 	private Map<String, SettingsManager.GameServerInfo> getServers(long guildId) {
-		return App.getInstance().getSettings().getGameServers(guildId);
+		return settings.getGameServers(guildId);
 	}
 }

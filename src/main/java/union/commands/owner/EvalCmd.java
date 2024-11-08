@@ -31,7 +31,6 @@ public class EvalCmd extends CommandBase {
 		);
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;
-		this.guildOnly = false;
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.qos.logback.classic.Level;
 import union.App;
 import union.utils.database.managers.*;
 import union.utils.database.managers.GuildLogsManager.LogSettings;
@@ -66,6 +67,8 @@ public class DBUtil {
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
+
+	public final BanlistManager banlist;
 
 	public DBUtil(FileManager fileManager, SettingsManager settings) {
 		this.fileManager = fileManager;
@@ -125,6 +128,13 @@ public class DBUtil {
 		updateDB();
 
 		modifyRole.removeExpired(); // Remove expired selections
+
+		urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("banlist"));
+		Logger banlistLogger = (Logger) LoggerFactory.getLogger("Banlist manager");
+		banlistLogger.setLevel(Level.INFO);
+		ConnectionUtil banlistConnectionUtil = new ConnectionUtil(urlSQLite, banlistLogger);
+
+		banlist = new BanlistManager(banlistConnectionUtil);
 	}
 
 	public VerifySettings getVerifySettings(Guild guild) {

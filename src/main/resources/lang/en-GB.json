@@ -468,6 +468,7 @@
 				},
 				"gameserver": {
 					"help": "Manage game servers/databases",
+					"usage": "gameserver <add/remove> <DB name> <title> <color>",
 					"add": {
 						"name": "add",
 						"help": "Add (or remove)?"
@@ -491,6 +492,7 @@
 				},
 				"server": {
 					"help": "Manage servers",
+					"usage": "server <add/remove> <Server ID> <DBs>",
 					"add": {
 						"name": "add",
 						"help": "Add (or remove)?"
@@ -509,7 +511,8 @@
 					"done_remove": "Removed server `%s` from the settings."
 				},
 				"view": {
-					"help": "View settings"
+					"help": "View settings",
+					"usage": "view"
 				}
 			},
 			"debug": {
@@ -570,6 +573,18 @@
 				"stats": {
 					"help": "View command use",
 					"usage": "stats"
+				}
+			},
+			"banlist": {
+				"help": "Import banlist, txt or json file",
+				"usage": "banlist <table name> <file>",
+				"table": {
+					"name": "table",
+					"help": "Enter table name"
+				},
+				"file": {
+					"name": "file",
+					"help": "Provide txt or json(steam64+reason) file"
 				}
 			}
 		},
@@ -2064,7 +2079,11 @@
 			},
 			"account": {
 				"help": "Get account information",
-				"usage": "account <@User | Discord ID | Steam64 | SteamID>",
+				"usage": "account [type] <@User | Discord ID | Steam64 | SteamID>",
+				"info": {
+					"name": "info",
+					"help": "What information to show (default or bans)."
+				},
 				"steamid": {
 					"name": "steamid",
 					"help": "Enter SteamID or Steam64 ID"
@@ -2079,7 +2098,13 @@
 				"no_options": "No options provided. Either select *user* or enter *SteamID*.",
 				"field_info": "> Rank: `%s`\n> Play time: **%s** hours",
 				"no_data": "> *No data*",
-				"field_discord": "Discord account"
+				"field_discord": "Discord account",
+				"field_banlist": "Banlist check",
+				"banlist_found": "⚠\uFE0F User found in banlist",
+				"banlist_alium": "On the list of bad players.",
+				"banlist_mz": "Banned on MZ.",
+				"banlist_octo": "Banned on Octothorp:",
+				"banlist_custom": "In custom banlist:"
 			},
 			"vfcheck": {
 				"help": "Manage user verification auto-check",

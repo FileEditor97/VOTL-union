@@ -29,6 +29,14 @@ public class Fonts {
 		}
 	}
 
+	public static class NotoEmoji {
+		public static final Font monochrome;
+
+		static {
+			monochrome = loadFont("NotoEmoji.ttf");
+		}
+	}
+
 	private static Font loadFont(String resourceName) {
 		try {
 			return Font.createFont(

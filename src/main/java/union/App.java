@@ -96,6 +96,7 @@ public class App {
 		try {
 			fileManager.addFile("config", "/config.json", Constants.DATA_PATH + "config.json")
 				.addFile("database", "/server.db", Constants.DATA_PATH + "server.db")
+				.addFile("banlist", "/banlist.db", Constants.DATA_PATH + "banlist.db")
 				.addFileUpdate("backgrounds", "/backgrounds/index.json", Constants.DATA_PATH+"backgrounds"+Constants.SEPAR+"main.json")
 				.addSettings("settings", Constants.DATA_PATH + "settings.json")
 				.addLang("en-GB")
@@ -162,6 +163,7 @@ public class App {
 				new MessageCmd(),
 				new ViewMetricsCmd(),
 				new SetStatusCmd(),
+				new ImportBanlistCmd(),
 				// webhook
 				new WebhookCmd(),
 				// moderation
@@ -233,7 +235,7 @@ public class App {
         AutoCompleteListener acListener = new AutoCompleteListener(commandClient, dbUtil);
 
 		final Set<GatewayIntent> intents = Set.of(
-			GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+			GatewayIntent.GUILD_EXPRESSIONS,
 			GatewayIntent.GUILD_INVITES,
 			GatewayIntent.GUILD_MEMBERS,
 			GatewayIntent.GUILD_MESSAGES,

@@ -17,7 +17,7 @@
       "colors": {
         "background": "#f3f3f3",
         "mainText": "#2a2a2acc",
-        "secondaryText": "#727272cc"
+        "secondaryText": "#626262cc"
       }
     },
     {
@@ -28,6 +28,16 @@
         "background": "#373746",
         "mainText": "#e2e2dcd9",
         "secondaryText": "#a6a6a6d9"
+      }
+    },
+    {
+      "id": 3,
+      "name": "SCP Theme",
+      "image": "scp-1.jpg",
+      "colors": {
+        "background": "#333333",
+        "mainText": "#e2e2dcd9",
+        "secondaryText": "#b6b6b6d9"
       }
     }
   ]

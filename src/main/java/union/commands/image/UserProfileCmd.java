@@ -1,7 +1,7 @@
 package union.commands.image;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -12,9 +12,11 @@ import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
+import union.utils.SteamUtil;
+import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.imagegen.UserBackground;
 import union.utils.imagegen.UserBackgroundHandler;
-import union.utils.imagegen.renders.UserBackgroundRender;
+import union.utils.imagegen.renders.UserProfileRender;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -31,7 +33,7 @@ public class UserProfileCmd extends CommandBase {
 			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"))
 				.setRequiredRange(0, 100)
 		);
-		this.cooldown = 30;
+		this.cooldown = 120;
 		this.cooldownScope = CooldownScope.USER;
 	}
 
@@ -39,8 +41,8 @@ public class UserProfileCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 
-		User target = event.optUser("user", event.getUser());
-		if (target.isBot()) {
+		Member target = event.optMember("user", event.getMember());
+		if (target == null || target.getUser().isBot()) {
 			editError(event, path+".bad_user");
 			return;
 		}
@@ -52,7 +54,7 @@ public class UserProfileCmd extends CommandBase {
 
 	private void sendBackgroundMessage(
 		SlashCommandEvent event,
-		User target,
+		Member target,
 		int backgroundId
 	) {
 		UserBackground background = UserBackgroundHandler.getInstance().fromId(backgroundId);
@@ -61,8 +63,30 @@ public class UserProfileCmd extends CommandBase {
 			return;
 		}
 
-		UserBackgroundRender render = new UserBackgroundRender(target)
-			.setBackground(background);
+		// Get user account
+		Long steam64 = bot.getDBUtil().verifyCache.getSteam64(target.getIdLong());
+		if (steam64 == null || steam64 == 0L) {
+			editError(event, path+".not_found_steam", "Not found: "+target.getAsMention());
+			return;
+		}
+		String steamId;
+		try {
+			steamId = SteamUtil.convertSteam64toSteamID(steam64);
+		} catch (NumberFormatException ex) {
+			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			return;
+		}
+
+		List<PlayerInfo> playerData = bot.getDBUtil().unionPlayers.getPlayerInfo(
+			event.getGuild().getIdLong(), steamId
+		);
+		playerData = playerData.stream().filter(PlayerInfo::exists).limit(6).toList();
+
+		UserProfileRender render = new UserProfileRender(target)
+			.setLocale(event.getUserLocale())
+			.setBackground(background)
+			.setPlayerData(playerData)
+			.setAccessLevel(bot.getCheckUtil().getAccessLevel(target));
 
 		String attachmentName = "%s-%s-user-bg.png".formatted(event.getGuild().getId(), target.getId());
 

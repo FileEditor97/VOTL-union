@@ -23,15 +23,6 @@
 	"central-ip": "ip without port",
 	"central-user": "username",
 	"central-pass": "password",
-	"central-dbs": {
-		"first guild id": {
-			"db name": "1 server/db title",
-			"db name": "2 server/db title"
-		},
-		"second guild id": {
-			"db name": "3 server/db title"
-		}
-	},
 	"helper-token": ""
  }
  ```

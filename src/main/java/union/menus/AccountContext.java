@@ -53,7 +53,7 @@ public class AccountContext extends UserContextMenu {
 			String value = playerInfo.exists()
 				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
 				: lu.getText(event, "bot.verification.account.no_data");
-			builder.addField(playerInfo.getServerTitle(), value, false);
+			builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
 		});
 		
 		event.getHook().editOriginalEmbeds(builder.build()).queue();

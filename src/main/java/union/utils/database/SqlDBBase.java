@@ -12,6 +12,7 @@ import java.util.Map;
 
 import union.metrics.Metrics;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
+import union.utils.file.SettingsManager;
 
 public class SqlDBBase {
 
@@ -198,14 +199,14 @@ public class SqlDBBase {
 
 
 	// Specific SELECT
-	protected Map<String, PlayerInfo> selectPlayerInfoList(final Map<String, String> databases, final String table, final String steamId) {
+	protected Map<String, PlayerInfo> selectPlayerInfoList(final Map<String, SettingsManager.GameServerInfo> servers, final String table, final String steamId) {
 		// Metrics
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
 		List<String> requests = new ArrayList<>();
-		for (String database : databases.keySet()) {
+		for (String db : servers.keySet()) {
 			requests.add("SELECT '%1$s' as server, %2$s.rank, play_time FROM %1$s.%2$s WHERE steamid=%3$s"
-				.formatted(database, table, quote(steamId)));
+				.formatted(db, table, quote(steamId)));
 		}
 		final String sql = String.join("\nUNION ALL\n", requests) + ";";
 
@@ -217,7 +218,7 @@ public class SqlDBBase {
 			while (rs.next()) {
 				String name = rs.getString("server");
 				result.put(name, new PlayerInfo(
-					databases.get(name),
+					servers.get(name),
 					rs.getString("rank"),
 					rs.getLong("play_time")
 				));

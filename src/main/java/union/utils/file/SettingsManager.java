@@ -5,25 +5,33 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
+import union.utils.CastUtil;
+import union.utils.ColorUtil;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SettingsManager {
 
 	private final Logger logger = (Logger) LoggerFactory.getLogger(SettingsManager.class);
 	private final FileManager fileManager;
 
-	private final Configuration CONF = Configuration.defaultConfiguration().addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL, Option.SUPPRESS_EXCEPTIONS);
+	private final Configuration CONF = Configuration.defaultConfiguration()
+		.addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL, Option.SUPPRESS_EXCEPTIONS);
 
 	private boolean dbVerifyEnabled, dbPlayerEnabled = true;
 	private final Set<Long> botWhitelist = new HashSet<>();
+	private final Map<String, GameServerInfo> databases = new HashMap<>();
+	private final Map<Long, List<String>> servers = new HashMap<>();
 
 	public SettingsManager(FileManager fileManager) {
 		this.fileManager = fileManager;
@@ -35,10 +43,23 @@ public class SettingsManager {
 			dbPlayerEnabled = Optional.ofNullable((boolean) context.read("$.unionPlayer")).orElse(true);
 
 			List<Long> ids = context.read("$.botWhitelist");
-			if (ids != null)
-				botWhitelist.addAll(ids);
+			if (ids != null) botWhitelist.addAll(ids);
+
+			Map<String, Map<String, Object>> dbEntries = context.read("$.databases");
+			if (dbEntries != null) {
+				for (Map.Entry<String, Map<String, Object>> entry : dbEntries.entrySet()) {
+					databases.put(entry.getKey(), new GameServerInfo(entry.getValue()));
+				}
+			}
+
+			Map<String, List<String>> serverEntries = context.read("$.servers");
+			if (serverEntries != null) {
+				for (Map.Entry<String, List<String>> entry : serverEntries.entrySet()) {
+					servers.put(Long.parseLong(entry.getKey()), new ArrayList<>(entry.getValue()));
+				}
+			}
 		} catch (IOException ex) {
-			logger.error("Couldn't process settings.json\n{}", ex.getMessage());
+			logger.error("Couldn't read settings.json\n{}", ex.getMessage());
 		}
 	}
 
@@ -62,6 +83,26 @@ public class SettingsManager {
 		writeChange("$.botWhitelist", botWhitelist);
 	}
 
+	public void addDatabase(String name, GameServerInfo value) {
+		databases.put(name, value);
+		writeChange("$.databases", databases);
+	}
+
+	public void removeDatabase(String name) {
+		databases.remove(name);
+		writeChange("$.databases", databases);
+	}
+
+	public void addServer(long guildId, List<String> dbs) {
+		servers.put(guildId, dbs);
+		writeChange("$.servers", servers);
+	}
+
+	public void removeServer(long guildId) {
+		servers.remove(guildId);
+		writeChange("$.servers", servers);
+	}
+
 	public boolean isDbVerifyDisabled() {
 		return !dbVerifyEnabled;
 	}
@@ -74,17 +115,81 @@ public class SettingsManager {
 		return botWhitelist.contains(id);
 	}
 
+	public Set<Long> getBotWhitelist() {
+		return botWhitelist;
+	}
+
+	public Map<String, GameServerInfo> getGameServers() {
+		return databases;
+	}
+
+	public Map<String, GameServerInfo> getGameServers(long guildId) {
+		List<String> dbs = servers.get(guildId);
+		if (dbs.isEmpty()) return Map.of();
+		return dbs.stream().collect(Collectors.toUnmodifiableMap(db -> db, databases::get));
+	}
+
+	public Map<Long, List<String>> getServers() {
+		return servers;
+	}
+
+	public boolean isServer(long guildId) {
+		return servers.containsKey(guildId);
+	}
+
 	private void writeChange(String name, Object value) {
 		File file = fileManager.getFile("settings");
 		try {
-			DocumentContext context = JsonPath.using(CONF).parse(file);
+			DocumentContext context = JsonPath.using(CONF.jsonProvider(new JsonOrgJsonProvider())).parse(file);
 			context.set(name, value);
-			FileWriter writer = new FileWriter(file);
-			writer.write(context.jsonString());
-			writer.close();
+
+			String json = context.jsonString();
+			String prettyJson;
+
+			if (json.trim().startsWith("{")) {
+				prettyJson = new JSONObject(json).toString(2);
+			} else if (json.trim().startsWith("[")) {
+				prettyJson = new JSONArray(json).toString(2);
+			} else {
+				prettyJson = json; // Handle non-standard JSON
+			}
+
+			// Write the formatted JSON to the file
+			try (FileWriter writer = new FileWriter(file)) {
+				writer.write(prettyJson);
+			}
 		} catch (IOException ex) {
-			logger.error("Couldn't process settings.json\n{}", ex.getMessage());
+			logger.error("Couldn't write settings.json\n{}", ex.getMessage());
 		}
 	}
+
+	public static class GameServerInfo {
+		private final String title;
+		private final Integer color;
+
+		public GameServerInfo(Map<String, Object> map) {
+			this.title = CastUtil.requireNonNull(map.get("title"));
+			this.color = CastUtil.requireNonNull(map.get("color"));
+		}
+
+		public GameServerInfo(String title, int color) {
+			this.title = title;
+			this.color = color;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public Integer getColor() {
+			return color;
+		}
+
+		public Color getColor(int alpha) {
+			return ColorUtil.decode(color, alpha);
+		}
+	}
+
+
 
 }

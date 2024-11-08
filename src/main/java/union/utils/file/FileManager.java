@@ -159,7 +159,7 @@ public class FileManager {
 				}
 				if (file.createNewFile()) {
 					FileWriter fw = new FileWriter(file);
-					fw.write("{\"unionVerify\":true,\"unionPlayer\":true,\"botWhitelist\":[]}");
+					fw.write("{\"unionVerify\":true,\"unionPlayer\":true,\"botWhitelist\":[],\"databases\":{},\"servers\":{}}");
 					fw.close();
 					logger.info("Successfully created {}!", name);
 					files.put(name, file);

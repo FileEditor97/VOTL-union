@@ -1,7 +1,6 @@
 package union.utils.database.managers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,22 +17,19 @@ public class UnionPlayerManager extends SqlDBBase {
 	private final String AXE_PLAYERS = "axe_players";
 	private final SettingsManager settings;
 
-	private final Map<Long, Map<String, String>> servers;
-
-	public UnionPlayerManager(ConnectionUtil cu, SettingsManager settings, Map<String, Object> map, String url, String user, String password) {
+	public UnionPlayerManager(ConnectionUtil cu, SettingsManager settings, String url, String user, String password) {
 		super(cu, "%s?user=%s&password=%s".formatted(url, user, password));
 		this.settings = settings;
-		this.servers = convertMap(map);
 	}
 
 	public List<String> getPlayerRank(long guildId, @NotNull String steamId) {
 		if (settings.isDbPlayerDisabled()) return List.of();
 		// Find corresponding database
-		Map<String, String> dbs = servers.get(guildId);
-		if (dbs == null) return List.of();
+		Map<String, SettingsManager.GameServerInfo> servers = getServers(guildId);
+		if (servers.isEmpty()) return List.of();
 		// Get data from database tables
-		List<String> data = new ArrayList<>(dbs.size());
-		for (String db : dbs.keySet()) {
+		List<String> data = new ArrayList<>(servers.size());
+		for (String db : servers.keySet()) {
 			String rank = selectOne(db, SAM_PLAYERS, "rank", "steamid", steamId);
 			if (rank != null) data.add(rank);
 		}
@@ -43,11 +39,11 @@ public class UnionPlayerManager extends SqlDBBase {
 	public Long getPlayTime(long guildId, @NotNull String steamId) throws Exception {
 		if (settings.isDbPlayerDisabled()) throw new Exception("Disabled.");
 		// Find corresponding database
-		Map<String, String> dbs = servers.get(guildId);
-		if (dbs == null) throw new Exception("Database not found.");
+		Map<String, SettingsManager.GameServerInfo> servers = getServers(guildId);
+		if (servers.isEmpty()) throw new Exception("Database not found.");
 		// Get data from database tables
 		Long playtime = null;
-		for (String db : dbs.keySet()) {
+		for (String db : servers.keySet()) {
 			Long time = castLong(selectOne(db, SAM_PLAYERS, "play_time", "steamid", steamId));
 			if (time != null) playtime = playtime==null ? time : playtime+time;
 		}
@@ -57,14 +53,14 @@ public class UnionPlayerManager extends SqlDBBase {
 	public List<PlayerInfo> getPlayerInfo(long guildId, @NotNull String steamId) {
 		if (settings.isDbPlayerDisabled()) return List.of();
 		// Find corresponding database
-		Map<String, String> dbs = servers.get(guildId);
-		if (dbs == null) return List.of();
+		Map<String, SettingsManager.GameServerInfo> servers = getServers(guildId);
+		if (servers.isEmpty()) return List.of();
 		// Get data from database table
-		Map<String, PlayerInfo> data = selectPlayerInfoList(dbs, SAM_PLAYERS, steamId);
-		List<PlayerInfo> newData = new ArrayList<>(dbs.size());
-		dbs.forEach((db,title) -> {
+		Map<String, PlayerInfo> data = selectPlayerInfoList(servers, SAM_PLAYERS, steamId);
+		List<PlayerInfo> newData = new ArrayList<>(servers.size());
+		servers.forEach((db,info) -> {
 			if (data.containsKey(db)) newData.add(data.get(db));
-			else newData.add(new PlayerInfo(title));
+			else newData.add(new PlayerInfo(info));
 		});
 		return newData;
 	}
@@ -72,34 +68,34 @@ public class UnionPlayerManager extends SqlDBBase {
 	public boolean existsAxePlayer(long guildId, @NotNull String steamId) throws Exception {
 		if (settings.isDbPlayerDisabled()) throw new Exception("Disabled.");
 		// Find corresponding database
-		Map<String, String> dbs = servers.get(guildId);
-		if (dbs == null) throw new Exception("Database not found.");
+		Map<String, SettingsManager.GameServerInfo> servers = getServers(guildId);
+		if (servers.isEmpty()) throw new Exception("Database not found.");
 		// Get data from database table
-		for (String db : dbs.keySet()) {
+		for (String db : servers.keySet()) {
 			if (selectOne(db, AXE_PLAYERS, "steamid", "steamid", steamId) != null) return true;
 		}
 		return false;
 	}
 
 	public static class PlayerInfo {
-		private final String serverTitle;
+		private final SettingsManager.GameServerInfo serverInfo;
 		private final String rank;
 		private final Long playedHours; // in hours
 
-		public PlayerInfo(String serverTitle) {
-			this.serverTitle = serverTitle;
+		public PlayerInfo(SettingsManager.GameServerInfo serverInfo) {
+			this.serverInfo = serverInfo;
 			this.rank = null;
 			this.playedHours = null;
 		}
 
-		public PlayerInfo(String serverTitle, String rank, Long playTimeSeconds) {
-			this.serverTitle = serverTitle;
+		public PlayerInfo(SettingsManager.GameServerInfo serverInfo, String rank, Long playTimeSeconds) {
+			this.serverInfo = serverInfo;
 			this.rank = rank;
 			this.playedHours = Math.floorDiv(playTimeSeconds, 3600);
 		}
 
-		public String getServerTitle() {
-			return serverTitle;
+		public SettingsManager.GameServerInfo getServerInfo() {
+			return serverInfo;
 		}
 
 		public String getRank() {
@@ -115,21 +111,8 @@ public class UnionPlayerManager extends SqlDBBase {
 		}
 	}
 
-	public boolean isServer(long guildId) {
-		return servers.containsKey(guildId);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Map<Long, Map<String, String>> convertMap(Map<String, Object> obj) {
-		if (obj == null || obj.isEmpty()) return Map.of();
-
-		Map<Long, Map<String, String>> map = new HashMap<>(obj.size());
-		obj.forEach((k,v) -> {
-			if (v instanceof Map) {
-				map.put(castLong(k), (Map<String, String>) v);
-			}
-		});
-
-		return map;
+	@NotNull
+	private Map<String, SettingsManager.GameServerInfo> getServers(long guildId) {
+		return settings.getGameServers(guildId);
 	}
 }

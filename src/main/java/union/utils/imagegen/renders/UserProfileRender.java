@@ -261,7 +261,7 @@ public class UserProfileRender extends Renderer {
 
 	private void createBadges(Graphics2D g) {
 		List<String> rankBadges = PlayerRank.getEmojiFromPlayerData(playerData);
-		if (rankBadges.isEmpty()) return;
+		if (rankBadges.isEmpty() && badges.isEmpty()) return;
 
 		int x = 40;
 		int y = 210;

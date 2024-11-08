@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import union.utils.database.managers.BanlistManager;
+import union.utils.database.managers.UnionPlayerManager;
 
 public class AccountCmd extends CommandBase {
 	
@@ -113,13 +114,24 @@ public class AccountCmd extends CommandBase {
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
 			.addField(lu.getText(event, path+".field_discord"), user.getAsMention(), true);
-		
-		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
-			String value = playerInfo.exists()
-				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
-				: lu.getText(event, "bot.verification.account.no_data");
-			builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
-		});
+
+		List<UnionPlayerManager.PlayerInfo> list = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId);
+		if (list.size() > 1) {
+			list.stream().filter(UnionPlayerManager.PlayerInfo::exists).forEach(playerInfo -> {
+				builder.addField(
+					playerInfo.getServerInfo().getTitle(),
+					lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime()),
+					false
+				);
+			});
+		} else {
+			list.forEach(playerInfo -> {
+				String value = playerInfo.exists()
+					? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
+					: lu.getText(event, "bot.verification.account.no_data");
+				builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
+			});
+		}
 		
 		editEmbed(event, builder.build());
 	}
@@ -143,13 +155,24 @@ public class AccountCmd extends CommandBase {
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
 			.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
-		
-		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
-			String value = playerInfo.exists()
-				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
-				: lu.getText(event, "bot.verification.account.no_data");
-			builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
-		});
+
+		List<UnionPlayerManager.PlayerInfo> list = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId);
+		if (list.size() > 1) {
+			list.stream().filter(UnionPlayerManager.PlayerInfo::exists).forEach(playerInfo -> {
+				builder.addField(
+					playerInfo.getServerInfo().getTitle(),
+					lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime()),
+					false
+				);
+			});
+		} else {
+			list.forEach(playerInfo -> {
+				String value = playerInfo.exists()
+					? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
+					: lu.getText(event, "bot.verification.account.no_data");
+				builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
+			});
+		}
 		
 		editEmbed(event, builder.build());
 	}
@@ -211,16 +234,9 @@ public class AccountCmd extends CommandBase {
 
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
-			.addField("Steam", steamId, true)
+			.addField("Steam", "%s\n`%s`".formatted(steamId, steam64), true)
 			.addField("Links", links, true)
 			.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
-
-		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
-			String value = playerInfo.exists()
-				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
-				: lu.getText(event, "bot.verification.account.no_data");
-			builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
-		});
 
 		addBanlist(event, builder, steam64, steamId);
 
@@ -231,7 +247,6 @@ public class AccountCmd extends CommandBase {
 		String links = ("""
 			> [Perpheads](https://bans.perpheads.com/?search=%s)
 			> [UnionRP C2](https://unionrp.info/hl2rp/bans/c2/?page=1&player=%s)
-			> [UnionRP C17](https://unionrp.info/hl2rp/bans/c17/?page=1&player=%<s)
 			> [FastRP](https://desk.fastrp.ru/bans/?page=1&steamid=%<s)""")
 			.formatted(steam64, steamId);
 		embedBuilder.addField(lu.getText(event, path+".field_banlist"), links, false);
@@ -243,13 +258,15 @@ public class AccountCmd extends CommandBase {
 			.append(lu.getText(event, path+".banlist_alium"))
 			.append("**](https://raw.githubusercontent.com/Pika-Software/alium-ban-list/refs/heads/main/banned_user.cfg)");
 		if (data.isMz()) banlistBuilder.append("\n> ").append(lu.getText(event, path+".banlist_mz"));
-		Optional.ofNullable(data.getOcto()).ifPresent(pair -> {
+		Optional.ofNullable(data.getOcto()).ifPresent(map -> {
 			banlistBuilder.append("\n> **")
 				.append(lu.getText(event, path+".banlist_octo"))
 				.append("**\n```\nReason: ")
-				.append(pair.getLeft())
+				.append(map.getOrDefault("reason", "-"))
 				.append("\nDetails: ")
-				.append(pair.getRight())
+				.append(map.getOrDefault("details", "-"))
+				.append("\nCommand: ")
+				.append(map.getOrDefault("command", "-"))
 				.append("\n```");
 		});
 		Optional.ofNullable(data.getCustom()).ifPresent(reason -> {

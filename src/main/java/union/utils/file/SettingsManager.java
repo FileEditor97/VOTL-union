@@ -116,21 +116,26 @@ public class SettingsManager {
 	}
 
 	public Set<Long> getBotWhitelist() {
-		return botWhitelist;
+		return Collections.unmodifiableSet(botWhitelist);
 	}
 
 	public Map<String, GameServerInfo> getGameServers() {
-		return databases;
+		return Collections.unmodifiableMap(databases);
 	}
 
 	public Map<String, GameServerInfo> getGameServers(long guildId) {
 		List<String> dbs = servers.get(guildId);
-		if (dbs.isEmpty()) return Map.of();
-		return dbs.stream().collect(Collectors.toUnmodifiableMap(db -> db, databases::get));
+		if (dbs == null || dbs.isEmpty()) return Map.of();
+		LinkedHashMap<String, GameServerInfo> map = new LinkedHashMap<>();
+		for (String db : dbs) {
+			GameServerInfo info = databases.get(db);
+			if (info != null) map.put(db, info);
+		}
+		return Collections.unmodifiableMap(map);
 	}
 
 	public Map<Long, List<String>> getServers() {
-		return servers;
+		return Collections.unmodifiableMap(servers);
 	}
 
 	public boolean isServer(long guildId) {

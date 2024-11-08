@@ -47,14 +47,15 @@ public class ImportBanlistCmd extends CommandBase {
 			}
 
 			// Check if size is allowed
-			if (attachment.getSize() > 2*1_048_576) {
-				editErrorOther(event, "Bad size!\nReceived: %.2fMiB / 2MiB".formatted(attachment.getSize()/1_048_576.0));
+			if (attachment.getSize() > 3*1_048_576) {
+				editErrorOther(event, "Bad size!\nReceived: %.2fMiB / 3MiB".formatted(attachment.getSize()/1_048_576.0));
 				return;
 			}
 
 			String contentType = attachment.getContentType();
 			if (contentType.startsWith("text/plain")) {
 				withInputStream(attachment.getProxy(), inputStream -> {
+					editMsg(event, "Starting data import...");
 					int added = 0;
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 						String firstLine = reader.readLine();
@@ -82,32 +83,33 @@ public class ImportBanlistCmd extends CommandBase {
 				});
 			} else if (contentType.startsWith("application/json")) {
 				withInputStream(attachment.getProxy(), inputStream -> {
+					editMsg(event, "Starting data import...");
 					int added = 0;
 					List<Map<String, String>> list = JsonPath.using(Configuration.defaultConfiguration()
 							.addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL))
 						.parse(inputStream).read("$[*]");
 					if (!list.isEmpty()) {
 						int keySize = list.get(0).keySet().size();
-						if (keySize == 3) {
+						if (keySize == 4) {
 							// Octo table
 							for (Map<String, String> map : list) {
-								long steam64 = CastUtil.castLong(map.get("steamID"));
-								String reason = map.get("reason");
-								String details = map.get("details");
-								if (bot.getDBUtil().banlist.add(table, steam64, reason, details)) added++;
+								if (bot.getDBUtil().banlist.add(
+									table, CastUtil.castLong(map.get("steamID")), map.get("reason"), map.get("details"), map.get("command"))
+								) added++;
 							}
 						} else if (keySize == 2) {
 							// Custom with reason
 							for (Map<String, String> map : list) {
-								long steam64 = CastUtil.castLong(map.get("steam64"));
-								String reason = map.get("reason");
-								if (bot.getDBUtil().banlist.add(table, steam64, reason)) added++;
+								if (bot.getDBUtil().banlist.add(
+									table, CastUtil.castLong(map.get("steam64")), map.get("reason"))
+								) added++;
 							}
 						} else if (keySize == 1) {
 							// Custom without reason
 							for (Map<String, String> map : list) {
-								long steam64 = CastUtil.castLong(map.get("steam64"));
-								if (bot.getDBUtil().banlist.add(table, steam64)) added++;
+								if (bot.getDBUtil().banlist.add(
+									table, CastUtil.castLong(map.get("steam64"))
+								)) added++;
 							}
 						}
 					}

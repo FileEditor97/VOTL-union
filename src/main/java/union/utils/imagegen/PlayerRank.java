@@ -22,18 +22,18 @@ public class PlayerRank {
 	@Nullable
 	public static String parseRankToEmoji(String rank) {
 		return switch (rank) {
-			case "content_creator" -> "⭐";
+			case "content_creator" -> "⭐";								// ⭐
 			case "vip", "adminpay", "moderator_d",
-				 "admin_d", "d_admin", "d_moderator" -> "\uD83D\uDC8E";
+				 "admin_d", "d_admin", "d_moderator" -> "\uD83D\uDC8E";	// 💎
 			case "eventmaster", "builder", "internevent",
-				 "senior_event" -> "\uD83C\uDF8A";
+				 "senior_event" -> "\uD83C\uDF8A";						// 🎊
 			case "admin", "watchingrp", "intern",
 				 "junior_admin", "senior_admin", "moderator",
-				 "operator" -> "⚖️";
+				 "operator" -> "⚖️";									// ⚖️
 			case "gladmin", "sudocurator", "assistant",
-				 "sudo_curator" -> "";
-			case "specadmin", "curator", "manager" -> "\uD83D\uDC51";
-			case "superadmin" -> "\uD83D\uDEE0️";
+				 "sudo_curator" -> "\uD83C\uDFA9";						// 🎩
+			case "specadmin", "curator", "manager" -> "\uD83D\uDC51";	// 👑
+			case "superadmin" -> "\uD83D\uDEE0️";						// 🛠
 			default -> null;
 		};
 	}

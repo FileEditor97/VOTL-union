@@ -10,7 +10,9 @@ import union.utils.SteamUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
+import union.utils.database.managers.UnionPlayerManager;
 
+import java.util.List;
 import java.util.Optional;
 
 public class AccountContext extends UserContextMenu {
@@ -48,13 +50,24 @@ public class AccountContext extends UserContextMenu {
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
 			.addField(lu.getText(event, "bot.verification.account.field_discord"), user.getAsMention(), true);
-		
-		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
-			String value = playerInfo.exists()
-				? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
-				: lu.getText(event, "bot.verification.account.no_data");
-			builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
-		});
+
+		List<UnionPlayerManager.PlayerInfo> list = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId);
+		if (list.size() > 1) {
+			list.stream().filter(UnionPlayerManager.PlayerInfo::exists).forEach(playerInfo -> {
+				builder.addField(
+					playerInfo.getServerInfo().getTitle(),
+					lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime()),
+					false
+				);
+			});
+		} else {
+			list.forEach(playerInfo -> {
+				String value = playerInfo.exists()
+					? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
+					: lu.getText(event, "bot.verification.account.no_data");
+				builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
+			});
+		}
 		
 		event.getHook().editOriginalEmbeds(builder.build()).queue();
 	}

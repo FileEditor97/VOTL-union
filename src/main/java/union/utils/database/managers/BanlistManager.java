@@ -1,13 +1,10 @@
 package union.utils.database.managers;
 
-import net.dv8tion.jda.internal.utils.tuple.Pair;
 import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class BanlistManager extends LiteDBBase {
 
@@ -25,9 +22,9 @@ public class BanlistManager extends LiteDBBase {
 			.formatted(table, steam64, reason)) > 0;
 	}
 
-	public boolean add(String table, long steam64, String reason, String details) {
-		return executeWithRow("INSERT OR IGNORE INTO %s(steam64, reason, details) VALUES (%d, %s, %s);"
-			.formatted(table, steam64, quote(reason), quote(details))) > 0;
+	public boolean add(String table, long steam64, String reason, String details, String command) {
+		return executeWithRow("INSERT OR IGNORE INTO %s(steam64, reason, details, command) VALUES (%d, %s, %s, %s);"
+			.formatted(table, steam64, quote(reason), quote(details), quote(command))) > 0;
 	}
 
 	public void purgeTable(String table) {
@@ -40,21 +37,26 @@ public class BanlistManager extends LiteDBBase {
 		if (contains("alium", steam64)) data.setAlium();
 		if (contains("mz", steam64)) data.setMz();
 
-		Pair<String, String> pair = contains("octo", steam64, true);
-		if (pair != null) data.setOcto(pair);
+		Map<String, String> map = contains("octo", steam64, true);
+		if (map != null) data.setOcto(map);
 
-		pair = contains("custom", steam64, false);
-		if (pair != null) data.setCustom(pair);
+		map = contains("custom", steam64, false);
+		if (map != null) data.setCustom(map.get("reason"));
 
 		return data;
 	}
 
-	private Pair<String, String> contains(String table, long steam64, boolean details) {
+	private Map<String, String> contains(String table, long steam64, boolean octo) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (steam64=%d)".formatted(table, steam64),
-			details?Set.of("reason","details"):Set.of("reason")
+			octo?Set.of("reason","details","command"):Set.of("reason")
 		);
 		if (data==null || data.isEmpty()) return null;
-		return Pair.of((String) data.get("reason"), details?(String) data.get("details"):null);
+		if (octo) return Map.of(
+			"reason", String.valueOf(data.get("reason")),
+			"details", String.valueOf(data.get("details")),
+			"command", String.valueOf(data.get("command"))
+		);
+		return Map.of("reason", String.valueOf(data.get("reason")));
 	}
 
 	private boolean contains(String table, long steam64) {
@@ -63,7 +65,7 @@ public class BanlistManager extends LiteDBBase {
 
 	public static class BanlistData {
 		private boolean alium, mz, octo, custom = false;
-		private HashMap<String, Pair<String, String>> reasons;
+		private Map<String, Map<String, String>> info;
 
 		protected BanlistData() {}
 
@@ -75,18 +77,16 @@ public class BanlistManager extends LiteDBBase {
 			mz = true;
 		}
 
-		protected void setOcto(@NotNull Pair<String, String> pair) {
-			if (pair.getLeft() == null) throw new NullPointerException("Reason is null");
+		protected void setOcto(@NotNull Map<String, String> map) {
 			octo = true;
-			if (reasons == null) reasons = new HashMap<>();
-			reasons.put("octo", pair);
+			if (info == null) info = new HashMap<>();
+			info.put("octo", map);
 		}
 
-		protected void setCustom(@NotNull Pair<String, String> pair) {
-			if (pair.getLeft() == null) throw new NullPointerException("Reason is null");
+		protected void setCustom(@NotNull String reason) {
 			custom = true;
-			if (reasons == null) reasons = new HashMap<>();
-			reasons.put("custom", pair);
+			if (info == null) info = new HashMap<>();
+			info.put("custom", Collections.singletonMap("reason", reason));
 		}
 
 		public boolean isAlium() {
@@ -97,12 +97,12 @@ public class BanlistManager extends LiteDBBase {
 			return mz;
 		}
 
-		public Pair<String, String> getOcto() {
-			return octo?reasons.get("octo"):null;
+		public Map<String, String> getOcto() {
+			return octo?info.get("octo"):null;
 		}
 
 		public String getCustom() {
-			return custom?reasons.get("custom").getLeft():null;
+			return custom?info.get("custom").get("reason"):null;
 		}
 
 		public boolean isEmpty() {

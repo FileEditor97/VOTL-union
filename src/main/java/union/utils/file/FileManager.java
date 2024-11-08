@@ -33,12 +33,6 @@ import com.jayway.jsonpath.Option;
 
 import ch.qos.logback.classic.Logger;
 
-class KeyIsNull extends Exception {
-	public KeyIsNull(String str) {
-		super(str);
-	}
-}
-
 @SuppressWarnings("LoggingSimilarMessage")
 public class FileManager {
 	
@@ -51,6 +45,9 @@ public class FileManager {
 
 	public FileManager() {}
 
+	// name - with what name associate this file
+	// internal - path to file inside jar file (/filename)
+	// external - path where to store this file
 	public FileManager addFile(String name, String internal, String external){
 		createUpdateLoad(name, internal, external, false);
 		
@@ -174,6 +171,33 @@ public class FileManager {
 		}
 	}
 
+	public String updateFile(String name, String internal) {
+		File file = getFile(name);
+		if (file == null) return "File not found.";
+		try {
+			File tempFile = File.createTempFile("check-", ".tmp");
+			if (!export(App.class.getResourceAsStream(internal), tempFile.toPath())) {
+				logger.error("Failed to write temp file {}!", tempFile.getName());
+				return "Failed to write temp file.";
+			} else {
+				if (Files.mismatch(file.toPath(), tempFile.toPath()) != -1) {
+					if (export(App.class.getResourceAsStream(internal), file.toPath())) {
+						logger.info("Successfully manually updated {}!", name);
+						return "File updated!";
+					} else {
+						logger.error("Failed to overwrite {}!", name);
+						return "Failed to overwrite file.";
+					}
+				}
+			}
+			boolean ignored = tempFile.delete();
+		} catch (IOException ex) {
+			logger.error("Couldn't locate nor create {}", file.getAbsolutePath(), ex);
+			return ex.getMessage();
+		}
+		return "File was not updated.";
+	}
+
 	/**
 	 * @param name - json file to be searched
 	 * @return Returns nullable File.
@@ -282,33 +306,7 @@ public class FileManager {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
-	@NotNull
-	public Map<String, Object> getMapObject(String name, String path){
-		File file = files.get(name);
-		if(file == null) {
-			logger.error("Couldn't find file {}.json", name);
-			return Collections.emptyMap();
-		}
-
-		try {
-			Map<String, Object> map = JsonPath.using(CONF).parse(file).read("$." + path, Map.class);	
-			
-			if (map == null || map.isEmpty())
-				throw new KeyIsNull(path);
-				
-			return map;
-		} catch (FileNotFoundException ex) {
-			logger.error("Couldn't find file {}.json", name);
-		} catch (KeyIsNull ex) {
-			logger.warn("Couldn't find \"{}\" in file {}.json", path, name);
-		} catch (IOException ex) {
-			logger.warn("Couldn't process file {}.json", name, ex);
-		}
-		return Collections.emptyMap();
-	}
-
-	public boolean export(InputStream inputStream, Path destination){
+	public boolean export(InputStream inputStream, Path destination) {
 		boolean success = true;
 		try {
 			Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
@@ -318,5 +316,11 @@ public class FileManager {
 		}
 
 		return success;
+	}
+
+	private static class KeyIsNull extends Exception {
+		public KeyIsNull(String str) {
+			super(str);
+		}
 	}
 }

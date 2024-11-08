@@ -2100,11 +2100,11 @@
 				"no_data": "> *Нет данных*",
 				"field_discord": "Аккаунт Discord",
 				"field_banlist": "Проверка банлиста",
-				"banlist_found": "Пользователь найден в банлисте",
+				"banlist_found": "⚠️ Пользователь найден в банлисте",
 				"banlist_alium": "В списке плохих игроков.",
 				"banlist_mz": "Забанен на MZ.",
-				"banlist_octo": "Забанен на Octothorp.",
-				"banlist_custom": "В пользовательском банлисте."
+				"banlist_octo": "Забанен на Octothorp:",
+				"banlist_custom": "В пользовательском банлисте:"
 			},
 			"vfcheck": {
 				"help": "Управление автопроверкой верификации",

@@ -172,8 +172,11 @@ public class AccountCmd extends CommandBase {
 			.map(Pair::getRight)
 			.map("https://avatars.cloudflare.steamstatic.com/%s_full.jpg"::formatted)
 			.orElse(null);
-		String links = ("> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)"
-			+"\n> [SteamHistory](https://steamhistory.net/id/%<s)\n> [SteamidUK](https://steamid.uk/profile/%<s)")
+		String links = ("""
+			> [UnionTeams](https://unionteams.ru/player/%s)
+			> [SteamRep](https://steamrep.com/profiles/%<s)
+			> [SteamHistory](https://steamhistory.net/id/%<s)
+			> [SteamidUK](https://steamid.uk/profile/%<s)""")
 			.formatted(steam64);
 
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
@@ -198,11 +201,18 @@ public class AccountCmd extends CommandBase {
 			return;
 		}
 
+		String links = ("""
+			> [UnionTeams](https://unionteams.ru/player/%s)
+			> [SteamRep](https://steamrep.com/profiles/%<s)
+			> [SteamHistory](https://steamhistory.net/id/%<s)
+			> [SteamidUK](https://steamid.uk/profile/%<s)""")
+			.formatted(steam64);
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
+
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
 			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
+			.addField("Links", links, true)
 			.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
 
 		bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId).forEach(playerInfo -> {
@@ -218,8 +228,11 @@ public class AccountCmd extends CommandBase {
 	}
 
 	private void addBanlist(SlashCommandEvent event, EmbedBuilder embedBuilder, long steam64, String steamId) {
-		String links = ("> [Perpheads](https://bans.perpheads.com/?search=%s)\n> [UnionRP C2](https://unionrp.info/hl2rp/bans/c2/?page=1&player=%s)"
-			+"\n> [UnionRP C17](https://unionrp.info/hl2rp/bans/c17/?page=1&player=%<s)\n> [FastRP](https://desk.fastrp.ru/bans/?page=1&steamid=%<s)")
+		String links = ("""
+			> [Perpheads](https://bans.perpheads.com/?search=%s)
+			> [UnionRP C2](https://unionrp.info/hl2rp/bans/c2/?page=1&player=%s)
+			> [UnionRP C17](https://unionrp.info/hl2rp/bans/c17/?page=1&player=%<s)
+			> [FastRP](https://desk.fastrp.ru/bans/?page=1&steamid=%<s)""")
 			.formatted(steam64, steamId);
 		embedBuilder.addField(lu.getText(event, path+".field_banlist"), links, false);
 

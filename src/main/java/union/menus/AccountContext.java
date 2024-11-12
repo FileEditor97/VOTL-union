@@ -38,7 +38,7 @@ public class AccountContext extends UserContextMenu {
 
 		String steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64.toString());
+		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64);
 		String avatarUrl = Optional.ofNullable(profileInfo)
 			.map(Pair::getRight)
 			.map("https://avatars.cloudflare.steamstatic.com/%s_full.jpg"::formatted)

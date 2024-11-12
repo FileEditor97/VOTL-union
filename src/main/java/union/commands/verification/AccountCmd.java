@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import net.dv8tion.jda.internal.utils.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -72,7 +73,7 @@ public class AccountCmd extends CommandBase {
 
 			Long discordId = bot.getDBUtil().verifyCache.getDiscordId(steam64);
 			if (discordId == null) {
-				replyAccountSteam(event, steam64);
+				replyAccount(event, steam64, null);
 			} else {
 				Long steam64copy = steam64;
 				event.getJDA().retrieveUserById(discordId).queue(
@@ -85,7 +86,7 @@ public class AccountCmd extends CommandBase {
 		}
 	}
 
-	private void replyAccount(SlashCommandEvent event, final Long steam64, User user) {
+	private void replyAccount(final SlashCommandEvent event, final Long steam64, @Nullable final User user) {
 		if (event.optString("info", "default").equals("bans")) {
 			replyAccountBans(event, steam64, user);
 			return;
@@ -94,12 +95,12 @@ public class AccountCmd extends CommandBase {
 		try {
 			steamId = SteamUtil.convertSteam64toSteamID(steam64);
 		} catch (NumberFormatException ex) {
-			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
+			editErrorOther(event, "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
 			return;
 		}
 
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64.toString());
+		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64);
 		String profileName = Optional.ofNullable(profileInfo)
 			.map(Pair::getLeft)
 			.orElse("*Not found*");
@@ -107,13 +108,24 @@ public class AccountCmd extends CommandBase {
 			.map(Pair::getRight)
 			.map("https://avatars.cloudflare.steamstatic.com/%s_full.jpg"::formatted)
 			.orElse(null);
+
+		String links = "> [UnionTeams](https://unionteams.ru/player/%s)".formatted(steam64);
+		Integer fxUserId = bot.getDBUtil().unionVerify.getUserId(steam64);
+		if (fxUserId != null) {
+			links += "\n> [- Forum -](https://forum.unionteams.ru/members/%s)".formatted(fxUserId);
+		}
+
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
 			.setTitle(profileName, profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
-			.addField(lu.getText(event, path+".field_discord"), user.getAsMention(), true);
+			.addField("Links", links, true);
+		if (user == null) {
+			builder.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
+		} else {
+			builder.addField(lu.getText(event, path+".field_discord"), user.getAsMention(), true)
+				.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl());
+		}
 
 		List<UnionPlayerManager.PlayerInfo> list = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId);
 		if (list.size() > 1) {
@@ -136,11 +148,7 @@ public class AccountCmd extends CommandBase {
 		editEmbed(event, builder.build());
 	}
 
-	private void replyAccountSteam(SlashCommandEvent event, final Long steam64) {
-		if (event.optString("info", "default").equals("bans")) {
-			replyAccountSteamBans(event, steam64);
-			return;
-		}
+	private void replyAccountBans(final SlashCommandEvent event, final Long steam64, @Nullable final User user) {
 		String steamId;
 		try {
 			steamId = SteamUtil.convertSteam64toSteamID(steam64);
@@ -150,44 +158,7 @@ public class AccountCmd extends CommandBase {
 		}
 
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
-			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
-			.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
-
-		List<UnionPlayerManager.PlayerInfo> list = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId);
-		if (list.size() > 1) {
-			list.stream().filter(UnionPlayerManager.PlayerInfo::exists).forEach(playerInfo -> {
-				builder.addField(
-					playerInfo.getServerInfo().getTitle(),
-					lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime()),
-					false
-				);
-			});
-		} else {
-			list.forEach(playerInfo -> {
-				String value = playerInfo.exists()
-					? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
-					: lu.getText(event, "bot.verification.account.no_data");
-				builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
-			});
-		}
-		
-		editEmbed(event, builder.build());
-	}
-
-	private void replyAccountBans(SlashCommandEvent event, final Long steam64, User user) {
-		String steamId;
-		try {
-			steamId = SteamUtil.convertSteam64toSteamID(steam64);
-		} catch (NumberFormatException ex) {
-			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
-			return;
-		}
-
-		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64.toString());
+		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64);
 		String profileName = Optional.ofNullable(profileInfo)
 			.map(Pair::getLeft)
 			.orElse("*Not found*");
@@ -203,40 +174,16 @@ public class AccountCmd extends CommandBase {
 			.formatted(steam64);
 
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
 			.setTitle(profileName, profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", "%s\n`%s`".formatted(steamId, steam64), true)
-			.addField("Links", links, true)
-			.addField(lu.getText(event, path+".field_discord"), user.getAsMention(), true);
-
-		addBanlist(event, builder, steam64, steamId);
-
-		editEmbed(event, builder.build());
-	}
-
-	private void replyAccountSteamBans(SlashCommandEvent event, final Long steam64) {
-		String steamId;
-		try {
-			steamId = SteamUtil.convertSteam64toSteamID(steam64);
-		} catch (NumberFormatException ex) {
-			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
-			return;
+			.addField("Links", links, true);
+		if (user==null) {
+			builder.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
+		} else {
+			builder.addField(lu.getText(event, path+".field_discord"), user.getAsMention(), true)
+				.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl());
 		}
-
-		String links = ("""
-			> [UnionTeams](https://unionteams.ru/player/%s)
-			> [SteamRep](https://steamrep.com/profiles/%<s)
-			> [SteamHistory](https://steamhistory.net/id/%<s)
-			> [SteamidUK](https://steamid.uk/profile/%<s)""")
-			.formatted(steam64);
-		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
-
-		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-			.setTitle(bot.getDBUtil().unionVerify.getSteamName(steam64.toString()), profileUrl)
-			.addField("Steam", "%s\n`%s`".formatted(steamId, steam64), true)
-			.addField("Links", links, true)
-			.addField(lu.getText(event, path+".field_discord"), lu.getText(event, path+".not_found_discord"), true);
 
 		addBanlist(event, builder, steam64, steamId);
 

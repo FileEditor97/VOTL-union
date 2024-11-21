@@ -203,7 +203,7 @@ public class SettingsCmd extends CommandBase {
 			StringBuilder builder = new StringBuilder("### Database settings\n")
 				.append("Verify database enabled: ")
 				.append(settings.isDbVerifyDisabled()?Constants.FAILURE:Constants.SUCCESS).append("\n")
-				.append("Player database disabled: ")
+				.append("Player database enabled: ")
 				.append(settings.isDbPlayerDisabled()?Constants.FAILURE:Constants.SUCCESS).append("\n")
 				.append("\nWhitelisted bots:\n> ");
 			settings.getBotWhitelist().forEach(id -> builder.append(id).append(", "));

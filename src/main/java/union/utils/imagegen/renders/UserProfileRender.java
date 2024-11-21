@@ -172,7 +172,7 @@ public class UserProfileRender extends Renderer {
 
 		y += 30;
 		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F));
-		text = "@"+MessageUtil.limitString(userName, 20);
+		text = "@"+MessageUtil.limitString(userName, 18);
 
 		g.setColor(background.getColors().getShadowColor());
 		g.drawString(text, x+2, y+2);

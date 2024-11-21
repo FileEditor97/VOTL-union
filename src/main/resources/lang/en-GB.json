@@ -570,9 +570,13 @@
 					},
 					"not_found": "Command not found or has no information."
 				},
-				"stats": {
+				"command-stats": {
 					"help": "View command use",
-					"usage": "stats"
+					"usage": "command-stats"
+				},
+				"button-stats": {
+					"help": "View button/interaction use",
+					"usage": "button-stats"
 				}
 			},
 			"banlist": {
@@ -1994,7 +1998,7 @@
 			"you_verified": "You are already verified (has role)",
 			"user_verified": "User is already verified (has role)",
 			"user_not_verified": "User is not verified",
-			"blacklisted": "You are blacklisted from completing verification.",
+			"blacklisted": "You are not allowed to complete verification (blacklist).",
 			"playtime_none": "You haven't played on the server. Join the server with connected Steam profile at least once to be verified.",
 			"playtime_minimum": "You must have played some hours on the server to be verified.",
 			"role_removed": "You are unverified in __{server}__ server, as you don't have linked Steam account.\nComplete verification by following instructions in verification channel.",

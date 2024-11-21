@@ -17,10 +17,10 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import union.App;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -173,7 +173,6 @@ public class FileManager {
 
 	public String updateFile(String name, String internal) {
 		File file = getFile(name);
-		if (file == null) return "File not found.";
 		try {
 			File tempFile = File.createTempFile("check-", ".tmp");
 			if (!export(App.class.getResourceAsStream(internal), tempFile.toPath())) {
@@ -280,6 +279,38 @@ public class FileManager {
 			logger.warn("Couldn't process file {}.json", name, ex);
 		}
 		return Collections.emptyList();
+	}
+
+	@Nullable
+	public Boolean getBoolean(String name, String path){
+		File file = files.get(name);
+
+		if (file == null) return null;
+
+		try {
+			return JsonPath.using(CONF).parse(file).read("$." + path);
+		} catch (FileNotFoundException ex) {
+			logger.error("Couldn't find file {}.json", name);
+		} catch (IOException ex) {
+			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
+		}
+		return null;
+	}
+
+	@Nullable
+	public Integer getInteger(String name, String path){
+		File file = files.get(name);
+
+		if (file == null) return null;
+
+		try {
+			return JsonPath.using(CONF).parse(file).read("$." + path);
+		} catch (FileNotFoundException ex) {
+			logger.error("Couldn't find file {}.json", name);
+		} catch (IOException ex) {
+			logger.warn("Couldn't find \"{}\" in file {}.json", path, name, ex);
+		}
+		return null;
 	}
 
 	@NotNull

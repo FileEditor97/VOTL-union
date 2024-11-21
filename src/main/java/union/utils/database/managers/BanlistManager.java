@@ -19,7 +19,7 @@ public class BanlistManager extends LiteDBBase {
 
 	public boolean add(String table, long steam64, String reason) {
 		return executeWithRow("INSERT OR IGNORE INTO %s(steam64, reason) VALUES (%d, %s);"
-			.formatted(table, steam64, reason)) > 0;
+			.formatted(table, steam64, quote(reason))) > 0;
 	}
 
 	public boolean add(String table, long steam64, String reason, String details, String command) {
@@ -28,7 +28,7 @@ public class BanlistManager extends LiteDBBase {
 	}
 
 	public void purgeTable(String table) {
-		execute("DELETE * FROM %s;".formatted(table));
+		execute("DELETE FROM %s;".formatted(table));
 	}
 
 	public BanlistData search(long steam64) {

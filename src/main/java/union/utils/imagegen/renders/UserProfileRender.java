@@ -235,8 +235,8 @@ public class UserProfileRender extends Renderer {
 			int height = slot.isDoubleRow() ? 120 : 85;
 			// Card
 			g.setPaint(new GradientPaint(
-				x+5, y+height+30, info.getServerInfo().getColor(140),
-				x+height-30, y+40, background.getColors().getCardColor(),
+				x-5, y+height+40, info.getServerInfo().getColor(140),
+				x+height-20, y+30, background.getColors().getCardColor(),
 				false
 			));
 			g.fillRoundRect(x+2, y+2, width-2, height-2, 10, 10);

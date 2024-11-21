@@ -19,6 +19,7 @@ import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
 import union.helper.Helper;
+import union.metrics.Metrics;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
@@ -142,6 +143,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		try {
 			if (actions[0].equals("verify")) {
+				Metrics.interactionReceived.labelValue("verify").inc();
 				runButtonInteraction(event, Cooldown.BUTTON_VERIFY, () -> buttonVerify(event));
 				return;
 			}
@@ -151,6 +153,8 @@ public class InteractionListener extends ListenerAdapter {
 			// Continue...
 			switch (actions[0]) {
 				case "role" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("role:"+actions[1]).inc();
 					switch (actions[1]) {
 						case "start_request" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_SHOW, () -> buttonRoleShowSelection(event));
 						case "other" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_OTHER, () -> buttonRoleSelectionOther(event));
@@ -161,6 +165,8 @@ public class InteractionListener extends ListenerAdapter {
 					}
 				}
 				case "ticket" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("ticket:"+actions[1]).inc();
 					switch (actions[1]) {
 						case "role_create" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TICKET, () -> buttonRoleTicketCreate(event));
 						case "role_approve" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_APPROVE, () -> buttonRoleTicketApprove(event));
@@ -170,9 +176,21 @@ public class InteractionListener extends ListenerAdapter {
 						case "unclaim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_UNCLAIM, () -> buttonTicketUnclaim(event));
 					}
 				}
-				case "tag" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
-				case "invites" -> runButtonInteraction(event, Cooldown.BUTTON_INVITES, () -> buttonShowInvites(event));
-				case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_REPORT_DELETE, () -> buttonReportDelete(event));
+				case "tag" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("tag").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
+				}
+				case "invites" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("invites").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_INVITES, () -> buttonShowInvites(event));
+				}
+				case "delete" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("delete").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_REPORT_DELETE, () -> buttonReportDelete(event));
+				}
 				case "voice" -> {
 					if (!event.getMember().getVoiceState().inAudioChannel()) {
 						sendError(event, "bot.voice.listener.not_in_voice");
@@ -185,6 +203,8 @@ public class InteractionListener extends ListenerAdapter {
 					}
 					VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 					if (vc == null) return;
+					// Metrics
+					Metrics.interactionReceived.labelValue("voice:"+actions[1]).inc();
 					switch (actions[1]) {
 						case "lock" -> runButtonInteraction(event, null, () -> buttonVoiceLock(event, vc));
 						case "unlock" -> runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
@@ -196,12 +216,34 @@ public class InteractionListener extends ListenerAdapter {
 						case "delete" -> runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
 					}
 				}
-				case "blacklist" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonBlacklist(event));
-				case "sync_unban" -> runButtonInteraction(event, null, () -> buttonSyncUnban(event));
-				case "sync_ban" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncBan(event));
-				case "sync_kick" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncKick(event));
-				case "strikes" -> runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
+				case "blacklist" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("blacklist").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonBlacklist(event));
+				}
+				case "sync_unban" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("sync_unban").inc();
+					runButtonInteraction(event, null, () -> buttonSyncUnban(event));
+				}
+				case "sync_ban" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("sync_ban").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncBan(event));
+				}
+				case "sync_kick" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("sync_kick").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncKick(event));
+				}
+				case "strikes" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("strikes").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
+				}
 				case "thread" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("thread").inc();
 					switch (actions[1]) {
 						case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_DELETE, () -> buttonThreadDelete(event));
 						case "lock" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_LOCK, () -> buttonThreadLock(event));

@@ -47,6 +47,13 @@ public class Metrics {
 		.help("Total uncaught exceptions thrown by command invocation.")
 		.build();
 
+	// INTERACTIONS
+
+	public static final Counter interactionReceived = Counter.builder() // commands execution time, excluding terminated ones
+		.name("votl_interactions_received_total")
+		.help("Total received interactions.")
+		.build();
+
 	// DATABASE
 
 	public static final Counter databaseLiteQueries = Counter.builder()

@@ -110,7 +110,8 @@
 		"kick": "Kick",
 		"ban": "Ban",
 		"remove_role": "Remove role",
-		"add_role": "Add role"
+		"add_role": "Add role",
+		"temp_role": "Temp role"
 	},
 	"ticket": {
 		"close": "Close",
@@ -937,11 +938,20 @@
 						"name": "add-role",
 						"help": "Add role to the user"
 					},
+					"temp-role": {
+						"name": "temp-role",
+						"help": "Add temp role to the user"
+					},
+					"temp-duration": {
+						"name": "temp-duration",
+						"help": "Set temp role duration"
+					},
 					"one_option": "Only one of this options can be used: Kick, Mute or Ban.",
 					"ban_kick_role": "Can't give or remove role if options Mute or Ban are used.",
 					"same_role": "Can't give or remove same roles.",
-					"not_zero": "Mute duration can't be zero.",
+					"not_zero": "Mute/Temp role duration can't be zero.",
 					"incorrect_role": "I can't interact with provided role.",
+					"no_duration": "Duration for temp role is not set.",
 					"exists": "Action already exists. Remove it and re-add.",
 					"empty": "No options selected.",
 					"title": "Created action for receiving `%d` strikes:\n\n",
@@ -950,7 +960,8 @@
 					"vban": "User will be banned %s.\n",
 					"for": "for",
 					"vremove": "Role `%s` will be removed.\n",
-					"vadd": "Role `%s` will be added.\n"
+					"vadd": "Role `%s` will be added.\n",
+					"vtempadd": "Role `%s` will be temporally added for %s.\n"
 				},
 				"remove": {
 					"help": "Remove actions",

@@ -1,6 +1,7 @@
 package union.commands.verification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -208,23 +209,48 @@ public class AccountCmd extends CommandBase {
 		Optional.ofNullable(data.getOcto()).ifPresent(map -> {
 			banlistBuilder.append("\n> **")
 				.append(lu.getText(event, path+".banlist_octo"))
-				.append("**\n```\nReason: ")
-				.append(map.getOrDefault("reason", "-"))
-				.append("\nDetails: ")
-				.append(map.getOrDefault("details", "-"))
-				.append("\nCommand: ")
-				.append(map.getOrDefault("command", "-"))
-				.append("\n```");
+				.append("**\n")
+				.append(formatOcto(map));
 		});
-		Optional.ofNullable(data.getCustom()).ifPresent(reason -> {
+		Optional.ofNullable(data.getCustom()).ifPresent(reasons -> {
 			banlistBuilder.append("\n> **")
 				.append(lu.getText(event, path+".banlist_custom"))
-				.append("**\n```\nReason: ")
-				.append(reason)
-				.append("\n```");
+				.append("**\n")
+				.append(formatCustom(reasons));
 		});
 
+		if (banlistBuilder.length()>2048) banlistBuilder.setLength(2048);
 		if (!banlistBuilder.isEmpty())
 			embedBuilder.addField(lu.getText(event, path+".banlist_found"), banlistBuilder.toString(), false);
+	}
+
+	private String formatOcto(List<Map<String, String>> data) {
+		StringBuilder builder = new StringBuilder("```\n");
+		for (int i = 0; i < data.size(); i++) {
+			Map<String, String> map = data.get(i);
+			builder.append("-- [")
+				.append(i+1)
+				.append("] --\n1. ")
+				.append(map.getOrDefault("command", "-"))
+				.append("\n2. ")
+				.append(map.getOrDefault("reason", "-"))
+				.append("\n3. ")
+				.append(map.getOrDefault("details", "-"))
+				.append("\n");
+		}
+		return builder.append("```").toString();
+	}
+
+	private String formatCustom(List<String> reasons) {
+		StringBuilder builder = new StringBuilder("```\n");
+		for (int i = 0; i < reasons.size(); i++) {
+			final String reason = reasons.get(i);
+			builder.append("-- [")
+				.append(i+1)
+				.append("] --\n")
+				.append(reason)
+				.append("\n");
+		}
+		return builder.append("```").toString();
 	}
 }

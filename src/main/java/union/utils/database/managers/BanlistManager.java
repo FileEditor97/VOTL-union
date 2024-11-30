@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import org.jetbrains.annotations.Nullable;
 import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
@@ -12,16 +13,19 @@ public class BanlistManager extends LiteDBBase {
 		super(cu, null);
 	}
 
+	// Plain SteamID, unique
 	public boolean add(String table, long steam64) {
 		return executeWithRow("INSERT OR IGNORE INTO %s(steam64) VALUES (%d);"
 			.formatted(table, steam64)) > 0;
 	}
 
+	// With reason, not unique
 	public boolean add(String table, long steam64, String reason) {
 		return executeWithRow("INSERT OR IGNORE INTO %s(steam64, reason) VALUES (%d, %s);"
 			.formatted(table, steam64, quote(reason))) > 0;
 	}
 
+	// Octo, not unique
 	public boolean add(String table, long steam64, String reason, String details, String command) {
 		return executeWithRow("INSERT OR IGNORE INTO %s(steam64, reason, details, command) VALUES (%d, %s, %s, %s);"
 			.formatted(table, steam64, quote(reason), quote(details), quote(command))) > 0;
@@ -37,26 +41,32 @@ public class BanlistManager extends LiteDBBase {
 		if (contains("alium", steam64)) data.setAlium();
 		if (contains("mz", steam64)) data.setMz();
 
-		Map<String, String> map = contains("octo", steam64, true);
+		List<Map<String, String>> map = contains("octo", steam64, true);
 		if (map != null) data.setOcto(map);
 
 		map = contains("custom", steam64, false);
-		if (map != null) data.setCustom(map.get("reason"));
+		if (map != null) data.setCustom(map);
 
 		return data;
 	}
 
-	private Map<String, String> contains(String table, long steam64, boolean octo) {
-		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (steam64=%d)".formatted(table, steam64),
+	private List<Map<String, String>> contains(String table, long steam64, boolean octo) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (steam64=%d)".formatted(table, steam64),
 			octo?Set.of("reason","details","command"):Set.of("reason")
 		);
 		if (data==null || data.isEmpty()) return null;
-		if (octo) return Map.of(
-			"reason", String.valueOf(data.get("reason")),
-			"details", String.valueOf(data.get("details")),
-			"command", String.valueOf(data.get("command"))
-		);
-		return Map.of("reason", String.valueOf(data.get("reason")));
+		if (octo) return data.stream()
+			.map(m -> {
+				return Map.of(
+					"reason", String.valueOf(m.get("reason")),
+					"details", String.valueOf(m.get("details")),
+					"command", String.valueOf(m.get("command"))
+				);
+			})
+			.toList();
+		return data.stream()
+			.map(m -> Map.of("reason", String.valueOf(m.get("reason"))))
+			.toList();
 	}
 
 	private boolean contains(String table, long steam64) {
@@ -64,8 +74,9 @@ public class BanlistManager extends LiteDBBase {
 	}
 
 	public static class BanlistData {
-		private boolean alium, mz, octo, custom = false;
-		private Map<String, Map<String, String>> info;
+		private boolean alium, mz = false;
+		private int octo, custom = 0;
+		private Map<String, List<Map<String, String>>> info;
 
 		protected BanlistData() {}
 
@@ -77,16 +88,16 @@ public class BanlistManager extends LiteDBBase {
 			mz = true;
 		}
 
-		protected void setOcto(@NotNull Map<String, String> map) {
-			octo = true;
+		protected void setOcto(@NotNull List<Map<String, String>> map) {
+			octo = map.size();
 			if (info == null) info = new HashMap<>();
 			info.put("octo", map);
 		}
 
-		protected void setCustom(@NotNull String reason) {
-			custom = true;
+		protected void setCustom(@NotNull List<Map<String, String>> map) {
+			custom = map.size();
 			if (info == null) info = new HashMap<>();
-			info.put("custom", Collections.singletonMap("reason", reason));
+			info.put("custom", map);
 		}
 
 		public boolean isAlium() {
@@ -97,16 +108,28 @@ public class BanlistManager extends LiteDBBase {
 			return mz;
 		}
 
-		public Map<String, String> getOcto() {
-			return octo?info.get("octo"):null;
+		public boolean hasOcto() {
+			return octo > 0;
 		}
 
-		public String getCustom() {
-			return custom?info.get("custom").get("reason"):null;
+		public boolean hasCustom() {
+			return custom > 0;
+		}
+
+		@Nullable
+		public List<Map<String, String>> getOcto() {
+			return hasOcto()?info.get("octo"):null;
+		}
+
+		@Nullable
+		public List<String> getCustom() {
+			return hasCustom() ?
+				info.get("custom").stream().map(m->m.get("reason")).toList() :
+				null;
 		}
 
 		public boolean isEmpty() {
-			return !(alium||mz||octo||custom);
+			return !(alium||mz||hasOcto()||hasCustom());
 		}
 
 	}

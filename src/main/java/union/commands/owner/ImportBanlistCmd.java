@@ -89,7 +89,7 @@ public class ImportBanlistCmd extends CommandBase {
 							.addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL))
 						.parse(inputStream).read("$[*]");
 					if (!list.isEmpty()) {
-						int keySize = list.get(0).keySet().size();
+						int keySize = list.get(0).size();
 						if (keySize == 4) {
 							// Octo table
 							for (Map<String, String> map : list) {

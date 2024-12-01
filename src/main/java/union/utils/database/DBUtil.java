@@ -64,6 +64,7 @@ public class DBUtil {
 	public final TempBanManager tempBan;
 	public final ModReportManager modReport;
 	public final PersistentManager persistent;
+	public final CommentsManager comments;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -121,6 +122,7 @@ public class DBUtil {
 		tempBan = new TempBanManager(connectionUtil);
 		modReport = new ModReportManager(connectionUtil);
 		persistent = new PersistentManager(connectionUtil);
+		comments = new CommentsManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, settings, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, settings, urlCentralTemp, userCentral, passCentral);

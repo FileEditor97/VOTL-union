@@ -2119,7 +2119,9 @@
 				"banlist_alium": "On the list of bad players.",
 				"banlist_mz": "Banned on MZ.",
 				"banlist_octo": "Banned on Octothorp:",
-				"banlist_custom": "In custom banlist:"
+				"banlist_custom": "In custom banlist:",
+				"comments_view": "View [%s] comment/-s",
+				"no_comments": "No comments found for this SteamID."
 			},
 			"vfcheck": {
 				"help": "Manage user verification auto-check",
@@ -2150,6 +2152,41 @@
 					"done_hours": "User must have **played at least `%s` hours** to verify.",
 					"done_once": "User must have **joined the server at least once** to verify.",
 					"done_disabled": "Playtime requirement has been disabled."
+				}
+			},
+			"comment": {
+				"help": "Manage player comments",
+				"usage": "comment",
+				"add": {
+					"help": "Comment on player (SteamID)",
+					"usage": "add <SteamID | Steam64> <text>",
+					"steam": {
+						"name": "steam",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"text": {
+						"name": "text",
+						"help": "Enter comment"
+					},
+					"done": "Added comment to `%s`.\n> %s"
+				},
+				"delete": {
+					"help": "Delete comment",
+					"usage": "delete <SteamID | Steam64>",
+					"steam": {
+						"name": "steam",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"done": "Deleted yours comment on `%s`."
+				},
+				"clear": {
+					"help": "Clear comments (OP)",
+					"usage": "clear <SteamID | Steam64>",
+					"steam": {
+						"name": "steam",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"done": "Deleted all comments on `%s`."
 				}
 			}
 		},

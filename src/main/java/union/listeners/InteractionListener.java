@@ -73,6 +73,8 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import union.utils.message.TimeUtil;
 
+import static union.utils.CastUtil.castLong;
+
 @SuppressWarnings("DataFlowIssue")
 public class InteractionListener extends ListenerAdapter {
 
@@ -129,7 +131,7 @@ public class InteractionListener extends ListenerAdapter {
 	private final Set<String> acceptableButtons = Set.of(
 		"verify", "role", "ticket", "tag", "invites",
 		"delete", "voice", "blacklist", "strikes", "sync_unban",
-		"sync_ban", "sync_kick", "thread"
+		"sync_ban", "sync_kick", "thread", "comments"
 	);
 
 
@@ -247,6 +249,12 @@ public class InteractionListener extends ListenerAdapter {
 					switch (actions[1]) {
 						case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_DELETE, () -> buttonThreadDelete(event));
 						case "lock" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_LOCK, () -> buttonThreadLock(event));
+					}
+				}
+				case "comments" -> {
+					Metrics.interactionReceived.labelValue("comments").inc();
+					if (actions[1].equals("show")) {
+						runButtonInteraction(event, Cooldown.BUTTON_COMMENTS_SHOW, () -> buttonCommentsShow(event));
 					}
 				}
 			}
@@ -1543,12 +1551,49 @@ public class InteractionListener extends ListenerAdapter {
 
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "threads.locked"))
-				.build()).queue(msg -> {
+				.build()
+		).queue(msg -> {
 			event.getChannel().asThreadChannel().getManager().setLocked(true).setArchived(true)
 					.reason("By "+event.getUser().getEffectiveName()).queueAfter(5, TimeUnit.SECONDS);
 		});
 	}
 
+	// Comments
+	private void buttonCommentsShow(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access or higher
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		long steam64 = Long.parseLong(event.getComponentId().split(":")[2]);
+		List<Map<String, Object>> comments = db.comments.getComments(steam64);
+
+		if (comments.isEmpty()) {
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
+				.setDescription(lu.getText(event, "bot.verification.account.no_comments"))
+				.build()
+			).queue();
+			return;
+		}
+
+		StringBuilder builder = new StringBuilder();
+		comments.forEach(m -> {
+			if (builder.length() > 4000) return;
+			final Instant timestamp = Instant.ofEpochSecond(castLong(m.get("timestamp")));
+			builder.append("\n> ").append(m.get("comment"))
+				.append("\n\\- <@").append(m.get("authorId")).append("> ")
+				.append(TimeUtil.formatTime(timestamp, false));
+		});
+
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
+			.setDescription(builder.toString())
+			.build()
+		).setEphemeral(true).queue();
+	}
+
+
+	// MODALS
 	@Override
 	public void onModalInteraction(@NotNull ModalInteractionEvent event) {
 		event.deferEdit().queue();
@@ -1855,7 +1900,8 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_SYNC_ACTION(10, CooldownScope.CHANNEL),
 		BUTTON_MODIFY_CONFIRM(10, CooldownScope.USER),
 		BUTTON_THREAD_DELETE(10, CooldownScope.GUILD),
-		BUTTON_THREAD_LOCK(10, CooldownScope.GUILD);
+		BUTTON_THREAD_LOCK(10, CooldownScope.GUILD),
+		BUTTON_COMMENTS_SHOW(10, CooldownScope.USER),;
 
 		private final int time;
 		private final CooldownScope scope;

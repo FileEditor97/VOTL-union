@@ -31,3 +31,4 @@ CREATE TABLE "cases_new" ("rowId" INTEGER, "localId" INTEGER, "type" INTEGER NOT
 ALTER TABLE "guild" ADD "rulesLink" TEXT; CREATE TABLE "modReport" ("guildId" INTEGER NOT NULL UNIQUE, "channelId" INTEGER NOT NULL, "roleIds" TEXT NOT NULL, "nextReport" INTEGER NOT NULL, "interval" INTEGER NOT NULL DEFAULT 7);
 CREATE TABLE "persistentRole" ("roleId" INTEGER NOT NULL UNIQUE, "guildId" INTEGER NOT NULL); CREATE TABLE "returnRole" ("guildId" INTEGER NOT NULL, "userId" INTEGER NOT NULL, "roleIds" TEXT NOT NULL, "expiresAfter" INTEGER, UNIQUE("guildId","userId"))
 ALTER TABLE "ticketSettings" ADD "roleSupport" TEXT; UPDATE requestRole SET type=3 WHERE (type=2); UPDATE requestRole SET type=2 WHERE (type=1);
+CREATE TABLE "playerComments" ("steam64" INTEGER NOT NULL, "authorId" INTEGER NOT NULL, "comment" TEXT, "timestamp" INTEGER NOT NULL, UNIQUE("steam64","authorId"));

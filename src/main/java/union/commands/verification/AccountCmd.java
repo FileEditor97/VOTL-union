@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import union.base.command.CooldownScope;
@@ -67,7 +69,7 @@ public class AccountCmd extends CommandBase {
 				try {
 					steam64 = Long.parseLong(input);
 				} catch (NumberFormatException ex) {
-					editError(event, "errors.error", ex.getMessage());
+					editErrorOther(event,  ex.getMessage());
 					return;
 				}
 			}
@@ -133,20 +135,27 @@ public class AccountCmd extends CommandBase {
 			list.stream().filter(UnionPlayerManager.PlayerInfo::exists).forEach(playerInfo -> {
 				builder.addField(
 					playerInfo.getServerInfo().getTitle(),
-					lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime()),
+					lu.getText(event, path+".field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime()),
 					false
 				);
 			});
 		} else {
 			list.forEach(playerInfo -> {
 				String value = playerInfo.exists()
-					? lu.getText(event, "bot.verification.account.field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
-					: lu.getText(event, "bot.verification.account.no_data");
+					? lu.getText(event, path+".field_info").formatted(playerInfo.getRank(), playerInfo.getPlayTime())
+					: lu.getText(event, path+".no_data");
 				builder.addField(playerInfo.getServerInfo().getTitle(), value, false);
 			});
 		}
-		
-		editEmbed(event, builder.build());
+
+		int commentCount = bot.getDBUtil().comments.countComments(steam64);
+		if (commentCount > 0) {
+			Button commentButton = Button.primary("comments:show:"+steam64, lu.getText(event, path+".comments_view").formatted(commentCount))
+				.withEmoji(Emoji.fromUnicode("ℹ️"));
+			event.getHook().editOriginalEmbeds(builder.build()).setActionRow(commentButton).queue();
+		} else {
+			editEmbed(event, builder.build());
+		}
 	}
 
 	private void replyAccountBans(final SlashCommandEvent event, final Long steam64, @Nullable final User user) {
@@ -188,7 +197,14 @@ public class AccountCmd extends CommandBase {
 
 		addBanlist(event, builder, steam64, steamId);
 
-		editEmbed(event, builder.build());
+		int commentCount = bot.getDBUtil().comments.countComments(steam64);
+		if (commentCount > 0) {
+			Button commentButton = Button.primary("comments:show:"+steam64, lu.getText(event, path+".comments_view").formatted(commentCount))
+				.withEmoji(Emoji.fromUnicode("ℹ️"));
+			event.getHook().editOriginalEmbeds(builder.build()).setActionRow(commentButton).queue();
+		} else {
+			editEmbed(event, builder.build());
+		}
 	}
 
 	private void addBanlist(SlashCommandEvent event, EmbedBuilder embedBuilder, long steam64, String steamId) {

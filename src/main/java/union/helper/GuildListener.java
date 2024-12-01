@@ -27,7 +27,7 @@ public class GuildListener extends ListenerAdapter {
 	private final Helper helper;
 
 	private final List<ActionType> watchedTypes = List.of(ActionType.BAN, ActionType.CHANNEL_DELETE, ActionType.ROLE_DELETE, ActionType.INTEGRATION_DELETE);
-	private final int triggerAmount = 6;
+	private final int TRIGGER_AMOUNT = 6;
 
 	public GuildListener(Helper helper) {
 		this.helper = helper;
@@ -45,6 +45,7 @@ public class GuildListener extends ListenerAdapter {
 				helper.getLogUtil().group.helperInformAction(groupId, event.getGuild(), event.getEntry())
 			);
 		}
+
 		// Alerts
 		if (watchedTypes.contains(event.getEntry().getType())) {
 			UserSnowflake admin = UserSnowflake.fromId(event.getEntry().getUserIdLong());
@@ -52,15 +53,16 @@ public class GuildListener extends ListenerAdapter {
 			if (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser())) return;
 			// Check if anticrash enabled in this guild or group's master guild
 			long guildId = event.getGuild().getIdLong();
-			AnticrashAction action = helper.getDBUtil().guildSettings.getAnticrashAction(guildId);
+			AnticrashAction action = helper.getDBUtil().guildSettings.getCachedAnticrashAction(guildId);
 			if (action == null) {
-				// cache is empty
-				action = helper.getDBUtil().getGuildSettings(guildId).anticrashAction();
+				// this guild's cache is empty, try caching
+				action = helper.getDBUtil().getGuildSettings(guildId).getAnticrashAction();
+				// if disabled - check group
 				if (!action.isEnabled())
 					action = helper.getDBUtil().group.getGuildGroups(guildId)
 						.stream()
 						.map(group -> helper.getDBUtil().group.getOwner(group))
-						.map(owner -> helper.getDBUtil().getGuildSettings(owner).anticrashAction())
+						.map(owner -> helper.getDBUtil().getGuildSettings(owner).getAnticrashAction())
 						.filter(AnticrashAction::isEnabled)
 						.findFirst()
 						.orElse(AnticrashAction.DISABLED);
@@ -72,7 +74,7 @@ public class GuildListener extends ListenerAdapter {
 			// add 1 point for action
 			helper.getDBUtil().alerts.addPoint(guildId, admin.getIdLong());
 			int amount = helper.getDBUtil().alerts.getPoints(guildId, admin.getIdLong());
-			if (amount >= triggerAmount && amount < triggerAmount+3) {
+			if (amount >= TRIGGER_AMOUNT && amount < TRIGGER_AMOUNT+3) {
 				// Threshold amount reached - possible harmful behaviour
 				AnticrashAction finalAction = action;
 				event.getGuild().retrieveMember(admin).queue(member -> {

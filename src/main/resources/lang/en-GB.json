@@ -110,7 +110,8 @@
 		"kick": "Kick",
 		"ban": "Ban",
 		"remove_role": "Remove role",
-		"add_role": "Add role"
+		"add_role": "Add role",
+		"temp_role": "Temp role"
 	},
 	"ticket": {
 		"close": "Close",
@@ -570,9 +571,13 @@
 					},
 					"not_found": "Command not found or has no information."
 				},
-				"stats": {
+				"command-stats": {
 					"help": "View command use",
-					"usage": "stats"
+					"usage": "command-stats"
+				},
+				"button-stats": {
+					"help": "View button/interaction use",
+					"usage": "button-stats"
 				}
 			},
 			"banlist": {
@@ -933,11 +938,20 @@
 						"name": "add-role",
 						"help": "Add role to the user"
 					},
+					"temp-role": {
+						"name": "temp-role",
+						"help": "Add temp role to the user"
+					},
+					"temp-duration": {
+						"name": "temp-duration",
+						"help": "Set temp role duration"
+					},
 					"one_option": "Only one of this options can be used: Kick, Mute or Ban.",
 					"ban_kick_role": "Can't give or remove role if options Mute or Ban are used.",
 					"same_role": "Can't give or remove same roles.",
-					"not_zero": "Mute duration can't be zero.",
+					"not_zero": "Mute/Temp role duration can't be zero.",
 					"incorrect_role": "I can't interact with provided role.",
+					"no_duration": "Duration for temp role is not set.",
 					"exists": "Action already exists. Remove it and re-add.",
 					"empty": "No options selected.",
 					"title": "Created action for receiving `%d` strikes:\n\n",
@@ -946,7 +960,8 @@
 					"vban": "User will be banned %s.\n",
 					"for": "for",
 					"vremove": "Role `%s` will be removed.\n",
-					"vadd": "Role `%s` will be added.\n"
+					"vadd": "Role `%s` will be added.\n",
+					"vtempadd": "Role `%s` will be temporally added for %s.\n"
 				},
 				"remove": {
 					"help": "Remove actions",
@@ -1994,7 +2009,7 @@
 			"you_verified": "You are already verified (has role)",
 			"user_verified": "User is already verified (has role)",
 			"user_not_verified": "User is not verified",
-			"blacklisted": "You are blacklisted from completing verification.",
+			"blacklisted": "You are not allowed to complete verification (blacklist).",
 			"playtime_none": "You haven't played on the server. Join the server with connected Steam profile at least once to be verified.",
 			"playtime_minimum": "You must have played some hours on the server to be verified.",
 			"role_removed": "You are unverified in __{server}__ server, as you don't have linked Steam account.\nComplete verification by following instructions in verification channel.",
@@ -2104,7 +2119,9 @@
 				"banlist_alium": "On the list of bad players.",
 				"banlist_mz": "Banned on MZ.",
 				"banlist_octo": "Banned on Octothorp:",
-				"banlist_custom": "In custom banlist:"
+				"banlist_custom": "In custom banlist:",
+				"comments_view": "View [%s] comment/-s",
+				"no_comments": "No comments found for this SteamID."
 			},
 			"vfcheck": {
 				"help": "Manage user verification auto-check",
@@ -2135,6 +2152,41 @@
 					"done_hours": "User must have **played at least `%s` hours** to verify.",
 					"done_once": "User must have **joined the server at least once** to verify.",
 					"done_disabled": "Playtime requirement has been disabled."
+				}
+			},
+			"comment": {
+				"help": "Manage player comments",
+				"usage": "comment",
+				"add": {
+					"help": "Comment on player (SteamID)",
+					"usage": "add <SteamID | Steam64> <text>",
+					"steam": {
+						"name": "steam",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"text": {
+						"name": "text",
+						"help": "Enter comment"
+					},
+					"done": "Added comment to `%s`.\n> %s"
+				},
+				"delete": {
+					"help": "Delete comment",
+					"usage": "delete <SteamID | Steam64>",
+					"steam": {
+						"name": "steam",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"done": "Deleted yours comment on `%s`."
+				},
+				"clear": {
+					"help": "Clear comments (OP)",
+					"usage": "clear <SteamID | Steam64>",
+					"steam": {
+						"name": "steam",
+						"help": "Enter SteamID or Steam64 ID"
+					},
+					"done": "Deleted all comments on `%s`."
 				}
 			}
 		},

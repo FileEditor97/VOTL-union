@@ -464,13 +464,13 @@ public class LoggingUtil {
 
 		public void onVerified(User user, Long steam64, Guild guild) {
 			sendLog(guild, type, () -> logUtil.verifiedEmbed(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
-				(steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64)
+				(steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64)
 			);
 		}
 
 		public void onUnverified(User user, Long steam64, Guild guild, String reason) {
 			sendLog(guild, type, () -> logUtil.unverifiedEmbed(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
-				(steam64 == null ? null : db.unionVerify.getSteamName(steam64.toString())), steam64, reason)
+				(steam64 == null ? null : db.unionVerify.getSteamName(steam64)), steam64, reason)
 			);
 		}
 

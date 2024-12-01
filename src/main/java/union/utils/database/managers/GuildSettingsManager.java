@@ -55,8 +55,12 @@ public class GuildSettingsManager extends LiteDBBase {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
 	}
 
-	public AnticrashAction getAnticrashAction(long guildId) {
+	public AnticrashAction getCachedAnticrashAction(long guildId) {
 		return anticrashCache.get(guildId);
+	}
+
+	public void addAnticrashCache(long guildId, AnticrashAction action) {
+		anticrashCache.put(guildId, action);
 	}
 
 	public void remove(long guildId) {
@@ -140,17 +144,16 @@ public class GuildSettingsManager extends LiteDBBase {
 		return execute("INSERT INTO %s(guildId, informDelstrike) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET informDelstrike=%<d".formatted(table, guildId, informLevel.getLevel()));
 	}
 
-
-	public void addAnticrashCache(long guildId, AnticrashAction action) {
-		anticrashCache.put(guildId, action);
-	}
-
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
 
 	private void invalidateAnticrashCache(long guildId) {
 		anticrashCache.pull(guildId);
+	}
+
+	public void purgeAnticrashCache() {
+		anticrashCache.purge();
 	}
 
 	public static class GuildSettings {
@@ -236,7 +239,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			return (modulesOff & module.getValue()) == module.getValue();
 		}
 
-		public AnticrashAction anticrashAction() {
+		public AnticrashAction getAnticrashAction() {
 			return anticrash;
 		}
 

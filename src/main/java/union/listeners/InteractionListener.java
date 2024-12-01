@@ -19,6 +19,7 @@ import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
 import union.helper.Helper;
+import union.metrics.Metrics;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
@@ -71,6 +72,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import union.utils.message.TimeUtil;
+
+import static union.utils.CastUtil.castLong;
 
 @SuppressWarnings("DataFlowIssue")
 public class InteractionListener extends ListenerAdapter {
@@ -128,7 +131,7 @@ public class InteractionListener extends ListenerAdapter {
 	private final Set<String> acceptableButtons = Set.of(
 		"verify", "role", "ticket", "tag", "invites",
 		"delete", "voice", "blacklist", "strikes", "sync_unban",
-		"sync_ban", "sync_kick", "thread"
+		"sync_ban", "sync_kick", "thread", "comments"
 	);
 
 
@@ -142,6 +145,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		try {
 			if (actions[0].equals("verify")) {
+				Metrics.interactionReceived.labelValue("verify").inc();
 				runButtonInteraction(event, Cooldown.BUTTON_VERIFY, () -> buttonVerify(event));
 				return;
 			}
@@ -151,6 +155,8 @@ public class InteractionListener extends ListenerAdapter {
 			// Continue...
 			switch (actions[0]) {
 				case "role" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("role:"+actions[1]).inc();
 					switch (actions[1]) {
 						case "start_request" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_SHOW, () -> buttonRoleShowSelection(event));
 						case "other" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_OTHER, () -> buttonRoleSelectionOther(event));
@@ -161,6 +167,8 @@ public class InteractionListener extends ListenerAdapter {
 					}
 				}
 				case "ticket" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("ticket:"+actions[1]).inc();
 					switch (actions[1]) {
 						case "role_create" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_TICKET, () -> buttonRoleTicketCreate(event));
 						case "role_approve" -> runButtonInteraction(event, Cooldown.BUTTON_ROLE_APPROVE, () -> buttonRoleTicketApprove(event));
@@ -170,9 +178,21 @@ public class InteractionListener extends ListenerAdapter {
 						case "unclaim" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_UNCLAIM, () -> buttonTicketUnclaim(event));
 					}
 				}
-				case "tag" -> runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
-				case "invites" -> runButtonInteraction(event, Cooldown.BUTTON_INVITES, () -> buttonShowInvites(event));
-				case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_REPORT_DELETE, () -> buttonReportDelete(event));
+				case "tag" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("tag").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_TICKET_CREATE, () -> buttonTagCreateTicket(event));
+				}
+				case "invites" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("invites").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_INVITES, () -> buttonShowInvites(event));
+				}
+				case "delete" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("delete").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_REPORT_DELETE, () -> buttonReportDelete(event));
+				}
 				case "voice" -> {
 					if (!event.getMember().getVoiceState().inAudioChannel()) {
 						sendError(event, "bot.voice.listener.not_in_voice");
@@ -185,6 +205,8 @@ public class InteractionListener extends ListenerAdapter {
 					}
 					VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);
 					if (vc == null) return;
+					// Metrics
+					Metrics.interactionReceived.labelValue("voice:"+actions[1]).inc();
 					switch (actions[1]) {
 						case "lock" -> runButtonInteraction(event, null, () -> buttonVoiceLock(event, vc));
 						case "unlock" -> runButtonInteraction(event, null, () -> buttonVoiceUnlock(event, vc));
@@ -196,15 +218,43 @@ public class InteractionListener extends ListenerAdapter {
 						case "delete" -> runButtonInteraction(event, null, () -> buttonVoiceDelete(event, vc));
 					}
 				}
-				case "blacklist" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonBlacklist(event));
-				case "sync_unban" -> runButtonInteraction(event, null, () -> buttonSyncUnban(event));
-				case "sync_ban" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncBan(event));
-				case "sync_kick" -> runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncKick(event));
-				case "strikes" -> runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
+				case "blacklist" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("blacklist").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonBlacklist(event));
+				}
+				case "sync_unban" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("sync_unban").inc();
+					runButtonInteraction(event, null, () -> buttonSyncUnban(event));
+				}
+				case "sync_ban" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("sync_ban").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncBan(event));
+				}
+				case "sync_kick" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("sync_kick").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SYNC_ACTION, () -> buttonSyncKick(event));
+				}
+				case "strikes" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("strikes").inc();
+					runButtonInteraction(event, Cooldown.BUTTON_SHOW_STRIKES, () -> buttonShowStrikes(event));
+				}
 				case "thread" -> {
+					// Metrics
+					Metrics.interactionReceived.labelValue("thread").inc();
 					switch (actions[1]) {
 						case "delete" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_DELETE, () -> buttonThreadDelete(event));
 						case "lock" -> runButtonInteraction(event, Cooldown.BUTTON_THREAD_LOCK, () -> buttonThreadLock(event));
+					}
+				}
+				case "comments" -> {
+					Metrics.interactionReceived.labelValue("comments").inc();
+					if (actions[1].equals("show")) {
+						runButtonInteraction(event, Cooldown.BUTTON_COMMENTS_SHOW, () -> buttonCommentsShow(event));
 					}
 				}
 			}
@@ -1501,12 +1551,49 @@ public class InteractionListener extends ListenerAdapter {
 
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "threads.locked"))
-				.build()).queue(msg -> {
+				.build()
+		).queue(msg -> {
 			event.getChannel().asThreadChannel().getManager().setLocked(true).setArchived(true)
 					.reason("By "+event.getUser().getEffectiveName()).queueAfter(5, TimeUnit.SECONDS);
 		});
 	}
 
+	// Comments
+	private void buttonCommentsShow(ButtonInteractionEvent event) {
+		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			// User has no Helper access or higher
+			sendError(event, "errors.interaction.no_access");
+			return;
+		}
+
+		long steam64 = Long.parseLong(event.getComponentId().split(":")[2]);
+		List<Map<String, Object>> comments = db.comments.getComments(steam64);
+
+		if (comments.isEmpty()) {
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
+				.setDescription(lu.getText(event, "bot.verification.account.no_comments"))
+				.build()
+			).queue();
+			return;
+		}
+
+		StringBuilder builder = new StringBuilder();
+		comments.forEach(m -> {
+			if (builder.length() > 4000) return;
+			final Instant timestamp = Instant.ofEpochSecond(castLong(m.get("timestamp")));
+			builder.append("\n> ").append(m.get("comment"))
+				.append("\n\\- <@").append(m.get("authorId")).append("> ")
+				.append(TimeUtil.formatTime(timestamp, false));
+		});
+
+		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
+			.setDescription(builder.toString())
+			.build()
+		).setEphemeral(true).queue();
+	}
+
+
+	// MODALS
 	@Override
 	public void onModalInteraction(@NotNull ModalInteractionEvent event) {
 		event.deferEdit().queue();
@@ -1813,7 +1900,8 @@ public class InteractionListener extends ListenerAdapter {
 		BUTTON_SYNC_ACTION(10, CooldownScope.CHANNEL),
 		BUTTON_MODIFY_CONFIRM(10, CooldownScope.USER),
 		BUTTON_THREAD_DELETE(10, CooldownScope.GUILD),
-		BUTTON_THREAD_LOCK(10, CooldownScope.GUILD);
+		BUTTON_THREAD_LOCK(10, CooldownScope.GUILD),
+		BUTTON_COMMENTS_SHOW(10, CooldownScope.USER),;
 
 		private final int time;
 		private final CooldownScope scope;

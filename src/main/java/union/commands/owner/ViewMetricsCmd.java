@@ -18,7 +18,7 @@ public class ViewMetricsCmd extends CommandBase {
 	public ViewMetricsCmd() {
 		this.name = "metrics";
 		this.path = "bot.owner.metrics";
-		this.children = new SlashCommand[]{new CommandInfo(), new Stats()};
+		this.children = new SlashCommand[]{new CommandInfo(), new CommandStats(), new ButtonStats()};
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;
 		this.guildOnly = false;
@@ -64,10 +64,10 @@ public class ViewMetricsCmd extends CommandBase {
 		}
 	}
 
-	public class Stats extends SlashCommand {
-		public Stats() {
-			this.name = "stats";
-			this.path = "bot.owner.metrics.stats";
+	public class CommandStats extends SlashCommand {
+		public CommandStats() {
+			this.name = "command-stats";
+			this.path = "bot.owner.metrics.command-stats";
 		}
 
 		@Override
@@ -76,6 +76,32 @@ public class ViewMetricsCmd extends CommandBase {
 
 			StringBuilder builder = new StringBuilder("```\n");
 			Metrics.commandsReceived.collect()
+				.entrySet()
+				.stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+				.forEach(e -> builder.append("%4d | %s\n".formatted(e.getValue(), e.getKey())));
+
+			if (builder.length() < 6) {
+				event.getHook().editOriginal(Constants.FAILURE+" Empty").queue();
+			} else {
+				builder.append("```");
+				if (builder.length() > 2048) builder.setLength(2048);
+				event.getHook().editOriginal(builder.toString()).queue();
+			}
+		}
+	}
+
+	public class ButtonStats extends SlashCommand {
+		public ButtonStats() {
+			this.name = "button-stats";
+			this.path = "bot.owner.metrics.button-stats";
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			StringBuilder builder = new StringBuilder("```\n");
+			Metrics.interactionReceived.collect()
 				.entrySet()
 				.stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
 				.forEach(e -> builder.append("%4d | %s\n".formatted(e.getValue(), e.getKey())));

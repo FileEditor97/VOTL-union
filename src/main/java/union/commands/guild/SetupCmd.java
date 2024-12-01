@@ -198,6 +198,8 @@ public class SetupCmd extends CommandBase {
 				editErrorUnknown(event, "Database error.");
 				return;
 			}
+			// Clear anticrash cache (easier to purge all cache, than for of each member)
+			bot.getDBUtil().guildSettings.purgeAnticrashCache();
 
 			if (event.hasOption("ping")) {
 				Mentions mentions = event.optMentions("ping");

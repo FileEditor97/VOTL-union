@@ -55,7 +55,7 @@ public class TicketUtil {
 		} else {
 			final String finalReason = reasonClosed==null ? "-" : (
 				reasonClosed.equals("activity") || reasonClosed.equals("time") ?
-				bot.getLocaleUtil().getLocalized(guild.getLocale(), "logger.tickets.autoclose") :
+				bot.getLocaleUtil().getLocalized(guild.getLocale(), "logger.tickets.autoclosed") :
 				reasonClosed);
 
 			DiscordHtmlTranscripts transcripts = DiscordHtmlTranscripts.getInstance();

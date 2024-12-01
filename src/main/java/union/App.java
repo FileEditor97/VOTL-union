@@ -199,6 +199,7 @@ public class App {
 				new UnverifyCmd(),
 				new AccountCmd(),
 				new VerifyCheckCmd(),
+				new CommentCmd(),
 				// ticketing
 				new RolesPanelCmd(),
 				new TicketCountCmd(),

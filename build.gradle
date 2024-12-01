@@ -29,13 +29,13 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path
 	implementation 'com.jayway.jsonpath:json-path:2.9.0'			// json path-er
 	// https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-	implementation 'org.xerial:sqlite-jdbc:3.47.0.0'				// sqlite database
+	implementation 'org.xerial:sqlite-jdbc:3.47.1.0'				// sqlite database
 	// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
 	implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'		// mariaDB (MySQL) database
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
-	implementation 'org.jsoup:jsoup:1.18.1'							// HTML tools
+	implementation 'org.jsoup:jsoup:1.18.2'							// HTML tools
 	// https://mvnrepository.com/artifact/io.github.java-diff-utils/java-diff-utils
-	implementation 'io.github.java-diff-utils:java-diff-utils:4.12' // Diff finder
+	implementation 'io.github.java-diff-utils:java-diff-utils:4.15' // Diff finder
 	// https://mvnrepository.com/artifact/org.json/json
 	implementation 'org.json:json:20240303'                         // JsonObject
 

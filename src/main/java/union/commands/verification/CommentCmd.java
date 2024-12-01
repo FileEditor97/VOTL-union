@@ -164,8 +164,6 @@ public class CommentCmd extends CommandBase {
 				return;
 			}
 
-			final long authorId = event.getUser().getIdLong();
-
 			// Remove from DB
 			if (!bot.getDBUtil().comments.removePlayer(steam64)) {
 				editErrorOther(event, "Failed to clear comments.");

@@ -454,7 +454,10 @@ public class LoggingUtil {
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
-			sendLog(master, type, () -> logUtil.informUserVerify(master.getLocale(), groupId, targetGuild, targetUser, actionTaken));
+			if (targetUser.isBot())
+				sendLog(master, type, () -> logUtil.informBotVerify(master.getLocale(), groupId, targetGuild, targetUser, actionTaken));
+			else
+				sendLog(master, type, () -> logUtil.informUserVerify(master.getLocale(), groupId, targetGuild, targetUser, actionTaken));
 		}
 	}
 

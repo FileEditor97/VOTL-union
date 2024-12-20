@@ -795,6 +795,16 @@ public class LogEmbedUtil {
 			.build();
 	}
 
+	@NotNull
+	public MessageEmbed informBotVerify(DiscordLocale locale, int groupId, Guild guild, User user, String actionTaken) {
+		return new LogEmbedBuilder(locale, AMBER_LIGHT)
+			.setHeaderIcon("helper.bot_not_allowed", guild.getIconUrl(), guild.getName())
+			.setUser(user.getIdLong())
+			.addField("helper.action", actionTaken, false)
+			.setFooter("Group ID: "+groupId)
+			.build();
+	}
+
 
 	// Verification
 	@NotNull

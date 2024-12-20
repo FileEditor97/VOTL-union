@@ -352,7 +352,8 @@
 			"guild_id": "Server ID",
 			"alert": "Misconduct detected in '%s'!",
 			"action": "Action performed",
-			"not_verified": "Joined user was not verified in %s"
+			"not_verified": "Joined user was not verified in %s",
+			"bot_not_allowed": "Bot is not in the whitelist"
 		},
 		"other": {
 			"name": "Audit logs (not used!)",
@@ -437,6 +438,19 @@
 				},
 				"no_guild": "Selected server not found.",
 				"done": "Assigned {target} access {level}."
+			},
+			"checkaccess": {
+				"help": "Check user's access in selected server",
+				"usage": "checkaccess <Server ID> <@User>",
+				"server": {
+					"name": "server",
+					"help": "Enter server's ID"
+				},
+				"user": {
+					"name": "user",
+					"help": "Enter user's ID"
+				},
+				"no_guild": "Selected server not found."
 			},
 			"settings": {
 				"help": "Manage bot settings",

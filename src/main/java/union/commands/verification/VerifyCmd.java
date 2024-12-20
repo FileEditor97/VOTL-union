@@ -27,7 +27,7 @@ public class VerifyCmd extends CommandBase {
 		this.botPermissions = new Permission[]{Permission.MANAGE_ROLES};
 		this.module = CmdModule.VERIFICATION;
 		this.category = CmdCategory.VERIFICATION;
-		this.accessLevel = CmdAccessLevel.MOD;
+		this.accessLevel = CmdAccessLevel.ADMIN;
 	}
 
 	@Override

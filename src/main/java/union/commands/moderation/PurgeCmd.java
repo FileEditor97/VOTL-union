@@ -39,7 +39,7 @@ public class PurgeCmd extends CommandBase {
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.MOD;
 		this.cooldown = 20;
-		this.cooldownScope = CooldownScope.CHANNEL;
+		this.cooldownScope = CooldownScope.USER;
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
+import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CaseType;
@@ -45,6 +46,8 @@ public class GameStrikeCmd extends CommandBase {
 		this.category = CmdCategory.GAMES;
 		this.module = CmdModule.GAMES;
 		this.accessLevel = CmdAccessLevel.MOD;
+		this.cooldown = 10;
+		this.cooldownScope = CooldownScope.USER;
 	}
 
 	@Override

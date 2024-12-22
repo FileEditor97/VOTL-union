@@ -352,7 +352,9 @@
 			"guild_id": "Server ID",
 			"alert": "Misconduct detected in '%s'!",
 			"action": "Action performed",
-			"not_verified": "Joined user was not verified in %s"
+			"not_verified": "Joined user was not verified in %s",
+			"bot_not_allowed": "Bot is not in the whitelist",
+			"bad_user": "Blacklisted user joined %s and was banned"
 		},
 		"other": {
 			"name": "Audit logs (not used!)",
@@ -438,6 +440,19 @@
 				"no_guild": "Selected server not found.",
 				"done": "Assigned {target} access {level}."
 			},
+			"checkaccess": {
+				"help": "Check user's access in selected server",
+				"usage": "checkaccess <Server ID> <@User>",
+				"server": {
+					"name": "server",
+					"help": "Enter server's ID"
+				},
+				"user": {
+					"name": "user",
+					"help": "Enter user's ID"
+				},
+				"no_guild": "Selected server not found."
+			},
 			"settings": {
 				"help": "Manage bot settings",
 				"usage": "settings",
@@ -510,6 +525,14 @@
 					"no_dbs": "No dbs provided.",
 					"done_add": "Added server `%s` with dbs `%s` to the settings.",
 					"done_remove": "Removed server `%s` from the settings."
+				},
+				"panic_webhook": {
+					"help": "Webhook for panic messages",
+					"usage": "panic_webhook <URL>",
+					"webhook": {
+						"name": "webhook",
+						"help": "Enter full webhook URL"
+					}
 				},
 				"view": {
 					"help": "View settings",
@@ -734,6 +757,15 @@
 					},
 					"unknown": "Unknown action received.",
 					"done": "On `%s` action - %s"
+				},
+				"role_whitelist": {
+					"help": "Only allow \"whitelisted\" roles to be managed with /role command",
+					"usage": "role_whitelist <enable?>",
+					"enable": {
+						"name": "enable",
+						"help": "Enable role \"whitelist\""
+					},
+					"done": "Set role limiting - %s"
 				}
 			},
 			"module": {
@@ -2714,6 +2746,7 @@
 					},
 					"invalid_args":"You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be added.",
+					"not_whitelisted": "Selected roles is not whitelisted! Ask Administrator to add it to the list.",
 					"no_member": "Member not found.",
 					"done": "Added roles {roles} to {user}.",
 					"failed": "Unable to add selected roles to the user."

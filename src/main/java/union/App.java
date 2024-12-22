@@ -164,6 +164,7 @@ public class App {
 				new ViewMetricsCmd(),
 				new SetStatusCmd(),
 				new ImportBanlistCmd(),
+				new CheckAccessCmd(),
 				// webhook
 				new WebhookCmd(),
 				// moderation

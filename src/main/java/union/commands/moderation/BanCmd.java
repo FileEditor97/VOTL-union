@@ -51,7 +51,7 @@ public class BanCmd extends CommandBase {
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.MOD;
-		this.cooldown = 5;
+		this.cooldown = 15;
 		this.cooldownScope = CooldownScope.GUILD;
 	}
 

@@ -2,9 +2,7 @@ package union.commands.roles;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -14,6 +12,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
+import org.jetbrains.annotations.Nullable;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -79,11 +78,20 @@ public class RoleCmd extends CommandBase {
 			}
 
 			// Check roles
-			Role publicRole = guild.getPublicRole();
+			final boolean whitelistEnabled = bot.getDBUtil().getGuildSettings(guild).isRoleWhitelistEnabled();
 			for (Role r : roles) {
-				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(r) || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
-					editError(event, path+".incorrect_role", "Role: "+r.getAsMention());
+				String denyReason = denyRole(event, r, true);
+				if (denyReason != null) {
+					editError(event, path+".incorrect_role", "Role: %s\n> %s".formatted(r.getAsMention(), denyReason));
 					return;
+				}
+				// Check if role whitelisted
+				if (whitelistEnabled) {
+					if (!bot.getDBUtil().role.existsRole(r.getId())) {
+						// Not whitelisted
+						editError(event, path+".not_whitelisted", "Role: %s".formatted(r.getAsMention()));
+						return;
+					}
 				}
 			}
 
@@ -145,11 +153,20 @@ public class RoleCmd extends CommandBase {
 			}
 
 			// Check roles
-			Role publicRole = guild.getPublicRole();
+			final boolean whitelistEnabled = bot.getDBUtil().getGuildSettings(guild).isRoleWhitelistEnabled();
 			for (Role r : roles) {
-				if (r.equals(publicRole) || r.isManaged() || !event.getMember().canInteract(r) || !guild.getSelfMember().canInteract(r) || r.hasPermission(Permission.ADMINISTRATOR)) {
-					editError(event, path+".incorrect_role", "Role: "+r.getAsMention());
+				String denyReason = denyRole(event, r, true);
+				if (denyReason != null) {
+					editError(event, path+".incorrect_role", "Role: %s\n> %s".formatted(r.getAsMention(), denyReason));
 					return;
+				}
+				// Check if role whitelisted
+				if (whitelistEnabled) {
+					if (!bot.getDBUtil().role.existsRole(r.getId())) {
+						// Not whitelisted
+						editError(event, path+".not_whitelisted", "Role: %s".formatted(r.getAsMention()));
+						return;
+					}
 				}
 			}
 
@@ -198,8 +215,9 @@ public class RoleCmd extends CommandBase {
 				editError(event, path+".no_role");
 				return;
 			}
-			if (role.isPublicRole() || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
-				editError(event, path+".incorrect_role");
+			String denyReason = denyRole(event, role, false);
+			if (denyReason != null) {
+				editError(event, path+".incorrect_role", "Role: %s\n> %s".formatted(role.getAsMention(), denyReason));
 				return;
 			}
 
@@ -273,17 +291,20 @@ public class RoleCmd extends CommandBase {
 			List<Role> userRoles = target.getRoles();
 			List<Role> allRoles = event.getGuild().getRoleCache().asList();
 
-			long guildId = event.getGuild().getIdLong();
-
 			List<ActionRow> actionRows = new ArrayList<>();
 			StringSelectMenu.Builder menuBuilder = StringSelectMenu.create("role:manage-select:1:"+target.getId()).setRequiredRange(0, 25);
 			List<SelectOption> roleOptions = new ArrayList<>();
 			List<String> defaultValues = new ArrayList<>();
+
 			int nextMenuId = 2;
-			Member selfMember = event.getGuild().getSelfMember();
-			Member user = event.getMember();
+			final boolean whitelistEnabled = bot.getDBUtil().getGuildSettings(event.getGuild()).isRoleWhitelistEnabled();
 			for (Role role : allRoles) {
-				if (role.isManaged() || !selfMember.canInteract(role) || !user.canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR) || role.getIdLong()==guildId) continue;
+				String denyReason = denyRole(event, role, true);
+				if (denyReason != null) continue;
+				// Check if role whitelisted
+				if (whitelistEnabled) {
+					if (!bot.getDBUtil().role.existsRole(role.getId())) continue;
+				}
 				SelectOption option = SelectOption.of(role.getName(), role.getId());
 
 				if (roleOptions.size() >= 25) {
@@ -312,7 +333,7 @@ public class RoleCmd extends CommandBase {
 			}
 			actionRows.add(ActionRow.of(Button.primary("role:manage-confirm:"+target.getId(), lu.getText(event, path+".button"))));
 
-			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), user.getIdLong(),
+			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getMember().getIdLong(),
 					target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
 
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
@@ -320,6 +341,23 @@ public class RoleCmd extends CommandBase {
 					.build()
 			).setComponents(actionRows).queue();
 		}
+	}
+
+	private final Set<Permission> adminPerms = Set.of(Permission.ADMINISTRATOR, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES, Permission.MANAGE_SERVER, Permission.BAN_MEMBERS);
+
+	// Returns reason for denial or null if allowed
+	@Nullable
+	private String denyRole(final SlashCommandEvent event, final Role role, final boolean checkPerms) {
+		if (role.isPublicRole()) return "`@everyone` is public";
+		if (role.isManaged()) return "Bot's role";
+		if (!event.getMember().canInteract(role)) return "You can't interact with this role";
+		if (!event.getGuild().getSelfMember().canInteract(role)) return "Bot can't interact with this role";
+		if (checkPerms) {
+			EnumSet<Permission> rolePerms = EnumSet.copyOf(role.getPermissions());
+			rolePerms.retainAll(adminPerms);
+			if (!rolePerms.isEmpty()) return "This role has Administrator/Manager permissions";
+		}
+		return null;
 	}
 
 }

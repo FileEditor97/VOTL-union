@@ -3,6 +3,7 @@ package union.helper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,7 +27,8 @@ public class GuildListener extends ListenerAdapter {
 
 	private final Helper helper;
 
-	private final List<ActionType> watchedTypes = List.of(ActionType.BAN, ActionType.CHANNEL_DELETE, ActionType.ROLE_DELETE, ActionType.INTEGRATION_DELETE);
+	private final Set<ActionType> watchedTypes = Set.of(ActionType.BAN, ActionType.CHANNEL_DELETE, ActionType.ROLE_DELETE, ActionType.INTEGRATION_DELETE, ActionType.AUTO_MODERATION_RULE_DELETE);
+	@SuppressWarnings("FieldCanBeLocal")
 	private final int TRIGGER_AMOUNT = 6;
 
 	public GuildListener(Helper helper) {
@@ -152,14 +154,28 @@ public class GuildListener extends ListenerAdapter {
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
 		long userId = event.getUser().getIdLong();
 		if (event.getUser().isBot() && App.getInstance().getSettings().isBotWhitelisted(userId)) return;
-		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> {
+
+		List<Integer> groupIds = helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong());
+		// Check for blacklist
+		for (Integer groupId : groupIds) {
+			if (App.getInstance().getDBUtil().blacklist.inGroupUser(groupId, userId)) {
+				// Ban
+				event.getMember().ban(0, TimeUnit.MINUTES).reason("Blacklisted in group "+groupId).queueAfter(2, TimeUnit.SECONDS);
+				// Log
+				helper.getLogUtil().group.helperInformBadUser(groupId, event.getGuild(), event.getUser());
+				return;
+			}
+		}
+
+		// Check if verified
+		for (Integer groupId : groupIds) {
 			int verifyValue = helper.getDBUtil().group.getVerifyValue(groupId);
-			if (verifyValue < 0) return;
+			if (verifyValue < 0) continue;
 
 			// Check if user is verified, else send pm and kick/ban from this server
 			String ownerInvite;
 			if (helper.getDBUtil().verifyCache.isVerified(userId)
-				|| (ownerInvite = helper.getDBUtil().group.getSelfInvite(groupId)) == null) return;
+				|| (ownerInvite = helper.getDBUtil().group.getSelfInvite(groupId)) == null) continue;
 
 			// Send pm if not bot
 			if (!event.getUser().isBot()) {
@@ -194,7 +210,7 @@ public class GuildListener extends ListenerAdapter {
 					helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and ban for %s minutes".formatted(verifyValue));
 				});
 			}
-		});
+		}
 	}
 
 }

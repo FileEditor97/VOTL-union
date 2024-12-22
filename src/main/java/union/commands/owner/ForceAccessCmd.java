@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class ForceAccessCmd extends CommandBase {
-	
 	public ForceAccessCmd() {
 		this.name = "forceaccess";
 		this.path = "bot.owner.forceaccess";
@@ -62,5 +61,4 @@ public class ForceAccessCmd extends CommandBase {
 			editMsg(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "User `"+targetId+"`"));
 		}
 	}
-
 }

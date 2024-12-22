@@ -219,6 +219,10 @@ public class CaseManager extends LiteDBBase {
 		public String getLogUrl() {
 			return logUrl;
 		}
+
+		public Instant getTimeEnd() {
+			return duration.isZero() ? null : timeStart.plus(duration);
+		}
 	}
 
 }

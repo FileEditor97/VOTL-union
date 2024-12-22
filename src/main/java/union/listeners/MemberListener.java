@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import union.App;
+import union.objects.CaseType;
 import union.objects.annotation.NotNull;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
@@ -23,6 +24,7 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import union.utils.database.managers.CaseManager;
 
 public class MemberListener extends ListenerAdapter {
 
@@ -63,6 +65,17 @@ public class MemberListener extends ListenerAdapter {
 			}
 		} catch (Exception e) {
 			bot.getAppLogger().warn("Failed to assign persistent roles for {} @ {}\n{}", userId, guildId, e.getMessage());
+		}
+
+		// Check for active mute - then give timeout
+		CaseManager.CaseData caseData = db.cases.getMemberActive(userId, guildId, CaseType.MUTE);
+		if (caseData != null) {
+			Instant timeEnd = caseData.getTimeEnd();
+			if (timeEnd != null && timeEnd.isAfter(Instant.now())) {
+				event.getMember().timeoutUntil(timeEnd)
+					.reason("Active mute (#%s): %s".formatted(caseData.getLocalId(), caseData.getReason()))
+					.queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MEMBER));
+			}
 		}
 
 

@@ -31,6 +31,7 @@ public class SettingsManager {
 	private final Set<Long> botWhitelist = new HashSet<>();
 	private final Map<String, GameServerInfo> databases = new HashMap<>();
 	private final Map<Long, List<String>> servers = new HashMap<>();
+	private String panicWebhook = null;
 
 	public SettingsManager(FileManager fileManager) {
 		this.fileManager = fileManager;
@@ -57,6 +58,9 @@ public class SettingsManager {
 					servers.put(Long.parseLong(entry.getKey()), new ArrayList<>(entry.getValue()));
 				}
 			}
+
+			String panicWebhook = context.read("$.panicWebhook");
+			if (panicWebhook != null && panicWebhook.isBlank()) this.panicWebhook = panicWebhook.trim();
 		} catch (IOException ex) {
 			logger.error("Couldn't read settings.json\n{}", ex.getMessage());
 		}
@@ -102,6 +106,11 @@ public class SettingsManager {
 		writeChange("$.servers", servers);
 	}
 
+	public void setPanicWebhook(String webhook) {
+		panicWebhook = webhook;
+		writeChange("$.panicWebhook", panicWebhook==null?"":panicWebhook);
+	}
+
 	public boolean isDbVerifyDisabled() {
 		return !dbVerifyEnabled;
 	}
@@ -140,6 +149,11 @@ public class SettingsManager {
 	public boolean isServer(long guildId) {
 		return servers.containsKey(guildId);
 	}
+
+	public String getPanicWebhook() {
+		return panicWebhook;
+	}
+
 
 	private void writeChange(String name, Object value) {
 		File file = fileManager.getFile("settings");
@@ -193,7 +207,5 @@ public class SettingsManager {
 			return ColorUtil.decode(color, alpha);
 		}
 	}
-
-
 
 }

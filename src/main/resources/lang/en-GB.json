@@ -749,6 +749,15 @@
 					},
 					"unknown": "Unknown action received.",
 					"done": "On `%s` action - %s"
+				},
+				"role_whitelist": {
+					"help": "Only allow \"whitelisted\" roles to be managed with /role command",
+					"usage": "role_whitelist <enable?>",
+					"enable": {
+						"name": "enable",
+						"help": "Enable role \"whitelist\""
+					},
+					"done": "Set role limiting - %s"
 				}
 			},
 			"module": {
@@ -2729,6 +2738,7 @@
 					},
 					"invalid_args":"You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be added.",
+					"not_whitelisted": "Selected roles is not whitelisted! Ask Administrator to add it to the list.",
 					"no_member": "Member not found.",
 					"done": "Added roles {roles} to {user}.",
 					"failed": "Unable to add selected roles to the user."

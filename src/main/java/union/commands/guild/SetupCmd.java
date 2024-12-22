@@ -44,7 +44,7 @@ public class SetupCmd extends CommandBase {
 		this.path = "bot.guild.setup";
 		this.children = new SlashCommand[]{new PanelColor(), new AppealLink(), new ReportChannel(), new Anticrash(),
 			new VoiceCreate(), new VoiceSelect(), new VoicePanel(), new VoiceName(), new VoiceLimit(),
-			new Strikes(), new InformLevel()
+			new Strikes(), new InformLevel(), new RoleWhitelist()
 		};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -519,6 +519,28 @@ public class SetupCmd extends CommandBase {
 
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(action, lu.getText(event, informLevel.getPath())))
+				.build());
+		}
+	}
+
+	private class RoleWhitelist extends SlashCommand {
+		public RoleWhitelist() {
+			this.name = "role_whitelist";
+			this.path = "bot.guild.setup.role_whitelist";
+			this.options = List.of(
+				new OptionData(OptionType.BOOLEAN, "enable", lu.getText(path+".enable.help"), true)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+			boolean enabled = event.optBoolean("enable");
+			// DB
+			bot.getDBUtil().guildSettings.setRoleWhitelist(event.getGuild().getIdLong(), enabled);
+			// Reply
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(enabled?Constants.SUCCESS:Constants.FAILURE))
 				.build());
 		}
 	}

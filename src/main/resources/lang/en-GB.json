@@ -526,6 +526,14 @@
 					"done_add": "Added server `%s` with dbs `%s` to the settings.",
 					"done_remove": "Removed server `%s` from the settings."
 				},
+				"panic_webhook": {
+					"help": "Webhook for panic messages",
+					"usage": "panic_webhook <URL>",
+					"webhook": {
+						"name": "webhook",
+						"help": "Enter full webhook URL"
+					}
+				},
 				"view": {
 					"help": "View settings",
 					"usage": "view"

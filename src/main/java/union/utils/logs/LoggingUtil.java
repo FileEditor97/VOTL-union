@@ -459,6 +459,13 @@ public class LoggingUtil {
 			else
 				sendLog(master, type, () -> logUtil.informUserVerify(master.getLocale(), groupId, targetGuild, targetUser, actionTaken));
 		}
+
+		public void helperInformBadUser(int groupId, Guild targetGuild, User targetUser) {
+			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
+			if (master == null) return;
+
+			sendLog(master, type, () -> logUtil.informBadUser(master.getLocale(), groupId, targetGuild, targetUser));
+		}
 	}
 
 	// Verification actions

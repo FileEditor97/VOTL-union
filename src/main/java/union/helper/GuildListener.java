@@ -152,14 +152,28 @@ public class GuildListener extends ListenerAdapter {
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
 		long userId = event.getUser().getIdLong();
 		if (event.getUser().isBot() && App.getInstance().getSettings().isBotWhitelisted(userId)) return;
-		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> {
+
+		List<Integer> groupIds = helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong());
+		// Check for blacklist
+		for (Integer groupId : groupIds) {
+			if (App.getInstance().getDBUtil().blacklist.inGroupUser(groupId, userId)) {
+				// Ban
+				event.getMember().ban(0, TimeUnit.MINUTES).reason("Blacklisted in group "+groupId).queue();
+				// Log
+				helper.getLogUtil().group.helperInformBadUser(groupId, event.getGuild(), event.getUser());
+				return;
+			}
+		}
+
+		// Check if verified
+		for (Integer groupId : groupIds) {
 			int verifyValue = helper.getDBUtil().group.getVerifyValue(groupId);
-			if (verifyValue < 0) return;
+			if (verifyValue < 0) continue;
 
 			// Check if user is verified, else send pm and kick/ban from this server
 			String ownerInvite;
 			if (helper.getDBUtil().verifyCache.isVerified(userId)
-				|| (ownerInvite = helper.getDBUtil().group.getSelfInvite(groupId)) == null) return;
+				|| (ownerInvite = helper.getDBUtil().group.getSelfInvite(groupId)) == null) continue;
 
 			// Send pm if not bot
 			if (!event.getUser().isBot()) {
@@ -194,7 +208,7 @@ public class GuildListener extends ListenerAdapter {
 					helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and ban for %s minutes".formatted(verifyValue));
 				});
 			}
-		});
+		}
 	}
 
 }

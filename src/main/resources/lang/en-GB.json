@@ -353,7 +353,8 @@
 			"alert": "Misconduct detected in '%s'!",
 			"action": "Action performed",
 			"not_verified": "Joined user was not verified in %s",
-			"bot_not_allowed": "Bot is not in the whitelist"
+			"bot_not_allowed": "Bot is not in the whitelist",
+			"bad_user": "Blacklisted user joined %s and was banned"
 		},
 		"other": {
 			"name": "Audit logs (not used!)",

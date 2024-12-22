@@ -101,7 +101,8 @@ public class Helper {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 			// fail-safe check if user has temporal ban (to prevent auto unban)
-			db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
+			if (getMainJDA().getGuildById(guildId) != null)
+				db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
 
 			completableFutures.add(guild.ban(user, 0, TimeUnit.SECONDS).reason(newReason).submit());
 		}
@@ -134,7 +135,8 @@ public class Helper {
 			Guild guild = getJDA().getGuildById(guildId);
 			if (guild == null) continue;
 			// Remove temporal ban case
-			db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
+			if (getMainJDA().getGuildById(guildId) != null)
+				db.cases.setInactiveByType(user.getIdLong(), guildId, CaseType.BAN);
 
 			completableFutures.add(guild.unban(user).reason(newReason).submit());
 		}

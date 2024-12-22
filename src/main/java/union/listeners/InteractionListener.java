@@ -327,7 +327,7 @@ public class InteractionListener extends ListenerAdapter {
 		for (int groupId : groupIds) {
 			if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 				sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
-				bot.getLogger().verify.onVerifiedAttempt(member.getUser(), null, guild,
+				bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), null, guild,
 					lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
 				return;
 			}
@@ -354,7 +354,7 @@ public class InteractionListener extends ListenerAdapter {
 			for (int groupId : groupIds) {
 				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
 					sendError(event, "bot.verification.blacklisted", "SteamID: "+SteamUtil.convertSteam64toSteamID(steam64));
-					bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+					bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), steam64, guild,
 						lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
 					return;
 				}
@@ -371,7 +371,7 @@ public class InteractionListener extends ListenerAdapter {
 						if (db.unionPlayers.existsAxePlayer(guild.getIdLong(), steamid)) return;
 						// No user
 						sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
-						bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+						bot.getLogger().verify.onVerifyAttempted(member.getUser(), steam64, guild,
 							lu.getText(event, "logger_embed.verify.playtime").formatted("none", minimumPlaytime));
 						return;
 					}
@@ -379,7 +379,7 @@ public class InteractionListener extends ListenerAdapter {
 					final long played = Math.floorDiv(playtime, 3600);
 					if (played < minimumPlaytime) {
 						sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minimumPlaytime, steam64));
-						bot.getLogger().verify.onVerifiedAttempt(member.getUser(), steam64, guild,
+						bot.getLogger().verify.onVerifyAttempted(member.getUser(), steam64, guild,
 							lu.getText(event, "logger_embed.verify.playtime").formatted(played, minimumPlaytime));
 						return;
 					}

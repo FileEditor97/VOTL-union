@@ -3,6 +3,7 @@ package union.helper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,7 +27,8 @@ public class GuildListener extends ListenerAdapter {
 
 	private final Helper helper;
 
-	private final List<ActionType> watchedTypes = List.of(ActionType.BAN, ActionType.CHANNEL_DELETE, ActionType.ROLE_DELETE, ActionType.INTEGRATION_DELETE);
+	private final Set<ActionType> watchedTypes = Set.of(ActionType.BAN, ActionType.CHANNEL_DELETE, ActionType.ROLE_DELETE, ActionType.INTEGRATION_DELETE, ActionType.AUTO_MODERATION_RULE_DELETE);
+	@SuppressWarnings("FieldCanBeLocal")
 	private final int TRIGGER_AMOUNT = 6;
 
 	public GuildListener(Helper helper) {
@@ -158,7 +160,7 @@ public class GuildListener extends ListenerAdapter {
 		for (Integer groupId : groupIds) {
 			if (App.getInstance().getDBUtil().blacklist.inGroupUser(groupId, userId)) {
 				// Ban
-				event.getMember().ban(0, TimeUnit.MINUTES).reason("Blacklisted in group "+groupId).queue();
+				event.getMember().ban(0, TimeUnit.MINUTES).reason("Blacklisted in group "+groupId).queueAfter(2, TimeUnit.SECONDS);
 				// Log
 				helper.getLogUtil().group.helperInformBadUser(groupId, event.getGuild(), event.getUser());
 				return;

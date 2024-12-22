@@ -21,7 +21,7 @@ public class SettingsCmd extends CommandBase {
 		this.path = "bot.owner.settings";
 		this.children = new SlashCommand[]{
 			new Database(), new BotWhitelist(), new GameServer(),
-			new Server(), new View()
+			new Server(), new PanicWebhook(), new View()
 		};
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;
@@ -189,6 +189,27 @@ public class SettingsCmd extends CommandBase {
 		}
 	}
 
+	private class PanicWebhook extends SlashCommand {
+		public PanicWebhook() {
+			this.name = "panic_webhook";
+			this.path = "bot.owner.settings.panic_webhook";
+			this.options = List.of(
+				new OptionData(OptionType.STRING, "webhook", lu.getText(path+".webhook.help"))
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+			String webhook = event.optString("webhook");
+			if (webhook.equalsIgnoreCase("null")) webhook = null; // Clear
+
+			bot.getSettings().setPanicWebhook(webhook);
+
+			editMsg(event, "Panic Webhook set: "+webhook);
+		}
+	}
+
 	private class View extends SlashCommand {
 		public View() {
 			this.name = "view";
@@ -202,10 +223,10 @@ public class SettingsCmd extends CommandBase {
 
 			StringBuilder builder = new StringBuilder("### Database settings\n")
 				.append("Verify database enabled: ")
-				.append(settings.isDbVerifyDisabled()?Constants.FAILURE:Constants.SUCCESS).append("\n")
-				.append("Player database enabled: ")
-				.append(settings.isDbPlayerDisabled()?Constants.FAILURE:Constants.SUCCESS).append("\n")
-				.append("\nWhitelisted bots:\n> ");
+				.append(settings.isDbVerifyDisabled()?Constants.FAILURE:Constants.SUCCESS)
+				.append("\nPlayer database enabled: ")
+				.append(settings.isDbPlayerDisabled()?Constants.FAILURE:Constants.SUCCESS)
+				.append("\n\nWhitelisted bots:\n> ");
 			settings.getBotWhitelist().forEach(id -> builder.append(id).append(", "));
 			builder.append("\n\nDatabases:");
 			settings.getGameServers().forEach((name, info) -> builder.append("\n> `%s`: '%s' (`#%06X`)"
@@ -215,6 +236,7 @@ public class SettingsCmd extends CommandBase {
 			settings.getServers().forEach((id, dbs) -> builder.append("\n> `%s`: %s"
 				.formatted(id, String.join(", ", dbs))
 			));
+			builder.append("\n\nPanicWebhooks: ").append(settings.getPanicWebhook());
 
 			event.getHook().editOriginal(builder.toString()).queue();
 		}

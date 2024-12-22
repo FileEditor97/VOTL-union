@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.utils.AttachmentProxy;
 import union.App;
 import union.base.command.SlashCommandEvent;
@@ -30,11 +31,6 @@ import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.audit.AuditLogKey;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -88,6 +84,17 @@ public class LoggingUtil {
 			return submitLog(webhookClient, embed);
 		}
 	}
+
+	// Panic webhook
+	private void panic(MessageEmbed embed) {
+		String webhookUrl = bot.getSettings().getPanicWebhook();
+		if (webhookUrl == null) return;
+		WebhookClient<Message> client = WebhookClient.createClient(bot.JDA, webhookUrl);
+		client.sendMessageEmbeds(embed).queue(null, failure -> {
+			bot.getAppLogger().error("Panic webhook failure.", failure);
+		});
+	}
+
 
 	// Moderation actions
 	public class ModerationLogs {
@@ -426,6 +433,9 @@ public class LoggingUtil {
 		}
 
 		public void helperInformLeave(int groupId, @Nullable Guild guild, String guildId) {
+			// Try panic
+			panic(logUtil.botLeftEmbed(bot.getLocaleUtil().defaultLocale, groupId, guild, guildId));
+			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
@@ -435,10 +445,12 @@ public class LoggingUtil {
 				String ping = Optional.ofNullable(db.getGuildSettings(master).getAnticrashPing()).orElse("|| <@"+Constants.DEVELOPER_ID+"> ||");
 				client.sendMessage(ping).addEmbeds(logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId)).queue();
 			} catch (Exception ignored) {}
-			sendLog(master, type, () -> logUtil.botLeftEmbed(master.getLocale(), groupId, guild, guildId));
 		}
 
 		public void helperAlertTriggered(int groupId, Guild targetGuild, Member targetMember, String actionTaken, String reason) {
+			// Try panic
+			panic(logUtil.alertEmbed(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetMember, actionTaken, reason));
+			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
@@ -461,6 +473,9 @@ public class LoggingUtil {
 		}
 
 		public void helperInformBadUser(int groupId, Guild targetGuild, User targetUser) {
+			// Try panic
+			panic(logUtil.informBadUser(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetUser));
+			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
 
@@ -484,7 +499,17 @@ public class LoggingUtil {
 			);
 		}
 
-		public void onVerifiedAttempt(User user, Long steam64, Guild guild, String reason) {
+		public void onVerifyAttempted(User user, Long steam64, Guild guild, String reason) {
+			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
+				steam64, reason)
+			);
+		}
+
+		public void onVerifyBlacklisted(User user, Long steam64, Guild guild, String reason) {
+			// Try panic
+			panic(logUtil.verifyAttempt(bot.getLocaleUtil().defaultLocale, user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
+				steam64, reason));
+			// Log
 			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				steam64, reason)
 			);

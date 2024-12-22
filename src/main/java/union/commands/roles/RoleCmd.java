@@ -291,15 +291,12 @@ public class RoleCmd extends CommandBase {
 			List<Role> userRoles = target.getRoles();
 			List<Role> allRoles = event.getGuild().getRoleCache().asList();
 
-			long guildId = event.getGuild().getIdLong();
-
 			List<ActionRow> actionRows = new ArrayList<>();
 			StringSelectMenu.Builder menuBuilder = StringSelectMenu.create("role:manage-select:1:"+target.getId()).setRequiredRange(0, 25);
 			List<SelectOption> roleOptions = new ArrayList<>();
 			List<String> defaultValues = new ArrayList<>();
+
 			int nextMenuId = 2;
-			Member selfMember = event.getGuild().getSelfMember();
-			Member user = event.getMember();
 			final boolean whitelistEnabled = bot.getDBUtil().getGuildSettings(event.getGuild()).isRoleWhitelistEnabled();
 			for (Role role : allRoles) {
 				String denyReason = denyRole(event, role, true);
@@ -336,7 +333,7 @@ public class RoleCmd extends CommandBase {
 			}
 			actionRows.add(ActionRow.of(Button.primary("role:manage-confirm:"+target.getId(), lu.getText(event, path+".button"))));
 
-			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), user.getIdLong(),
+			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getMember().getIdLong(),
 					target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
 
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()

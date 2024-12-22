@@ -1,7 +1,5 @@
 package union.utils.database.managers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import union.utils.database.LiteDBBase;
 import union.utils.file.lang.LocaleUtil;
 
@@ -24,7 +22,6 @@ import static union.utils.CastUtil.resolveOrDefault;
 
 public class GuildSettingsManager extends LiteDBBase {
 
-	private static final Logger log = LoggerFactory.getLogger(GuildSettingsManager.class);
 	private final Set<String> columns = Set.of(
 		"color", "lastWebhookId", "appealLink", "reportChannelId", "rulesLink",
 		"strikeExpires", "strikeCooldown", "modulesOff", "anticrash", "anticrashPing",

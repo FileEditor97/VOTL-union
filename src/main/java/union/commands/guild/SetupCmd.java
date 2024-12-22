@@ -537,7 +537,10 @@ public class SetupCmd extends CommandBase {
 			event.deferReply().queue();
 			boolean enabled = event.optBoolean("enable");
 			// DB
-			bot.getDBUtil().guildSettings.setRoleWhitelist(event.getGuild().getIdLong(), enabled);
+			if (!bot.getDBUtil().guildSettings.setRoleWhitelist(event.getGuild().getIdLong(), enabled)) {
+				editErrorUnknown(event, "Database error.");
+				return;
+			}
 			// Reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(enabled?Constants.SUCCESS:Constants.FAILURE))

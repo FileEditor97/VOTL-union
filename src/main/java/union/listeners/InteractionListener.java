@@ -83,7 +83,7 @@ public class InteractionListener extends ListenerAdapter {
 	private final DBUtil db;
 	private final EventWaiter waiter;
 
-	private final List<Permission> AdminPerms = List.of(Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES);
+	private final Set<Permission> adminPerms = Set.of(Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_ROLES);
 	private final int MAX_GROUP_SELECT = 1;
 
 	public InteractionListener(App bot, EventWaiter waiter) {
@@ -1822,7 +1822,9 @@ public class InteractionListener extends ListenerAdapter {
 					}
 		
 					for (Role role : roles) {
-						if (!role.hasPermission(AdminPerms)) {
+						EnumSet<Permission> rolePerms = EnumSet.copyOf(role.getPermissions());
+						rolePerms.retainAll(adminPerms);
+						if (rolePerms.isEmpty()) {
 							manager = manager.putPermissionOverride(role, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null);
 							mentionStrings.add(role.getName());
 						}
@@ -1839,7 +1841,9 @@ public class InteractionListener extends ListenerAdapter {
 					}
 		
 					for (Role role : roles) {
-						if (!role.hasPermission(AdminPerms)) {
+						EnumSet<Permission> rolePerms = EnumSet.copyOf(role.getPermissions());
+						rolePerms.retainAll(adminPerms);
+						if (rolePerms.isEmpty()) {
 							manager = manager.putPermissionOverride(role, null, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL));
 							mentionStrings.add(role.getName());
 						}

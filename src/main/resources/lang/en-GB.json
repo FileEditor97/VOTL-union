@@ -255,7 +255,7 @@
 			"name": "Ticket logs",
 			"closed_title": "Ticket Closed",
 			"closed_value": "Ticket Name: {name}\nClosed By: {closed}\nCreated By: {created}\nClaimed By: {claimed}\n\n*If available, ticket's transcript is attached to this message.*",
-			"closed_pm": "Ticket closed at **{guild}** server.\n\n**Closed By**: {closed}\n**Close date**: {time}\n**Close Reason**: {reason}\n\n*If available, ticket's transcript is attached to this message.*",
+			"closed_pm": "Ticket closed at **{guild}** server.\n\n**Closed By**: {closed}\n**Close date**: {time}\n**Close Reason**: {reason}\n\n*If available, ticket's transcript is attached to this message.*\n*To view .html file - download it and open in any browser.*",
 			"autoclosed": "No response, autoclosed",
 			"unclaimed": "UnClaimed",
 			"roles_title": "Roles issued | %s",
@@ -601,6 +601,11 @@
 				"button-stats": {
 					"help": "View button/interaction use",
 					"usage": "button-stats"
+				},
+				"ping": {
+					"help": "View ping chart for last 24 hours",
+					"usage": "ping",
+					"failed": "Failed to generate or upload chart."
 				}
 			},
 			"banlist": {

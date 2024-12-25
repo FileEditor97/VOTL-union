@@ -30,6 +30,7 @@ import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
+import union.services.ScheduledMetrics;
 import union.utils.CheckUtil;
 import union.utils.ModerationUtil;
 import union.utils.TicketUtil;
@@ -73,6 +74,8 @@ public class App {
 	public final JDA JDA;
 	public final EventWaiter WAITER;
 	private final CommandClient commandClient;
+
+	private final MessageListener messageListener;
 
 	private final FileManager fileManager = new FileManager();
 
@@ -125,17 +128,20 @@ public class App {
         GuildListener guildListener				= new GuildListener(this);
         InteractionListener interactionListener = new InteractionListener(this, WAITER);
         VoiceListener voiceListener				= new VoiceListener(this);
-        MessageListener messageListener			= new MessageListener(this);
+        messageListener							= new MessageListener(this);
         MemberListener memberListener			= new MemberListener(this);
         ModerationListener moderationListener	= new ModerationListener(this);
         AuditListener auditListener				= new AuditListener(this);
 		EventListener eventListener				= new EventListener();
 
         ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
-        ScheduledCheck scheduledCheck = new ScheduledCheck(this);
 
+		ScheduledCheck scheduledCheck = new ScheduledCheck(this);
 		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::timedChecks, 3, 10, TimeUnit.MINUTES);
 		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::regularChecks, 2, 3, TimeUnit.MINUTES);
+
+		ScheduledMetrics scheduledMetrics = new ScheduledMetrics(this);
+		scheduledExecutor.scheduleAtFixedRate(scheduledMetrics::recordMetrics, 5, 5, TimeUnit.MINUTES);
 
 		// Define a command client
 		commandClient = new CommandClientBuilder()
@@ -383,6 +389,10 @@ public class App {
 
 	public SettingsManager getSettings() {
 		return settings;
+	}
+
+	public void shutdownUtils() {
+		messageListener.shutdownCache();
 	}
 
 	private void createWebhookAppender() {

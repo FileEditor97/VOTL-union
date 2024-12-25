@@ -5,7 +5,6 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 import org.slf4j.LoggerFactory;
-import union.App;
 import union.metrics.core.Counter;
 import union.metrics.core.Histogram;
 
@@ -37,7 +36,7 @@ public class Metrics {
 		.help("Total executed commands by name.")
 		.build();
 
-	public static final Histogram executionTime = Histogram.builder() // commands execution time, excluding terminated ones
+	public static final Histogram executionTime = Histogram.builder()
 		.name("votl_command_execution_duration_seconds")
 		.help("Command execution time, excluding handling terminated commands.")
 		.build();
@@ -49,7 +48,7 @@ public class Metrics {
 
 	// INTERACTIONS
 
-	public static final Counter interactionReceived = Counter.builder() // commands execution time, excluding terminated ones
+	public static final Counter interactionReceived = Counter.builder()
 		.name("votl_interactions_received_total")
 		.help("Total received interactions.")
 		.build();
@@ -69,7 +68,7 @@ public class Metrics {
 
 	// SETUP
 
-	public static final Logger log = (Logger) LoggerFactory.getLogger(App.class);
+	public static final Logger log = (Logger) LoggerFactory.getLogger(Metrics.class);
 
 	private static boolean isSetup = false;
 

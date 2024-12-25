@@ -86,11 +86,11 @@ public class LoggingUtil {
 	}
 
 	// Panic webhook
-	private void panic(MessageEmbed embed) {
+	private void panic(MessageEmbed embed, Guild guild) {
 		String webhookUrl = bot.getSettings().getPanicWebhook();
 		if (webhookUrl == null) return;
 		WebhookClient<Message> client = WebhookClient.createClient(bot.JDA, webhookUrl);
-		client.sendMessageEmbeds(embed).queue(null, failure -> {
+		client.sendMessage(guild.getName()).setEmbeds(embed).queue(null, failure -> {
 			bot.getAppLogger().error("Panic webhook failure.", failure);
 		});
 	}
@@ -434,7 +434,7 @@ public class LoggingUtil {
 
 		public void helperInformLeave(int groupId, @Nullable Guild guild, String guildId) {
 			// Try panic
-			panic(logUtil.botLeftEmbed(bot.getLocaleUtil().defaultLocale, groupId, guild, guildId));
+			panic(logUtil.botLeftEmbed(bot.getLocaleUtil().defaultLocale, groupId, guild, guildId), guild);
 			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
@@ -449,7 +449,7 @@ public class LoggingUtil {
 
 		public void helperAlertTriggered(int groupId, Guild targetGuild, Member targetMember, String actionTaken, String reason) {
 			// Try panic
-			panic(logUtil.alertEmbed(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetMember, actionTaken, reason));
+			panic(logUtil.alertEmbed(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetMember, actionTaken, reason), targetGuild);
 			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
@@ -474,7 +474,7 @@ public class LoggingUtil {
 
 		public void helperInformBadUser(int groupId, Guild targetGuild, User targetUser) {
 			// Try panic
-			panic(logUtil.informBadUser(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetUser));
+			panic(logUtil.informBadUser(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetUser), targetGuild);
 			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
@@ -508,7 +508,7 @@ public class LoggingUtil {
 		public void onVerifyBlacklisted(User user, Long steam64, Guild guild, String reason) {
 			// Try panic
 			panic(logUtil.verifyAttempt(bot.getLocaleUtil().defaultLocale, user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
-				steam64, reason));
+				steam64, reason), guild);
 			// Log
 			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
 				steam64, reason)

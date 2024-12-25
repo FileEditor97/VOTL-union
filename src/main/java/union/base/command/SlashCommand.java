@@ -198,6 +198,8 @@ public abstract class SlashCommand extends Interaction
 	 *         The SlashCommandEvent that triggered this Command
 	 */
 	public final void run(SlashCommandEvent event) {
+		// start time
+		final long timeStart = System.nanoTime();
 		// client
 		final CommandClient client = event.getClient();
 
@@ -242,6 +244,9 @@ public abstract class SlashCommand extends Interaction
 				return;
 			}
 		}
+
+		// Record time
+		bot.getAppLogger().debug("SlashCommand check duration: {}ns @ {} ", System.nanoTime()-timeStart, event.getResponseNumber());
 
 		// Metrics
 		Metrics.commandsExecuted.labelValue(event.getFullCommandName()).inc();

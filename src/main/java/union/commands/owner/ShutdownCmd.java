@@ -23,10 +23,15 @@ public class ShutdownCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.reply("Shutting down...").queue();
+		// Set presence
 		event.getJDA().getPresence().setPresence(OnlineStatus.IDLE, Activity.competing("Shutting down..."));
+		// Shutdown helper
 		Optional.ofNullable(Helper.getInstance()).ifPresent(helper -> helper.getLogger().info("Shutting down"));
 		Optional.ofNullable(Helper.getInstance()).ifPresent(helper -> helper.getJDA().shutdown());
-		bot.getAppLogger().info("Shutting down, by '%s'".formatted(event.getUser().getName()));
+		// Shutdown other
+		bot.shutdownUtils();
+		// Finish
+		bot.getAppLogger().info("Shutting down, by '{}'", event.getUser().getName());
 		event.getJDA().shutdown();
 	}
 }

@@ -42,6 +42,8 @@ dependencies {
 	// Metrics
     // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
     implementation 'io.github.classgraph:classgraph:4.8.179'        // Class lookup
+	// https://mvnrepository.com/artifact/org.knowm.xchart/xchart
+	implementation 'org.knowm.xchart:xchart:3.8.8'					// Charts
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy

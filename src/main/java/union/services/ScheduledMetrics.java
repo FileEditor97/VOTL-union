@@ -28,7 +28,11 @@ public class ScheduledMetrics {
 				// Save data
 				pingDataStore.addRecord(wsPing, restPing);
 			}, failure ->
-				new ErrorHandler().handle(TimeoutException.class, e->LOG.warn("WebSocket Ping: {} ms; Rest Ping: >10000 ms!", wsPing))
+				new ErrorHandler().handle(TimeoutException.class, e-> {
+					LOG.warn("WebSocket Ping: {} ms; Rest Ping: >10000 ms!", wsPing);
+					// Save data
+					pingDataStore.addRecord(wsPing, 10_000);
+				})
 			);
 		} catch (Throwable t) {
 			LOG.error("Error recording metrics", t);

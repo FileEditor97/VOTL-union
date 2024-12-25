@@ -141,7 +141,7 @@ public class App {
 		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::regularChecks, 2, 3, TimeUnit.MINUTES);
 
 		ScheduledMetrics scheduledMetrics = new ScheduledMetrics(this);
-		scheduledExecutor.scheduleAtFixedRate(scheduledMetrics::recordMetrics, 1, 1, TimeUnit.MINUTES);
+		scheduledExecutor.scheduleAtFixedRate(scheduledMetrics::recordMetrics, 5, 5, TimeUnit.MINUTES);
 
 		// Define a command client
 		commandClient = new CommandClientBuilder()

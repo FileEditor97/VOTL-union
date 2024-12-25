@@ -60,7 +60,7 @@ public class DiscordHtmlTranscripts {
             .thenAcceptAsync(list -> {
                 if (list.size() < 2) action.accept(null); // Probably one message is from bot and to be ignored.
                 try {
-                    action.accept(FileUpload.fromData(generateFromMessages(list), "transcript.html"));
+                    action.accept(FileUpload.fromData(generateFromMessages(list), "%s-ticket-%s.html".formatted(channel.getGuild().getId(), channel.getId())));
                 } catch(Exception ex) {
                     failure.accept(ex);
                 }

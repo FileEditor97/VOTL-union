@@ -44,7 +44,7 @@ public class Helper {
 		JDABuilder helperBuilder = JDABuilder.createLight(
 				App.getInstance().getFileManager().getNullableString("config", "helper-token")
 			)
-			.setActivity(Activity.streaming("Слежу за вами", "https://www.youtube.com/watch?v=RWU3o_kDixc"))
+			.setActivity(Activity.customStatus("Слежу за собой \uD83D\uDE22"))
 			.enableIntents(GatewayIntent.GUILD_MEMBERS)
 			.addEventListeners(guildListener);
 

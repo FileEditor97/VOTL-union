@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.jetbrains.annotations.NotNull;
 import union.base.command.CommandClient;
 import union.base.command.CommandListener;
 import union.base.command.ContextMenu;
@@ -34,7 +35,6 @@ import union.base.command.SlashCommandEvent;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
 import union.base.utils.SafeIdUtil;
-import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * @author John Grosh (jagrosh)
  */
 public class CommandClientImpl implements CommandClient, EventListener {
-	private static final Logger LOG = LoggerFactory.getLogger(CommandClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CommandClientImpl.class);
 
 	private final OffsetDateTime start;
 	private final Activity activity;
@@ -79,7 +79,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 	private final String[] devGuildIds;
 	private final boolean manualUpsert;
 	private final HashMap<String,OffsetDateTime> cooldowns;
-	private final HashMap<String,Integer> uses;
 	private final boolean shutdownAutomatically;
 	private final ScheduledExecutorService executor;
 
@@ -92,7 +91,7 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		Checks.check(ownerId != null, "Owner ID was set null or not set! Please provide an User ID to register as the owner!");
 
 		if (!SafeIdUtil.checkId(ownerId))
-			LOG.warn(String.format("The provided Owner ID (%s) was found unsafe! Make sure ID is a non-negative long!", ownerId));
+			LOG.warn("The provided Owner ID ({}) was found unsafe! Make sure ID is a non-negative long!", ownerId);
 
 		this.start = OffsetDateTime.now();
 
@@ -109,7 +108,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		this.devGuildIds = devGuildIds==null || devGuildIds.length==0 ? null : devGuildIds;
 		this.manualUpsert = manualUpsert;
 		this.cooldowns = new HashMap<>();
-		this.uses = new HashMap<>();
 		this.shutdownAutomatically = shutdownAutomatically;
 		this.executor = executor==null ? Executors.newSingleThreadScheduledExecutor() : executor;
 
@@ -342,19 +340,15 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		// Get all commands
 		List<CommandData> data = new ArrayList<>();
 		List<SlashCommand> slashCommands = getSlashCommands();
-		//Map<String, SlashCommand> slashCommandMap = new HashMap<>();
 		List<ContextMenu> contextMenus = getContextMenus();
-		//Map<String, ContextMenu> contextMenuMap = new HashMap<>();
 
 		// Build the command and privilege data
 		for (SlashCommand command : slashCommands) {
 			data.add(command.buildCommandData());
-			//slashCommandMap.put(command.getName(), command);
 		}
 
 		for (ContextMenu menu : contextMenus) {
 			data.add(menu.buildCommandData());
-			//contextMenuMap.put(menu.getName(), menu);
 		}
 
 		// Upsert the commands
@@ -368,7 +362,7 @@ public class CommandClientImpl implements CommandClient, EventListener {
 			// Upsert the commands + their privileges
 			server.updateCommands().addCommands(data)
 				.queue(
-					priv -> LOG.debug("Successfully added {} slash commands and {} menus to server {}", slashCommands.size(), contextMenus.size(), server.getName()),
+					done -> LOG.debug("Successfully added {} slash commands and {} menus to server {}", slashCommands.size(), contextMenus.size(), server.getName()),
 					error -> LOG.error("Could not upsert commands! Does the bot have the applications.commands scope?", error)
 				);
 		}
@@ -383,9 +377,7 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		List<CommandData> data = new ArrayList<>();
 		List<CommandData> dataDev = new ArrayList<>();
 		List<SlashCommand> slashCommands = getSlashCommands();
-		//Map<String, SlashCommand> slashCommandMap = new HashMap<>();
 		List<ContextMenu> contextMenus = getContextMenus();
-		//Map<String, ContextMenu> contextMenuMap = new HashMap<>();
 
 		// Build the command and privilege data
 		for (SlashCommand command : slashCommands) {
@@ -394,11 +386,9 @@ public class CommandClientImpl implements CommandClient, EventListener {
 			} else {
 				dataDev.add(command.buildCommandData());
 			}
-			//slashCommandMap.put(command.getName(), command);
 		}
 		for (ContextMenu menu : contextMenus) {
 			data.add(menu.buildCommandData());
-			//contextMenuMap.put(menu.getName(), menu);
 		}
 
 		jda.updateCommands().addCommands(data)
@@ -413,13 +403,13 @@ public class CommandClientImpl implements CommandClient, EventListener {
 			}
 			Guild server = jda.getGuildById(serverId);
 			if (server == null) {
-				LOG.error("Specified forced guild is null! Slash Commands will NOT be added! Is the bot added?");
+				LOG.error("Specified dev guild is null! Slash Commands will NOT be added! Is the bot added?");
 				return;
 			}
 			// Upsert the commands + their privileges
 			server.updateCommands().addCommands(dataDev)
 				.queue(
-					priv -> LOG.debug("Successfully added {} slash commands to server {}", dataDev.size(), server.getName()),
+					done -> LOG.debug("Successfully added {} slash commands to server {}", dataDev.size(), server.getName()),
 					error -> LOG.error("Could not upsert commands! Does the bot have the applications.commands scope?", error)
 				);
 		}
@@ -435,7 +425,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		if (command != null) {
 			if (listener != null)
 				listener.onSlashCommand(commandEvent, command);
-			uses.put(event.getFullCommandName(), uses.getOrDefault(event.getFullCommandName(), 0) + 1);
 			command.run(commandEvent);
 			// Command is done
 		}
@@ -502,7 +491,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		if (menu != null) {
 			if (listener != null)
 				listener.onUserContextMenu(menuEvent, menu);
-			uses.put(menu.getName(), uses.getOrDefault(menu.getName(), 0) + 1);
 			menu.run(menuEvent);
 			// Command is done
 		}
@@ -527,7 +515,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 		if (menu != null) {
 			if (listener != null)
 				listener.onMessageContextMenu(menuEvent, menu);
-			uses.put(menu.getName(), uses.getOrDefault(menu.getName(), 0) + 1);
 			menu.run(menuEvent);
 			// Command is done
 		}

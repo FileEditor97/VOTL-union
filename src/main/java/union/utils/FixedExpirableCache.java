@@ -83,7 +83,6 @@ public class FixedExpirableCache<K, V> {
 	}
 
 	private void removeExpiredItems() {
-		long now = System.currentTimeMillis();
 		map.entrySet().removeIf(entry -> isExpired(entry.getValue()));
 	}
 

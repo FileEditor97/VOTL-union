@@ -4,8 +4,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
 import union.App;
-import union.objects.annotation.NotNull;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.CastUtil;

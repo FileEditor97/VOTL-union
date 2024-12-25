@@ -9,7 +9,7 @@ import union.objects.annotation.NotNull;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.CastUtil;
-import union.utils.FixedCache;
+import union.utils.FixedExpirableCache;
 
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -33,12 +33,16 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 
 public class MessageListener extends ListenerAdapter {
 	// Cache
-	private final FixedCache<Long, MessageData> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE*60); // messageId, message
+	private final FixedExpirableCache<Long, MessageData> cache = new FixedExpirableCache<>(Constants.DEFAULT_CACHE_SIZE*60, 5*24*3600); // store for 5 days
 
 	private final App bot;
 	
 	public MessageListener(App bot) {
 		this.bot = bot;
+	}
+
+	public void shutdownCache() {
+		cache.shutdown();
 	}
 
 	@Override

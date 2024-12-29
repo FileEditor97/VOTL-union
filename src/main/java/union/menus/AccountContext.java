@@ -48,7 +48,7 @@ public class AccountContext extends UserContextMenu {
 			.setTitle(profileInfo.getLeft(), profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
-			.addField("Links", "> [UnionTeams](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
+			.addField("Links", "> [UnionTeam](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)
 			.addField(lu.getText(event, "bot.verification.account.field_discord"), user.getAsMention(), true);
 
 		List<UnionPlayerManager.PlayerInfo> list = bot.getDBUtil().unionPlayers.getPlayerInfo(event.getGuild().getIdLong(), steamId);

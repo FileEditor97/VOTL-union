@@ -5,7 +5,7 @@
 
  Visit https://votl.fileeditor.dev/ to learn more about available commands and to view documentation.  
 
- This is modified version of [public bot (VOTL)](https://github.com/FileEditor97/VOTL) for [UnionTeam's](https://unionteams.ru) Discord servers.  
+ This is modified version of [public bot (VOTL)](https://github.com/FileEditor97/VOTL) for [UnionTeam](https://unionteams.ru) Discord servers.  
 
 ## Config file
  data/config.json:

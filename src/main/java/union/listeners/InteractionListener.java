@@ -409,7 +409,7 @@ public class InteractionListener extends ListenerAdapter {
 				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ContextException.class)));
 			} else {
 				// Reply with instruction on how to verify, buttons - link and refresh
-				Button verify = Button.link(Links.UNIONTEAMS, lu.getText(event, "bot.verification.listener.connect"));
+				Button verify = Button.link(Links.UNIONTEAM, lu.getText(event, "bot.verification.listener.connect"));
 				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 					.setTitle(lu.getText(event, "bot.verification.embed.title"))
 					.setDescription(lu.getText(event, "bot.verification.embed.description"))
@@ -632,7 +632,7 @@ public class InteractionListener extends ListenerAdapter {
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getId())).filter(Objects::nonNull).distinct().collect(Collectors.joining("\n- ", "- ", ""));
 				MessageEmbed embed = new EmbedBuilder().setColor(db.getGuildSettings(guild).getColor())
 					.setDescription(String.format("SteamID\n> %s\n%s\n> %s\n\n%s, %s\n%s\n\n%s",
-						(steam64 == null ? "None" : SteamUtil.convertSteam64toSteamID(steam64) + "\n> [UnionTeams](https://unionteams.ru/player/"+steam64+")"),
+						(steam64 == null ? "None" : SteamUtil.convertSteam64toSteamID(steam64) + "\n> [UnionTeam](https://unionteams.ru/player/"+steam64+")"),
 						lu.getLocalized(event.getGuildLocale(), "ticket.role_title"),
 						rolesString,
 						event.getMember().getEffectiveName(),

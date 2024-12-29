@@ -36,7 +36,7 @@ public class AboutCmd extends CommandBase {
 			.setThumbnail(event.getJDA().getSelfUser().getEffectiveAvatarUrl())
 			.addField(
 				lu.getLocalized(userLocale, "bot.other.about.embed.about_title")
-					.replace("{name}", "VOTL (UnionTeam's) bot"),
+					.replace("{name}", "VOTL (UnionTeam) bot"),
 				lu.getLocalized(userLocale, "bot.other.about.embed.about_value")
 					.replace("{developer_name}", Constants.DEVELOPER_TAG)
 					.replace("{developer_id}", Constants.DEVELOPER_ID),
@@ -74,12 +74,11 @@ public class AboutCmd extends CommandBase {
 				lu.getLocalized(userLocale, "bot.other.about.embed.links.unionteams_title"),
 				String.join(
 					"\n",
-					lu.getLocalized(userLocale, "bot.other.about.embed.links.unionteams_website").replace("{unionteams}", Links.UNIONTEAMS),
+					lu.getLocalized(userLocale, "bot.other.about.embed.links.unionteams_website").replace("{unionteams}", Links.UNIONTEAM),
 					"[Rise of the Republic](%s)".formatted(Links.ROTR_INVITE),
 					"[The Force Conflict](%s)".formatted(Links.TFC_INVITE),
 					"[SCP RP](%s)".formatted(Links.SCP_INVITE),
-					"[Обычный ДаркРП](%s)".formatted(Links.DARKRP_INVITE),
-					"[Восход Джедаев](%s)".formatted(Links.VOSHOD_INVITE)
+					"[Обычный ДаркРП](%s)".formatted(Links.DARKRP_INVITE)
 				),
 				true
 			)

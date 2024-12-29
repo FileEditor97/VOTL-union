@@ -1958,7 +1958,7 @@
 						"github": "[Github]({github_url})",
 						"privacy": "[Privacy Policy]({privacy_url})",
 						"terms": "[Terms of Service]({terms_url})",
-						"unionteams_title": "UnionTeam's",
+						"unionteams_title": "UnionTeam",
 						"unionteams_website": "[Website]({unionteams})",
 						"translate": "Help translate!"
 					}
@@ -3022,7 +3022,7 @@
 	},
 	"menus": {
 		"account": {
-			"name": "Unionteams Account"
+			"name": "UnionTeam Account"
 		},
 		"report": {
 			"name": "Report message",

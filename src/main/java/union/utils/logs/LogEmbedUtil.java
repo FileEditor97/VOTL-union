@@ -821,7 +821,7 @@ public class LogEmbedUtil {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon("verify.added", memberIcon, memberTag)
 			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
+				"%s `%s`\n[UnionTeam](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
 			.setId(memberId)
@@ -833,7 +833,7 @@ public class LogEmbedUtil {
 		return new LogEmbedBuilder(locale, RED_DARK)
 			.setHeaderIcon("verify.removed", memberIcon, memberTag)
 			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
+				"%s `%s`\n[UnionTeam](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
 			.setReason(reason)
@@ -847,7 +847,7 @@ public class LogEmbedUtil {
 			.setHeaderIcon("verify.attempt", memberIcon, memberTag)
 			.setDescription(localized(locale, "reason")+":\n> "+reason)
 			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
-				"`%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
+				"`%s`\n[UnionTeam](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
 			.setId(memberId)

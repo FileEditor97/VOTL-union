@@ -1361,6 +1361,7 @@
 				"not_found": "User not found or input error",
 				"not_self": "You can't interact with yourself or me",
 				"no_ban": "Specified user is not banned in this server",
+				"blacklisted": "User is blacklisted! You don't have required access to remove this ban.",
 				"success": "\uD83D\uDE4C **User was unbanned.**"
 			},
 			"kick": {

@@ -8,8 +8,8 @@ plugins {
 // Getting version
 apply from: 'version.gradle'
 
-def version = loadVersion().getVersion()
-def mainClassName = 'union.Main'
+String version = loadVersion().getVersion()
+String mainClassName = 'union.Main'
 
 repositories {
 	// Use Maven Central for resolving dependencies.

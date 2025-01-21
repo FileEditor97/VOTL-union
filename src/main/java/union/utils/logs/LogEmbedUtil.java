@@ -14,10 +14,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.listeners.MessageListener.MessageData;
 import union.objects.CmdModule;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.logs.LogEvent;
 import union.utils.SteamUtil;
@@ -1165,7 +1165,7 @@ public class LogEmbedUtil {
 	}
 
 	// Message
-	@NotNull
+	@Nullable
 	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, @NotNull MessageData oldData, @NotNull MessageData newData) {
 		String diff = getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
 		// If there is no change to report - return null
@@ -1343,7 +1343,7 @@ public class LogEmbedUtil {
 					.collect(Collectors.joining(", "));
 			}
 		} else {
-			return "`"+object.toString()+"`";
+			return "`"+ object +"`";
 		}
 	}
 

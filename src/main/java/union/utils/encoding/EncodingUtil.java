@@ -39,6 +39,15 @@ public class EncodingUtil {
 	}
 
 	/**
+	 * @param id Message or Channel ID
+	 * @param epochSeconds Epoch seconds (now)
+	 * @return Filename 'modstats-[encoded guildId:userId]-timestamp.png'
+	 */
+	public static String encodeMessage(final long id, final long epochSeconds) {
+		return "msg-%s.txt".formatted(encode(id, epochSeconds));
+	}
+
+	/**
 	 * Encodes a sequence of values in Base62 encoding.
 	 *
 	 * @param values a Long sequence.

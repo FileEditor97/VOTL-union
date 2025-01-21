@@ -283,7 +283,7 @@ public class ScheduledCheck {
 					ModReportRender render = new ModReportRender(guild.getLocale(), bot.getLocaleUtil(),
 						previous, now, reportData);
 
-					String attachmentName = "%s-modreport-%s.png".formatted(guild.getId(), now.getEpochSecond());
+					final String attachmentName = App.getInstance().getEncodingUtil().encodeModreport(guild.getIdLong(), now.getEpochSecond());
 
 					try {
 						channel.sendFiles(FileUpload.fromData(

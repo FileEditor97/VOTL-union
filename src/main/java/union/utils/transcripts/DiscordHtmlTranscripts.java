@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
+import union.App;
 import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.entities.ISnowflake;
@@ -60,7 +61,8 @@ public class DiscordHtmlTranscripts {
             .thenAcceptAsync(list -> {
                 if (list.size() < 2) action.accept(null); // Probably one message is from bot and to be ignored.
                 try {
-                    action.accept(FileUpload.fromData(generateFromMessages(list), "%s-ticket-%s.html".formatted(channel.getGuild().getId(), channel.getId())));
+                    final String fileName = App.getInstance().getEncodingUtil().encodeTranscript(channel.getGuild().getIdLong(), channel.getIdLong());
+                    action.accept(FileUpload.fromData(generateFromMessages(list), fileName));
                 } catch(Exception ex) {
                     failure.accept(ex);
                 }

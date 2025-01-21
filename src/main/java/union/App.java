@@ -31,11 +31,10 @@ import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
 import union.services.ScheduledMetrics;
-import union.utils.CheckUtil;
-import union.utils.ModerationUtil;
-import union.utils.TicketUtil;
-import union.utils.WebhookAppender;
+import union.utils.*;
 import union.utils.database.DBUtil;
+import union.utils.encoding.Base62;
+import union.utils.encoding.EncodingUtil;
 import union.utils.file.FileManager;
 import union.utils.file.SettingsManager;
 import union.utils.file.lang.LocaleUtil;
@@ -80,6 +79,7 @@ public class App {
 	private final FileManager fileManager = new FileManager();
 
     private final LoggingUtil logUtil;
+	private final EncodingUtil encodingUtil;
 
     private final DBUtil dbUtil;
 	private final MessageUtil messageUtil;
@@ -123,6 +123,7 @@ public class App {
 		logUtil		= new LoggingUtil(this);
 		webhookLogger = new WebhookLogger(dbUtil);
 		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
+		encodingUtil = new EncodingUtil();
 
 		WAITER = new EventWaiter();
         GuildListener guildListener				= new GuildListener(this);
@@ -389,6 +390,10 @@ public class App {
 
 	public SettingsManager getSettings() {
 		return settings;
+	}
+
+	public EncodingUtil getEncodingUtil() {
+		return encodingUtil;
 	}
 
 	public void shutdownUtils() {

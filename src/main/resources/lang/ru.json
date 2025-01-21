@@ -413,11 +413,6 @@
 				"help": "Безопасно выключает бота",
 				"usage": "shutdown"
 			},
-			"generate": {
-				"help": "Генерирует json файл с информацией обо всех публичных командах бота",
-				"usage": "generate",
-				"error": "Неизвестная ошибка, смотрите ниже."
-			},
 			"forceaccess": {
 				"help": "Выдать доступ роли/пользователю в выбранном сервере",
 				"usage": "forceaccess <ID сервера> <@Роль/@Юзер> <Уровень доступа>",
@@ -1945,7 +1940,7 @@
 				},
 				"embed": {
 					"about_title": "О {name}!",
-					"about_value": "Discord бот проекта UnionTeam's для модерации и управления серверов. Написано на Java с использованием библиотеки JDA.\nРазработчик - **{developer_name}** ({developer_id}).",
+					"about_value": "Discord бот проекта UnionTeam для модерации и управления серверов. Написано на Java с использованием библиотеки JDA.\nРазработчик - **{developer_name}** ({developer_id}).",
 					"bot_info": {
 						"title": "Информация о боте",
 						"bot_version": "Версия: `VOTL-{bot_version}`",
@@ -1959,7 +1954,7 @@
 						"github": "[Github]({github_url})",
 						"privacy": "[Конфиденциальность]({privacy_url})",
 						"terms": "[Условия использования]({terms_url})",
-						"unionteams_title": "UnionTeam's",
+						"unionteams_title": "UnionTeam",
 						"unionteams_website": "[Веб-сайт]({unionteams})",
 						"translate": "Помогите с переводом!"
 					}

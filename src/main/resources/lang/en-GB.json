@@ -413,11 +413,6 @@
 				"help": "Safely shuts down the bot",
 				"usage": "shutdown"
 			},
-			"generate": {
-				"help": "Generates json file with information about all bot's public commands",
-				"usage": "generate",
-				"error": "Unknown error, see below."
-			},
 			"forceaccess": {
 				"help": "Force role/user access in selected server",
 				"usage": "forceaccess <Server ID> <@Role/@User> <Access level>",

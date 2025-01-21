@@ -33,7 +33,6 @@ import union.services.ScheduledCheck;
 import union.services.ScheduledMetrics;
 import union.utils.*;
 import union.utils.database.DBUtil;
-import union.utils.encoding.Base62;
 import union.utils.encoding.EncodingUtil;
 import union.utils.file.FileManager;
 import union.utils.file.SettingsManager;
@@ -163,7 +162,6 @@ public class App {
 				// owner
 				new ShutdownCmd(),
 				new EvalCmd(),
-				new GenerateListCmd(),
 				new ForceAccessCmd(),
 				new SettingsCmd(),
 				new DebugCmd(),

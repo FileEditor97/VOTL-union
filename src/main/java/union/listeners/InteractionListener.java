@@ -720,7 +720,7 @@ public class InteractionListener extends ListenerAdapter {
 						},
 						10,
 						TimeUnit.SECONDS,
-						() -> msg.delete().queue()
+						() -> msg.delete().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
 					);
 				});
 				return;

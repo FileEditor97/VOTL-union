@@ -1,174 +1,57 @@
 package union.utils.encoding;
 
-import java.io.ByteArrayOutputStream;
+import org.jetbrains.annotations.NotNull;
 
-/**
- * A Base62 encoder/decoder.
- *
- * @author Sebastian Ruhleder, sebastian@seruco.io
- */
 public class Base62 {
-	private static final int STANDARD_BASE = 256;
+	public static String encode(long value) {
+		if (value < 0) throw new IllegalArgumentException("Negative value provided.");
+		if (value == 0) return "0";
 
-	private static final int TARGET_BASE = 62;
+		final StringBuilder result = new StringBuilder();
 
-	private final byte[] alphabet = GMP;
+		do {
+			int remainder = (int) (value % 62);
+			result.append(BASE62.charAt(remainder));
+			value /= 62;
+		} while (value > 0);
 
-	private final byte[] lookup;
-
-	private Base62() {
-		lookup = new byte[256];
-
-		for (int i = 0; i < alphabet.length; i++) {
-			lookup[alphabet[i]] = (byte) (i & 0xFF);
-		}
+		return result.reverse().toString();
 	}
 
-	/**
-	 * Creates a {@link Base62} instance. Defaults to the GMP-style character set.
-	 *
-	 * @return a {@link Base62} instance.
-	 */
-	public static Base62 createInstance() {
-		return new Base62();
-	}
-
-	/**
-	 * Encodes a sequence of bytes in Base62 encoding.
-	 *
-	 * @param message a byte sequence.
-	 * @return a sequence of Base62-encoded bytes.
-	 */
-	public byte[] encode(final byte[] message) {
-		final byte[] indices = convert(message, STANDARD_BASE, TARGET_BASE);
-
-		return translate(indices, alphabet);
-	}
-
-	/**
-	 * Decodes a sequence of Base62-encoded bytes.
-	 *
-	 * @param encoded a sequence of Base62-encoded bytes.
-	 * @return a byte sequence.
-	 * @throws IllegalArgumentException when {@code encoded} is not encoded over the Base62 alphabet.
-	 */
-	public byte[] decode(final byte[] encoded) {
-		if (!isBase62Encoding(encoded)) {
+	public static long decode(@NotNull String encoded) {
+		if (!isBase62Encoding(encoded.toCharArray())) {
 			throw new IllegalArgumentException("Input is not encoded correctly");
 		}
+		if (encoded.equals("0")) return 0L;
 
-		final byte[] prepared = translate(encoded, lookup);
+		long result = 0;
 
-		return convert(prepared, TARGET_BASE, STANDARD_BASE);
+		for (char c : encoded.toCharArray()) {
+			int value = BASE62.indexOf(c);
+			result = result * 62 + value;
+		}
+
+		return result;
 	}
 
 	/**
-	 * Checks whether a sequence of bytes is encoded over a Base62 alphabet.
+	 * Checks whether a sequence of characters is encoded over a Base62 alphabet.
 	 *
-	 * @param bytes a sequence of bytes.
+	 * @param chars a sequence of characters.
 	 * @return {@code true} when the bytes are encoded over a Base62 alphabet, {@code false} otherwise.
 	 */
-	public boolean isBase62Encoding(final byte[] bytes) {
-		if (bytes == null) {
+	private static boolean isBase62Encoding(final char[] chars) {
+		if (chars == null) {
 			return false;
 		}
 
-		for (final byte e : bytes) {
-			if ('0' > e || '9' < e) {
-				if ('a' > e || 'z' < e) {
-					if ('A' > e || 'Z' < e) {
-						return false;
-					}
-				}
-			}
+		for (final char c : chars) {
+			if (BASE62.indexOf(c) == -1)
+				return false;
 		}
 
 		return true;
 	}
 
-	/**
-	 * Uses the elements of a byte array as indices to a dictionary and returns the corresponding values
-	 * in form of a byte array.
-	 */
-	private byte[] translate(final byte[] indices, final byte[] dictionary) {
-		final byte[] translation = new byte[indices.length];
-
-		for (int i = 0; i < indices.length; i++) {
-			translation[i] = dictionary[indices[i]];
-		}
-
-		return translation;
-	}
-
-	/**
-	 * Converts a byte array from a source base to a target base using the alphabet.
-	 */
-	private byte[] convert(final byte[] message, final int sourceBase, final int targetBase) {
-		final int estimatedLength = estimateOutputLength(message.length, sourceBase, targetBase);
-
-		final ByteArrayOutputStream out = new ByteArrayOutputStream(estimatedLength);
-
-		byte[] source = message;
-
-		while (source.length > 0) {
-			final ByteArrayOutputStream quotient = new ByteArrayOutputStream(source.length);
-
-			int remainder = 0;
-
-			for (byte b : source) {
-				final int accumulator = (b & 0xFF) + remainder * sourceBase;
-				final int digit = (accumulator - (accumulator % targetBase)) / targetBase;
-
-				remainder = accumulator % targetBase;
-
-				if (quotient.size() > 0 || digit > 0) {
-					quotient.write(digit);
-				}
-			}
-
-			out.write(remainder);
-
-			source = quotient.toByteArray();
-		}
-
-		// pad output with zeroes corresponding to the number of leading zeroes in the message
-		for (int i = 0; i < message.length - 1 && message[i] == 0; i++) {
-			out.write(0);
-		}
-
-		return reverse(out.toByteArray());
-	}
-
-	/**
-	 * Estimates the length of the output in bytes.
-	 */
-	private int estimateOutputLength(int inputLength, int sourceBase, int targetBase) {
-		return (int) Math.ceil((Math.log(sourceBase) / Math.log(targetBase)) * inputLength);
-	}
-
-	/**
-	 * Reverses a byte array.
-	 */
-	private byte[] reverse(final byte[] arr) {
-		final int length = arr.length;
-
-		final byte[] reversed = new byte[length];
-
-		for (int i = 0; i < length; i++) {
-			reversed[length - i - 1] = arr[i];
-		}
-
-		return reversed;
-	}
-
-	private static final byte[] GMP = {
-		(byte) '0', (byte) '1', (byte) '2', (byte) '3', (byte) '4', (byte) '5', (byte) '6', (byte) '7',
-		(byte) '8', (byte) '9', (byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F',
-		(byte) 'G', (byte) 'H', (byte) 'I', (byte) 'J', (byte) 'K', (byte) 'L', (byte) 'M', (byte) 'N',
-		(byte) 'O', (byte) 'P', (byte) 'Q', (byte) 'R', (byte) 'S', (byte) 'T', (byte) 'U', (byte) 'V',
-		(byte) 'W', (byte) 'X', (byte) 'Y', (byte) 'Z', (byte) 'a', (byte) 'b', (byte) 'c', (byte) 'd',
-		(byte) 'e', (byte) 'f', (byte) 'g', (byte) 'h', (byte) 'i', (byte) 'j', (byte) 'k', (byte) 'l',
-		(byte) 'm', (byte) 'n', (byte) 'o', (byte) 'p', (byte) 'q', (byte) 'r', (byte) 's', (byte) 't',
-		(byte) 'u', (byte) 'v', (byte) 'w', (byte) 'x', (byte) 'y', (byte) 'z'
-	};
+	private static final String BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 }

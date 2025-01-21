@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.renders.ModStatsRender;
 
 public class ModStatsCmd extends CommandBase {
@@ -129,7 +130,7 @@ public class ModStatsCmd extends CommandBase {
 			ModStatsRender render = new ModStatsRender(event.getGuildLocale(), mod.getName(),
 				countTotal, count30, count7, rolesTotal, roles30, roles7);
 
-			final String attachmentName = App.getInstance().getEncodingUtil().encodeModstats(guildId, mod.getIdLong(), now.getEpochSecond());
+			final String attachmentName = EncodingUtil.encodeModstats(guildId, mod.getIdLong(), now.getEpochSecond());
 
 			EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 				.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())

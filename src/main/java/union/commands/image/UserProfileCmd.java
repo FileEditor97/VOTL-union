@@ -15,6 +15,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.utils.SteamUtil;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
+import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.UserBackground;
 import union.utils.imagegen.UserBackgroundHandler;
 import union.utils.imagegen.renders.UserProfileRender;
@@ -90,7 +91,7 @@ public class UserProfileCmd extends CommandBase {
 			.setPlayerData(playerData)
 			.setAccessLevel(bot.getCheckUtil().getAccessLevel(target));
 
-		final String attachmentName = App.getInstance().getEncodingUtil().encodeUserBg(event.getGuild().getIdLong(), target.getIdLong());
+		final String attachmentName = EncodingUtil.encodeUserBg(event.getGuild().getIdLong(), target.getIdLong());
 
 		EmbedBuilder embed = new EmbedBuilder()
 			.setImage("attachment://" + attachmentName)

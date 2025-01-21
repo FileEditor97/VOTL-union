@@ -43,6 +43,7 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.renders.ModReportRender;
 import union.utils.message.TimeUtil;
 
@@ -158,13 +159,13 @@ public class ScheduledCheck {
 					try {
 						role.delete().reason("Role expired for '"+userId+"'").queue();
 					} catch (InsufficientPermissionException | HierarchyException ex) {
-						logger.warn("Was unable to delete temporary role '%s' during scheduled check.".formatted(roleId), ex);
+						logger.warn("Was unable to delete temporary role '{}' during scheduled check.", roleId, ex);
 					}
 					db.tempRole.removeRole(roleId);
 					
 				} else {
 					role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
-						logger.warn("Was unable to remove temporary role '%s' from '%s' during scheduled check.".formatted(roleId, userId), failure);
+						logger.warn("Was unable to remove temporary role '{}' from '{}' during scheduled check.", roleId, userId, failure);
 					});
 					db.tempRole.remove(roleId, userId);
 				}
@@ -283,7 +284,7 @@ public class ScheduledCheck {
 					ModReportRender render = new ModReportRender(guild.getLocale(), bot.getLocaleUtil(),
 						previous, now, reportData);
 
-					String attachmentName = "%s-modreport-%s.png".formatted(guild.getId(), now.getEpochSecond());
+					final String attachmentName = EncodingUtil.encodeModreport(guild.getIdLong(), now.getEpochSecond());
 
 					try {
 						channel.sendFiles(FileUpload.fromData(

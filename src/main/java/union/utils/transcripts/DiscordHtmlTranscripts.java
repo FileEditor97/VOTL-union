@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import union.objects.annotation.NotNull;
@@ -31,8 +28,9 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import union.utils.encoding.EncodingUtil;
 
- /**
+/**
  * Created by Ryzeon
  * Contributors: Inkception
  * Project: discord-html-transcripts
@@ -59,8 +57,15 @@ public class DiscordHtmlTranscripts {
             .takeAsync(200)
             .thenAcceptAsync(list -> {
                 if (list.size() < 2) action.accept(null); // Probably one message is from bot and to be ignored.
+                if (list.size() <= 6) {
+                    // Check if history has repeated authors - then it's bot
+                    Set<Long> ids = new HashSet<>();
+                    list.forEach(msg -> ids.add(msg.getAuthor().getIdLong()));
+                    if (ids.size() <= 1) action.accept(null);
+                }
                 try {
-                    action.accept(FileUpload.fromData(generateFromMessages(list), "%s-ticket-%s.html".formatted(channel.getGuild().getId(), channel.getId())));
+                    final String fileName = EncodingUtil.encodeTranscript(channel.getGuild().getIdLong(), channel.getIdLong());
+                    action.accept(FileUpload.fromData(generateFromMessages(list), fileName));
                 } catch(Exception ex) {
                     failure.accept(ex);
                 }

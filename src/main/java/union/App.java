@@ -31,10 +31,7 @@ import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
 import union.services.ScheduledMetrics;
-import union.utils.CheckUtil;
-import union.utils.ModerationUtil;
-import union.utils.TicketUtil;
-import union.utils.WebhookAppender;
+import union.utils.*;
 import union.utils.database.DBUtil;
 import union.utils.file.FileManager;
 import union.utils.file.SettingsManager;
@@ -162,7 +159,6 @@ public class App {
 				// owner
 				new ShutdownCmd(),
 				new EvalCmd(),
-				new GenerateListCmd(),
 				new ForceAccessCmd(),
 				new SettingsCmd(),
 				new DebugCmd(),

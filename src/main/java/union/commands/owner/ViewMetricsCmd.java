@@ -131,7 +131,7 @@ public class ViewMetricsCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply(true).queue();
+			event.deferReply().queue();
 
 			File chartFile = generateGraph(ScheduledMetrics.pingDataStore.getRecords());
 
@@ -143,6 +143,7 @@ public class ViewMetricsCmd extends CommandBase {
 		}
 
 		private File generateGraph(Deque<PingRecord> pingRecords) {
+			if (pingRecords.isEmpty()) return null;
 			List<Date> timestamps = pingRecords.stream()
 				.map(record -> Date.from(record.timestamp()))
 				.toList();
@@ -165,7 +166,8 @@ public class ViewMetricsCmd extends CommandBase {
 				.build();
 
 			// Format x-axis as time
-			chart.getStyler().setDatePattern("HH:mm:ss")
+			chart.getStyler().setDatePattern("HH:mm")
+				.setXAxisMaxLabelCount(8)
 				.setLegendPosition(XYStyler.LegendPosition.InsideNE)
 				.setMarkerSize(0);
 

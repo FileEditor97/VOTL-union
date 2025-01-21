@@ -14,10 +14,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.listeners.MessageListener.MessageData;
 import union.objects.CmdModule;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.logs.LogEvent;
 import union.utils.SteamUtil;
@@ -821,7 +821,7 @@ public class LogEmbedUtil {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon("verify.added", memberIcon, memberTag)
 			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
+				"%s `%s`\n[UnionTeam](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
 			.setId(memberId)
@@ -833,7 +833,7 @@ public class LogEmbedUtil {
 		return new LogEmbedBuilder(locale, RED_DARK)
 			.setHeaderIcon("verify.removed", memberIcon, memberTag)
 			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
-				"%s `%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
+				"%s `%s`\n[UnionTeam](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(steamName, SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
 			.setReason(reason)
@@ -847,7 +847,7 @@ public class LogEmbedUtil {
 			.setHeaderIcon("verify.attempt", memberIcon, memberTag)
 			.setDescription(localized(locale, "reason")+":\n> "+reason)
 			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
-				"`%s`\n[UnionTeams](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
+				"`%s`\n[UnionTeam](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))
 			.addField("verify.discord", "<@"+memberId+">")
 			.setId(memberId)
@@ -1165,7 +1165,7 @@ public class LogEmbedUtil {
 	}
 
 	// Message
-	@NotNull
+	@Nullable
 	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, @NotNull MessageData oldData, @NotNull MessageData newData) {
 		String diff = getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
 		// If there is no change to report - return null
@@ -1343,7 +1343,7 @@ public class LogEmbedUtil {
 					.collect(Collectors.joining(", "));
 			}
 		} else {
-			return "`"+object.toString()+"`";
+			return "`"+ object +"`";
 		}
 	}
 

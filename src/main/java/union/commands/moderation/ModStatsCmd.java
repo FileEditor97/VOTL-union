@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.renders.ModStatsRender;
 
 public class ModStatsCmd extends CommandBase {
@@ -117,23 +118,25 @@ public class ModStatsCmd extends CommandBase {
 			return;
 		}
 
-		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(30, ChronoUnit.DAYS));
-		final int roles30 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(30, ChronoUnit.DAYS), true);
+		final Instant now = Instant.now();
 
-		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), Instant.now().minus(7, ChronoUnit.DAYS));
-		final int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), Instant.now().minus(7, ChronoUnit.DAYS), true);
+		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), now.minus(30, ChronoUnit.DAYS));
+		final int roles30 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), now.minus(30, ChronoUnit.DAYS), true);
+
+		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), now.minus(7, ChronoUnit.DAYS));
+		final int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), now.minus(7, ChronoUnit.DAYS), true);
 
 		if (!event.optBoolean("as_text", false)) {
 			ModStatsRender render = new ModStatsRender(event.getGuildLocale(), mod.getName(),
 				countTotal, count30, count7, rolesTotal, roles30, roles7);
 
-			String attachmentName = "%s-%s-modstats-%s.png".formatted(event.getGuild().getId(), mod.getId(), Instant.now().getEpochSecond());
+			final String attachmentName = EncodingUtil.encodeModstats(guildId, mod.getIdLong(), now.getEpochSecond());
 
 			EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 				.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())
 				.setImage("attachment://" + attachmentName)
 				.setFooter("ID: "+mod.getId())
-				.setTimestamp(Instant.now());
+				.setTimestamp(now);
 
 			try {
 				event.getHook().editOriginalEmbeds(embedBuilder.build()).setFiles(FileUpload.fromData(
@@ -151,7 +154,7 @@ public class ModStatsCmd extends CommandBase {
 			.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())
 			.setTitle(lu.getText(event, path+".title"))
 			.setFooter("ID: "+mod.getId())
-			.setTimestamp(Instant.now());
+			.setTimestamp(now);
 
 		final String sevenText = lu.getText(event, path+".seven");
 		final String thirtyText = lu.getText(event, path+".thirty");

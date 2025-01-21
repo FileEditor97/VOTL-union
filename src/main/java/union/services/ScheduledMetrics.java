@@ -24,7 +24,7 @@ public class ScheduledMetrics {
 			final long wsPing = bot.JDA.getGatewayPing();
 			bot.JDA.getRestPing().timeout(10, TimeUnit.SECONDS).queue(restPing -> {
 				// Log
-				LOG.info("WebSocket Ping: {} ms; Rest Ping: {} ms", wsPing, restPing);
+				LOG.debug("WebSocket Ping: {} ms; Rest Ping: {} ms", wsPing, restPing);
 				// Save data
 				pingDataStore.addRecord(wsPing, restPing);
 			}, failure ->

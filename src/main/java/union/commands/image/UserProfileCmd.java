@@ -10,10 +10,12 @@ import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.utils.SteamUtil;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
+import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.UserBackground;
 import union.utils.imagegen.UserBackgroundHandler;
 import union.utils.imagegen.renders.UserProfileRender;
@@ -35,6 +37,7 @@ public class UserProfileCmd extends CommandBase {
 		);
 		this.cooldown = 120;
 		this.cooldownScope = CooldownScope.USER;
+		this.accessLevel = CmdAccessLevel.HELPER;
 	}
 
 	@Override
@@ -88,7 +91,7 @@ public class UserProfileCmd extends CommandBase {
 			.setPlayerData(playerData)
 			.setAccessLevel(bot.getCheckUtil().getAccessLevel(target));
 
-		String attachmentName = "%s-%s-user-bg.png".formatted(event.getGuild().getId(), target.getId());
+		final String attachmentName = EncodingUtil.encodeUserBg(event.getGuild().getIdLong(), target.getIdLong());
 
 		EmbedBuilder embed = new EmbedBuilder()
 			.setImage("attachment://" + attachmentName)

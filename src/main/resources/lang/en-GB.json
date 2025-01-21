@@ -413,11 +413,6 @@
 				"help": "Safely shuts down the bot",
 				"usage": "shutdown"
 			},
-			"generate": {
-				"help": "Generates json file with information about all bot's public commands",
-				"usage": "generate",
-				"error": "Unknown error, see below."
-			},
 			"forceaccess": {
 				"help": "Force role/user access in selected server",
 				"usage": "forceaccess <Server ID> <@Role/@User> <Access level>",
@@ -1361,6 +1356,7 @@
 				"not_found": "User not found or input error",
 				"not_self": "You can't interact with yourself or me",
 				"no_ban": "Specified user is not banned in this server",
+				"blacklisted": "User is blacklisted! You don't have required access to remove this ban.",
 				"success": "\uD83D\uDE4C **User was unbanned.**"
 			},
 			"kick": {
@@ -1958,7 +1954,7 @@
 						"github": "[Github]({github_url})",
 						"privacy": "[Privacy Policy]({privacy_url})",
 						"terms": "[Terms of Service]({terms_url})",
-						"unionteams_title": "UnionTeam's",
+						"unionteams_title": "UnionTeam",
 						"unionteams_website": "[Website]({unionteams})",
 						"translate": "Help translate!"
 					}
@@ -3022,7 +3018,7 @@
 	},
 	"menus": {
 		"account": {
-			"name": "Unionteams Account"
+			"name": "UnionTeam Account"
 		},
 		"report": {
 			"name": "Report message",

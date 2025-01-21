@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jetbrains.annotations.NotNull;
 import union.objects.constants.Constants;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
@@ -82,7 +83,7 @@ public class TicketSettingsManager extends LiteDBBase {
 		return execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole ? 1 : 0));
 	}
 
-	public boolean setSupportRoles(long guildId, List<Long> roleIds) {
+	public boolean setSupportRoles(long guildId, @NotNull List<Long> roleIds) {
 		invalidateCache(guildId);
 		final String text = roleIds.stream().map(String::valueOf).collect(Collectors.joining(";"));
 		return execute("INSERT INTO %s(guildId, roleSupport) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET roleSupport=%<s".formatted(table, guildId, quote(text)));

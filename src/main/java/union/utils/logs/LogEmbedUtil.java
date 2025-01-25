@@ -297,7 +297,7 @@ public class LogEmbedUtil {
 			.setHeader("moderation.unban.title_expired", caseData.getTargetTag())
 			.setUser(caseData.getTargetId())
 			.addField("moderation.unban.ban_reason", caseData.getReason())
-			.addField("duration", TimeUtil.durationToString(caseData.getDuration()))
+			.addField("duration", TimeUtil.durationToLocalizedString(lu, locale, caseData.getDuration()))
 			.setId(caseData.getTargetId())
 			.build();
 	}

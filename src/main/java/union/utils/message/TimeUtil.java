@@ -97,6 +97,7 @@ public class TimeUtil {
 		return Duration.ofSeconds(time);
 	}
 
+	@SuppressWarnings("unused")
 	public static String durationToString(Duration duration) {
 		if (duration.isZero()) {
 			return "0 seconds";
@@ -104,32 +105,47 @@ public class TimeUtil {
 
 		StringBuilder builder = new StringBuilder();
 
-		long days = duration.toDaysPart();
-		if (days >= 7) {
-			int weeks = Math.floorMod(days, 7);
-			builder.append(weeks).append(" weeks");
-			days -= weeks * 7L;
+		final long weeks = Math.floorDiv(duration.toDaysPart(), 7);
+		final long days = Math.floorMod(duration.toDaysPart(), 7);
+		final int hours = duration.toHoursPart();
+		final int minutes = duration.toMinutesPart();
+		final int seconds = duration.toSecondsPart();
+
+		if (weeks > 0) {
+			if (weeks==1)
+				builder.append("1 week");
+			else
+				builder.append(weeks).append(" weeks");
 		}
 		if (days > 0) {
 			if (!builder.isEmpty()) builder.append(" ");
-			builder.append(days).append(" days");
+			if (days==1)
+				builder.append("1 day");
+			else
+				builder.append(days).append(" days");
 		}
-		
-		int value = duration.toHoursPart();
-		if (value > 0) {
+		if (hours > 0) {
 			if (!builder.isEmpty()) builder.append(" ");
-			builder.append(value).append(" hours");
+			if (hours==1)
+				builder.append("1 hour");
+			else
+				builder.append(hours).append(" hours");
 		}
-		value = duration.toMinutesPart();
-		if (value > 0) {
+		if (minutes > 0) {
 			if (!builder.isEmpty()) builder.append(" ");
-			builder.append(value).append(" minutes");
+			if (minutes==1)
+				builder.append("1 minute");
+			else
+				builder.append(minutes).append(" minutes");
 		}
-		value = duration.toSecondsPart();
-		if (value > 0) {
+		if (seconds > 0) {
 			if (!builder.isEmpty()) builder.append(" ");
-			builder.append(value).append(" seconds");
+			if (seconds==1)
+				builder.append("1 second");
+			else
+				builder.append(seconds).append(" seconds");
 		}
+
 
 		return builder.toString();
 	}
@@ -140,31 +156,46 @@ public class TimeUtil {
 		}
 
 		StringBuilder builder = new StringBuilder();
-		long days = duration.toDaysPart();
-		if (days >= 7L) {
-			long weeks = Math.floorDiv(days, 7L);
-			builder.append("%s %s".formatted(weeks, lu.getLocalized(locale, "misc.time.weeks")));
-			days -= weeks*7;
+
+		final long weeks = Math.floorDiv(duration.toDaysPart(), 7);
+		final long days = Math.floorMod(duration.toDaysPart(), 7);
+		final int hours = duration.toHoursPart();
+		final int minutes = duration.toMinutesPart();
+		final int seconds = duration.toSecondsPart();
+
+		if (weeks > 0) {
+			if (weeks==1)
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.week")));
+			else
+				builder.append("%s %s".formatted(weeks, lu.getLocalized(locale, "misc.time.weeks")));
 		}
 		if (days > 0) {
 			if (!builder.isEmpty()) builder.append(" ");
-			builder.append("%s %s".formatted(days, lu.getLocalized(locale, "misc.time.days")));
-		} 
-		
-		int value = duration.toHoursPart();
-		if (value > 0) {
-			if (!builder.isEmpty()) builder.append(" ");
-			builder.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.hours")));
+			if (days==1)
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.day")));
+			else
+				builder.append("%s %s".formatted(days, lu.getLocalized(locale, "misc.time.days")));
 		}
-		value = duration.toMinutesPart();
-		if (value > 0) {
+		if (hours > 0) {
 			if (!builder.isEmpty()) builder.append(" ");
-			builder.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.minutes")));
+			if (hours==1)
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.hour")));
+			else
+				builder.append("%s %s".formatted(hours, lu.getLocalized(locale, "misc.time.hours")));
 		}
-		value = duration.toSecondsPart();
-		if (value > 0) {
+		if (minutes > 0) {
 			if (!builder.isEmpty()) builder.append(" ");
-			builder.append("%s %s".formatted(value, lu.getLocalized(locale, "misc.time.seconds")));
+			if (minutes==1)
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.minute")));
+			else
+				builder.append("%s %s".formatted(minutes, lu.getLocalized(locale, "misc.time.minutes")));
+		}
+		if (seconds > 0) {
+			if (!builder.isEmpty()) builder.append(" ");
+			if (seconds==1)
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.second")));
+			else
+				builder.append("%s %s".formatted(seconds, lu.getLocalized(locale, "misc.time.seconds")));
 		}
 
 		return builder.toString();

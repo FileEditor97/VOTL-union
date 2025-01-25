@@ -29,6 +29,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import union.utils.CheckUtil;
 
 public class RoleCmd extends CommandBase {
 	
@@ -80,7 +81,7 @@ public class RoleCmd extends CommandBase {
 			// Check roles
 			final boolean whitelistEnabled = bot.getDBUtil().getGuildSettings(guild).isRoleWhitelistEnabled();
 			for (Role r : roles) {
-				String denyReason = denyRole(event, r, true);
+				String denyReason = bot.getCheckUtil().denyRole(r, event.getGuild(), event.getMember(), true);
 				if (denyReason != null) {
 					editError(event, path+".incorrect_role", "Role: %s\n> %s".formatted(r.getAsMention(), denyReason));
 					return;
@@ -155,7 +156,7 @@ public class RoleCmd extends CommandBase {
 			// Check roles
 			final boolean whitelistEnabled = bot.getDBUtil().getGuildSettings(guild).isRoleWhitelistEnabled();
 			for (Role r : roles) {
-				String denyReason = denyRole(event, r, true);
+				String denyReason = bot.getCheckUtil().denyRole(r, event.getGuild(), event.getMember(), true);
 				if (denyReason != null) {
 					editError(event, path+".incorrect_role", "Role: %s\n> %s".formatted(r.getAsMention(), denyReason));
 					return;
@@ -215,7 +216,7 @@ public class RoleCmd extends CommandBase {
 				editError(event, path+".no_role");
 				return;
 			}
-			String denyReason = denyRole(event, role, false);
+			String denyReason = bot.getCheckUtil().denyRole(role, event.getGuild(), event.getMember(), false);
 			if (denyReason != null) {
 				editError(event, path+".incorrect_role", "Role: %s\n> %s".formatted(role.getAsMention(), denyReason));
 				return;
@@ -299,7 +300,7 @@ public class RoleCmd extends CommandBase {
 			int nextMenuId = 2;
 			final boolean whitelistEnabled = bot.getDBUtil().getGuildSettings(event.getGuild()).isRoleWhitelistEnabled();
 			for (Role role : allRoles) {
-				String denyReason = denyRole(event, role, true);
+				String denyReason = bot.getCheckUtil().denyRole(role, event.getGuild(), event.getMember(), true);
 				if (denyReason != null) continue;
 				// Check if role whitelisted
 				if (whitelistEnabled) {
@@ -341,23 +342,6 @@ public class RoleCmd extends CommandBase {
 					.build()
 			).setComponents(actionRows).queue();
 		}
-	}
-
-	private final Set<Permission> adminPerms = Set.of(Permission.ADMINISTRATOR, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES, Permission.MANAGE_SERVER, Permission.BAN_MEMBERS);
-
-	// Returns reason for denial or null if allowed
-	@Nullable
-	private String denyRole(final SlashCommandEvent event, final Role role, final boolean checkPerms) {
-		if (role.isPublicRole()) return "`@everyone` is public";
-		if (role.isManaged()) return "Bot's role";
-		if (!event.getMember().canInteract(role)) return "You can't interact with this role";
-		if (!event.getGuild().getSelfMember().canInteract(role)) return "Bot can't interact with this role";
-		if (checkPerms) {
-			EnumSet<Permission> rolePerms = EnumSet.copyOf(role.getPermissions());
-			rolePerms.retainAll(adminPerms);
-			if (!rolePerms.isEmpty()) return "This role has Administrator/Manager permissions";
-		}
-		return null;
 	}
 
 }

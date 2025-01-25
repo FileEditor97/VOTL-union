@@ -93,6 +93,8 @@ public class DBUtil {
 		String passCentral = fileManager.getNullableString("config", "central-pass");
 		
 		this.connectionUtil = new ConnectionUtil(urlSQLite, logger);
+
+		updateDB();
 		
 		guildSettings = new GuildSettingsManager(connectionUtil);
 		webhook = new WebhookManager(connectionUtil);
@@ -126,10 +128,6 @@ public class DBUtil {
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, settings, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, settings, urlCentralTemp, userCentral, passCentral);
-
-		updateDB();
-
-		modifyRole.removeExpired(); // Remove expired selections
 
 		urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("banlist"));
 		Logger banlistLogger = (Logger) LoggerFactory.getLogger("Banlist manager");

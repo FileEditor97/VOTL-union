@@ -136,13 +136,17 @@ public class TicketSettingsManager extends LiteDBBase {
 				getOrDefault(data.get("rowName2"), "Select roles"),
 				getOrDefault(data.get("rowName3"), "Select roles")
 			);
-			this.roleSupportIds = resolveOrDefault(data.get("roleSupport"), d -> {
-				String value = String.valueOf(d);
-				if (value.isEmpty()) return List.of();
-				return Stream.of(value.split(";"))
-					.map(Long::parseLong)
-					.toList();
-			}, List.of());
+			this.roleSupportIds = resolveOrDefault(
+				data.get("roleSupport"),
+				obj -> {
+					String value = String.valueOf(obj);
+					if (value.isBlank()) return List.of();
+					return Stream.of(value.split(";"))
+						.map(Long::parseLong)
+						.toList();
+				},
+				List.of()
+			);
 			this.deletePings = getOrDefault(data.get("deletePing"), 1) == 1;
 			this.allowClose = AllowClose.valueOf(getOrDefault(data.get("allowClose"), AllowClose.EVERYONE.value));
 			this.transcriptsMode = TranscriptsMode.valueOf(getOrDefault(data.get("transcripts"), TranscriptsMode.EXCEPT_ROLES.value));

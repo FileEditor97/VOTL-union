@@ -2094,15 +2094,51 @@
 				}
 			},
 			"verifyrole": {
-				"help": "Assign server role for verification",
-				"usage": "verifyrole <@Role>",
-				"role": {
-					"name": "role",
-					"help": "Select role which will be used for verification"
+				"help": "Manage verification roles",
+				"usage": "verifyrole",
+				"verify": {
+					"help": "Assign role for verification",
+					"usage": "verify <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role which will be used for verification"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be used.",
+					"done": "Role %s assigned for verification!"
 				},
-				"disable_check": "Disable account connection check, before changing verification role!",
-				"no_role": "Provided role was incorrect.",
-				"done": "Role {role} assigned for verification!"
+				"additional": {
+					"help": "Manage additional roles",
+					"set": {
+						"help": "Set additional roles to be set to user on verification completion",
+						"usage": "additional set <@Role> [@Role] [@Role]",
+						"role1": {
+							"name": "role1",
+							"help": "Select role"
+						},
+						"role2": {
+							"name": "role2",
+							"help": "Select role"
+						},
+						"role3": {
+							"name": "role3",
+							"help": "Select role"
+						},
+						"invalid_args":"You haven't selected any role/-s.",
+						"incorrect_role": "Selected roles can't be added.",
+						"done": "Set %s as additional roles."
+					},
+					"clear": {
+						"help": "Clear all additional roles",
+						"usage": "additional clear",
+						"done": "Cleared all additional roles."
+					},
+					"view": {
+						"help": "View all additional roles",
+						"usage": "additional view",
+						"no_roles": "No additional roles set."
+					}
+				}
 			},
 			"verify": {
 				"help": "Manually add verify role to member and protect from purge",
@@ -2850,6 +2886,7 @@
 						"help": "Delete this role, after time has passed? (default-false)"
 					},
 					"no_role": "Role not found.",
+					"not_whitelisted": "Selected role is not whitelisted! Ask Administrator to add it to the list.",
 					"incorrect_role": "Selected role can't be assigned.",
 					"no_member": "Member not found.",
 					"incorrect_user": "Selected member can't be assigned role.",

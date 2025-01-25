@@ -1,10 +1,14 @@
 package union.utils.database.managers;
 
 import static union.utils.CastUtil.getOrDefault;
+import static union.utils.CastUtil.resolveOrDefault;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.jetbrains.annotations.Nullable;
 import union.objects.constants.Constants;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
@@ -13,7 +17,7 @@ import union.utils.database.LiteDBBase;
 import net.dv8tion.jda.api.entities.Guild;
 
 public class VerifySettingsManager extends LiteDBBase {
-	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled", "minimumPlaytime");
+	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled", "minimumPlaytime", "additionalRoles");
 
 	// Cache
 	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE/5);
@@ -67,6 +71,11 @@ public class VerifySettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, minimumPlaytime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET minimumPlaytime=%<d".formatted(table, guildId, hours));
 	}
 
+	public boolean setAdditionalRoles(long guildId, @Nullable String roleIds) {
+		invalidateCache(guildId);
+		return execute("INSERT INTO %s(guildId, additionalRoles) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET additionalRoles=%<s".formatted(table, guildId, quote(roleIds)));
+	}
+
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
@@ -76,19 +85,28 @@ public class VerifySettingsManager extends LiteDBBase {
 		private final String mainText;
 		private final boolean checkEnabled;
 		private final int minimumPlaytime;
+		private final Set<Long> additionalRoles;
 
 		public VerifySettings() {
 			this.roleId = null;
 			this.mainText = null;
 			this.checkEnabled = false;
 			this.minimumPlaytime = -1;
+			this.additionalRoles = Set.of();
 		}
 
-		public VerifySettings(Map<String, Object> map) {
-			this.roleId = getOrDefault(map.get("roleId"), null);
-			this.mainText = getOrDefault(map.get("mainText"), null);
-			this.checkEnabled = getOrDefault(map.get("checkEnabled"), 0) == 1;
-			this.minimumPlaytime = getOrDefault(map.get("minimumPlaytime"), -1);
+		public VerifySettings(Map<String, Object> data) {
+			this.roleId = getOrDefault(data.get("roleId"), null);
+			this.mainText = getOrDefault(data.get("mainText"), null);
+			this.checkEnabled = getOrDefault(data.get("checkEnabled"), 0) == 1;
+			this.minimumPlaytime = getOrDefault(data.get("minimumPlaytime"), -1);
+			this.additionalRoles = resolveOrDefault(
+				data.get("additionalRoles"),
+				obj-> Stream.of(String.valueOf(obj).split(";"))
+					.map(Long::parseLong)
+					.collect(Collectors.toSet()),
+				Set.of()
+			);
 		}
 
 		public Long getRoleId() {
@@ -105,6 +123,10 @@ public class VerifySettingsManager extends LiteDBBase {
 
 		public int getMinimumPlaytime() {
 			return minimumPlaytime;
+		}
+
+		public Set<Long> getAdditionalRoles() {
+			return additionalRoles;
 		}
 	}
 }

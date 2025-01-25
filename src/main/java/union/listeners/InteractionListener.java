@@ -299,17 +299,17 @@ public class InteractionListener extends ListenerAdapter {
 		Member member = event.getMember();
 		Guild guild = event.getGuild();
 
-		Long roleId = db.getVerifySettings(guild).getRoleId();
-		if (roleId == null) {
+		Long verifyRoleId = db.getVerifySettings(guild).getRoleId();
+		if (verifyRoleId == null) {
 			sendError(event, "bot.verification.failed_role", "The verification role is not configured");
 			return;
 		}
-		Role role = guild.getRoleById(roleId);
-		if (role == null) {
+		Role verifyRole = guild.getRoleById(verifyRoleId);
+		if (verifyRole == null) {
 			sendError(event, "bot.verification.failed_role", "Verification role not found");
 			return;
 		}
-		if (member.getRoles().contains(role)) {
+		if (member.getRoles().contains(verifyRole)) {
 			sendError(event, "bot.verification.you_verified");
 			return;
 		}
@@ -330,15 +330,40 @@ public class InteractionListener extends ListenerAdapter {
 		if (bot.getSettings().isDbVerifyDisabled()) {
 			// Use simple verification
 			// Give verify role to user, do not add to the cache
-			guild.addRoleToMember(member, role).reason("Verification completed - NO STEAM, database disabled").queue(
-				success -> {
-					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
-					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
-				},
-				failure -> {
-					sendError(event, "bot.verification.failed_role");
-					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
-				});
+			Set<Long> additionalRoles = db.getVerifySettings(guild).getAdditionalRoles();
+			if (additionalRoles.isEmpty()) {
+				guild.addRoleToMember(member, verifyRole).reason("Verification completed - NO STEAM, database disabled").queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), null, guild);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			} else {
+				List<Role> finalRoles = new ArrayList<>(member.getRoles());
+				// add verify role
+				finalRoles.add(verifyRole);
+				// add each additional role
+				for (Long roleId : additionalRoles) {
+					Role role = guild.getRoleById(roleId);
+					if (role != null)
+						finalRoles.add(role);
+				}
+				// modify
+				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - NO STEAM, database disabled").queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), null, guild);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add roles to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			}
 			return;
 		}
 
@@ -381,18 +406,43 @@ public class InteractionListener extends ListenerAdapter {
 			} catch (Exception ex) {
 				bot.getAppLogger().warn("Exception at playtime check, skipped.", ex);
 			}
-			
-			// Give verify role to user
-			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
-				success -> {
-					bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
-					bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
-					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
-				},
-				failure -> {
-					sendError(event, "bot.verification.failed_role");
-					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
-				});
+
+			Set<Long> additionalRoles = db.getVerifySettings(guild).getAdditionalRoles();
+			if (additionalRoles.isEmpty()) {
+				guild.addRoleToMember(member, verifyRole).reason("Verification completed - "+steam64).queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
+						bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			} else {
+				List<Role> finalRoles = new ArrayList<>(member.getRoles());
+				// add verify role
+				finalRoles.add(verifyRole);
+				// add each additional role
+				for (Long roleId : additionalRoles) {
+					Role role = guild.getRoleById(roleId);
+					if (role != null)
+						finalRoles.add(role);
+				}
+				// modify
+				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - "+steam64).queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
+						bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add roles to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			}
 		} else {
 			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify:refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
 			// Check if user pressed refresh button

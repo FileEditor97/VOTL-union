@@ -1,9 +1,9 @@
 package union.commands;
 
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
+import org.jetbrains.annotations.NotNull;
 import union.base.command.SlashCommand;
-import union.base.command.SlashCommandEvent;
-import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -15,29 +15,29 @@ import java.util.function.Consumer;
 public abstract class CommandBase extends SlashCommand {
 
 	// edit message with InteractionHook
-	public final void editMsg(SlashCommandEvent event, @NotNull String msg) {
+	public final void editMsg(IReplyCallback event, @NotNull String msg) {
 		event.getHook().editOriginal(msg).queue();
 	}
 
-	public final void editMsg(SlashCommandEvent event, @NotNull MessageEditData data) {
+	public final void editMsg(IReplyCallback event, @NotNull MessageEditData data) {
 		event.getHook().editOriginal(data).queue();
 	}
 
-	public final void editEmbed(SlashCommandEvent event, @NotNull MessageEmbed... embeds) {
+	public final void editEmbed(IReplyCallback event, @NotNull MessageEmbed... embeds) {
 		event.getHook().editOriginalEmbeds(embeds).queue();
 	}
 
 	// Error
 
-	public final void editError(SlashCommandEvent event, @NotNull MessageEditData data) {
+	public final void editError(IReplyCallback event, @NotNull MessageEditData data) {
 		event.getHook().editOriginal(data)
 			.queue(msg -> {
 				if (!msg.isEphemeral())
-					msg.delete().queueAfter(20, TimeUnit.SECONDS);
+					msg.delete().queueAfter(20, TimeUnit.SECONDS, null, ignoreRest);
 			});
 	}
 
-	public final void editError(SlashCommandEvent event, @NotNull MessageEmbed embed) {
+	public final void editError(IReplyCallback event, @NotNull MessageEmbed embed) {
 		editError(event, new MessageEditBuilder()
 			.setContent(lu.getText(event, "misc.temp_msg"))
 			.setEmbeds(embed)
@@ -45,24 +45,28 @@ public abstract class CommandBase extends SlashCommand {
 		);
 	}
 
-	public final void editError(SlashCommandEvent event, @NotNull String path) {
+	public final void editError(IReplyCallback event, @NotNull String path) {
 		editError(event, path, null);
 	}
 
-	public final void editError(SlashCommandEvent event, @NotNull String path, String reason) {
+	public final void editError(IReplyCallback event, @NotNull String path, String reason) {
 		editError(event, bot.getEmbedUtil().getError(event, path, reason));
 	}
 
-	public final void editErrorOther(SlashCommandEvent event, String reason) {
+	public final void editErrorOther(IReplyCallback event, String reason) {
 		editError(event, bot.getEmbedUtil().getError(event, "errors.error", reason));
 	}
 
-	public final void editErrorUnknown(SlashCommandEvent event, String reason) {
+	public final void editErrorUnknown(IReplyCallback event, String reason) {
 		editError(event, bot.getEmbedUtil().getError(event, "errors.unknown", reason));
 	}
 
+	public final void editErrorDatabase(IReplyCallback event, String details) {
+		editError(event, bot.getEmbedUtil().getError(event, "errors.database", details));
+	}
+
 	// PermError
-	public final void editPermError(SlashCommandEvent event, Permission perm, boolean self) {
+	public final void editPermError(IReplyCallback event, Permission perm, boolean self) {
 		editError(event, MessageEditData.fromCreateData(bot.getEmbedUtil().createPermError(event, perm, self)));
 	}
 

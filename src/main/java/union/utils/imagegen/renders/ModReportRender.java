@@ -48,7 +48,6 @@ public class ModReportRender extends Renderer {
 		// Filter unusable entries
 		final int dataSize = (int) reportData.stream()
 			.filter(d -> !d.getMember().getUser().isBot() && d.getCountTotalInt()>0)
-			.peek(ReportData::dontSkip)
 			.count();
 		final int WIDTH = 900;
 		final int HEIGHT = 200+(dataSize*50);

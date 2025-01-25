@@ -17,8 +17,6 @@ package union.base.command;
 
 import java.io.File;
 
-import union.objects.annotation.NotNull;
-
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -29,7 +27,9 @@ import net.dv8tion.jda.api.interactions.commands.context.UserContextInteraction;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class UserContextMenuEvent extends UserContextInteractionEvent
 {
 	private final CommandClient client;

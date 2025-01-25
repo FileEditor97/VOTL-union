@@ -22,16 +22,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jetbrains.annotations.NotNull;
 import union.metrics.Metrics;
 import union.metrics.datapoints.Timer;
 import union.objects.CmdAccessLevel;
-import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -187,6 +186,7 @@ public abstract class SlashCommand extends Interaction
 	 * @param event The event to handle.
 	 * @see OptionData#setAutoComplete(boolean)
 	 */
+	@SuppressWarnings("unused")
 	public void onAutoComplete(CommandAutoCompleteInteractionEvent event) {}
 
 	/**
@@ -204,13 +204,13 @@ public abstract class SlashCommand extends Interaction
 		final CommandClient client = event.getClient();
 
 		// check owner command
-		if (ownerCommand && (!isOwner(event, client))) {
+		if (ownerCommand && !isOwner(event, client)) {
 			terminate(event, bot.getEmbedUtil().getError(event, "errors.command.not_owner"), client);
 			return;
 		}
 
 		// cooldown check, ignoring owner
-		if (cooldown > 0 && !(isOwner(event, client))) {
+		if (cooldown > 0 && !isOwner(event, client)) {
 			String key = getCooldownKey(event);
 			int remaining = client.getRemainingCooldown(key);
 			if (remaining > 0) {
@@ -235,12 +235,6 @@ public abstract class SlashCommand extends Interaction
 					.hasPermissions(event, guild, author, true, getBotPermissions());
 			} catch (CheckException ex) {
 				terminate(event, ex.getCreateData(), client);
-				return;
-			}
-
-			// nsfw check
-			if (nsfwOnly && event.getChannelType() == ChannelType.TEXT && !event.getTextChannel().isNSFW()) {
-				terminate(event, bot.getEmbedUtil().getError(event, "errors.command.nsfw"), client);
 				return;
 			}
 		}
@@ -470,7 +464,7 @@ public abstract class SlashCommand extends Interaction
 	private void terminate(SlashCommandEvent event, MessageCreateData message, CommandClient client) {
 		if (message != null)
 			event.reply(message).setEphemeral(true).queue(null, failure -> new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
-		if (event.getClient().getListener() != null)
+		if (client.getListener() != null)
 			client.getListener().onTerminatedSlashCommand(event, this);
 	}
 

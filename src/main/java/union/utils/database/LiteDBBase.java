@@ -13,10 +13,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.metrics.Metrics;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 
+@SuppressWarnings("SqlSourceToSinkFlow")
 public class LiteDBBase {
 
 	private final ConnectionUtil util;
@@ -59,6 +60,7 @@ public class LiteDBBase {
 	}
 
 	// Select
+	@Nullable
 	protected <T> T selectOne(final String sql, String selectKey, Class<T> selectClass) {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
@@ -81,6 +83,7 @@ public class LiteDBBase {
 		return result;
 	}
 
+	@NotNull
 	protected <T> List<T> select(final String sql, String selectKey, Class<T> selectClass) {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
@@ -127,6 +130,7 @@ public class LiteDBBase {
 		return result.isEmpty() ? null : result;
 	}
 
+	@NotNull
 	protected List<Map<String, Object>> select(final String sql, final Set<String> selectKeys) {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue("SELECT").inc();
@@ -198,6 +202,7 @@ public class LiteDBBase {
 
 
 	// UTILS
+	@NotNull
 	protected String quote(Object value) {
 		// Convert to string and replace '(single quote) with ''(2 single quotes) for sql
 		if (value == null) return "NULL";

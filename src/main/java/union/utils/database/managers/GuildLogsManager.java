@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import union.objects.annotation.NotNull;
+import org.jetbrains.annotations.NotNull;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.FixedCache;

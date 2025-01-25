@@ -1,12 +1,12 @@
 package union.utils.imagegen;
 
 import ch.qos.logback.classic.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import union.App;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.file.ResourceLoaderUtil;
 
@@ -33,7 +33,7 @@ public class UserBackgroundHandler {
 		backgroundsDirectory = new File(Constants.DATA_PATH+"backgrounds");
 
 		if (!backgroundsDirectory.exists()) {
-			backgroundsDirectory.mkdirs();
+			boolean ignored = backgroundsDirectory.mkdirs();
 		}
 
 		copyBackgrounds();
@@ -69,8 +69,7 @@ public class UserBackgroundHandler {
 	public void start() {
 		try {
 			List<UserBackground> userBackgrounds = getIndexFile();
-			if (userBackgrounds != null)
-				backgrounds.addAll(userBackgrounds);
+			backgrounds.addAll(userBackgrounds);
 		} catch (IOException e) {
 			log.error("Invalid cache type given: {}", e.getMessage(), e);
 			System.exit(1);
@@ -99,8 +98,6 @@ public class UserBackgroundHandler {
 		List<UserBackground> localBackgrounds = new ArrayList<>();
 
 		JSONObject jsonData = App.getInstance().getFileManager().getJsonObject("backgrounds");
-		if (jsonData == null)
-			return null;
 		JSONArray jsonArray = jsonData.getJSONArray("themes");
 
 		for (Object o : jsonArray) {

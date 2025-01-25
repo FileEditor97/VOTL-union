@@ -93,6 +93,8 @@ public class DBUtil {
 		String passCentral = fileManager.getNullableString("config", "central-pass");
 		
 		this.connectionUtil = new ConnectionUtil(urlSQLite, logger);
+
+		updateDB();
 		
 		guildSettings = new GuildSettingsManager(connectionUtil);
 		webhook = new WebhookManager(connectionUtil);
@@ -126,10 +128,6 @@ public class DBUtil {
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, settings, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, settings, urlCentralTemp, userCentral, passCentral);
-
-		updateDB();
-
-		modifyRole.removeExpired(); // Remove expired selections
 
 		urlSQLite = "jdbc:sqlite:%s".formatted(fileManager.getFiles().get("banlist"));
 		Logger banlistLogger = (Logger) LoggerFactory.getLogger("Banlist manager");
@@ -194,7 +192,7 @@ public class DBUtil {
 					logger.warn("Failed to get resources database version", ex);
 				}
 			}
-			tempFile.delete();
+			boolean ignored = tempFile.delete();
 		} catch (IOException ioException) {
 			logger.error("Exception at version check\n", ioException);
 		}
@@ -206,7 +204,7 @@ public class DBUtil {
 		try {
 			File tempFile = File.createTempFile("database_updates", ".tmp");
 			if (!fileManager.export(App.class.getResourceAsStream("/database_updates"), tempFile.toPath())) {
-				logger.error("Failed to write temp file {}!", tempFile.getName());
+				logger.error("Failed to write instruction temp file {}!", tempFile.getName());
 			} else {
 				lines = Files.readAllLines(tempFile.toPath(), StandardCharsets.UTF_8);
 			}

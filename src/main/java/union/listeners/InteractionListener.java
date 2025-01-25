@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.dv8tion.jda.api.entities.*;
 
@@ -15,6 +16,8 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
@@ -23,8 +26,6 @@ import union.metrics.Metrics;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.utils.CastUtil;
@@ -128,17 +129,9 @@ public class InteractionListener extends ListenerAdapter {
 		function.run();
 	}
 
-	private final Set<String> acceptableButtons = Set.of(
-		"verify", "role", "ticket", "tag", "invites",
-		"delete", "voice", "blacklist", "strikes", "sync_unban",
-		"sync_ban", "sync_kick", "thread", "comments"
-	);
-
-
 	@Override
 	public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 		String[] actions = event.getComponentId().split(":");
-		if (!acceptableButtons.contains(actions[0])) return;
 
 		// Acknowledge interaction
 		event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
@@ -257,6 +250,7 @@ public class InteractionListener extends ListenerAdapter {
 						runButtonInteraction(event, Cooldown.BUTTON_COMMENTS_SHOW, () -> buttonCommentsShow(event));
 					}
 				}
+				default -> bot.getAppLogger().warn("Unknown button interaction: {}", event.getComponentId());
 			}
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error
@@ -305,17 +299,17 @@ public class InteractionListener extends ListenerAdapter {
 		Member member = event.getMember();
 		Guild guild = event.getGuild();
 
-		Long roleId = db.getVerifySettings(guild).getRoleId();
-		if (roleId == null) {
+		Long verifyRoleId = db.getVerifySettings(guild).getRoleId();
+		if (verifyRoleId == null) {
 			sendError(event, "bot.verification.failed_role", "The verification role is not configured");
 			return;
 		}
-		Role role = guild.getRoleById(roleId);
-		if (role == null) {
+		Role verifyRole = guild.getRoleById(verifyRoleId);
+		if (verifyRole == null) {
 			sendError(event, "bot.verification.failed_role", "Verification role not found");
 			return;
 		}
-		if (member.getRoles().contains(role)) {
+		if (member.getRoles().contains(verifyRole)) {
 			sendError(event, "bot.verification.you_verified");
 			return;
 		}
@@ -336,15 +330,40 @@ public class InteractionListener extends ListenerAdapter {
 		if (bot.getSettings().isDbVerifyDisabled()) {
 			// Use simple verification
 			// Give verify role to user, do not add to the cache
-			guild.addRoleToMember(member, role).reason("Verification completed - NO STEAM, database disabled").queue(
-				success -> {
-					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
-					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
-				},
-				failure -> {
-					sendError(event, "bot.verification.failed_role");
-					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
-				});
+			Set<Long> additionalRoles = db.getVerifySettings(guild).getAdditionalRoles();
+			if (additionalRoles.isEmpty()) {
+				guild.addRoleToMember(member, verifyRole).reason("Verification completed - NO STEAM, database disabled").queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), null, guild);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			} else {
+				List<Role> finalRoles = new ArrayList<>(member.getRoles());
+				// add verify role
+				finalRoles.add(verifyRole);
+				// add each additional role
+				for (Long roleId : additionalRoles) {
+					Role role = guild.getRoleById(roleId);
+					if (role != null)
+						finalRoles.add(role);
+				}
+				// modify
+				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - NO STEAM, database disabled").queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), null, guild);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add roles to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			}
 			return;
 		}
 
@@ -387,18 +406,43 @@ public class InteractionListener extends ListenerAdapter {
 			} catch (Exception ex) {
 				bot.getAppLogger().warn("Exception at playtime check, skipped.", ex);
 			}
-			
-			// Give verify role to user
-			guild.addRoleToMember(member, role).reason("Verification completed - "+steam64).queue(
-				success -> {
-					bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
-					bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
-					event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
-				},
-				failure -> {
-					sendError(event, "bot.verification.failed_role");
-					bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
-				});
+
+			Set<Long> additionalRoles = db.getVerifySettings(guild).getAdditionalRoles();
+			if (additionalRoles.isEmpty()) {
+				guild.addRoleToMember(member, verifyRole).reason("Verification completed - "+steam64).queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
+						bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add verify role to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			} else {
+				List<Role> finalRoles = new ArrayList<>(member.getRoles());
+				// add verify role
+				finalRoles.add(verifyRole);
+				// add each additional role
+				for (Long roleId : additionalRoles) {
+					Role role = guild.getRoleById(roleId);
+					if (role != null)
+						finalRoles.add(role);
+				}
+				// modify
+				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - "+steam64).queue(
+					success -> {
+						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
+						bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
+						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+					},
+					failure -> {
+						sendError(event, "bot.verification.failed_role");
+						bot.getAppLogger().warn("Was unable to add roles to user in {}({})", guild.getName(), guild.getId(), failure);
+					}
+				);
+			}
 		} else {
 			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify:refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
 			// Check if user pressed refresh button
@@ -763,22 +807,70 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonTicketClose(ButtonInteractionEvent event) {
-		String channelId = event.getChannel().getId();
+		String channelId = event.getChannelId();
 		if (db.ticket.isClosed(channelId)) {
 			// Ticket is closed
 			event.getChannel().delete().queue();
 			return;
 		}
-		String reason = db.ticket.getUserId(channelId).equals(event.getUser().getId())
+		// Check who can close tickets
+		final boolean isAuthor = db.ticket.getUserId(channelId).equals(event.getUser().getId());
+		if (!isAuthor) {
+			switch (db.getTicketSettings(event.getGuild()).getAllowClose()) {
+				case EVERYONE -> {}
+				case HELPER -> {
+					// Check if user has Helper+ access
+					if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+						// No access - reject
+						sendError(event, "errors.interaction.no_access", "Helper+ access");
+						return;
+					}
+				}
+				case SUPPORT -> {
+					// Check if user is ticket support or has Admin+ access
+					int tagId = db.ticket.getTag(channelId);
+					if (tagId==0) {
+						// Role request ticket
+						List<Long> supportRoleIds = db.getTicketSettings(event.getGuild()).getRoleSupportIds();
+						if (supportRoleIds.isEmpty()) supportRoleIds = db.access.getRoles(event.getGuild().getIdLong(), CmdAccessLevel.MOD);
+						// Check
+						if (denyCloseSupport(supportRoleIds, event.getMember())) {
+							sendError(event, "errors.interaction.no_access", "'Support' for this ticket or Admin+ access");
+							return;
+						}
+					} else {
+						// Standard ticket
+						final List<Long> supportRoleIds = Stream.of(db.tags.getSupportRolesString(tagId).split(";"))
+							.map(Long::parseLong)
+							.toList();
+						// Check
+						if (denyCloseSupport(supportRoleIds, event.getMember())) {
+							sendError(event, "errors.interaction.no_access", "'Support' for this ticket or Admin+ access");
+							return;
+						}
+					}
+				}
+			}
+		}
+		// Close
+		String reason = isAuthor
 			? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_author")
 			: lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_support");
 		event.editButton(Button.danger("ticket:close", bot.getLocaleUtil().getLocalized(event.getGuildLocale(), "ticket.close")).withEmoji(Emoji.fromUnicode("🔒")).asDisabled()).queue();
+		// Send message
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown")).build()).queue(msg -> {
 			bot.getTicketUtil().closeTicket(channelId, event.getUser(), reason, failure -> {
 				msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed", failure.getMessage())).queue();
 				bot.getAppLogger().error("Couldn't close ticket with channelID: {}", channelId, failure);
 			});
 		});
+	}
+
+	private boolean denyCloseSupport(List<Long> supportRoleIds, Member member) {
+		if (supportRoleIds.isEmpty()) return false; // No data to check against
+		final List<Role> roles = member.getRoles(); // Check if user has any support role
+		if (!roles.isEmpty() && roles.stream().anyMatch(r -> supportRoleIds.contains(r.getIdLong()))) return false;
+		return !bot.getCheckUtil().hasAccess(member, CmdAccessLevel.ADMIN); // if user has Admin access
 	}
 
 	private void buttonTicketCloseCancel(ButtonInteractionEvent event) {
@@ -1910,7 +2002,7 @@ public class InteractionListener extends ListenerAdapter {
 		private final int time;
 		private final CooldownScope scope;
 
-		Cooldown(@NotNull int time, @NotNull CooldownScope scope) {
+		Cooldown(int time, @NotNull CooldownScope scope) {
 			this.time = time;
 			this.scope = scope;
 		}

@@ -4,9 +4,9 @@ import java.time.Duration;
 import java.time.Instant;
 
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.objects.CaseType;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.database.DBUtil;
 import union.utils.file.lang.LocaleUtil;

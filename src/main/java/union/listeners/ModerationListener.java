@@ -1,8 +1,8 @@
 package union.listeners;
 
+import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.CaseType;
-import union.objects.annotation.NotNull;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.CaseManager.CaseData;

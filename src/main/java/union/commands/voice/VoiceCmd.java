@@ -4,12 +4,12 @@ import java.util.*;
 
 import net.dv8tion.jda.api.entities.ISnowflake;
 
+import org.jetbrains.annotations.NotNull;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdModule;
 import union.objects.Emotes;
-import union.objects.annotation.NotNull;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 

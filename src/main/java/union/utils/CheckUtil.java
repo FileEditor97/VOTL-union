@@ -1,7 +1,12 @@
 package union.utils;
 
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
+import net.dv8tion.jda.api.entities.Role;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.App;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
@@ -140,6 +145,22 @@ public class CheckUtil {
 			throw new CheckException(msg);
 		}
 		return this;
+	}
+
+	private final Set<Permission> adminPerms = Set.of(Permission.ADMINISTRATOR, Permission.MANAGE_CHANNEL, Permission.MANAGE_ROLES, Permission.MANAGE_SERVER, Permission.BAN_MEMBERS);
+
+	@Nullable
+	public String denyRole(@NotNull Role role, @NotNull Guild guild, @NotNull Member member, boolean checkPerms) {
+		if (role.isPublicRole()) return "`@everyone` is public";
+		else if (role.isManaged()) return "Bot's role";
+		else if (!member.canInteract(role)) return "You can't interact with this role";
+		else if (!guild.getSelfMember().canInteract(role)) return "Bot can't interact with this role";
+		else if (checkPerms) {
+			EnumSet<Permission> rolePerms = EnumSet.copyOf(role.getPermissions());
+			rolePerms.retainAll(adminPerms);
+			if (!rolePerms.isEmpty()) return "This role has Administrator/Manager permissions";
+		}
+		return null;
 	}
 
 }

@@ -30,7 +30,9 @@ import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.TicketPanelManager.Panel;
+import union.utils.database.managers.TicketSettingsManager;
 import union.utils.database.managers.TicketTagManager.Tag;
+import union.utils.message.MessageUtil;
 
 public class TicketPanelCmd extends CommandBase {
 	
@@ -39,7 +41,7 @@ public class TicketPanelCmd extends CommandBase {
 		this.path = "bot.ticketing.ticket";
 		this.children = new SlashCommand[]{new NewPanel(), new ModifyPanel(), new ViewPanel(), new SendPanel(), new DeletePanel(),
 			new CreateTag(), new ModifyTag(), new ViewTag(), new DeleteTag(),
-			new Automation()};
+			new Automation(), new Settings()};
 		this.category = CmdCategory.TICKETING;
 		this.accessLevel = CmdAccessLevel.ADMIN;
 	}
@@ -560,6 +562,130 @@ public class TicketPanelCmd extends CommandBase {
 					.appendDescription(response.toString())
 					.build()
 				);
+			}
+		}
+	}
+
+	private class Settings extends SlashCommand {
+		public Settings() {
+			this.name = "settings";
+			this.path = "bot.ticketing.ticket.settings";
+			this.options = List.of(
+				new OptionData(OptionType.BOOLEAN, "delete_pings", lu.getText(path+".delete_pings.help")),
+				new OptionData(OptionType.BOOLEAN, "other_roles", lu.getText(path+".other_roles.help")),
+				new OptionData(OptionType.STRING, "role_tickets_support", lu.getText(path+".role_tickets_support.help")),
+				new OptionData(OptionType.INTEGER, "allow_close", lu.getText(path+".allow_close.help"))
+					.addChoice("Everyone (default)", TicketSettingsManager.AllowClose.EVERYONE.getValue())
+					.addChoice("Helper+ access", TicketSettingsManager.AllowClose.HELPER.getValue())
+					.addChoice("Ticket support roles", TicketSettingsManager.AllowClose.SUPPORT.getValue()),
+				new OptionData(OptionType.INTEGER, "transcripts_mode", lu.getText(path+".transcripts_mode.help"))
+					.addChoice("All tickets", TicketSettingsManager.TranscriptsMode.ALL.getValue())
+					.addChoice("All, except role requests (default)", TicketSettingsManager.TranscriptsMode.EXCEPT_ROLES.getValue())
+					.addChoice("None", TicketSettingsManager.TranscriptsMode.NONE.getValue())
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			StringBuilder response = new StringBuilder();
+			if (event.getOptions().isEmpty()) {
+				// Return overview
+				TicketSettingsManager.TicketSettings settings = bot.getDBUtil().getTicketSettings(event.getGuild());
+
+				response.append("\n> Autoclose time: **").append(settings.getAutocloseTime()).append("** hours")
+					.append("\n> Autoclose on left: ").append(settings.autocloseLeftEnabled()?Constants.SUCCESS:Constants.FAILURE)
+					.append("\n> Time to reply: **").append(settings.getTimeToReply()).append("** hours")
+					.append("\n\n> Allow other roles: ").append(settings.otherRoleEnabled()?Constants.SUCCESS:Constants.FAILURE)
+					.append("\n\n> Support roles: ").append(settings.getRoleSupportIds()
+						.stream()
+						.map(String::valueOf)
+						.collect(Collectors.joining("`, `", "`", "`")))
+					.append("\n\n> Delete pings: ").append(settings.deletePingsEnabled()?Constants.SUCCESS:Constants.FAILURE)
+					.append("\n> Allow close: **").append(MessageUtil.capitalize(settings.getAllowClose().name()))
+					.append("**\n> Transcripts saved: **").append(MessageUtil.capitalize(settings.getTranscriptsMode().name()).replace("_", " "))
+					.append("**");
+
+				editEmbed(event, bot.getEmbedUtil().getEmbed()
+					.setDescription(lu.getText(event, path+".embed_view"))
+					.appendDescription(response.toString())
+					.build()
+				);
+			} else {
+				// Edit settings
+				if (event.hasOption("delete_pings")) {
+					final boolean deletePings = event.optBoolean("delete_pings");
+
+					if (bot.getDBUtil().ticketSettings.setDeletePings(event.getGuild().getIdLong(), deletePings)) {
+						editErrorDatabase(event, "ticket settings set delete pings");
+						return;
+					}
+					response.append(lu.getText(event, path+".changed_delete").formatted(deletePings ? Constants.SUCCESS : Constants.FAILURE));
+				}
+				if (event.hasOption("other_roles")) {
+					final boolean otherRoles = event.optBoolean("other_roles");
+
+					if (bot.getDBUtil().ticketSettings.setOtherRole(event.getGuild().getIdLong(), otherRoles)) {
+						editErrorDatabase(event, "ticket settings set other roles");
+						return;
+					}
+					response.append(lu.getText(event, path+".changed_other").formatted(otherRoles ? Constants.SUCCESS : Constants.FAILURE));
+				}
+				if (event.hasOption("role_tickets_support")) {
+					if (event.optString("role_tickets_support").equalsIgnoreCase("null")) {
+						// Clear roles
+						if (bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), List.of())) {
+							editErrorDatabase(event, "ticket settings clear support roles");
+							return;
+						}
+
+						response.append(lu.getText(event, path+".cleared_support"));
+					} else {
+						// Set roles
+						List<Role> roles = event.optMentions("role_tickets_support").getRoles();
+						if (roles.isEmpty() || roles.size()>3) {
+							editError(event, path+".bad_roles");
+							return;
+						}
+						if (bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), roles.stream().map(Role::getIdLong).toList())) {
+							editErrorDatabase(event, "ticket settings set support roles");
+							return;
+						}
+
+						response.append(lu.getText(event, path+".changed_support").formatted(roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "))));
+					}
+				}
+				if (event.hasOption("allow_close")) {
+					TicketSettingsManager.AllowClose allowClose = TicketSettingsManager.AllowClose.valueOf(event.optInteger("allow_close"));
+					if (allowClose != null) {
+						if (bot.getDBUtil().ticketSettings.setAllowClose(event.getGuild().getIdLong(), allowClose)) {
+							editErrorDatabase(event, "ticket settings set allow close");
+							return;
+						}
+						response.append(lu.getText(event, path+".changed_close").formatted(MessageUtil.capitalize(allowClose.name())));
+					}
+				}
+				if (event.hasOption("transcripts_mode")) {
+					TicketSettingsManager.TranscriptsMode transcriptsMode = TicketSettingsManager.TranscriptsMode.valueOf(event.optInteger("transcripts_mode"));
+					if (transcriptsMode != null) {
+						if (bot.getDBUtil().ticketSettings.setTranscript(event.getGuild().getIdLong(), transcriptsMode)) {
+							editErrorDatabase(event, "ticket settings set allow close");
+							return;
+						}
+						response.append(lu.getText(event, path+".changed_transcript").formatted(MessageUtil.capitalize(transcriptsMode.name()).replace("_", " ")));
+					}
+				}
+
+				if (response.isEmpty()) {
+					editErrorUnknown(event, "Response for ticket settings is empty.");
+				} else {
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setDescription(lu.getText(event, path+".embed_changes"))
+						.appendDescription(response.toString())
+						.build()
+					);
+				}
 			}
 		}
 	}

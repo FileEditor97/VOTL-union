@@ -15,7 +15,7 @@
  */
 package union.base.command;
 
-import union.objects.annotation.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A series of {@link Enum}s used for defining the scope size for a
@@ -57,7 +57,7 @@ public enum CooldownScope
 {
 	/**
 	 * Applies the cooldown to the calling {@link net.dv8tion.jda.api.entities.User User} across all
-	 * locations on this instance (IE: TextChannels, PrivateChannels, etc).
+	 * locations on this instance (IE: TextChannels, PrivateChannels, etc.).
 	 *
 	 * <p>The key for this is generated in the format
 	 * <ul>

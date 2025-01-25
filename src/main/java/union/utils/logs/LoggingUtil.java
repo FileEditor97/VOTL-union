@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.utils.AttachmentProxy;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.App;
 import union.base.command.SlashCommandEvent;
 import union.listeners.MessageListener.MessageData;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.CaseProofUtil;
@@ -98,6 +98,7 @@ public class LoggingUtil {
 
 
 	// Moderation actions
+	@SuppressWarnings("LoggingSimilarMessage")
 	public class ModerationLogs {
 		private final LogType type = LogType.MODERATION;
 
@@ -116,11 +117,6 @@ public class LoggingUtil {
 		public CompletableFuture<String> onNewCase(Guild guild, User target, @NotNull CaseData caseData, @Nullable CaseProofUtil.ProofData proofData, String optionalData) {
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return CompletableFuture.completedFuture(null);
-
-			if (caseData == null) {
-				bot.getAppLogger().warn("Unknown case provided with interaction");
-				return CompletableFuture.completedFuture(null);
-			}
 
 			String proofFileName = proofData==null ? null : proofData.setFileName(caseData.getLocalIdInt());
 			MessageEmbed embed = switch (caseData.getCaseType()) {
@@ -374,30 +370,6 @@ public class LoggingUtil {
 			sendLog(event.getGuild(), type, () -> logUtil.groupOwnerAddedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, targetName, targetId, groupId, name));
 		}
 
-//		public void onGuildJoined(SlashCommandEvent event, Integer groupId, String name) {
-//			long ownerId = db.group.getOwner(groupId);
-//			Guild owner = bot.JDA.getGuildById(ownerId);
-//			String ownerIcon = owner.getIconUrl();
-//
-//			// Send log to added server
-//			sendLog(event.getGuild(), type, () -> logUtil.groupMemberJoinedEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
-//
-//			// Master log
-//			sendLog(owner, type, () -> logUtil.groupOwnerJoinedEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
-//		}
-//
-//		public void onGuildLeft(SlashCommandEvent event, Integer groupId, String name) {
-//			long ownerId = db.group.getOwner(groupId);
-//			Guild owner = bot.JDA.getGuildById(ownerId);
-//			String ownerIcon = owner.getIconUrl();
-//
-//			// Send log to removed server
-//			sendLog(event.getGuild(), type, () -> logUtil.groupMemberLeftEmbed(event.getGuildLocale(), event.getMember().getAsMention(), ownerId, ownerIcon, groupId, name));
-//
-//			// Master log
-//			sendLog(owner, type, () -> logUtil.groupOwnerLeftEmbed(owner.getLocale(), ownerId, ownerIcon, event.getGuild().getName(), event.getGuild().getIdLong(), groupId, name));
-//		}
-
 		public void onGuildRemoved(SlashCommandEvent event, Guild target, Integer groupId, String name) {
 			long ownerId = event.getGuild().getIdLong();
 			String ownerIcon = event.getGuild().getIconUrl();
@@ -526,18 +498,14 @@ public class LoggingUtil {
 		}
 
 		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, String authorId, FileUpload file) {
+			if (file == null) onClose(guild, messageChannel, userClosed, authorId);
+
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 			try {
-				if (file == null) {
-					client.sendMessageEmbeds(
-						logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
-					).queue();
-				} else {
-					client.sendMessageEmbeds(
-						logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
-					).addFiles(file).queue();
-				}
+				client.sendMessageEmbeds(
+					logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
+				).addFiles(file).queue();
 			} catch (Exception ignored) {}
 		}
 

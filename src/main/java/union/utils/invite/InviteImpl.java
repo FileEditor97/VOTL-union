@@ -19,8 +19,6 @@ package union.utils.invite;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-import union.objects.annotation.NotNull;
-
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild.VerificationLevel;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -29,6 +27,7 @@ import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.EntityString;
+import org.jetbrains.annotations.NotNull;
 
 public class InviteImpl implements Invite {
 
@@ -124,6 +123,7 @@ public class InviteImpl implements Invite {
 				.toString();
 	}
 
+	@SuppressWarnings("unused")
 	public static class GuildImpl implements Guild {
 
 		private final String iconId, name, splashId;
@@ -171,7 +171,7 @@ public class InviteImpl implements Invite {
             return id;
         }
 
-        @NotNull
+		@NotNull
         @Override
         public String getName()
         {
@@ -191,7 +191,7 @@ public class InviteImpl implements Invite {
                     : "https://cdn.discordapp.com/splashes/" + this.id + "/" + this.splashId + ".png";
         }
 
-        @NotNull
+		@NotNull
         @Override
         public VerificationLevel getVerificationLevel()
         {
@@ -210,7 +210,7 @@ public class InviteImpl implements Invite {
             return memberCount;
         }
 
-        @NotNull
+		@NotNull
         @Override
         public Set<String> getFeatures()
         {

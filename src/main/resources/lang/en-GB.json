@@ -7,6 +7,7 @@
 		"additional": "Additional info:",
 		"unknown": "{EMOTE_WARNING_C} Something went wrong!\nReport this error to bot's Owner/Developer in support server!",
 		"error": "{EMOTE_WARNING_C} Something went wrong!",
+		"database": "{EMOTE_WARNING_C} Database error, changes were not recorded or only partially.",
 		"missing_perms": {
 			"self": "I lack the permission `{permission}` for this.",
 			"self_channel": "I lack the permission `{permission}` in the channel {channel} to do this.",
@@ -53,10 +54,15 @@
 			"usage": "no usage description"
 		},
 		"time": {
+			"second": "second",
 			"seconds": "seconds",
+			"minute": "minute",
 			"minutes": "minutes",
+			"hour": "hour",
 			"hours": "hours",
+			"day": "day",
 			"days": "days",
+			"week": "week",
 			"weeks": "weeks"
 		},
 		"permanently": "permanently",
@@ -1751,7 +1757,7 @@
 			},
 			"modstats": {
 				"help": "View moderation statistics for mod/admin",
-				"usage": "modstats [@User] [start date] [end date]",
+				"usage": "modstats [@User] [start date] [end date] [as text?]",
 				"user": {
 					"name": "user",
 					"help": "Select user"
@@ -2088,15 +2094,51 @@
 				}
 			},
 			"verifyrole": {
-				"help": "Assign server role for verification",
-				"usage": "verifyrole <@Role>",
-				"role": {
-					"name": "role",
-					"help": "Select role which will be used for verification"
+				"help": "Manage verification roles",
+				"usage": "verifyrole",
+				"verify": {
+					"help": "Assign role for verification",
+					"usage": "verify <@Role>",
+					"role": {
+						"name": "role",
+						"help": "Select role which will be used for verification"
+					},
+					"no_role": "Provided role not found.",
+					"incorrect_role": "Selected role can't be used.",
+					"done": "Role %s assigned for verification!"
 				},
-				"disable_check": "Disable account connection check, before changing verification role!",
-				"no_role": "Provided role was incorrect.",
-				"done": "Role {role} assigned for verification!"
+				"additional": {
+					"help": "Manage additional roles",
+					"set": {
+						"help": "Set additional roles to be set to user on verification completion",
+						"usage": "additional set <@Role> [@Role] [@Role]",
+						"role1": {
+							"name": "role1",
+							"help": "Select role"
+						},
+						"role2": {
+							"name": "role2",
+							"help": "Select role"
+						},
+						"role3": {
+							"name": "role3",
+							"help": "Select role"
+						},
+						"invalid_args":"You haven't selected any role/-s.",
+						"incorrect_role": "Selected roles can't be added.",
+						"done": "Set %s as additional roles."
+					},
+					"clear": {
+						"help": "Clear all additional roles",
+						"usage": "additional clear",
+						"done": "Cleared all additional roles."
+					},
+					"view": {
+						"help": "View all additional roles",
+						"usage": "additional view",
+						"no_roles": "No additional roles set."
+					}
+				}
 			},
 			"verify": {
 				"help": "Manually add verify role to member and protect from purge",
@@ -2314,26 +2356,6 @@
 						"help": "Enter text which will be shown in role selection placeholder"
 					},
 					"done": "Placeholder text for row `{row}` set to `{text}`."
-				},
-				"other": {
-					"help": "Set if user can select 'other' roles request",
-					"usage": "other <enabled?>",
-					"enabled": {
-						"name": "enabled",
-						"help": "Enable other roles request?"
-					},
-					"done": "Other roles request enabled - `%s`."
-				},
-				"support": {
-					"help": "Set support roles for role requests",
-					"usage": "support <@Roles>",
-					"roles": {
-						"name": "roles",
-						"help": "Mention role/-s to set or enter 'null' to clear"
-					},
-					"bad_input": "Incorrect role mentions provided.",
-					"done_clear": "Support roles cleared.",
-					"done": "Roles %s will be pinged in role requests."
 				}
 			},
 			"tcount": {
@@ -2676,6 +2698,39 @@
 					"changed_autoclose": "\n> Autoclose time set to %s hour/-s.",
 					"changed_left": "\n> When ticket's author leaves, ticket will be closed: %s.",
 					"changed_reply": "\n> Reply time set to %s hour/-s."
+				},
+				"settings": {
+					"help": "Manage global settings for tickets (to view settings - don't select options)",
+					"usage": "settings [delete pings] [other roles] [role tickets support] [allow close] [transcripts]",
+					"delete_pings": {
+						"name": "delete_pings",
+						"help": "When creating new ticket, delete user/moderator pings?"
+					},
+					"other_roles": {
+						"name": "other_roles",
+						"help": "Allow users to request 'other' roles?"
+					},
+					"role_tickets_support": {
+						"name": "role_tickets_support",
+						"help": "Role requests support roles. Mention role/-s to set or enter 'null' to clear/default."
+					},
+					"allow_close": {
+						"name": "allow_close",
+						"help": "Who can close tickets? (Everyone, helper+ or support)"
+					},
+					"transcripts_mode": {
+						"name": "transcripts_mode",
+						"help": "For which tickets transcript will be created? (All, except roles or none)"
+					},
+					"bad_roles": "No roles provided (use @Role) or more than 3.",
+					"embed_view": "**Ticket settings**",
+					"embed_changes": "**Updated ticket settings**",
+					"changed_delete": "\n> Delete pings after ticket creation: %s",
+					"changed_other": "\n> Allow other roles requests: %s",
+					"cleared_support": "\n> Support roles cleared. (By default, roles with __Mod__ access will be pinged)",
+					"changed_support": "\n> %s will be pinged in role requests.",
+					"changed_close": "\n> Allowed to close tickets: **%s**",
+					"changed_transcript": "\n> Transcripts will be created for **%s** tickets."
 				}
 			},
 			"close": {
@@ -2831,6 +2886,7 @@
 						"help": "Delete this role, after time has passed? (default-false)"
 					},
 					"no_role": "Role not found.",
+					"not_whitelisted": "Selected role is not whitelisted! Ask Administrator to add it to the list.",
 					"incorrect_role": "Selected role can't be assigned.",
 					"no_member": "Member not found.",
 					"incorrect_user": "Selected member can't be assigned role.",

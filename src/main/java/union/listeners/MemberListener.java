@@ -9,9 +9,9 @@ import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.CaseType;
-import union.objects.annotation.NotNull;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 

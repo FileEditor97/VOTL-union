@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.ErrorResponse;
-import union.objects.annotation.NotNull;
+import org.jetbrains.annotations.NotNull;
 import union.objects.constants.Constants;
 import union.utils.file.lang.LocaleUtil;
 

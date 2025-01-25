@@ -1,9 +1,8 @@
 package union.utils.exception;
 
-import union.objects.annotation.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 public class FormatterException extends Exception {
-	
 	@NotNull
 	private final String path;
 	

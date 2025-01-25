@@ -72,9 +72,18 @@ public class TempRoleCmd extends CommandBase {
 				editError(event, path+".no_role");
 				return;
 			}
-			if (role.isPublicRole() || role.isManaged() || !guild.getSelfMember().canInteract(role) || role.hasPermission(Permission.ADMINISTRATOR)) {
-				editError(event, path+".incorrect_role");
+			String denyReason = bot.getCheckUtil().denyRole(role, event.getGuild(), event.getMember(), true);
+			if (denyReason != null) {
+				editError(event, path+".incorrect_role", "Role: %s\n> %s".formatted(role.getAsMention(), denyReason));
 				return;
+			}
+			// Check if role whitelisted
+			if (bot.getDBUtil().getGuildSettings(guild).isRoleWhitelistEnabled()) {
+				if (!bot.getDBUtil().role.existsRole(role.getId())) {
+					// Not whitelisted
+					editError(event, path+".not_whitelisted", "Role: %s".formatted(role.getAsMention()));
+					return;
+				}
 			}
 			// Check member
 			Member member = event.optMember("user");

@@ -4,10 +4,9 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
-
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public enum Emotes {
 	// Animated emotes

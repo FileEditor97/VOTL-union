@@ -3,7 +3,9 @@ package union.commands.ticketing;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Stream;
 
+import net.dv8tion.jda.api.entities.*;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -11,10 +13,6 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -38,8 +36,10 @@ public class RcloseCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
+
 		String channelId = event.getChannel().getId();
 		String authorId = bot.getDBUtil().ticket.getUserId(channelId);
+
 		if (authorId == null) {
 			// If this channel is not a ticket
 			editError(event, path+".not_ticket");
@@ -54,6 +54,43 @@ public class RcloseCmd extends CommandBase {
 			// If request already exists (if there is no cancel button - GG)
 			editError(event, path+".already_requested");
 			return;
+		}
+
+		// Check access
+		switch (bot.getDBUtil().getTicketSettings(event.getGuild()).getAllowClose()) {
+			case EVERYONE -> {}
+			case HELPER -> {
+				// Check if user has Helper+ access
+				if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+					// No access - reject
+					editError(event, "errors.interaction.no_access", "Helper+ access");
+					return;
+				}
+			}
+			case SUPPORT -> {
+				// Check if user is ticket support or has Admin+ access
+				int tagId = bot.getDBUtil().ticket.getTag(channelId);
+				if (tagId==0) {
+					// Role request ticket
+					List<Long> supportRoleIds = bot.getDBUtil().getTicketSettings(event.getGuild()).getRoleSupportIds();
+					if (supportRoleIds.isEmpty()) supportRoleIds = bot.getDBUtil().access.getRoles(event.getGuild().getIdLong(), CmdAccessLevel.MOD);
+					// Check
+					if (denyCloseSupport(supportRoleIds, event.getMember())) {
+						editError(event, "errors.interaction.no_access", "'Support' for this ticket or Admin+ access");
+						return;
+					}
+				} else {
+					// Standard ticket
+					final List<Long> supportRoleIds = Stream.of(bot.getDBUtil().tags.getSupportRolesString(tagId).split(";"))
+						.map(Long::parseLong)
+						.toList();
+					// Check
+					if (denyCloseSupport(supportRoleIds, event.getMember())) {
+						editError(event, "errors.interaction.no_access", "'Support' for this ticket or Admin+ access");
+						return;
+					}
+				}
+			}
 		}
 		
 		Guild guild = event.getGuild();
@@ -74,6 +111,13 @@ public class RcloseCmd extends CommandBase {
 			channelId, closeTime.getEpochSecond(),
 			event.optString("reason", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_support"))
 		);
+	}
+
+	private boolean denyCloseSupport(List<Long> supportRoleIds, Member member) {
+		if (supportRoleIds.isEmpty()) return false; // No data to check against
+		final List<Role> roles = member.getRoles(); // Check if user has any support role
+		if (!roles.isEmpty() && roles.stream().anyMatch(r -> supportRoleIds.contains(r.getIdLong()))) return false;
+		return !bot.getCheckUtil().hasAccess(member, CmdAccessLevel.ADMIN); // if user has Admin access
 	}
 
 }

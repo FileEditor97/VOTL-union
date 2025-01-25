@@ -1,7 +1,7 @@
 package union.utils.database.managers;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 

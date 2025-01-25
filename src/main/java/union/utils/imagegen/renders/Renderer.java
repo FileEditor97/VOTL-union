@@ -1,6 +1,6 @@
 package union.utils.imagegen.renders;
 
-import union.objects.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import union.utils.exception.RenderNotReadyYetException;
 
 import javax.imageio.ImageIO;
@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+@SuppressWarnings("unused")
 public abstract class Renderer {
 
 	/**

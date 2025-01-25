@@ -3,10 +3,7 @@ package union.utils.database.managers;
 import static union.utils.CastUtil.getOrDefault;
 import static union.utils.CastUtil.resolveOrDefault;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,8 +18,9 @@ import net.dv8tion.jda.api.entities.Guild;
 public class TicketSettingsManager extends LiteDBBase {
 	private final Set<String> columns = Set.of(
 		"autocloseTime", "autocloseLeft", "timeToReply",
-		"rowName1", "rowName2", "rowName3", "otherRole",
-		"roleSupport"
+		"rowName1", "rowName2", "rowName3",
+		"otherRole", "roleSupport", "deletePing",
+		"allowClose", "transcripts"
 	);
 
 	// Cache
@@ -89,15 +87,32 @@ public class TicketSettingsManager extends LiteDBBase {
 		return execute("INSERT INTO %s(guildId, roleSupport) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET roleSupport=%<s".formatted(table, guildId, quote(text)));
 	}
 
+	public boolean setDeletePings(long guildId, boolean deletePing) {
+		invalidateCache(guildId);
+		return execute("INSERT INTO %s(guildId, deletePing) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET deletePing=%<d".formatted(table, guildId, deletePing ? 1 : 0));
+	}
+
+	public boolean setAllowClose(long guildId, AllowClose value) {
+		invalidateCache(guildId);
+		return execute("INSERT INTO %s(guildId, allowClose) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET allowClose=%<d".formatted(table, guildId, value.getValue()));
+	}
+
+	public boolean setTranscript(long guildId, TranscriptsMode value) {
+		invalidateCache(guildId);
+		return execute("INSERT INTO %s(guildId, transcripts) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET transcripts=%<d".formatted(table, guildId, value.getValue()));
+	}
+
 	private void invalidateCache(long guildId) {
 		cache.pull(guildId);
 	}
 
 	public static class TicketSettings {
 		private final int autocloseTime, timeToReply;
-		private final boolean autocloseLeft, otherRole;
+		private final boolean autocloseLeft, otherRole, deletePings;
 		private final List<String> rowText;
 		private final List<Long> roleSupportIds;
+		private final AllowClose allowClose;
+		private final TranscriptsMode transcriptsMode;
 
 		public TicketSettings() {
 			this.autocloseTime = 0;
@@ -106,6 +121,9 @@ public class TicketSettingsManager extends LiteDBBase {
 			this.otherRole = true;
 			this.rowText = Collections.nCopies(3, "Select roles");
 			this.roleSupportIds = List.of();
+			this.deletePings = true;
+			this.allowClose = AllowClose.EVERYONE;
+			this.transcriptsMode = TranscriptsMode.EXCEPT_ROLES;
 		}
 
 		public TicketSettings(Map<String, Object> data) {
@@ -125,6 +143,9 @@ public class TicketSettingsManager extends LiteDBBase {
 					.map(Long::parseLong)
 					.toList();
 			}, List.of());
+			this.deletePings = getOrDefault(data.get("deletePing"), 1) == 1;
+			this.allowClose = AllowClose.valueOf(getOrDefault(data.get("allowClose"), AllowClose.EVERYONE.value));
+			this.transcriptsMode = TranscriptsMode.valueOf(getOrDefault(data.get("transcripts"), TranscriptsMode.EXCEPT_ROLES.value));
 		}
 
 		public int getAutocloseTime() {
@@ -152,5 +173,74 @@ public class TicketSettingsManager extends LiteDBBase {
 		public List<Long> getRoleSupportIds() {
 			return roleSupportIds;
 		}
+
+		public boolean deletePingsEnabled() {
+			return deletePings;
+		}
+
+		@NotNull
+		public AllowClose getAllowClose() {
+			return allowClose;
+		}
+
+		@NotNull
+		public TranscriptsMode getTranscriptsMode() {
+			return transcriptsMode;
+		}
 	}
+
+	public enum AllowClose {
+		EVERYONE(0),
+		HELPER(1),
+		SUPPORT(2);
+
+		private final int value;
+		private final static Map<Integer, AllowClose> BY_VALUE = new HashMap<>(values().length);
+
+		static {
+			for (AllowClose c : values()) {
+				BY_VALUE.put(c.value, c);
+			}
+		}
+
+		AllowClose(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+
+		public static AllowClose valueOf(int value) {
+			return BY_VALUE.get(value);
+		}
+	}
+
+	public enum TranscriptsMode {
+		ALL(0),
+		EXCEPT_ROLES(1),
+		NONE(2);
+
+		private final int value;
+		private final static Map<Integer, TranscriptsMode> BY_VALUE = new HashMap<>(values().length);
+
+		static {
+			for (TranscriptsMode c : values()) {
+				BY_VALUE.put(c.value, c);
+			}
+		}
+
+		TranscriptsMode(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+
+		public static TranscriptsMode valueOf(int value) {
+			return BY_VALUE.get(value);
+		}
+	}
+
 }

@@ -3,7 +3,6 @@ package union.commands.ticketing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.*;
 import union.base.command.SlashCommand;
@@ -31,7 +30,7 @@ public class RolesPanelCmd extends CommandBase {
 	public RolesPanelCmd() {
 		this.name = "rolespanel";
 		this.path = "bot.ticketing.rolespanel";
-		this.children = new SlashCommand[]{new Create(), new Update(), new RowText(), new OtherRole(), new SupportRole()};
+		this.children = new SlashCommand[]{new Create(), new Update(), new RowText()};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
@@ -204,73 +203,6 @@ public class RolesPanelCmd extends CommandBase {
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))
 				.build());
-		}
-	}
-
-	private class OtherRole extends SlashCommand {
-		public OtherRole() {
-			this.name = "other";
-			this.path = "bot.ticketing.rolespanel.other";
-			this.options = List.of(
-				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help"), true)
-			);
-		}
-
-		@Override
-		protected void execute(SlashCommandEvent event) {
-			event.deferReply().queue();
-			boolean enabled = event.optBoolean("enabled");
-
-			if (!bot.getDBUtil().ticketSettings.setOtherRole(event.getGuild().getIdLong(), enabled)) {
-				editErrorUnknown(event, "Database error.");
-				return;
-			}
-
-			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").formatted(String.valueOf(enabled)))
-				.build());
-		}
-	}
-
-	private class SupportRole extends SlashCommand {
-		public SupportRole() {
-			this.name = "support";
-			this.path = "bot.ticketing.rolespanel.support";
-			this.options = List.of(
-				new OptionData(OptionType.STRING, "roles", lu.getText(path+".roles.help"), true)
-			);
-		}
-
-		@Override
-		protected void execute(SlashCommandEvent event) {
-			event.deferReply().queue();
-
-			if (event.optString("roles").equalsIgnoreCase("null")) {
-				// Clear roles
-				if (!bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), List.of())) {
-					editErrorUnknown(event, "Database error.");
-					return;
-				}
-
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done_clear"))
-					.build());
-			} else {
-				// Set roles
-				List<Role> roles = event.optMentions("roles").getRoles();
-				if (roles.isEmpty() || roles.size()>3) {
-					editError(event, path+".bad_input");
-					return;
-				}
-				if (!bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), roles.stream().map(Role::getIdLong).toList())) {
-					editErrorUnknown(event, "Database error.");
-					return;
-				}
-
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").formatted(roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "))))
-					.build());
-			}
 		}
 	}
 

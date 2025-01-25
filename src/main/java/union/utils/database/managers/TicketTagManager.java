@@ -51,7 +51,7 @@ public class TicketTagManager extends LiteDBBase {
 		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
-	public boolean deleteTag(Integer tagId) {
+	public boolean deleteTag(int tagId) {
 		return execute("DELETE FROM %s WHERE (tagId=%d)".formatted(table, tagId));
 	}
 
@@ -59,7 +59,7 @@ public class TicketTagManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public boolean updateTag(Integer tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public boolean updateTag(int tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
 		List<String> values = new ArrayList<>();
 		if (tagType != null) 
 			values.add("tagType="+tagType);
@@ -82,15 +82,15 @@ public class TicketTagManager extends LiteDBBase {
 		return false;
 	}
 
-	public String getGuildId(Integer tagId) {
+	public String getGuildId(int tagId) {
 		return selectOne("SELECT guildId FROM %s WHERE (tagId=%d)".formatted(table, tagId), "guildId", String.class);
 	}
 
-	public Integer countPanelTags(Integer panelId) {
+	public Integer countPanelTags(int panelId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (panelId=%d)".formatted(table, panelId));
 	}
 
-	public String getTagText(Integer tagId) {
+	public String getTagText(int tagId) {
 		return selectOne("SELECT buttonText FROM %s WHERE (tagId=%d)".formatted(table, tagId), "buttonText", String.class);
 	}
 
@@ -100,7 +100,7 @@ public class TicketTagManager extends LiteDBBase {
 		return data.stream().limit(25).collect(Collectors.toMap(s -> (Integer) s.get("tagId"), s -> (String) s.get("buttonText")));
 	}
 
-	public List<Button> getPanelTags(Integer panelId) {
+	public List<Button> getPanelTags(int panelId) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (panelId=%s)".formatted(table, panelId),
 			Set.of("tagId", "buttonText", "buttonStyle", "emoji")
 		);
@@ -108,7 +108,7 @@ public class TicketTagManager extends LiteDBBase {
 		return data.stream().map(Tag::createButton).toList();
 	}
 
-	public Tag getTagFull(Integer tagId) {
+	public Tag getTagFull(int tagId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (tagId=%s)".formatted(table, tagId),
 			Set.of("buttonText", "buttonStyle", "emoji", "tagType", "location", "message", "supportRoles", "ticketName")
 		);
@@ -116,12 +116,17 @@ public class TicketTagManager extends LiteDBBase {
 		return new Tag(data, true);
 	}
 
-	public Tag getTagInfo(Integer tagId) {
+	public Tag getTagInfo(int tagId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (tagId=%s)".formatted(table, tagId),
 			Set.of("tagType", "location", "message", "supportRoles", "ticketName")
 		);
 		if (data==null) return null;
 		return new Tag(data, false);
+	}
+
+	public String getSupportRolesString(int tagId) {
+		String data = selectOne("SELECT supportRoles FROM %s WHERE (tagId=%s)".formatted(table, tagId), "supportRoles", String.class);
+		return data==null ? "0" : data;
 	}
 
 	private String replaceNewline(final String text) {

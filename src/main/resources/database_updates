@@ -33,3 +33,4 @@ CREATE TABLE "persistentRole" ("roleId" INTEGER NOT NULL UNIQUE, "guildId" INTEG
 ALTER TABLE "ticketSettings" ADD "roleSupport" TEXT; UPDATE requestRole SET type=3 WHERE (type=2); UPDATE requestRole SET type=2 WHERE (type=1);
 CREATE TABLE "playerComments" ("steam64" INTEGER NOT NULL, "authorId" INTEGER NOT NULL, "comment" TEXT, "timestamp" INTEGER NOT NULL, UNIQUE("steam64","authorId"));
 ALTER TABLE "guild" ADD "roleWhitelist" INTEGER DEFAULT 0
+ALTER TABLE "ticketSettings" ADD "deletePing" INTEGER DEFAULT 1; ALTER TABLE "ticketSettings" ADD "allowClose" INTEGER DEFAULT 0; ALTER TABLE "ticketSettings" ADD "transcripts" INTEGER DEFAULT 1;

@@ -7,6 +7,7 @@
 		"additional": "Additional info:",
 		"unknown": "{EMOTE_WARNING_C} Something went wrong!\nReport this error to bot's Owner/Developer in support server!",
 		"error": "{EMOTE_WARNING_C} Something went wrong!",
+		"database": "{EMOTE_WARNING_C} Database error, changes were not recorded or only partially.",
 		"missing_perms": {
 			"self": "I lack the permission `{permission}` for this.",
 			"self_channel": "I lack the permission `{permission}` in the channel {channel} to do this.",
@@ -1751,7 +1752,7 @@
 			},
 			"modstats": {
 				"help": "View moderation statistics for mod/admin",
-				"usage": "modstats [@User] [start date] [end date]",
+				"usage": "modstats [@User] [start date] [end date] [as text?]",
 				"user": {
 					"name": "user",
 					"help": "Select user"

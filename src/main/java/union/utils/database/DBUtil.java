@@ -194,7 +194,7 @@ public class DBUtil {
 					logger.warn("Failed to get resources database version", ex);
 				}
 			}
-			tempFile.delete();
+			boolean ignored = tempFile.delete();
 		} catch (IOException ioException) {
 			logger.error("Exception at version check\n", ioException);
 		}
@@ -206,7 +206,7 @@ public class DBUtil {
 		try {
 			File tempFile = File.createTempFile("database_updates", ".tmp");
 			if (!fileManager.export(App.class.getResourceAsStream("/database_updates"), tempFile.toPath())) {
-				logger.error("Failed to write temp file {}!", tempFile.getName());
+				logger.error("Failed to write instruction temp file {}!", tempFile.getName());
 			} else {
 				lines = Files.readAllLines(tempFile.toPath(), StandardCharsets.UTF_8);
 			}

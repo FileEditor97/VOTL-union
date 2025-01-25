@@ -498,18 +498,14 @@ public class LoggingUtil {
 		}
 
 		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, String authorId, FileUpload file) {
+			if (file == null) onClose(guild, messageChannel, userClosed, authorId);
+
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 			try {
-				if (file == null) {
-					client.sendMessageEmbeds(
-						logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
-					).queue();
-				} else {
-					client.sendMessageEmbeds(
-						logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
-					).addFiles(file).queue();
-				}
+				client.sendMessageEmbeds(
+					logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
+				).addFiles(file).queue();
 			} catch (Exception ignored) {}
 		}
 

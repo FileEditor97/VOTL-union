@@ -128,17 +128,9 @@ public class InteractionListener extends ListenerAdapter {
 		function.run();
 	}
 
-	private final Set<String> acceptableButtons = Set.of(
-		"verify", "role", "ticket", "tag", "invites",
-		"delete", "voice", "blacklist", "strikes", "sync_unban",
-		"sync_ban", "sync_kick", "thread", "comments"
-	);
-
-
 	@Override
 	public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 		String[] actions = event.getComponentId().split(":");
-		if (!acceptableButtons.contains(actions[0])) return;
 
 		// Acknowledge interaction
 		event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
@@ -257,6 +249,7 @@ public class InteractionListener extends ListenerAdapter {
 						runButtonInteraction(event, Cooldown.BUTTON_COMMENTS_SHOW, () -> buttonCommentsShow(event));
 					}
 				}
+				default -> bot.getAppLogger().warn("Unknown button interaction: {}", event.getComponentId());
 			}
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error

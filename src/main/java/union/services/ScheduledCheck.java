@@ -109,7 +109,11 @@ public class ScheduledCheck {
 					return;
 				}
 				bot.getTicketUtil().closeTicket(channelId, null, "time", failure -> {
-					logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
+					new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE)
+						.andThen(t -> {
+							logger.error("Failed to delete ticket channel, either already deleted or unknown error", t);
+						})
+						.accept(failure);
 					db.ticket.setRequestStatus(channelId, -1L);
 				});
 			});
@@ -127,7 +131,11 @@ public class ScheduledCheck {
 						if (msg.getAuthor().isBot()) {
 							// Last message is bot - close ticket
 							bot.getTicketUtil().closeTicket(channelId, null, "activity", failure -> {
-								logger.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
+								new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE)
+									.andThen(t -> {
+										logger.error("Failed to delete ticket channel, either already deleted or unknown error", t);
+									})
+									.accept(failure);
 								db.ticket.setWaitTime(channelId, -1L);
 							});
 						} else {

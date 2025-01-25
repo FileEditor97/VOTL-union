@@ -1,9 +1,9 @@
 package union.commands;
 
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
+import org.jetbrains.annotations.NotNull;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
-import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;

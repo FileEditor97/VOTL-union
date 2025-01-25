@@ -2,10 +2,10 @@ package union.utils.imagegen.renders;
 
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.App;
 import union.objects.CmdAccessLevel;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.imagegen.Fonts;

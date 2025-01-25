@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.App;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.database.DBUtil;
 import union.utils.transcripts.DiscordHtmlTranscripts;

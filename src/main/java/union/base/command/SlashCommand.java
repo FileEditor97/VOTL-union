@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jetbrains.annotations.NotNull;
 import union.metrics.Metrics;
 import union.metrics.datapoints.Timer;
 import union.objects.CmdAccessLevel;
-import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -187,6 +187,7 @@ public abstract class SlashCommand extends Interaction
 	 * @param event The event to handle.
 	 * @see OptionData#setAutoComplete(boolean)
 	 */
+	@SuppressWarnings("unused")
 	public void onAutoComplete(CommandAutoCompleteInteractionEvent event) {}
 
 	/**

@@ -15,6 +15,8 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.App;
 import union.base.command.CooldownScope;
 import union.base.waiter.EventWaiter;
@@ -23,8 +25,6 @@ import union.metrics.Metrics;
 import union.objects.CaseType;
 import union.objects.CmdAccessLevel;
 import union.objects.Emotes;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.objects.constants.Links;
 import union.utils.CastUtil;
@@ -1910,7 +1910,7 @@ public class InteractionListener extends ListenerAdapter {
 		private final int time;
 		private final CooldownScope scope;
 
-		Cooldown(@NotNull int time, @NotNull CooldownScope scope) {
+		Cooldown(int time, @NotNull CooldownScope scope) {
 			this.time = time;
 			this.scope = scope;
 		}

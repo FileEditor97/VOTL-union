@@ -15,10 +15,10 @@
  */
 package union.base.command;
 
+import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
-import union.objects.annotation.NotNull;
 import union.utils.file.lang.LocaleUtil;
 
 import net.dv8tion.jda.api.Permission;

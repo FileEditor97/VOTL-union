@@ -1,9 +1,9 @@
 package union.services;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
-
-import union.objects.annotation.NotNull;
 
 public class CountingThreadFactory implements ThreadFactory {
 	

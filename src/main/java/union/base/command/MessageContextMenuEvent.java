@@ -17,8 +17,6 @@ package union.base.command;
 
 import java.io.File;
 
-import union.objects.annotation.NotNull;
-
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -29,6 +27,7 @@ import net.dv8tion.jda.api.interactions.commands.context.MessageContextInteracti
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <h2><b>Message Context Menus In JDA-Chewtils</b></h2>
@@ -38,7 +37,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
  * <p>Classes created inheriting this class gain the unique traits of commands operated using the menu Extension.
  * <br>Using several fields, a command can define properties that make it unique and complex while maintaining
  * a low level of development.
- * <br>All classes extending this class can define any number of these fields in a object constructor and then
+ * <br>All classes extending this class can define any number of these fields in an object constructor and then
  * create the menu action/response in the abstract {@link MessageContextMenu#execute(MessageContextMenuEvent)} body:
  *
  * <pre><code> public class ExampleCmd extends MessageContextMenu {
@@ -67,6 +66,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
  *
  * @author Olivia (Chew)
  */
+@SuppressWarnings("unused")
 public class MessageContextMenuEvent extends MessageContextInteractionEvent
 {
 	private final CommandClient client;

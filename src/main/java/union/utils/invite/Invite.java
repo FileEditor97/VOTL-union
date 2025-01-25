@@ -19,14 +19,13 @@ package union.utils.invite;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
-
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild.VerificationLevel;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.ImageProxy;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Representation of a Discord Invite.
@@ -40,6 +39,7 @@ import net.dv8tion.jda.api.utils.ImageProxy;
  * @see    net.dv8tion.jda.api.entities.Guild#retrieveInvites() Guild.retrieveInvites()
  * @see    net.dv8tion.jda.api.entities.channel.attribute.IInviteContainer#retrieveInvites()
  */
+@SuppressWarnings("unused")
 public interface Invite {
     /**
      * Retrieves a new {@link Invite Invite} instance for the given invite code.
@@ -135,11 +135,12 @@ public interface Invite {
     Guild getGuild();
 
      /**
-     * POJO for the guild information provided by an invite.
+     * POJO for the guild information provided by an invitation.
      * 
      * @see #getGuild()
      */
-    interface Guild extends ISnowflake {
+	 @SuppressWarnings("unused")
+	 interface Guild extends ISnowflake {
         /**
          * The icon id of this guild.
          *

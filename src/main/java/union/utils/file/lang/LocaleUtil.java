@@ -6,14 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.App;
 import union.objects.Emotes;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 
+@SuppressWarnings("unused")
 public class LocaleUtil {
 
 	private final App bot;

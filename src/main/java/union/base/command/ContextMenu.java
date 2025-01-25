@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.jetbrains.annotations.NotNull;
 import union.objects.CmdAccessLevel;
-import union.objects.annotation.NotNull;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;

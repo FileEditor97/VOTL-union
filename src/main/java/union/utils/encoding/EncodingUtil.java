@@ -32,7 +32,7 @@ public class EncodingUtil {
 	/**
 	 * @param guildId Guild ID
 	 * @param epochSeconds Epoch seconds (now)
-	 * @return Filename 'modstats-[encoded guildId:userId]-timestamp.png'
+	 * @return Filename 'modreport-[encoded guildId]-timestamp.png'
 	 */
 	public static String encodeModreport(final long guildId, final long epochSeconds) {
 		return "modreport-%s.png".formatted(encode(guildId, epochSeconds));
@@ -41,7 +41,7 @@ public class EncodingUtil {
 	/**
 	 * @param id Message or Channel ID
 	 * @param epochSeconds Epoch seconds (now)
-	 * @return Filename 'modstats-[encoded guildId:userId]-timestamp.png'
+	 * @return Filename 'msg-[encoded ID]-timestamp.txt'
 	 */
 	public static String encodeMessage(final long id, final long epochSeconds) {
 		return "msg-%s.txt".formatted(encode(id, epochSeconds));

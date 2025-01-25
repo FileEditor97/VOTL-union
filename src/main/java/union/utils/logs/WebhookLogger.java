@@ -2,8 +2,8 @@ package union.utils.logs;
 
 import java.util.function.Supplier;
 
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 import union.utils.database.managers.GuildLogsManager.WebhookData;

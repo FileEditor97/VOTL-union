@@ -13,10 +13,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.metrics.Metrics;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 
+@SuppressWarnings("SqlSourceToSinkFlow")
 public class LiteDBBase {
 
 	private final ConnectionUtil util;

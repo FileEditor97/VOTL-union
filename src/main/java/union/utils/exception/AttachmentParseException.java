@@ -1,7 +1,7 @@
 package union.utils.exception;
 
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class AttachmentParseException extends Exception {
 	@NotNull

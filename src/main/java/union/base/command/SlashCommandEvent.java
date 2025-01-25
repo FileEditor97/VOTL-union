@@ -15,9 +15,6 @@
  */
 package union.base.command;
 
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
-
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Mentions;
@@ -33,6 +30,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A wrapper class for a {@link SlashCommandInteractionEvent} and {@link CommandClient}.
@@ -42,6 +41,7 @@ import org.jetbrains.annotations.Contract;
  *
  * @author Olivia (Chew)
  */
+@SuppressWarnings("unused")
 public class SlashCommandEvent extends SlashCommandInteractionEvent {
 	private final CommandClient client;
 

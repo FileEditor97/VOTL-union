@@ -5,9 +5,10 @@ import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+
+import org.jetbrains.annotations.Nullable;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
-import union.objects.annotation.Nullable;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 

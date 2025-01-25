@@ -15,8 +15,8 @@
  */
 package union.base.command;
 
+import org.jetbrains.annotations.NotNull;
 import union.objects.CmdAccessLevel;
-import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
 
 import net.dv8tion.jda.api.entities.Guild;

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import net.dv8tion.jda.internal.utils.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import union.objects.annotation.NotNull;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
 import union.utils.file.SettingsManager;

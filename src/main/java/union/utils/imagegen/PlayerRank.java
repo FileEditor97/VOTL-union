@@ -1,6 +1,6 @@
 package union.utils.imagegen;
 
-import union.objects.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 
 import java.util.ArrayList;

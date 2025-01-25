@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
 import union.base.command.CommandClient;
 import union.base.command.SlashCommand;
-import union.objects.annotation.NotNull;
 import union.utils.database.DBUtil;
 import union.utils.message.MessageUtil;
 

@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import union.objects.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import union.utils.exception.FormatterException;
 import union.utils.file.lang.LocaleUtil;
 

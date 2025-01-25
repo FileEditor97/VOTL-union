@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.jetbrains.annotations.NotNull;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
@@ -12,7 +13,6 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.Emotes;
-import union.objects.annotation.NotNull;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 

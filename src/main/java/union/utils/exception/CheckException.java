@@ -1,13 +1,11 @@
 package union.utils.exception;
 
-import union.objects.annotation.NotNull;
-
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
+import org.jetbrains.annotations.NotNull;
 
 public class CheckException extends Exception {
-
 	@NotNull
 	private final MessageCreateData data;
 	

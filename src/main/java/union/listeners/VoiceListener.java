@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import org.jetbrains.annotations.NotNull;
 import union.App;
-import union.objects.annotation.NotNull;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 

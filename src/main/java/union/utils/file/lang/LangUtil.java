@@ -7,13 +7,14 @@ import java.util.Map;
 
 import ch.qos.logback.classic.Logger;
 import com.jayway.jsonpath.JsonPath;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
 import union.utils.file.FileManager;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
+@SuppressWarnings("SwitchStatementWithTooFewBranches")
 public final class LangUtil {
 
 	private final Logger logger = (Logger) LoggerFactory.getLogger(LangUtil.class);
@@ -25,7 +26,6 @@ public final class LangUtil {
 		for (DiscordLocale locale : fileManager.getLanguages()) {
 			try {
 				File file = fileManager.getFile(locale.getLocale());
-				if (file==null) continue;
 				languages.put(locale.getLocale(), JsonPath.parse(file).json());
 			} catch (IOException e) {
 				logger.warn(e.getMessage(), e);

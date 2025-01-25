@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import union.objects.annotation.NotNull;
-import union.objects.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 

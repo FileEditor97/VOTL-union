@@ -1,7 +1,7 @@
 package union.listeners;
 
+import org.jetbrains.annotations.NotNull;
 import union.App;
-import union.objects.annotation.NotNull;
 import union.objects.logs.LogType;
 import union.utils.database.DBUtil;
 
@@ -84,7 +84,7 @@ public class GuildListener extends ListenerAdapter {
 		
 		db.guildSettings.remove(guildIdLong);
 
-		bot.getAppLogger().info("Automatically removed guild '%s'(%s) from db.".formatted(event.getGuild().getName(), guildId));
+		bot.getAppLogger().info("Automatically removed guild '{}'({}) from db.", event.getGuild().getName(), guildId);
 	}
 
 }

@@ -1,6 +1,6 @@
 package union.utils.file;
 
-import union.objects.annotation.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,7 +102,7 @@ public class ResourceLoaderUtil {
 	 * @param resourceUrl The resource URL that should be used to load the files with.
 	 * @return A list of file names that exists within the given resource URL.
 	 * @throws IOException If no files where found using the given URL, or the
-	 *                     given URL is not formatted strictly according to
+	 *                     given URL is not formatted strictly according
 	 *                     to RFC2396 and cannot be converted to a URI.
 	 */
 	private static List<String> loadResourcesFromFilePath(@NotNull URL resourceUrl) throws IOException {

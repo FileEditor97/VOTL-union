@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import org.jetbrains.annotations.Nullable;
 import union.utils.database.LiteDBBase;
 import union.utils.file.lang.LocaleUtil;
 
@@ -13,7 +14,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import union.objects.CmdModule;
-import union.objects.annotation.Nullable;
 import union.objects.constants.Constants;
 import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;

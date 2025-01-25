@@ -15,8 +15,8 @@
  */
 package union.base.command;
 
+import org.jetbrains.annotations.NotNull;
 import union.objects.CmdAccessLevel;
-import union.objects.annotation.NotNull;
 import union.utils.exception.CheckException;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -35,7 +35,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
  * <p>Classes created inheriting this class gain the unique traits of commands operated using the menu Extension.
  * <br>Using several fields, a menu can define properties that make it unique and complex while maintaining
  * a low level of development.
- * <br>All classes extending this class can define any number of these fields in a object constructor and then
+ * <br>All classes extending this class can define any number of these fields in an object constructor and then
  * create the menu action/response in the abstract {@link UserContextMenu#execute(UserContextMenuEvent)} body:
  *
  * <pre><code> public class ExampleCmd extends UserContextMenu {

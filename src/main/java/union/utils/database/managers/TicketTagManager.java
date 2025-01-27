@@ -27,18 +27,18 @@ public class TicketTagManager extends LiteDBBase {
 		super(cu, "ticketTag");
 	}
 
-	public int createTag(String guildId, Integer panelId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public int createTag(Long guildId, Integer panelId, Integer tagType, String buttonText, String emoji, Long categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
 		List<String> keys = new ArrayList<>(10);
 		List<String> values = new ArrayList<>(10);
 		keys.addAll(List.of("guildId", "panelId", "tagType", "buttonText", "ticketName", "buttonStyle"));
-		values.addAll(List.of(guildId, panelId.toString(), tagType.toString(), quote(buttonText), quote(ticketName), buttonStyle.toString()));
+		values.addAll(List.of(guildId.toString(), panelId.toString(), tagType.toString(), quote(buttonText), quote(ticketName), buttonStyle.toString()));
 		if (emoji != null) {
 			keys.add("emoji");
 			values.add(quote(emoji));
 		}
 		if (categoryId != null) {
 			keys.add("location");
-			values.add(categoryId);
+			values.add(categoryId.toString());
 		}
 		if (message != null) {
 			keys.add("message");
@@ -55,11 +55,11 @@ public class TicketTagManager extends LiteDBBase {
 		return execute("DELETE FROM %s WHERE (tagId=%d)".formatted(table, tagId));
 	}
 
-	public void deleteAll(String guildId) {
+	public void deleteAll(long guildId) {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public boolean updateTag(int tagId, Integer tagType, String buttonText, String emoji, String categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public boolean updateTag(int tagId, Integer tagType, String buttonText, String emoji, Long categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
 		List<String> values = new ArrayList<>();
 		if (tagType != null) 
 			values.add("tagType="+tagType);
@@ -82,8 +82,8 @@ public class TicketTagManager extends LiteDBBase {
 		return false;
 	}
 
-	public String getGuildId(int tagId) {
-		return selectOne("SELECT guildId FROM %s WHERE (tagId=%d)".formatted(table, tagId), "guildId", String.class);
+	public Long getGuildId(int tagId) {
+		return selectOne("SELECT guildId FROM %s WHERE (tagId=%d)".formatted(table, tagId), "guildId", Long.class);
 	}
 
 	public Integer countPanelTags(int panelId) {
@@ -94,7 +94,7 @@ public class TicketTagManager extends LiteDBBase {
 		return selectOne("SELECT buttonText FROM %s WHERE (tagId=%d)".formatted(table, tagId), "buttonText", String.class);
 	}
 
-	public Map<Integer, String> getTagsText(String guildId) {
+	public Map<Integer, String> getTagsText(long guildId) {
 		List<Map<String, Object>> data = select("SELECT tagId, buttonText FROM %s WHERE (guildId=%s)".formatted(table, guildId), Set.of("tagId", "buttonText"));
 		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().limit(25).collect(Collectors.toMap(s -> (Integer) s.get("tagId"), s -> (String) s.get("buttonText")));
@@ -139,7 +139,7 @@ public class TicketTagManager extends LiteDBBase {
 		private final String ticketName;
 		private final ButtonStyle buttonStyle;
 		private final Emoji emoji;
-		private final String location;
+		private final Long location;
 		private final String message;
 		private final String supportRoles;
 
@@ -165,7 +165,7 @@ public class TicketTagManager extends LiteDBBase {
 			return text.replaceAll("<br>", "\n");
 		}
 
-		public EmbedBuilder getPreviewEmbed(Function<String, String> locale, Integer tagId) {
+		public EmbedBuilder getPreviewEmbed(Function<String, String> locale, int tagId) {
 			return new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 				.setTitle("Tag ID: %d".formatted(tagId))
 				.addField(locale.apply(".type"), (tagType > 1 ? "Channel" : "Thread"), true)
@@ -192,7 +192,7 @@ public class TicketTagManager extends LiteDBBase {
 			return tagType;
 		}
 
-		public String getLocation() {
+		public Long getLocation() {
 			return location;
 		}
 

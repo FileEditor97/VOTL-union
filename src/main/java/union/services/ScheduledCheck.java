@@ -155,14 +155,14 @@ public class ScheduledCheck {
 			if (expired.isEmpty()) return;
 
 			expired.forEach(data -> {
-				String roleId = (String) data.get("roleId");
+				long roleId = castLong(data.get("roleId"));
 				Role role = bot.JDA.getRoleById(roleId);
 				if (role == null) {
 					db.tempRole.removeRole(roleId);
 					return;
 				}
 				
-				String userId = (String) data.get("userId");
+				long userId = castLong(data.get("userId"));
 				if (db.tempRole.shouldDelete(roleId)) {
 					try {
 						role.delete().reason("Role expired for '"+userId+"'").queue();
@@ -284,7 +284,7 @@ public class ScheduledCheck {
 
 					List<ReportData> reportData = new ArrayList<>(members.size());
 					members.forEach(m -> {
-						int countRoles = bot.getDBUtil().ticket.countTicketsByMod(guild.getId(), m.getId(), previous, now, true);
+						int countRoles = bot.getDBUtil().ticket.countTicketsByMod(guild.getIdLong(), m.getIdLong(), previous, now, true);
 						Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guild.getIdLong(), m.getIdLong(), previous, now);
 						reportData.add(new ReportData(m, countRoles, countCases));
 					});

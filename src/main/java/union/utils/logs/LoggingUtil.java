@@ -287,7 +287,7 @@ public class LoggingUtil {
 			sendLog(guild, type, () -> logUtil.tempRoleAddedEmbed(guild.getLocale(), mod, target, role, duration, deleteAfter));
 		}
 
-		public void onTempRoleAdded(Guild guild, User mod, User target, String roleId, Duration duration, boolean deleteAfter) {
+		public void onTempRoleAdded(Guild guild, User mod, User target, long roleId, Duration duration, boolean deleteAfter) {
 			sendLog(guild, type, () -> logUtil.tempRoleAddedEmbed(guild.getLocale(), mod, target, roleId, duration, deleteAfter));
 		}
 
@@ -497,20 +497,20 @@ public class LoggingUtil {
 			sendLog(guild, type, () -> logUtil.ticketCreatedEmbed(guild.getLocale(), messageChannel, author));
 		}
 
-		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, String authorId, FileUpload file) {
+		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, long authorId, FileUpload file) {
 			if (file == null) onClose(guild, messageChannel, userClosed, authorId);
 
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 			try {
 				client.sendMessageEmbeds(
-					logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId()))
+					logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getIdLong()))
 				).addFiles(file).queue();
 			} catch (Exception ignored) {}
 		}
 
-		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, String authorId) {
-			sendLog(guild, type, () -> logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getId())));
+		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, long authorId) {
+			sendLog(guild, type, () -> logUtil.ticketClosedEmbed(guild.getLocale(), messageChannel, userClosed, authorId, db.ticket.getClaimer(messageChannel.getIdLong())));
 		}
 	}
 

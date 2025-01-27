@@ -152,7 +152,7 @@ public class MemberListener extends ListenerAdapter {
 		}
 		db.user.remove(event.getUser().getIdLong());
 		if (db.getTicketSettings(event.getGuild()).autocloseLeftEnabled()) {
-			db.ticket.getOpenedChannel(String.valueOf(userId), String.valueOf(guildId)).forEach(channelId -> {
+			db.ticket.getOpenedChannel(userId, guildId).forEach(channelId -> {
 				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
 				GuildChannel channel = event.getGuild().getGuildChannelById(channelId);
 				if (channel != null) channel.delete().reason("Author left").queue();

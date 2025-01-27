@@ -266,7 +266,7 @@ public class StrikeCmd extends CommandBase {
 					// Apply action, result will be in logs
 					guild.addRoleToMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queueAfter(5, TimeUnit.SECONDS, done -> {
 						// Add temp
-						bot.getDBUtil().tempRole.add(guild.getId(), role.getId(), target.getId(), false, Instant.now().plus(durationCopy));
+						bot.getDBUtil().tempRole.add(guild.getIdLong(), role.getIdLong(), target.getIdLong(), false, Instant.now().plus(durationCopy));
 						// log action
 						bot.getLogger().role.onTempRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role, durationCopy, false);
 						},

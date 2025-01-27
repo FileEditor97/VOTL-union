@@ -73,7 +73,7 @@ public class TicketPanelCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
 
-			if (bot.getDBUtil().panels.countPanels(event.getGuild().getId()) >= 20) {
+			if (bot.getDBUtil().panels.countPanels(event.getGuild().getIdLong()) >= 20) {
 				editError(event, path+".max_panels", "Maximum panels by server: %d".formatted(20));
 				return;
 			}
@@ -88,7 +88,7 @@ public class TicketPanelCmd extends CommandBase {
 				return;
 			}
 
-			int panelId = bot.getDBUtil().panels.createPanel(event.getGuild().getId(), title, description, image, footer);
+			int panelId = bot.getDBUtil().panels.createPanel(event.getGuild().getIdLong(), title, description, image, footer);
 			if (panelId == 0) {
 				editErrorOther(event, "Panel creation failed.");
 				return;
@@ -121,8 +121,8 @@ public class TicketPanelCmd extends CommandBase {
 			event.deferReply().queue();
 
 			Integer panelId = event.optInteger("panel_id");
-			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().panels.getGuildId(panelId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
@@ -174,8 +174,8 @@ public class TicketPanelCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Integer panelId = event.optInteger("panel_id");
-			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().panels.getGuildId(panelId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
@@ -207,8 +207,8 @@ public class TicketPanelCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Integer panelId = event.optInteger("panel_id");
-			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().panels.getGuildId(panelId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
@@ -252,8 +252,8 @@ public class TicketPanelCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
 			Integer panelId = event.optInteger("panel_id");
-			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().panels.getGuildId(panelId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
@@ -305,8 +305,8 @@ public class TicketPanelCmd extends CommandBase {
 			event.deferReply().queue();
 
 			Integer panelId = event.optInteger("panel_id");
-			String guildId = bot.getDBUtil().panels.getGuildId(panelId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().panels.getGuildId(panelId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(panelId));
 				return;
 			}
@@ -319,7 +319,7 @@ public class TicketPanelCmd extends CommandBase {
 			Integer type = event.optInteger("tag_type", 1);
 			String buttonName = event.optString("button_text", "Create ticket");
 			String emoji = event.optString("emoji");
-			String categoryId = Optional.ofNullable(event.getOption("location", op -> op.getAsChannel().asCategory())).map(Category::getId).orElse(null);
+			Long categoryId = Optional.ofNullable(event.getOption("location", op -> op.getAsChannel().asCategory())).map(Category::getIdLong).orElse(null);
 			String message = event.optString("message");
 			String ticketName = event.optString("ticket_name", "ticket-");
 			ButtonStyle buttonStyle = ButtonStyle.fromKey(event.optInteger("button_style", 1));
@@ -379,8 +379,8 @@ public class TicketPanelCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Integer tagId = event.optInteger("tag_id");
-			String guildId = bot.getDBUtil().tags.getGuildId(tagId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().tags.getGuildId(tagId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(tagId));
 				return;
 			}
@@ -417,7 +417,7 @@ public class TicketPanelCmd extends CommandBase {
 				editError(event, path+".no_options");
 			} else {
 				if (!bot.getDBUtil().tags.updateTag(tagId, type, buttonText, emoji,
-						Optional.ofNullable(category).map(Category::getId).orElse(null), message,
+						Optional.ofNullable(category).map(Category::getIdLong).orElse(null), message,
 						supportRoleIds, ticketName, buttonStyle.getKey())) {
 					editErrorUnknown(event, "Database error.");
 					return;
@@ -446,8 +446,8 @@ public class TicketPanelCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Integer tagId = event.optInteger("tag_id");
-			String guildId = bot.getDBUtil().tags.getGuildId(tagId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().tags.getGuildId(tagId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(tagId));
 				return;
 			}
@@ -488,9 +488,10 @@ public class TicketPanelCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
+
 			Integer tagId = event.optInteger("tag_id");
-			String guildId = bot.getDBUtil().tags.getGuildId(tagId);
-			if (guildId == null || !guildId.equals(event.getGuild().getId())) {
+			Long guildId = bot.getDBUtil().tags.getGuildId(tagId);
+			if (guildId == null || !guildId.equals(event.getGuild().getIdLong())) {
 				editError(event, path+".not_found", "Received ID: %s".formatted(tagId));
 				return;
 			}

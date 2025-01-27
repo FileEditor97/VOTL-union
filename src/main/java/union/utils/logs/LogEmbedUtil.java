@@ -49,6 +49,7 @@ import com.github.difflib.text.DiffRowGenerator;
 import com.github.difflib.text.DiffRow.Tag;
 import com.jayway.jsonpath.JsonPath;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class LogEmbedUtil {
 
 	private final LocaleUtil lu;
@@ -70,6 +71,7 @@ public class LogEmbedUtil {
 		return lu.getLocalized(locale, "logger."+pathFooter);
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	private class LogEmbedBuilder {
 
 		private final DiscordLocale locale;
@@ -595,7 +597,7 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
-	public MessageEmbed tempRoleAddedEmbed(DiscordLocale locale, User mod, User user, String roleId, Duration duration, boolean deleteAfter) {
+	public MessageEmbed tempRoleAddedEmbed(DiscordLocale locale, User mod, User user, long roleId, Duration duration, boolean deleteAfter) {
 		return new LogEmbedBuilder(locale, GREEN_LIGHT)
 			.setHeaderIcon("roles.temp_added", user.getEffectiveAvatarUrl())
 			.setUser(user.getIdLong())
@@ -866,7 +868,7 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
-	public MessageEmbed ticketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, String authorId, String claimerId) {
+	public MessageEmbed ticketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, long authorId, @Nullable Long claimerId) {
 		return new LogEmbedBuilder(locale, RED_LIGHT)
 			.setHeader("tickets.closed_title")
 			.setDescription(localized(locale, "tickets.closed_value")

@@ -54,7 +54,7 @@ public class RolesPanelCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
 			Guild guild = event.getGuild();
-			String guildId = guild.getId();
+			long guildId = guild.getIdLong();
 			TextChannel channel =  (TextChannel) event.optGuildChannel("channel");
 			if (channel == null) {
 				editError(event, path+".no_channel", "Received: No channel");
@@ -121,7 +121,7 @@ public class RolesPanelCmd extends CommandBase {
 			event.deferReply().queue();
 
 			Guild guild = event.getGuild();
-			String guildId = guild.getId();
+			long guildId = guild.getIdLong();
 			GuildChannel channel = event.optGuildChannel("channel");
 			if (channel == null) {
 				editError(event, path+".no_channel", "Received: No channel");

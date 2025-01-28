@@ -165,37 +165,58 @@ public class TimeUtil {
 
 		if (weeks > 0) {
 			if (weeks==1)
-				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.week")));
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.w1")));
+			else if (weeks<5)
+				builder.append("%s %s".formatted(weeks, lu.getLocalized(locale, "misc.time.w2")));
 			else
-				builder.append("%s %s".formatted(weeks, lu.getLocalized(locale, "misc.time.weeks")));
+				builder.append("%s %s".formatted(weeks, lu.getLocalized(locale, "misc.time.w5")));
 		}
 		if (days > 0) {
-			if (!builder.isEmpty()) builder.append(" ");
+			if (!builder.isEmpty()) {
+				builder.append(", ");
+				if (hours==0&&minutes==0&&seconds==0) builder.append(lu.getLocalized(locale, "misc.and")).append(" ");
+			}
 			if (days==1)
-				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.day")));
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.d1")));
+			else if (days<5)
+				builder.append("%s %s".formatted(days, lu.getLocalized(locale, "misc.time.d2")));
 			else
-				builder.append("%s %s".formatted(days, lu.getLocalized(locale, "misc.time.days")));
+				builder.append("%s %s".formatted(days, lu.getLocalized(locale, "misc.time.d5")));
 		}
 		if (hours > 0) {
-			if (!builder.isEmpty()) builder.append(" ");
+			if (!builder.isEmpty()) {
+				builder.append(", ");
+				if (minutes==0&&seconds==0) builder.append(lu.getLocalized(locale, "misc.and")).append(" ");
+			}
 			if (hours==1)
-				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.hour")));
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.h1")));
+			else if (hours<5)
+				builder.append("%s %s".formatted(hours, lu.getLocalized(locale, "misc.time.h2")));
 			else
-				builder.append("%s %s".formatted(hours, lu.getLocalized(locale, "misc.time.hours")));
+				builder.append("%s %s".formatted(hours, lu.getLocalized(locale, "misc.time.h5")));
 		}
 		if (minutes > 0) {
-			if (!builder.isEmpty()) builder.append(" ");
+			if (!builder.isEmpty()) {
+				builder.append(", ");
+				if (seconds==0) builder.append(lu.getLocalized(locale, "misc.and")).append(" ");
+			}
 			if (minutes==1)
-				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.minute")));
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.m1")));
+			else if (minutes<5)
+				builder.append("%s %s".formatted(minutes, lu.getLocalized(locale, "misc.time.m2")));
 			else
-				builder.append("%s %s".formatted(minutes, lu.getLocalized(locale, "misc.time.minutes")));
+				builder.append("%s %s".formatted(minutes, lu.getLocalized(locale, "misc.time.m5")));
 		}
 		if (seconds > 0) {
-			if (!builder.isEmpty()) builder.append(" ");
+			if (!builder.isEmpty()) {
+				builder.append(", ").append(lu.getLocalized(locale, "misc.and")).append(" ");
+			}
 			if (seconds==1)
-				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.second")));
+				builder.append("1 %s".formatted(lu.getLocalized(locale, "misc.time.s1")));
+			else if (seconds<5)
+				builder.append("%s %s".formatted(seconds, lu.getLocalized(locale, "misc.time.s2")));
 			else
-				builder.append("%s %s".formatted(seconds, lu.getLocalized(locale, "misc.time.seconds")));
+				builder.append("%s %s".formatted(seconds, lu.getLocalized(locale, "misc.time.s5")));
 		}
 
 		return builder.toString();

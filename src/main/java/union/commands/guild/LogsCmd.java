@@ -13,6 +13,7 @@ import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.objects.constants.Links;
 import union.objects.logs.LogType;
 import union.utils.database.managers.GuildLogsManager.LogSettings;
 import union.utils.database.managers.GuildLogsManager.WebhookData;
@@ -86,7 +87,7 @@ public class LogsCmd extends CommandBase {
 				}
 				Icon icon = null;
 				try {
-					icon = Icon.from(new URL(Constants.AVATAR_URL).openStream(), IconType.PNG);
+					icon = Icon.from(new URL(Links.AVATAR_URL).openStream(), IconType.PNG);
 				} catch (Exception ignored) {}
 				channel.createWebhook(lu.getText(type.getPathName())).setAvatar(icon).reason("By "+event.getUser().getName()).queue(webhook -> {
 					// Add to DB

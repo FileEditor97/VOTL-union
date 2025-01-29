@@ -452,13 +452,14 @@ public class InteractionListener extends ListenerAdapter {
 					.setDescription(lu.getText(event, "bot.verification.listener.wait_value")).build()).setEphemeral(true).queue();
 				event.editButton(refresh.asDisabled()).queue(success -> event.editButton(refresh).queueAfter(30, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ContextException.class)));
 			} else {
+				DiscordLocale locale = event.getGuildLocale();
 				// Reply with instruction on how to verify, buttons - link and refresh
-				Button verify = Button.link(Links.UNIONTEAM, lu.getText(event, "bot.verification.listener.connect"));
+				Button verify = Button.link(Links.UNIONTEAM, lu.getLocalized(locale, "bot.verification.listener.connect"));
 				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
-					.setTitle(lu.getText(event, "bot.verification.embed.title"))
-					.setDescription(lu.getText(event, "bot.verification.embed.description"))
-					.addField(lu.getText(event, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false)
-					.addField(lu.getText(event, "bot.verification.embed.video"), Constants.VERIFY_VIDEO_GUIDE, false);
+					.setTitle(lu.getLocalized(locale, "bot.verification.embed.title"))
+					.setDescription(lu.getLocalized(locale, "bot.verification.embed.description"))
+					.addField(lu.getLocalized(locale, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false)
+					.addField(lu.getLocalized(locale, "bot.verification.embed.video"), Links.VERIFY_VIDEO_GUIDE, false);
 
 				event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();
 			}

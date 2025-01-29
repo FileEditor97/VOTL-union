@@ -15,9 +15,11 @@ public final class Links {
 	// UnionTeam links
 	public static final String UNIONTEAM = "https://unionteams.ru/";
 	public static final String ROTR_INVITE = "https://discord.gg/Y3T8yUPDDc";
-	public static final String TFC_INVITE = "https://discord.gg/t9cHjtQ";
+	public static final String TFC_INVITE = "https://discord.gg/7fxrgEk8c7";
 	public static final String SCP_INVITE = "https://discord.gg/nDPATNn";
 	public static final String DARKRP_INVITE = "https://discord.gg/GcesjQpgVJ";
+	public static final String VERIFY_VIDEO_GUIDE = "https://youtu.be/yPtYKPCUuPg";
 	// Other
 	public static final String CHEWTILS_GITHUB = "https://github.com/Chew/JDA-Chewtils";
+	public static final String AVATAR_URL = "https://cdn.fileeditor.dev/media/votl/union-logs.png";
 }

@@ -3,13 +3,15 @@ package union.listeners;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.CastUtil;
-import union.utils.FixedExpirableCache;
 
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -33,7 +35,10 @@ import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 
 public class MessageListener extends ListenerAdapter {
 	// Cache
-	private final FixedExpirableCache<Long, MessageData> cache = new FixedExpirableCache<>(Constants.DEFAULT_CACHE_SIZE*60, 5*24*3600); // store for 5 days
+	private final Cache<Long, MessageData> cache = Caffeine.newBuilder()
+		.expireAfterWrite(5, TimeUnit.DAYS)
+		.maximumSize(Constants.DEFAULT_CACHE_SIZE*60)
+		.build();
 
 	private final App bot;
 	
@@ -42,7 +47,7 @@ public class MessageListener extends ListenerAdapter {
 	}
 
 	public void shutdownCache() {
-		cache.shutdown();
+		// ignore
 	}
 
 	@Override
@@ -105,7 +110,7 @@ public class MessageListener extends ListenerAdapter {
 		}
 		
 		final long messageId = event.getMessageIdLong();
-		MessageData oldData = cache.get(messageId);
+		MessageData oldData = cache.getIfPresent(messageId);
 		MessageData newData = new MessageData(event.getMessage());
 		cache.put(event.getMessageIdLong(), newData);
 
@@ -119,8 +124,8 @@ public class MessageListener extends ListenerAdapter {
 
 		final long messageId = event.getMessageIdLong();
 
-		MessageData data = cache.get(messageId);
-		if (data != null) cache.pull(messageId);
+		MessageData data = cache.getIfPresent(messageId);
+		if (data != null) cache.invalidate(messageId);
 
 		final long guildId = event.getGuild().getIdLong();
 		if (bot.getDBUtil().logExceptions.isException(guildId, event.getChannel().getIdLong())) return;
@@ -158,11 +163,9 @@ public class MessageListener extends ListenerAdapter {
 		if (messageIds.isEmpty()) return;
 
 		List<MessageData> messages = new ArrayList<>();
-		messageIds.forEach(id -> {
-			if (cache.contains(id)) {
-				messages.add(cache.get(id));
-				cache.pull(id);
-			}
+		cache.getAllPresent(messageIds).forEach((k, v) -> {
+			messages.add(v);
+			cache.invalidate(k);
 		});
 		event.getGuild().retrieveAuditLogs()
 			.type(ActionType.MESSAGE_BULK_DELETE)

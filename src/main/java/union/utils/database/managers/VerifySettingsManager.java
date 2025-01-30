@@ -16,6 +16,7 @@ import union.utils.database.LiteDBBase;
 
 import net.dv8tion.jda.api.entities.Guild;
 
+@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "UnusedReturnValue"})
 public class VerifySettingsManager extends LiteDBBase {
 	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled", "minimumPlaytime", "additionalRoles");
 

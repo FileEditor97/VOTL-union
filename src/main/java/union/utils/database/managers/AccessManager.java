@@ -81,7 +81,7 @@ public class AccessManager extends LiteDBBase {
 		if (operatorCache.contains(guildId))
 			return operatorCache.get(guildId);
 		List<Long> data = getOperatorsData(guildId);
-		if (data==null || data.isEmpty())
+		if (data.isEmpty())
 			data = List.of();
 		operatorCache.put(guildId, data);
 		return data;

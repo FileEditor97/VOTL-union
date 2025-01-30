@@ -3,6 +3,7 @@ package union.objects.constants;
 import java.io.File;
 import java.nio.file.Paths;
 
+@SuppressWarnings("UnnecessaryUnicodeEscape")
 public final class Constants {
 	private Constants() {
 		throw new IllegalStateException("Utility class");

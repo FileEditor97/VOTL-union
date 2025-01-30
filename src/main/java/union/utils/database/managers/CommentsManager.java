@@ -27,6 +27,7 @@ public class CommentsManager extends LiteDBBase {
 		return execute("DELETE FROM %s WHERE (steam64=%d)".formatted(table, steam64));
 	}
 
+	@SuppressWarnings("unused")
 	public boolean purge() {
 		return execute("DELETE FROM %s".formatted(table));
 	}

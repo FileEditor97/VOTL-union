@@ -34,9 +34,9 @@ import union.utils.database.managers.TicketSettingsManager;
 import union.utils.database.managers.TicketTagManager.Tag;
 import union.utils.message.MessageUtil;
 
-public class TicketPanelCmd extends CommandBase {
+public class TicketCmd extends CommandBase {
 	
-	public TicketPanelCmd() {
+	public TicketCmd() {
 		this.name = "ticket";
 		this.path = "bot.ticketing.ticket";
 		this.children = new SlashCommand[]{new NewPanel(), new ModifyPanel(), new ViewPanel(), new SendPanel(), new DeletePanel(),
@@ -588,10 +588,10 @@ public class TicketPanelCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply(true).queue();
-
 			StringBuilder response = new StringBuilder();
+
 			if (event.getOptions().isEmpty()) {
+				event.deferReply(true).queue();
 				// Return overview
 				TicketSettingsManager.TicketSettings settings = bot.getDBUtil().getTicketSettings(event.getGuild());
 
@@ -614,6 +614,7 @@ public class TicketPanelCmd extends CommandBase {
 					.build()
 				);
 			} else {
+				event.deferReply().queue();
 				// Edit settings
 				if (event.hasOption("delete_pings")) {
 					final boolean deletePings = event.optBoolean("delete_pings");

@@ -78,16 +78,19 @@ public class App {
 
     private final LoggingUtil logUtil;
 
+	private final SettingsManager settings;
     private final DBUtil dbUtil;
-	private final MessageUtil messageUtil;
+	private final LocaleUtil localeUtil;
+
 	private final EmbedUtil embedUtil;
 	private final CheckUtil checkUtil;
-	private final LocaleUtil localeUtil;
+	private final MessageUtil messageUtil;
 	private final LogEmbedUtil logEmbedUtil;
 	private final TicketUtil ticketUtil;
 	private final WebhookLogger webhookLogger;
 	private final ModerationUtil moderationUtil;
 	private final SettingsManager settings;
+	private final AlertUtil alertUtil;
 
 	@SuppressWarnings("BusyWait")
 	public App() {
@@ -112,6 +115,7 @@ public class App {
 		settings	= new SettingsManager(fileManager);
 		dbUtil		= new DBUtil(fileManager, settings);
 		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
+
 		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this, ownerId);
@@ -120,6 +124,7 @@ public class App {
 		logUtil		= new LoggingUtil(this);
 		webhookLogger = new WebhookLogger(dbUtil);
 		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
+		alertUtil	= new AlertUtil();
 
 		WAITER = new EventWaiter();
         GuildListener guildListener				= new GuildListener(this);
@@ -385,6 +390,10 @@ public class App {
 
 	public SettingsManager getSettings() {
 		return settings;
+	}
+
+	public AlertUtil getAlertUtil() {
+		return alertUtil;
 	}
 
 	public void shutdownUtils() {

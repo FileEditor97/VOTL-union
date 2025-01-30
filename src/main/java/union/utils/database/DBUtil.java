@@ -55,7 +55,6 @@ public class DBUtil {
 	public final StrikeManager strike;
 	public final AutopunishManager autopunish;
 	public final BlacklistManager blacklist;
-	public final AlertsManager alerts;
 	public final GuildLogsManager logs;
 	public final LogExceptionManager logExceptions;
 	public final ModifyRoleManager modifyRole;
@@ -115,7 +114,6 @@ public class DBUtil {
 		strike = new StrikeManager(connectionUtil);
 		autopunish = new AutopunishManager(connectionUtil);
 		blacklist = new BlacklistManager(connectionUtil);
-		alerts = new AlertsManager(connectionUtil);
 		logs = new GuildLogsManager(connectionUtil);
 		logExceptions = new LogExceptionManager(connectionUtil);
 		modifyRole = new ModifyRoleManager(connectionUtil);

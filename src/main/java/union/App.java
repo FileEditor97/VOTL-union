@@ -12,7 +12,7 @@ import union.base.waiter.EventWaiter;
 import union.commands.games.GameCmd;
 import union.commands.games.GameStrikeCmd;
 import union.commands.guild.*;
-import union.commands.image.UserProfileCmd;
+import union.commands.level.UserProfileCmd;
 import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
@@ -214,7 +214,7 @@ public class App {
 				new RolesPanelCmd(),
 				new TicketCountCmd(),
 				new RolesSetupCmd(),
-				new TicketPanelCmd(),
+				new TicketCmd(),
 				new CloseCmd(),
 				new RcloseCmd(),
 				new AddUserCmd(),
@@ -229,7 +229,7 @@ public class App {
 				// games
 				new GameCmd(),
 				new GameStrikeCmd(),
-				// image
+				// level
 				new UserProfileCmd()
 			)
 			.addContextMenus(

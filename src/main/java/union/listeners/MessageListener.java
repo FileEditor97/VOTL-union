@@ -35,7 +35,7 @@ public class MessageListener extends ListenerAdapter {
 	// Cache
 	private final Cache<Long, MessageData> cache = Caffeine.newBuilder()
 		.expireAfterWrite(5, TimeUnit.DAYS)
-		.maximumSize(Constants.DEFAULT_CACHE_SIZE*60)
+		.maximumSize(5000)
 		.build();
 
 	private final App bot;

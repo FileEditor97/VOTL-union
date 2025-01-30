@@ -16,7 +16,7 @@ public class GuildVoiceManager extends LiteDBBase {
 		"categoryId", "channelId", "defaultName", "defaultLimit"
 	);
 	// Cache
-	private final FixedCache<Long, VoiceSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE/5);
+	private final FixedCache<Long, VoiceSettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
 	private final VoiceSettings blankSettings = new VoiceSettings();
 
 	public GuildVoiceManager(ConnectionUtil cu) {

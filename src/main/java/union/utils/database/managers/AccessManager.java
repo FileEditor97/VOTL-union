@@ -18,8 +18,8 @@ public class AccessManager extends LiteDBBase {
 	private final String table_user = "accessUser";
 
 	// Cache
-	private final FixedCache<Long, Map<Long, CmdAccessLevel>> roleCache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE/2);
-	private final FixedCache<Long, List<Long>> operatorCache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE/5);
+	private final FixedCache<Long, Map<Long, CmdAccessLevel>> roleCache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
+	private final FixedCache<Long, List<Long>> operatorCache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
 
 	public AccessManager(ConnectionUtil cu) {
 		super(cu, null);

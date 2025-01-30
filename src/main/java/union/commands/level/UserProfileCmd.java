@@ -1,4 +1,4 @@
-package union.commands.image;
+package union.commands.level;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -14,11 +14,13 @@ import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.utils.SteamUtil;
+import union.utils.database.managers.LevelManager;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.UserBackground;
 import union.utils.imagegen.UserBackgroundHandler;
 import union.utils.imagegen.renders.UserProfileRender;
+import union.utils.message.MessageUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,8 +30,8 @@ public class UserProfileCmd extends CommandBase {
 	public UserProfileCmd() {
 		this.name = "profile";
 		this.path = "bot.image.profile";
-		this.category = CmdCategory.IMAGE;
-		this.module = CmdModule.IMAGE;
+		this.category = CmdCategory.LEVELS;
+		this.module = CmdModule.LEVELS;
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
 			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"))
@@ -66,8 +68,11 @@ public class UserProfileCmd extends CommandBase {
 			return;
 		}
 
+		long guildId = target.getGuild().getIdLong();
+		long userId = target.getIdLong();
+
 		// Get user account
-		Long steam64 = bot.getDBUtil().verifyCache.getSteam64(target.getIdLong());
+		Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
 		if (steam64 == null || steam64 == 0L) {
 			editError(event, path+".not_found_steam", "Not found: "+target.getAsMention());
 			return;
@@ -80,18 +85,42 @@ public class UserProfileCmd extends CommandBase {
 			return;
 		}
 
-		List<PlayerInfo> playerData = bot.getDBUtil().unionPlayers.getPlayerInfo(
-			event.getGuild().getIdLong(), steamId
-		);
-		playerData = playerData.stream().filter(PlayerInfo::exists).limit(6).toList();
+		// Game info
+		List<PlayerInfo> playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(guildId, steamId)
+			.stream()
+			.filter(PlayerInfo::exists)
+			.limit(6)
+			.toList();
 
 		UserProfileRender render = new UserProfileRender(target)
-			.setLocale(event.getUserLocale())
+			.setLocale(bot.getLocaleUtil(), event.getUserLocale())
 			.setBackground(background)
-			.setPlayerData(playerData)
+			.setPlayerData(playerInfo)
 			.setAccessLevel(bot.getCheckUtil().getAccessLevel(target));
 
-		final String attachmentName = EncodingUtil.encodeUserBg(event.getGuild().getIdLong(), target.getIdLong());
+		// Experience
+		LevelManager.PlayerData playerData = bot.getDBUtil().levels.getPlayer(guildId, userId);
+		long experience = playerData.getExperience();
+
+		int level = bot.getLevelUtil().getLevelFromExperience(experience);
+		long minXpInLevel = bot.getLevelUtil().getExperienceFromLevel(level);
+
+		long maxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(level + 1);
+		double percentage = ((double) (experience - minXpInLevel) / (maxXpInLevel - minXpInLevel)) * 100;
+
+		long totalExperience = bot.getDBUtil().levels.getSumGlobalExp(userId);
+		Integer rank = bot.getDBUtil().levels.getRankServer(guildId, userId);
+
+		render.setLevel(MessageUtil.formatNumber(level))
+			.setServerExperience(MessageUtil.formatNumber(experience))
+			.setGlobalExperience(MessageUtil.formatNumber(totalExperience))
+			.setMinXpInLevel(MessageUtil.formatNumber(minXpInLevel))
+			.setMaxXpInLevel(MessageUtil.formatNumber(maxXpInLevel))
+			.setPercentage(percentage)
+			.setServerRank(rank==null?"-":String.valueOf(rank));
+
+		// Send
+		final String attachmentName = EncodingUtil.encodeUserBg(guildId, userId);
 
 		EmbedBuilder embed = new EmbedBuilder()
 			.setImage("attachment://" + attachmentName)

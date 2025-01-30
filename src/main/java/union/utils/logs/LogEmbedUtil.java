@@ -1255,6 +1255,17 @@ public class LogEmbedUtil {
 		return builder.build();
 	}
 
+	// Level
+	@NotNull
+	public MessageEmbed levelUp(DiscordLocale locale, Member member, long level) {
+		return new LogEmbedBuilder(locale, GREEN_DARK)
+			.setHeaderIcon(LogEvent.LEVEL_UP, member.getEffectiveAvatarUrl(), member.getUser().getName())
+			.setDescription(lu.getLocalizedRandom(locale, "logger.level.msg_random")
+				.replace("{user}", member.getAsMention())
+				.replace("{level}", String.valueOf(level)))
+			.build();
+	}
+
 
 
 	// TOOL

@@ -39,8 +39,10 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import union.utils.database.managers.LevelManager;
 import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.renders.ModReportRender;
+import union.utils.level.PlayerObject;
 import union.utils.message.TimeUtil;
 
 
@@ -317,7 +319,8 @@ public class ScheduledCheck {
 	public void regularChecks() {
 		CompletableFuture.runAsync(this::checkUnbans)
 			.thenRunAsync(this::checkAccountUpdates)
-			.thenRunAsync(this::removeAlertPoints);
+			.thenRunAsync(this::removeAlertPoints)
+			.thenRunAsync(this::updateDbQueue);
 	}
 
 	private void checkAccountUpdates() {
@@ -417,8 +420,9 @@ public class ScheduledCheck {
 	}
 
 
-	private void updateLevelData() {
+	private void updateDbQueue() {
 		try {
+			// level data
 			Iterator<PlayerObject> itr = bot.getLevelUtil().getUpdateQueue().iterator();
 			while (itr.hasNext()) {
 				PlayerObject player = itr.next();
@@ -429,8 +433,7 @@ public class ScheduledCheck {
 				itr.remove();
 			}
 		} catch (Throwable t) {
-			logger.error("Exception caught during points removal.", t);
+			log.error("Exception caught during DB queue update.", t);
 		}
 	}
-	
 }

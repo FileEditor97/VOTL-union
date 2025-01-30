@@ -54,6 +54,7 @@ public class LoggingUtil {
 	public final MemberLogs member =	new MemberLogs();
 	public final MessageLogs message =	new MessageLogs();
 	public final VoiceLogs voice =		new VoiceLogs();
+	public final LevelLogs level =		new LevelLogs();
 
 	public LoggingUtil(App bot) {
 		this.bot = bot;
@@ -798,4 +799,13 @@ public class LoggingUtil {
 		}
 	}
 
+	public class LevelLogs {
+		private final LogType type = LogType.LEVEL;
+
+		public void onLevelUp(Member target, long level) {
+			final Guild guild = target.getGuild();
+
+			sendLog(guild, type, () -> logUtil.levelUp(guild.getLocale(), target, level));
+		}
+	}
 }

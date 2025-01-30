@@ -367,6 +367,16 @@
 			"bot_not_allowed": "Bot is not in the whitelist",
 			"bad_user": "Blacklisted user joined %s and was banned"
 		},
+		"level": {
+			"level_up": "Level up!",
+			"msg_random": [
+				"GG {user}, you just reached **Level {level}**",
+				"Eyy {user}, you just leveled up! You're now **Level {level}**",
+				"\uD83C\uDF1F You just reached **Level {level}** {user}! Congrats \uD83C\uDF1F",
+				"You're on \uD83D\uDD25 {user}, you've just reached **Level {level}**",
+				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **Level {level}**"
+			]
+		},
 		"other": {
 			"name": "Audit logs (not used!)",
 			"audit": "Audit logs (not used!)"

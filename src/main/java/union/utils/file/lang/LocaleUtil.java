@@ -73,6 +73,11 @@ public class LocaleUtil {
 	}
 
 	@NotNull
+	public String getLocalizedRandom(DiscordLocale locale, String path) {
+		return Emotes.getWithEmotes(langUtil.getRandomString(locale, path));
+	}
+
+	@NotNull
 	public Map<DiscordLocale, String> getFullLocaleMap(String path, String defaultText) {
 		Map<DiscordLocale, String> localeMap = new HashMap<>();
 		for (DiscordLocale locale : bot.getFileManager().getLanguages()) {

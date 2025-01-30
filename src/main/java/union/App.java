@@ -37,6 +37,7 @@ import union.utils.file.FileManager;
 import union.utils.file.SettingsManager;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.imagegen.UserBackgroundHandler;
+import union.utils.level.LevelUtil;
 import union.utils.logs.LogEmbedUtil;
 import union.utils.logs.LoggingUtil;
 import union.utils.logs.WebhookLogger;
@@ -89,7 +90,7 @@ public class App {
 	private final TicketUtil ticketUtil;
 	private final WebhookLogger webhookLogger;
 	private final ModerationUtil moderationUtil;
-	private final SettingsManager settings;
+	private final LevelUtil levelUtil;
 	private final AlertUtil alertUtil;
 
 	@SuppressWarnings("BusyWait")
@@ -124,6 +125,7 @@ public class App {
 		logUtil		= new LoggingUtil(this);
 		webhookLogger = new WebhookLogger(dbUtil);
 		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
+		levelUtil	= new LevelUtil(this);
 		alertUtil	= new AlertUtil();
 
 		WAITER = new EventWaiter();
@@ -390,6 +392,10 @@ public class App {
 
 	public SettingsManager getSettings() {
 		return settings;
+	}
+
+	public LevelUtil getLevelUtil() {
+		return levelUtil;
 	}
 
 	public AlertUtil getAlertUtil() {

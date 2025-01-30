@@ -62,6 +62,9 @@ public class MessageListener extends ListenerAdapter {
 			cache.put(event.getMessageIdLong(), new MessageData(event.getMessage()));
 		}
 
+		// reward
+		bot.getLevelUtil().rewardPlayer(event);
+
 		// verification check
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return;
 		if (bot.getSettings().isDbVerifyDisabled()) return;

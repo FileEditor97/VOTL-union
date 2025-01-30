@@ -77,8 +77,7 @@ public class LevelUtil {
 
 		player.incrementExperienceBy(amount);
 
-		boolean exclude = player.getExperience() >= getHardCap()-(maxGuaranteeExperience+maxRandomExperience) || player.getExperience() < -1;
-		if (exclude) {
+		if (player.getExperience() >= getHardCap()-(maxGuaranteeExperience+maxRandomExperience) || player.getExperience() < -1) {
 			player.setExperience(getHardCap());
 		}
 
@@ -87,7 +86,7 @@ public class LevelUtil {
 		long newLvl = getLevelFromExperience(player.getExperience());
 		if (newLvl > lvl) {
 			// message
-			// TODO
+			bot.getLogger().level.onLevelUp(member, newLvl);
 			// give role
 			Long roleId = bot.getDBUtil().levels.getSettings(member.getGuild()).getLevelRole(newLvl);
 			if (roleId == null) return;
@@ -96,7 +95,6 @@ public class LevelUtil {
 			if (role == null) return;
 
 			member.getGuild().addRoleToMember(member, role).reason("New level: "+newLvl).queue();
-			bot.getLogger().level.onLevelUp(member, newLvl);
 		}
 	}
 

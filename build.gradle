@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
 	id 'java'
 	// ShadowJar
@@ -62,11 +64,15 @@ jar {
 	}
 }
 
-// ShadowJar
-shadowJar {
-	archiveBaseName.set('VOTL')
-	archiveVersion.set(version)
-	archiveClassifier.set('')
+// ShadowJar config
+tasks.named('shadowJar', ShadowJar) {
+	archiveBaseName = 'VOTL'
+	archiveVersion = version
+	archiveClassifier = ''
+	minimize {
+		exclude(dependency('org.xerial:sqlite-jdbc:.*'))
+		exclude(dependency('org.mariadb.jdbc:mariadb-java-client:.*'))
+	}
 }
 
 compileJava.options.encoding = 'UTF-8'

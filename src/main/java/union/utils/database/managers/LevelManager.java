@@ -94,8 +94,12 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	public void updatePlayer(PlayerObject player, PlayerData playerData) {
-		execute("INSERT INTO %s(guildId, userId, exp, lastUpdate) VALUES (%d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET exp=%4$d, lastUpdate=%5$d;"
-			.formatted(TABLE_PLAYERS, player.guildId, player.userId, playerData.getExperience(), playerData.getLastUpdate()));
+		execute("INSERT INTO %s(guildId, userId, exp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET exp=exp+%4$d, globalExp=globalExp+%5$d, lastUpdate=%6$d;"
+			.formatted(
+				TABLE_PLAYERS, player.guildId, player.userId,
+				playerData.getExperience(), playerData.getAddedGlobalExperience(), playerData.getLastUpdate()
+			)
+		);
 	}
 
 	public static class LevelSettings {
@@ -144,6 +148,7 @@ public class LevelManager extends LiteDBBase {
 
 	public static class PlayerData {
 		private long experience = 0;
+		private long addedGlobalExperience = 0;
 		private long lastUpdate = 0;
 
 		PlayerData(Map<String, Object> data) {
@@ -162,6 +167,10 @@ public class LevelManager extends LiteDBBase {
 			return experience;
 		}
 
+		public long getAddedGlobalExperience() {
+			return addedGlobalExperience;
+		}
+
 		public void setExperience(long experience) {
 			this.experience = experience;
 			this.lastUpdate = Instant.now().toEpochMilli();
@@ -169,6 +178,7 @@ public class LevelManager extends LiteDBBase {
 
 		public void incrementExperienceBy(long amount) {
 			this.experience += amount;
+			this.addedGlobalExperience += amount;
 			this.lastUpdate = Instant.now().toEpochMilli();
 		}
 

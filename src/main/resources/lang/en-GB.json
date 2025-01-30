@@ -96,6 +96,7 @@
 		"strikes": "Strike punishments",
 		"games": "Games",
 		"image": "Images",
+		"level": "Levels",
 		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {
@@ -2048,6 +2049,7 @@
 					"roles": "Roles",
 					"games": "Games",
 					"image": "Image",
+					"levels": "Levels",
 					"other": "Other",
 					"title": "Categories"
 				},

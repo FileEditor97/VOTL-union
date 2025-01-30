@@ -33,7 +33,7 @@ import com.jayway.jsonpath.Option;
 
 import ch.qos.logback.classic.Logger;
 
-@SuppressWarnings({"LoggingSimilarMessage", "unused"})
+@SuppressWarnings({"LoggingSimilarMessage", "unused", "DuplicateExpressions"})
 public class FileManager {
 	
 	private final Logger logger = (Logger) LoggerFactory.getLogger(FileManager.class);
@@ -87,8 +87,7 @@ public class FileManager {
 	public List<DiscordLocale> getLanguages() {
 		return locales;
 	}
-	
-	@SuppressWarnings("DuplicateExpressions")
+
 	private void createUpdateLoad(String name, String internal, String external, boolean update) {
 		if (files == null)
 			files = new HashMap<>();

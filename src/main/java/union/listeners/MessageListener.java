@@ -11,16 +11,15 @@ import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
+import union.objects.logs.MessageData;
 import union.utils.CastUtil;
 
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.audit.AuditLogOption;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
@@ -31,7 +30,6 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
-import net.dv8tion.jda.api.utils.MarkdownSanitizer;
 
 public class MessageListener extends ListenerAdapter {
 	// Cache
@@ -189,49 +187,5 @@ public class MessageListener extends ListenerAdapter {
 
 	@Override
 	public void onMessageReactionRemoveAll(@NotNull MessageReactionRemoveAllEvent event) {}
-
-	public static class MessageData {
-		private final String content, authorName;
-		private final Attachment attachment;
-		private final long authorId;
-
-		public MessageData(Message message) {
-			this.content = message.getContentRaw();
-			if (message.getAttachments().isEmpty())
-				this.attachment = null;
-			else
-				this.attachment = message.getAttachments().get(0);
-			this.authorId = message.getAuthor().getIdLong();
-			this.authorName = message.getAuthor().getName();
-		}
-
-		public String getContent() {
-			return content;
-		}
-
-		public String getContentStripped() {
-			return MarkdownSanitizer.sanitize(content);
-		}
-
-		public String getContentEscaped() {
-			return MarkdownSanitizer.escape(content);
-		}
-
-		public Attachment getAttachment() {
-			return attachment;
-		}
-
-		public long getAuthorId() {
-			return authorId;
-		}
-
-		public String getAuthorName() {
-			return authorName;
-		}
-
-		public boolean isEmpty() {
-			return content.isBlank() && attachment == null;
-		}
-	}
 	
 }

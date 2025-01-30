@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import union.listeners.MessageListener.MessageData;
 import union.objects.CmdModule;
 import union.objects.constants.Constants;
 import union.objects.logs.LogEvent;
+import union.objects.logs.MessageData;
 import union.utils.SteamUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.file.lang.LocaleUtil;
@@ -44,9 +44,6 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
-import com.github.difflib.text.DiffRow;
-import com.github.difflib.text.DiffRowGenerator;
-import com.github.difflib.text.DiffRow.Tag;
 import com.jayway.jsonpath.JsonPath;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -1168,9 +1165,8 @@ public class LogEmbedUtil {
 
 	// Message
 	@Nullable
-	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, @NotNull MessageData oldData, @NotNull MessageData newData) {
-		String diff = getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
-		// If there is no change to report - return null
+	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, @NotNull MessageData oldData, @NotNull MessageData newData , @Nullable MessageData.DiffData diff) {
+		// If it had no attachment
 		if ((oldData.getAttachment() == null || newData.getAttachment() != null) && diff == null) return null;
 
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
@@ -1185,7 +1181,7 @@ public class LogEmbedUtil {
 		}
 		if (diff != null) {
 			builder.appendDescription("**"+localized(locale, "messages.content")+"**: ```diff\n")
-				.appendDescription(MessageUtil.limitString(diff, 1600))
+				.appendDescription(MessageUtil.limitString(diff.content(), 1400))
 				.appendDescription("\n```");
 		}
 
@@ -1495,54 +1491,6 @@ public class LogEmbedUtil {
 		if (addedPerms.isEmpty() && removedPerms.isEmpty()) return null;
 		return Pair.of(removedPerms, addedPerms);
 
-	}
-
-	// Updated message content difference
-	@Nullable
-	private String getDiffContent(@NotNull String oldContent, @NotNull String newContent) {
-		if (oldContent.equals(newContent)) return null;
-		DiffRowGenerator generator = DiffRowGenerator.create()
-			.showInlineDiffs(true)
-			.inlineDiffByWord(true)
-			.ignoreWhiteSpaces(true)
-			.lineNormalizer(f -> f)
-			.newTag(f -> "")
-			.oldTag(f -> "")
-			.build();
-		List<DiffRow> rows = generator.generateDiffRows(
-			List.of(oldContent.split("\\n")),
-			List.of(newContent.split("\\n"))
-		);
-		
-		StringBuilder diff = new StringBuilder();
-		boolean skipped = false;
-		final int size = rows.size();
-		for (int i = 0; i<size; i++) {
-			DiffRow row = rows.get(i);
-			if (row.getTag().equals(Tag.EQUAL)) {
-				if ((i+1 >= size || rows.get(i+1).getTag().equals(Tag.EQUAL))
-					&& (i-1 < 0 || rows.get(i-1).getTag().equals(Tag.EQUAL)))
-				{
-					skipped = true;
-					continue;
-				}
-			}
-			if (skipped) {
-				diff.append(" ...\n");
-				skipped = false;
-			}
-
-			switch (row.getTag()) {
-				case INSERT -> diff.append("+ ").append(row.getNewLine());
-				case DELETE -> diff.append("- ").append(row.getOldLine());
-				case CHANGE -> diff.append("- ").append(row.getOldLine())
-						.append("\n")
-						.append("+ ").append(row.getNewLine());
-				default -> diff.append(" ").append(row.getOldLine());
-			}
-			diff.append("\n");
-		}
-		return diff.toString();
 	}
 
 }

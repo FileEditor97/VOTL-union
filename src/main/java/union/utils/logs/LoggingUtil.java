@@ -19,11 +19,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import union.App;
 import union.base.command.SlashCommandEvent;
-import union.listeners.MessageListener.MessageData;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
+import union.objects.logs.MessageData;
 import union.utils.CaseProofUtil;
 import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
@@ -693,9 +693,12 @@ public class LoggingUtil {
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 
-			MessageEmbed embed = logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData);
+			MessageData.DiffData diff = MessageData.getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
+			MessageEmbed embed = logUtil.messageUpdate(guild.getLocale(), author, channel.getIdLong(), messageId, oldData, newData, diff);
 			if (embed == null) return;
-			FileUpload fileUpload = uploadContentUpdate(oldData, newData, messageId);
+
+			// Create changes file only if there are significant changes
+			FileUpload fileUpload = (diff!=null && diff.manyChanges()) ? uploadContentUpdate(oldData, newData, messageId) : null;
 			if (fileUpload != null) {
 				client.sendMessageEmbeds(embed)
 					.addFiles(fileUpload)
@@ -740,9 +743,6 @@ public class LoggingUtil {
 		}
 
 		private FileUpload uploadContentUpdate(MessageData oldData, MessageData newData, long messageId) {
-			if (oldData.getContent().isBlank() || newData.getContent().isBlank()) return null;
-			if (newData.getContent().equals(oldData.getContent())) return null;
-			if (newData.getContent().length()+oldData.getContent().length() < 1000) return null;
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				baos.write("[%s (%s)]\n".formatted(newData.getAuthorName(), newData.getAuthorId()).getBytes());
@@ -760,7 +760,6 @@ public class LoggingUtil {
 		}
 
 		private FileUpload uploadContent(MessageData data, long messageId) {
-			if (data == null || data.isEmpty()) return null;
 			if (data.getContent().length() < 1000) return null;
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();

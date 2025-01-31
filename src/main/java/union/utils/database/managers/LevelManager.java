@@ -15,7 +15,6 @@ import union.utils.level.PlayerObject;
 
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +43,7 @@ public class LevelManager extends LiteDBBase {
 		return getSettings(guild.getIdLong());
 	}
 
+	@NotNull
 	public LevelSettings getSettings(long guildId) {
 		if (settingsCache.contains(guildId))
 			return settingsCache.get(guildId);
@@ -55,16 +55,12 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	private Map<String, Object> getSettingsData(long guildId) {
-		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(TABLE_SETTINGS, guildId), Set.of("enabled", "exemptChannels"));
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(TABLE_SETTINGS, guildId), Set.of("enabled", "exemptChannels", "enabledVoice"));
 	}
 
 	public void remove(long guildId) {
 		invalidateSettings(guildId);
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(TABLE_SETTINGS, guildId));
-	}
-
-	public void invalidateSettings(long guildId) {
-		settingsCache.pull(guildId);
 	}
 
 	public boolean setEnabled(long guildId, boolean enabled) {
@@ -75,6 +71,15 @@ public class LevelManager extends LiteDBBase {
 	public boolean setExemptChannels(long guildId, @Nullable String channelIds) {
 		invalidateSettings(guildId);
 		return execute("INSERT INTO %s(guildId, exemptChannels) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET exemptChannels=%<s".formatted(TABLE_SETTINGS, guildId, quote(channelIds)));
+	}
+
+	public boolean setEnabledVoice(long guildId, boolean enabled) {
+		invalidateSettings(guildId);
+		return execute("INSERT INTO %s(guildId, enabledVoice) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabledVoice=%<d".formatted(TABLE_SETTINGS, guildId, enabled?1:0));
+	}
+
+	public void invalidateSettings(long guildId) {
+		settingsCache.pull(guildId);
 	}
 
 	// Guild levels
@@ -94,7 +99,7 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	public void updatePlayer(PlayerObject player, PlayerData playerData) {
-		execute("INSERT INTO %s(guildId, userId, exp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET exp=exp+%4$d, globalExp=globalExp+%5$d, lastUpdate=%6$d;"
+		execute("INSERT INTO %s(guildId, userId, exp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET exp=%4$d, globalExp=globalExp+%5$d, lastUpdate=%6$d;"
 			.formatted(
 				TABLE_PLAYERS, player.guildId, player.userId,
 				playerData.getExperience(), playerData.getAddedGlobalExperience(), playerData.getLastUpdate()
@@ -102,19 +107,44 @@ public class LevelManager extends LiteDBBase {
 		);
 	}
 
+	public void addVoiceTime(PlayerObject player, long duration) {
+		execute("INSERT INTO %s(guildId, userId, voiceTime) VALUES (%d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET voiceTime=voiceTime+%<d;"
+			.formatted(TABLE_PLAYERS, player.guildId, player.userId, duration)
+		);
+	}
+
+	public long getGlobalExp(long guildId, long userId) {
+		Long data = selectOne("SELECT globalExp FROM %s WHERE (guildId=%d AND userId=%d)".formatted(TABLE_PLAYERS, guildId, userId), "globalExp", Long.class);
+		return data==null?0:data;
+	}
+
+	public long getSumGlobalExp(long userId) {
+		Long data = selectOne("SELECT SUM(globalExp) AS totalExp FROM %s WHERE (userId=%d)".formatted(TABLE_PLAYERS, userId), "totalExp", Long.class);
+		return data==null?0:data;
+	}
+
+	public Integer getRankServer(long guildId, long userId) {
+		return selectOne("WITH rankedUsers AS (SELECT userId, guildId, exp, DENSE_RANK() OVER (PARTITION BY guildId ORDER BY exp DESC) AS rank FROM %s) SELECT rank FROM rankedUsers WHERE (guildId=%d AND userId=%d)"
+			.formatted(TABLE_PLAYERS, guildId, userId), "rank", Integer.class);
+	}
+
+	public Integer getRankGlobal(long userId) {
+		return selectOne("WITH rankedUsers AS (SELECT userId, SUM(globalExp) as totalExp, DENSE_RANK() OVER (ORDER BY SUM(globalExp) DESC) AS rank FROM %s GROUP BY userId) SELECT rank FROM rankedUsers WHERE (userId=%d)"
+			.formatted(TABLE_PLAYERS, userId), "rank", Integer.class);
+	}
+
 	public static class LevelSettings {
-		private final boolean enabled;
+		private final boolean enabled, enabledVoice;
 		private final Set<Long> exemptChannels;
-		private final Map<Long, Long> levelRoles;
 
 		public LevelSettings() {
 			this.enabled = false;
 			this.exemptChannels = Set.of();
-			this.levelRoles = Map.of();
+			this.enabledVoice = true;
 		}
 
 		public LevelSettings(Map<String, Object> data) {
-			this.enabled = requireNonNull(data.get("enabled"));
+			this.enabled = (int) requireNonNull(data.get("enabled"))==1;
 			this.exemptChannels = resolveOrDefault(
 				data.get("exemptChannels"),
 				o -> Stream.of(String.valueOf(o).split(";"))
@@ -122,7 +152,7 @@ public class LevelManager extends LiteDBBase {
 					.collect(Collectors.toSet()),
 				Set.of()
 			);
-			this.levelRoles = new HashMap<>();
+			this.enabledVoice = (int) requireNonNull(data.get("enabledVoice"))==1;
 		}
 
 		public boolean isEnabled() {
@@ -137,12 +167,8 @@ public class LevelManager extends LiteDBBase {
 			return exemptChannels.contains(channelId);
 		}
 
-		public Map<Long, Long> getLevelRoles() {
-			return levelRoles;
-		}
-
-		public Long getLevelRole(long level) {
-			return levelRoles.get(level);
+		public boolean isVoiceEnabled() {
+			return enabled && enabledVoice;
 		}
 	}
 
@@ -153,7 +179,7 @@ public class LevelManager extends LiteDBBase {
 
 		PlayerData(Map<String, Object> data) {
 			if (data != null) {
-				BigInteger exp = new BigInteger(CastUtil.getOrDefault(data.get("exp"), "0"));
+				BigInteger exp = new BigInteger(CastUtil.getOrDefault(String.valueOf(data.get("exp")), "0"));
 				if (exp.compareTo(BigInteger.valueOf(LevelUtil.getHardCap())) >= 0) {
 					this.experience = LevelUtil.getHardCap();
 				} else {
@@ -184,10 +210,6 @@ public class LevelManager extends LiteDBBase {
 
 		public long getLastUpdate() {
 			return lastUpdate;
-		}
-
-		public boolean exists() {
-			return experience > 0;
 		}
 	}
 }

@@ -21,7 +21,7 @@ import java.util.List;
 
 public class SettingsManager {
 
-	private final Logger logger = (Logger) LoggerFactory.getLogger(SettingsManager.class);
+	private final Logger log = (Logger) LoggerFactory.getLogger(SettingsManager.class);
 	private final FileManager fileManager;
 
 	private final Configuration CONF = Configuration.defaultConfiguration()
@@ -62,7 +62,7 @@ public class SettingsManager {
 			String panicWebhook = context.read("$.panicWebhook");
 			if (panicWebhook != null && panicWebhook.isBlank()) this.panicWebhook = panicWebhook.trim();
 		} catch (IOException ex) {
-			logger.error("Couldn't read settings.json\n{}", ex.getMessage());
+			log.error("Couldn't read settings.json\n{}", ex.getMessage());
 		}
 	}
 
@@ -177,7 +177,7 @@ public class SettingsManager {
 				writer.write(prettyJson);
 			}
 		} catch (IOException ex) {
-			logger.error("Couldn't write settings.json\n{}", ex.getMessage());
+			log.error("Couldn't write settings.json\n{}", ex.getMessage());
 		}
 	}
 
@@ -203,7 +203,7 @@ public class SettingsManager {
 			return color;
 		}
 
-		public Color getColor(int alpha) {
+		public Color getColor(float alpha) {
 			return ColorUtil.decode(color, alpha);
 		}
 	}

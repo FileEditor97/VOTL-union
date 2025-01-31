@@ -42,3 +42,4 @@ CREATE TABLE "tempRoles_new" ("guildId" INTEGER NOT NULL, "roleId" INTEGER NOT N
 CREATE TABLE "levelSettings" ("guildId" INTEGER NOT NULL UNIQUE, "enabled" INTEGER NOT NULL DEFAULT 0, "exemptChannels" INTEGER); CREATE TABLE "levelPlayers" ("userId" INTEGER NOT NULL, "guildId" INTEGER NOT NULL, "exp" INTEGER DEFAULT 0, "globalExp" INTEGER DEFAULT 0, "lastUpdate" INTEGER DEFAULT 0, UNIQUE("userId","guildId"));
 DROP TABLE "alertActions";
 ALTER TABLE "logWebhooks" ADD "levels" TEXT;
+CREATE TABLE "levelRoles" ("guildId" INTEGER NOT NULL, "level" INTEGER NOT NULL, "roles" INTEGER NOT NULL, "exact" INTEGER DEFAULT 1, UNIQUE("guildId","level")); ALTER TABLE "levelPlayers" ADD "voiceTime" INTEGER DEFAULT 0; ALTER TABLE "levelSettings" ADD "enabledVoice" INTEGER DEFAULT 1;

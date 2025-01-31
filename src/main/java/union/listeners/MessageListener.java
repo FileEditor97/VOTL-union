@@ -9,7 +9,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jetbrains.annotations.NotNull;
 import union.App;
-import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.objects.logs.MessageData;
 import union.utils.CastUtil;
@@ -61,7 +60,7 @@ public class MessageListener extends ListenerAdapter {
 		}
 
 		// reward
-		bot.getLevelUtil().rewardPlayer(event);
+		bot.getLevelUtil().rewardMessagePlayer(event);
 
 		// verification check
 		if (!bot.getDBUtil().getVerifySettings(guild).isCheckEnabled()) return;

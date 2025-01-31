@@ -128,17 +128,17 @@ public class App {
 		levelUtil	= new LevelUtil(this);
 		alertUtil	= new AlertUtil();
 
+		ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
+
 		WAITER = new EventWaiter();
         GuildListener guildListener				= new GuildListener(this);
         InteractionListener interactionListener = new InteractionListener(this, WAITER);
-        VoiceListener voiceListener				= new VoiceListener(this);
+        VoiceListener voiceListener				= new VoiceListener(this, scheduledExecutor);
         messageListener							= new MessageListener(this);
         MemberListener memberListener			= new MemberListener(this);
         ModerationListener moderationListener	= new ModerationListener(this);
         AuditListener auditListener				= new AuditListener(this);
 		EventListener eventListener				= new EventListener();
-
-        ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 
 		ScheduledCheck scheduledCheck = new ScheduledCheck(this);
 		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::timedChecks, 3, 10, TimeUnit.MINUTES);

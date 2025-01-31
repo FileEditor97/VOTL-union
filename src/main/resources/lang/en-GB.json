@@ -81,7 +81,10 @@
 		"profile": {
 			"time_full": "Time: %d hours",
 			"time_short": "%dh",
-			"rank": "Rank: %s"
+			"rank": "Rank: %s",
+			"level": "LEVEL",
+			"server_xp": "Server XP",
+			"global_xp": "Global XP"
 		}
 	},
 	"modules": {
@@ -95,8 +98,7 @@
 		"roles": "Role management",
 		"strikes": "Strike punishments",
 		"games": "Games",
-		"image": "Images",
-		"level": "Levels",
+		"level": "Leveling",
 		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {
@@ -788,6 +790,88 @@
 						"help": "Enable role \"whitelist\""
 					},
 					"done": "Set role limiting - %s"
+				},
+				"levels": {
+					"help": "Manage leveling settings (to view settings - don't select options)",
+					"usage": "levels [enabled?] [voice enabled?]",
+					"enabled": {
+						"name": "enabled",
+						"help": "Enable leveling in this server"
+					},
+					"embed_view": "**Leveling settings**",
+					"embed_changes": "**Updated leveling settings**",
+					"changed_enabled": "\n> Enabled: %s",
+					"voice_enabled": "\n> Voice activity xp enabled: %s"
+				},
+				"level_roles": {
+					"help": "Manage leveling roles",
+					"set": {
+						"help": "Set role for achieved level",
+						"usage": "level_roles set <role> <@Role>",
+						"level": {
+							"name": "level",
+							"help": "At which level to assign this roles"
+						},
+						"role": {
+							"name": "role",
+							"help": "Select role"
+						},
+						"invalid_args": "You haven't selected any role.",
+						"incorrect_role": "Selected role can't be used.",
+						"limit": "Level roles limit reached (max 40)!",
+						"done": "Role %s will be assigned at level `%s`."
+					},
+					"remove": {
+						"help": "Remove roles from level",
+						"usage": "level_roles remove <level>",
+						"level": {
+							"name": "level",
+							"help": "Remove role from which level"
+						},
+						"done": "Cleared roles for `%s` level."
+					},
+					"view": {
+						"help": "View all levels",
+						"usage": "level_roles view",
+						"no_roles": "No roles set.",
+						"title": "Level roles"
+					}
+				},
+				"level_exempt": {
+					"help": "Manage exempt channels for leveling",
+					"set": {
+						"help": "Add channel to leveling exemption",
+						"usage": "level_exempt set <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select channel"
+						},
+						"invalid_args": "You haven't selected any role.",
+						"limit": "Exempt channels limit reached (max 40)!",
+						"already": "This channel is already exempt.",
+						"done": "Channel %s added to exemption."
+					},
+					"remove": {
+						"help": "Remove channel to leveling exemption",
+						"usage": "level_exempt remove <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select channel to remove"
+						},
+						"not_exempt": "This channel is not exempt.",
+						"done": "Channel %s removed from exemption."
+					},
+					"clear": {
+						"help": "Remove all exempt channels",
+						"usage": "level_exempt clear",
+						"done": "Cleared all channels."
+					},
+					"view": {
+						"help": "View all exemptions",
+						"usage": "level_exempt view",
+						"no_roles": "No exemptions set.",
+						"title": "Exempt channels"
+					}
 				}
 			},
 			"module": {
@@ -2048,8 +2132,7 @@
 					"voice": "Voice",
 					"roles": "Roles",
 					"games": "Games",
-					"image": "Image",
-					"levels": "Levels",
+					"levels": "Leveling",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -2141,7 +2224,7 @@
 							"name": "role3",
 							"help": "Select role"
 						},
-						"invalid_args":"You haven't selected any role/-s.",
+						"invalid_args": "You haven't selected any role/-s.",
 						"incorrect_role": "Selected roles can't be added.",
 						"done": "Set %s as additional roles."
 					},
@@ -2817,7 +2900,7 @@
 						"name": "role3",
 						"help": "Select role"
 					},
-					"invalid_args":"You haven't selected any role/-s.",
+					"invalid_args": "You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be added.",
 					"not_whitelisted": "Selected roles is not whitelisted! Ask Administrator to add it to the list.",
 					"no_member": "Member not found.",
@@ -2843,7 +2926,7 @@
 						"name": "role3",
 						"help": "Select role"
 					},
-					"invalid_args":"You haven't selected any role/-s.",
+					"invalid_args": "You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be removed.",
 					"no_member": "Member not found.",
 					"done": "Removed roles {roles} from {user}.",

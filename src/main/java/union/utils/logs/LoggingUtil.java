@@ -801,7 +801,7 @@ public class LoggingUtil {
 	public class LevelLogs {
 		private final LogType type = LogType.LEVEL;
 
-		public void onLevelUp(Member target, long level) {
+		public void onLevelUp(Member target, int level) {
 			final Guild guild = target.getGuild();
 
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);

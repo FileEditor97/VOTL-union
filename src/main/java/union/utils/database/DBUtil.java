@@ -65,6 +65,7 @@ public class DBUtil {
 	public final PersistentManager persistent;
 	public final CommentsManager comments;
 	public final LevelManager levels;
+	public final LevelRolesManager levelRoles;
 	
 	public final UnionVerifyManager unionVerify;
 	public final UnionPlayerManager unionPlayers;
@@ -125,6 +126,7 @@ public class DBUtil {
 		persistent = new PersistentManager(connectionUtil);
 		comments = new CommentsManager(connectionUtil);
 		levels = new LevelManager(connectionUtil);
+		levelRoles = new LevelRolesManager(connectionUtil);
 		
 		unionVerify = new UnionVerifyManager(connectionUtil, settings, urlWebsite, userWebsite, passWebsite);
 		unionPlayers = new UnionPlayerManager(connectionUtil, settings, urlCentralTemp, userCentral, passCentral);

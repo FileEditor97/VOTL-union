@@ -2,14 +2,13 @@ package union.commands.guild;
 
 import java.awt.Color;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import net.dv8tion.jda.api.entities.Mentions;
 
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
@@ -20,6 +19,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.GuildSettingsManager.AnticrashAction;
 import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
+import union.utils.database.managers.LevelManager;
 import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -44,7 +44,9 @@ public class SetupCmd extends CommandBase {
 		this.path = "bot.guild.setup";
 		this.children = new SlashCommand[]{new PanelColor(), new AppealLink(), new ReportChannel(), new Anticrash(),
 			new VoiceCreate(), new VoiceSelect(), new VoicePanel(), new VoiceName(), new VoiceLimit(),
-			new Strikes(), new InformLevel(), new RoleWhitelist()
+			new Strikes(), new InformLevel(), new RoleWhitelist(), new Levels(),
+			new SetLevelRoles(), new RemoveLevelRoles(), new ViewLevelRoles(),
+			new AddLevelExempt(), new RemoveLevelExempt(), new ViewLevelExempt(), new ClearLevelExempt()
 		};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -545,6 +547,316 @@ public class SetupCmd extends CommandBase {
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(enabled?Constants.SUCCESS:Constants.FAILURE))
 				.build());
+		}
+	}
+
+	private class Levels extends SlashCommand {
+		public Levels() {
+			this.name = "levels";
+			this.path = "bot.guild.setup.levels";
+			this.options = List.of(
+				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help")),
+				new OptionData(OptionType.BOOLEAN, "voice_enabled", lu.getText(path+".voice_enabled.help"))
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			StringBuilder response = new StringBuilder();
+
+			if (event.getOptions().isEmpty()) {
+				event.deferReply(true).queue();
+				// Return overview
+				LevelManager.LevelSettings settings = bot.getDBUtil().levels.getSettings(event.getGuild());
+
+				response.append("\n> Leveling enabled: ").append(settings.isEnabled()?Constants.SUCCESS:Constants.FAILURE);
+				response.append("\n> Grant xp for voice activity: ").append(settings.isVoiceEnabled()?Constants.SUCCESS:Constants.FAILURE);
+
+				editEmbed(event, bot.getEmbedUtil().getEmbed()
+					.setDescription(lu.getText(event, path+".embed_view"))
+					.appendDescription(response.toString())
+					.build()
+				);
+			} else {
+				event.deferReply().queue();
+				// Edit settings
+				if (event.hasOption("enabled")) {
+					final boolean enabled = event.optBoolean("enabled");
+
+					if (bot.getDBUtil().levels.setEnabled(event.getGuild().getIdLong(), enabled)) {
+						editErrorDatabase(event, "leveling settings set enabled");
+						return;
+					}
+					response.append(lu.getText(event, path+".changed_enabled").formatted(enabled ? Constants.SUCCESS : Constants.FAILURE));
+				}
+				if (event.hasOption("voice_enabled")) {
+					final boolean enabled = event.optBoolean("voice_enabled");
+
+					if (bot.getDBUtil().levels.setEnabledVoice(event.getGuild().getIdLong(), enabled)) {
+						editErrorDatabase(event, "leveling settings set voice enabled");
+						return;
+					}
+					response.append(lu.getText(event, path+".changed_voice").formatted(enabled ? Constants.SUCCESS : Constants.FAILURE));
+				}
+
+				if (response.isEmpty()) {
+					editErrorUnknown(event, "Response for ticket settings is empty.");
+				} else {
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setDescription(lu.getText(event, path+".embed_changes"))
+						.appendDescription(response.toString())
+						.build()
+					);
+				}
+			}
+		}
+	}
+
+	private class SetLevelRoles extends SlashCommand {
+		public SetLevelRoles() {
+			this.name = "set";
+			this.path = "bot.guild.setup.level_roles.set";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "level", lu.getText(path+".level.help"), true)
+					.setRequiredRange(1, 10_000),
+				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true)
+			);
+			this.subcommandGroup = new SubcommandGroupData("level_roles", lu.getText("bot.guild.setup.level_roles.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			int level = event.optInteger("level");
+			Role role = event.optRole("role");
+			if (role == null) {
+				editError(event, path+".invalid_args");
+				return;
+			}
+
+			String denyReason = bot.getCheckUtil().denyRole(role, event.getGuild(), event.getMember(), true);
+			if (denyReason != null) {
+				editError(event, path+".incorrect_role", denyReason);
+				return;
+			}
+			if (bot.getDBUtil().levelRoles.getLevelsCount(event.getGuild().getIdLong()) >= 40) {
+				editError(event, path+".limit");
+				return;
+			}
+
+			if (!bot.getDBUtil().levelRoles.add(event.getGuild().getIdLong(), level, role.getId(), true)) {
+				editErrorDatabase(event, "level roles set");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(role.getAsMention(), level))
+				.build()
+			);
+		}
+	}
+
+	private class RemoveLevelRoles extends SlashCommand {
+		public RemoveLevelRoles() {
+			this.name = "remove";
+			this.path = "bot.guild.setup.level_roles.remove";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "level", lu.getText(path+".level.help"), true)
+					.setRequiredRange(1, 10_000)
+			);
+			this.subcommandGroup = new SubcommandGroupData("level_roles", lu.getText("bot.guild.setup.level_roles.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			int level = event.optInteger("level");
+
+			Set<Long> roles = bot.getDBUtil().levelRoles.getRoles(event.getGuild().getIdLong(), level);
+			if (roles.isEmpty()) {
+				editError(event, path+".empty");
+				return;
+			}
+
+			if (!bot.getDBUtil().levelRoles.remove(event.getGuild().getIdLong(), level)) {
+				editErrorDatabase(event, "level roles remove");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(level))
+				.build()
+			);
+		}
+	}
+
+	private class ViewLevelRoles extends SlashCommand {
+		public ViewLevelRoles() {
+			this.name = "view";
+			this.path = "bot.guild.setup.level_roles.view";
+			this.subcommandGroup = new SubcommandGroupData("level_roles", lu.getText("bot.guild.setup.level_roles.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			Map<Integer, Set<Long>> data = bot.getDBUtil().levelRoles.getAllLevels(event.getGuild().getIdLong());
+			if (data.isEmpty()) {
+				editError(event, path+".empty");
+				return;
+			}
+
+			StringBuilder response = new StringBuilder();
+			data.forEach((level, roles) -> {
+				response.append("\n> `%5d` - ".formatted(level))
+					.append(roles.stream().map("<@&%s>"::formatted).collect(Collectors.joining(", ")));
+			});
+
+			editEmbed(event, bot.getEmbedUtil().getEmbed()
+				.setTitle(lu.getText(event, path+".title"))
+				.setDescription(response.toString())
+				.build()
+			);
+		}
+	}
+
+	private class AddLevelExempt extends SlashCommand {
+		public AddLevelExempt() {
+			this.name = "add";
+			this.path = "bot.guild.setup.level_exempt.add";
+			this.options = List.of(
+				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"), true)
+					.setChannelTypes(ChannelType.TEXT, ChannelType.VOICE, ChannelType.CATEGORY, ChannelType.GUILD_PUBLIC_THREAD, ChannelType.STAGE)
+			);
+			this.subcommandGroup = new SubcommandGroupData("level_exempt", lu.getText("bot.guild.setup.level_exempt.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			GuildChannel channel = event.optGuildChannel("channel");
+			if (channel == null) {
+				editError(event, path+".invalid_args");
+				return;
+			}
+
+			LevelManager.LevelSettings settings = bot.getDBUtil().levels.getSettings(event.getGuild());
+			if (settings.getExemptChannels().size() >= 40) {
+				editError(event, path+".limit");
+				return;
+			}
+			if (settings.isExemptChannel(channel.getIdLong())) {
+				editError(event, path+".already", channel.getAsMention());
+				return;
+			}
+
+			Set<Long> channels = new HashSet<>(settings.getExemptChannels());
+			channels.add(channel.getIdLong());
+			String channelIds = channels.stream().map(String::valueOf).collect(Collectors.joining(";"));
+
+			if (!bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), channelIds)) {
+				editErrorDatabase(event, "set level exempt channels");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(channel.getAsMention()))
+				.build()
+			);
+		}
+	}
+
+	private class RemoveLevelExempt extends SlashCommand {
+		public RemoveLevelExempt() {
+			this.name = "remove";
+			this.path = "bot.guild.setup.level_exempt.remove";
+			this.options = List.of(
+				new OptionData(OptionType.STRING, "channel", lu.getText(path+".channel.help"), true)
+			);
+			this.subcommandGroup = new SubcommandGroupData("level_exempt", lu.getText("bot.guild.setup.level_exempt.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			GuildChannel channel = event.optMentions("channel").getChannels().get(0);
+			long channelId = channel!=null ? channel.getIdLong() : event.optLong("channel");
+
+			if (channel!=null && !channel.getGuild().equals(event.getGuild())) {
+				editError(event, path+".invalid_args");
+				return;
+			}
+
+			LevelManager.LevelSettings settings = bot.getDBUtil().levels.getSettings(event.getGuild());
+			if (!settings.isExemptChannel(channelId)) {
+				editError(event, path+".not_exempt", channel!=null ? channel.getAsMention() : String.valueOf(channelId));
+				return;
+			}
+
+			Set<Long> channels = new HashSet<>(settings.getExemptChannels());
+			channels.remove(channelId);
+			String channelIds = channels.stream().map(String::valueOf).collect(Collectors.joining(";"));
+
+			if (!bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), channelIds)) {
+				editErrorDatabase(event, "set level exempt channels");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done").formatted(channel!=null ? channel.getAsMention() : channelId))
+				.build()
+			);
+		}
+	}
+
+	private class ClearLevelExempt extends SlashCommand {
+		public ClearLevelExempt() {
+			this.name = "clear";
+			this.path = "bot.guild.setup.level_exempt.clear";
+			this.subcommandGroup = new SubcommandGroupData("level_exempt", lu.getText("bot.guild.setup.level_exempt.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			if (!bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), null)) {
+				editErrorDatabase(event, "clear level exempt channels");
+				return;
+			}
+			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done"))
+				.build()
+			);
+		}
+	}
+
+	private class ViewLevelExempt extends SlashCommand {
+		public ViewLevelExempt() {
+			this.name = "view";
+			this.path = "bot.guild.setup.level_exempt.view";
+			this.subcommandGroup = new SubcommandGroupData("level_exempt", lu.getText("bot.guild.setup.level_exempt.help"));
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			Set<Long> channelIds = bot.getDBUtil().levels.getSettings(event.getGuild()).getExemptChannels();
+			if (channelIds.isEmpty()) {
+				editError(event, path+".empty");
+				return;
+			}
+
+			StringBuilder response = new StringBuilder();
+			channelIds.forEach(id -> response.append("\n> <#%s> `%<s`".formatted(id)));
+
+			editEmbed(event, bot.getEmbedUtil().getEmbed()
+				.setTitle(lu.getText(event, path+".title"))
+				.setDescription(response.toString())
+				.build()
+			);
 		}
 	}
 

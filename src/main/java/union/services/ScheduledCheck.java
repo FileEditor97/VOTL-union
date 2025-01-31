@@ -101,18 +101,14 @@ public class ScheduledCheck {
 			});
 
 			db.ticket.getCloseMarkedTickets().forEach(channelId -> {
-				GuildChannel channel = bot.JDA.getGuildChannelById(channelId);
-				if (channel == null) {
+				if (bot.JDA.getGuildChannelById(channelId) == null) {
 					bot.getDBUtil().ticket.forceCloseTicket(channelId);
 					return;
 				}
 				bot.getTicketUtil().closeTicket(channelId, null, "time", failure -> {
-					new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE)
-						.andThen(t -> {
-							log.error("Failed to delete ticket channel, either already deleted or unknown error", t);
-						})
-						.accept(failure);
 					db.ticket.setRequestStatus(channelId, -1L);
+					if (ErrorResponse.UNKNOWN_MESSAGE.test(failure)) return;
+					log.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 				});
 			});
 
@@ -127,14 +123,15 @@ public class ScheduledCheck {
 					.thenAcceptAsync(list -> {
 						Message msg = list.get(0);
 						if (msg.getAuthor().isBot()) {
+							if (bot.JDA.getGuildChannelById(channelId) == null) {
+								bot.getDBUtil().ticket.forceCloseTicket(channelId);
+								return;
+							}
 							// Last message is bot - close ticket
 							bot.getTicketUtil().closeTicket(channelId, null, "activity", failure -> {
-								new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE)
-									.andThen(t -> {
-										log.error("Failed to delete ticket channel, either already deleted or unknown error", t);
-									})
-									.accept(failure);
 								db.ticket.setWaitTime(channelId, -1L);
+								if (ErrorResponse.UNKNOWN_MESSAGE.test(failure)) return;
+								log.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 							});
 						} else {
 							// There is human reply
@@ -171,6 +168,7 @@ public class ScheduledCheck {
 					
 				} else {
 					role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
+						if (ErrorResponse.UNKNOWN_MEMBER.test(failure)) return;
 						log.warn("Was unable to remove temporary role '{}' from '{}' during scheduled check.", roleId, userId, failure);
 					});
 					db.tempRole.remove(roleId, userId);

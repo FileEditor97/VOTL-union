@@ -116,6 +116,9 @@ public class InteractionListener extends ListenerAdapter {
 
 	// Check for cooldown parameters, if exists - check if cooldown active, else apply it
 	private void runButtonInteraction(ButtonInteractionEvent event, @Nullable Cooldown cooldown, @NotNull Runnable function) {
+		// Acknowledge interaction
+		event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+
 		if (cooldown != null) {
 			String key = getCooldownKey(cooldown, event);
 			int remaining = bot.getClient().getRemainingCooldown(key);
@@ -132,9 +135,6 @@ public class InteractionListener extends ListenerAdapter {
 	@Override
 	public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 		String[] actions = event.getComponentId().split(":");
-
-		// Acknowledge interaction
-		event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 
 		try {
 			if (actions[0].equals("verify")) {
@@ -280,7 +280,8 @@ public class InteractionListener extends ListenerAdapter {
 				guild.removeRoleFromMember(user, role).reason("Autocheck: No account connected").queue(
 					success -> {
 						user.openPrivateChannel().queue(dm ->
-							dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.verification.role_removed").replace("{server}", guild.getName())).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
+							dm.sendMessage(bot.getLocaleUtil().getLocalized(guild.getLocale(), "bot.verification.role_removed").replace("{server}", guild.getName()))
+								.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER))
 						);
 						bot.getLogger().verify.onUnverified(user, null, guild, "Autocheck: No account connected");
 					}
@@ -747,15 +748,15 @@ public class InteractionListener extends ListenerAdapter {
 				Modal modal = Modal.create("ticket:role_temp:"+channelId, lu.getText(event, "bot.ticketing.listener.temp_time"))
 					.addComponents(rows)
 					.build();
-				String buttonUuid = UUID.randomUUID().toString();
-				Button continueButton = Button.success(buttonUuid, "Continue");
+				String buttonUid = String.valueOf(System.currentTimeMillis());
+				Button continueButton = Button.success(buttonUid, "Continue");
 				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
 					.setDescription(lu.getText(event, "bot.ticketing.listener.temp_continue").formatted(rows.size()))
 					.build()
 				).setActionRow(continueButton).setEphemeral(true).queue(msg -> {
 					waiter.waitForEvent(
 						ButtonInteractionEvent.class,
-						e -> e.getComponentId().equals(buttonUuid),
+						e -> e.getComponentId().equals(buttonUid),
 						buttonEvent -> {
 							buttonEvent.replyModal(modal).queue();
 							msg.delete().queue();
@@ -858,6 +859,7 @@ public class InteractionListener extends ListenerAdapter {
 		// Send message
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event).setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.delete_countdown")).build()).queue(msg -> {
 			bot.getTicketUtil().closeTicket(channelId, event.getUser(), reason, failure -> {
+				if (ErrorResponse.UNKNOWN_CHANNEL.test(failure)) return; // skip if channel aready gone ;(
 				msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed", failure.getMessage())).queue();
 				bot.getAppLogger().error("Couldn't close ticket with channelID: {}", channelId, failure);
 			});

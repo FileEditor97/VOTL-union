@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 import union.App;
+import union.objects.ExpType;
 import union.utils.RandomUtil;
 import union.utils.database.managers.LevelManager;
 
@@ -32,7 +33,7 @@ public class LevelUtil {
 
 	private static final HashSet<PlayerObject> updateQueue = new LinkedHashSet<>();
 
-	private static final long hardCap = Long.MAX_VALUE - 89;
+	private static final long hardCap = (long) Integer.MAX_VALUE*4;
 
 	private static final int maxRandomExperience = 10;
 	private static final int maxGuaranteeMessageExperience = 10;
@@ -78,7 +79,7 @@ public class LevelUtil {
 
 		// If in cache - skip, else give exp and add to it
 		cache.get(asKey(event), (k)->{
-			giveExperience(event.getMember(), RandomUtil.getInteger(maxRandomExperience)+maxGuaranteeMessageExperience);
+			giveExperience(event.getMember(), RandomUtil.getInteger(maxRandomExperience)+maxGuaranteeMessageExperience, ExpType.TEXT);
 			return true;
 		});
 	}
@@ -97,35 +98,35 @@ public class LevelUtil {
 
 		// If in cache - skip, else give exp and add to it
 		cache.get(asKey(member.getGuild(), member), (k)->{
-			giveExperience(member, RandomUtil.getInteger(maxRandomExperience)+maxGuaranteeVoiceExperience);
+			giveExperience(member, RandomUtil.getInteger(maxRandomExperience)+maxGuaranteeVoiceExperience, ExpType.VOICE);
 			return true;
 		});
 	}
 
-	public void giveExperience(@NotNull Member member, int amount) {
-		giveExperience(member, bot.getDBUtil().levels.getPlayer(member.getGuild().getIdLong(), member.getIdLong()), amount);
+	public void giveExperience(@NotNull Member member, int amount, ExpType expType) {
+		giveExperience(member, bot.getDBUtil().levels.getPlayer(member.getGuild().getIdLong(), member.getIdLong()), amount, expType);
 	}
 
-	private void giveExperience(@NotNull Member member, @NotNull LevelManager.PlayerData player, int amount) {
-		int level = getLevelFromExperience(player.getExperience());
+	private void giveExperience(@NotNull Member member, @NotNull LevelManager.PlayerData player, int amount, ExpType expType) {
+		int level = getLevelFromExperience(player.getExperience(expType));
 
-		player.incrementExperienceBy(amount);
+		player.incrementExperienceBy(amount, expType);
 
-		if (player.getExperience() >= getHardCap()-(maxGuaranteeMessageExperience+maxRandomExperience) || player.getExperience() < -1) {
-			player.setExperience(getHardCap());
+		if (player.getExperience(expType) >= getHardCap()-(maxGuaranteeMessageExperience+maxRandomExperience) || player.getExperience(expType) < -1) {
+			player.setExperience(getHardCap(), expType);
 		}
 
 		System.out.println(updateQueue.add(new PlayerObject(member)));
 
-		int newLevel = getLevelFromExperience(player.getExperience());
+		int newLevel = getLevelFromExperience(player.getExperience(expType));
 		if (newLevel > level) {
 			// message
-			bot.getLogger().level.onLevelUp(member, newLevel);
+			bot.getLogger().level.onLevelUp(member, newLevel, expType);
 			// give role
-			Set<Long> roleIds = bot.getDBUtil().levelRoles.getRoles(member.getGuild().getIdLong(), newLevel);
+			Set<Long> roleIds = bot.getDBUtil().levelRoles.getRoles(member.getGuild().getIdLong(), newLevel, expType);
 			if (roleIds.isEmpty()) return;
 
-			Role role = member.getGuild().getRoleById(roleIds.stream().findFirst().orElseThrow());
+			Role role = member.getGuild().getRoleById(roleIds.stream().findFirst().orElseThrow()); // TODO only first roles
 			if (role == null) return;
 
 			member.getGuild().addRoleToMember(member, role).reason("New level: "+newLevel).queue();

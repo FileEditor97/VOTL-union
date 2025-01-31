@@ -15,11 +15,13 @@ import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
+import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.GuildSettingsManager.AnticrashAction;
 import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
 import union.utils.database.managers.LevelManager;
+import union.utils.database.managers.LevelRolesManager;
 import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -619,7 +621,11 @@ public class SetupCmd extends CommandBase {
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "level", lu.getText(path+".level.help"), true)
 					.setRequiredRange(1, 10_000),
-				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true)
+				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
+				new OptionData(OptionType.INTEGER, "type", lu.getText(path+".type.help"), true)
+					.addChoice("ALL", 0)
+					.addChoice("Text levels", 1)
+					.addChoice("Voice levels", 2)
 			);
 			this.subcommandGroup = new SubcommandGroupData("level_roles", lu.getText("bot.guild.setup.level_roles.help"));
 		}
@@ -645,7 +651,9 @@ public class SetupCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().levelRoles.add(event.getGuild().getIdLong(), level, role.getId(), true)) {
+			int typeValue = event.optInteger("type", 0);
+			ExpType type = ExpType.values()[typeValue];
+			if (!bot.getDBUtil().levelRoles.add(event.getGuild().getIdLong(), level, role.getId(), true, type)) {
 				editErrorDatabase(event, "level roles set");
 				return;
 			}
@@ -673,8 +681,7 @@ public class SetupCmd extends CommandBase {
 
 			int level = event.optInteger("level");
 
-			Set<Long> roles = bot.getDBUtil().levelRoles.getRoles(event.getGuild().getIdLong(), level);
-			if (roles.isEmpty()) {
+			if (!bot.getDBUtil().levelRoles.getAllLevels(event.getGuild().getIdLong()).existsAtLevel(level)) {
 				editError(event, path+".empty");
 				return;
 			}
@@ -701,17 +708,33 @@ public class SetupCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 
-			Map<Integer, Set<Long>> data = bot.getDBUtil().levelRoles.getAllLevels(event.getGuild().getIdLong());
+			LevelRolesManager.LevelRoleData data = bot.getDBUtil().levelRoles.getAllLevels(event.getGuild().getIdLong());
 			if (data.isEmpty()) {
 				editError(event, path+".empty");
 				return;
 			}
 
-			StringBuilder response = new StringBuilder();
-			data.forEach((level, roles) -> {
-				response.append("\n> `%5d` - ".formatted(level))
-					.append(roles.stream().map("<@&%s>"::formatted).collect(Collectors.joining(", ")));
-			});
+			StringBuilder response = new StringBuilder("**Text:**");
+			Map<Integer, Set<Long>> allRoles = data.getAllRoles(ExpType.TEXT);
+			if (allRoles.isEmpty()) {
+				response.append("\n*none*");
+			} else {
+				allRoles.forEach((level, roles) -> {
+					response.append("\n> `%5d` - ".formatted(level))
+						.append(roles.stream().map("<@&%s>"::formatted).collect(Collectors.joining(", ")));
+				});
+			}
+			response.append("\n\n**Voice:**");
+			allRoles = data.getAllRoles(ExpType.VOICE);
+			if (allRoles.isEmpty()) {
+				response.append("\n*none*");
+			} else {
+				allRoles.forEach((level, roles) -> {
+					response.append("\n> `%5d` - ".formatted(level))
+						.append(roles.stream().map("<@&%s>"::formatted).collect(Collectors.joining(", ")));
+				});
+			}
+
 
 			editEmbed(event, bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".title"))

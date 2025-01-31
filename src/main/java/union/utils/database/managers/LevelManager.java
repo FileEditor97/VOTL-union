@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import net.dv8tion.jda.api.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import union.objects.ExpType;
 import union.objects.constants.Constants;
 import union.utils.CastUtil;
 import union.utils.FixedCache;
@@ -95,14 +96,14 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	private Map<String, Object> getPlayerData(long guildId, long userId) {
-		return selectOne("SELECT * FROM %s WHERE (guildId=%d AND userId=%d)".formatted(TABLE_PLAYERS, guildId, userId), Set.of("exp", "lastUpdate"));
+		return selectOne("SELECT * FROM %s WHERE (guildId=%d AND userId=%d)".formatted(TABLE_PLAYERS, guildId, userId), Set.of("textExp", "voiceExp", "lastUpdate"));
 	}
 
 	public void updatePlayer(PlayerObject player, PlayerData playerData) {
-		execute("INSERT INTO %s(guildId, userId, exp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET exp=%4$d, globalExp=globalExp+%5$d, lastUpdate=%6$d;"
+		execute("INSERT INTO %s(guildId, userId, textExp, voiceExp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET textExp=%4$d, voiceExp=%4$d, globalExp=globalExp+%6$d, lastUpdate=%7$d;"
 			.formatted(
 				TABLE_PLAYERS, player.guildId, player.userId,
-				playerData.getExperience(), playerData.getAddedGlobalExperience(), playerData.getLastUpdate()
+				playerData.getExperience(ExpType.TEXT), playerData.getExperience(ExpType.VOICE), playerData.getAddedGlobalExperience(), playerData.getLastUpdate()
 			)
 		);
 	}
@@ -119,13 +120,14 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	public long getSumGlobalExp(long userId) {
-		Long data = selectOne("SELECT SUM(globalExp) AS totalExp FROM %s WHERE (userId=%d)".formatted(TABLE_PLAYERS, userId), "totalExp", Long.class);
+		Long data = selectOne("SELECT SUM(globalExp) AS sumGlobalExp FROM %s WHERE (userId=%d)".formatted(TABLE_PLAYERS, userId), "sumGlobalExp", Long.class);
 		return data==null?0:data;
 	}
 
-	public Integer getRankServer(long guildId, long userId) {
-		return selectOne("WITH rankedUsers AS (SELECT userId, guildId, exp, DENSE_RANK() OVER (PARTITION BY guildId ORDER BY exp DESC) AS rank FROM %s) SELECT rank FROM rankedUsers WHERE (guildId=%d AND userId=%d)"
-			.formatted(TABLE_PLAYERS, guildId, userId), "rank", Integer.class);
+	public Integer getRankServer(long guildId, long userId, ExpType expType) {
+		String type = expType==ExpType.TEXT?"text":"voice";
+		return selectOne("WITH rankedUsers AS (SELECT userId, guildId, %s, DENSE_RANK() OVER (PARTITION BY guildId ORDER BY %<s DESC) AS rank FROM %s) SELECT rank FROM rankedUsers WHERE (guildId=%d AND userId=%d)"
+			.formatted(type, TABLE_PLAYERS, guildId, userId), "rank", Integer.class);
 	}
 
 	public Integer getRankGlobal(long userId) {
@@ -173,37 +175,54 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	public static class PlayerData {
-		private long experience = 0;
+		private long textExperience = 0;
+		private long voiceExperience = 0;
 		private long addedGlobalExperience = 0;
 		private long lastUpdate = 0;
 
 		PlayerData(Map<String, Object> data) {
 			if (data != null) {
-				BigInteger exp = new BigInteger(CastUtil.getOrDefault(String.valueOf(data.get("exp")), "0"));
+				BigInteger exp = new BigInteger(CastUtil.getOrDefault(String.valueOf(data.get("textExp")), "0"));
 				if (exp.compareTo(BigInteger.valueOf(LevelUtil.getHardCap())) >= 0) {
-					this.experience = LevelUtil.getHardCap();
+					this.textExperience = LevelUtil.getHardCap();
 				} else {
-					this.experience = exp.longValue();
+					this.textExperience = exp.longValue();
+				}
+				exp = new BigInteger(CastUtil.getOrDefault(String.valueOf(data.get("voiceExp")), "0"));
+				if (exp.compareTo(BigInteger.valueOf(LevelUtil.getHardCap())) >= 0) {
+					this.voiceExperience = LevelUtil.getHardCap();
+				} else {
+					this.voiceExperience = exp.longValue();
 				}
 				this.lastUpdate = getOrDefault(data.get("lastUpdate"), 0L);
 			}
 		}
 
-		public long getExperience() {
-			return experience;
+		public long getExperience(ExpType expType) {
+			return switch (expType) {
+				case TEXT -> textExperience;
+				case VOICE -> voiceExperience;
+				case ALL -> textExperience+voiceExperience;
+			};
 		}
 
 		public long getAddedGlobalExperience() {
 			return addedGlobalExperience;
 		}
 
-		public void setExperience(long experience) {
-			this.experience = experience;
+		public void setExperience(long experience, ExpType expType) {
+			switch (expType) {
+				case TEXT -> textExperience = experience;
+				case VOICE -> voiceExperience = experience;
+			}
 			this.lastUpdate = Instant.now().toEpochMilli();
 		}
 
-		public void incrementExperienceBy(long amount) {
-			this.experience += amount;
+		public void incrementExperienceBy(long amount, ExpType expType) {
+			switch (expType) {
+				case TEXT -> textExperience += amount;
+				case VOICE -> voiceExperience += amount;
+			}
 			this.addedGlobalExperience += amount;
 			this.lastUpdate = Instant.now().toEpochMilli();
 		}

@@ -21,6 +21,7 @@ import union.App;
 import union.base.command.SlashCommandEvent;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
+import union.objects.ExpType;
 import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.objects.logs.MessageData;
@@ -801,13 +802,13 @@ public class LoggingUtil {
 	public class LevelLogs {
 		private final LogType type = LogType.LEVEL;
 
-		public void onLevelUp(Member target, int level) {
+		public void onLevelUp(Member target, int level, ExpType expType) {
 			final Guild guild = target.getGuild();
 
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;
 			try {
-				client.sendMessageEmbeds(logUtil.levelUp(guild.getLocale(), target, level)).setAllowedMentions(List.of()).queue();
+				client.sendMessageEmbeds(logUtil.levelUp(guild.getLocale(), target, level, expType)).setAllowedMentions(List.of()).queue();
 			} catch (Exception ignored) {}
 		}
 	}

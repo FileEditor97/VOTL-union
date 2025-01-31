@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import union.objects.CmdModule;
+import union.objects.ExpType;
 import union.objects.constants.Constants;
 import union.objects.logs.LogEvent;
 import union.objects.logs.MessageData;
@@ -1253,12 +1254,13 @@ public class LogEmbedUtil {
 
 	// Level
 	@NotNull
-	public MessageEmbed levelUp(DiscordLocale locale, Member member, int level) {
+	public MessageEmbed levelUp(DiscordLocale locale, Member member, int level, ExpType expType) {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon(LogEvent.LEVEL_UP, member.getEffectiveAvatarUrl(), member.getUser().getName())
 			.setDescription(lu.getLocalizedRandom(locale, "logger.level.msg_random")
 				.replace("{user}", member.getAsMention())
-				.replace("{level}", String.valueOf(level)))
+				.replace("{level}", String.valueOf(level))
+				.replace("{type}", lu.getLocalized(locale, "logger.level."+expType.name().toLowerCase())))
 			.build();
 	}
 

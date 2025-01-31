@@ -378,7 +378,9 @@
 				"\uD83C\uDF1F You just reached **Level {level}** {user}! Congrats \uD83C\uDF1F",
 				"You're on \uD83D\uDD25 {user}, you've just reached **Level {level}**",
 				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **Level {level}**"
-			]
+			],
+			"text": "text level",
+			"voice": "voice level"
 		},
 		"other": {
 			"name": "Audit logs (not used!)",

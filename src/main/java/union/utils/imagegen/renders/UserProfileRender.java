@@ -8,7 +8,6 @@ import union.objects.CmdAccessLevel;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.imagegen.Fonts;
-import union.utils.imagegen.PlayerRank;
 import union.utils.imagegen.UserBackground;
 import union.utils.imagegen.UserRankColor;
 import union.utils.message.MessageUtil;
@@ -23,7 +22,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserProfileRender extends Renderer {
@@ -34,13 +32,13 @@ public class UserProfileRender extends Renderer {
 	private UserRankColor rankColor = UserRankColor.gray;
 
 	private long textLevel = -1;
-	private long textExperience = -1;
+	private long textLevelExperience = -1;
 	private long textMaxXpInLevel = -1;
 	private double textPercentage = -1;
 	private String textRank = null;
 
 	private long voiceLevel = -1;
-	private long voiceExperience = -1;
+	private long voiceLevelExperience = -1;
 	private long voiceMaxXpInLevel = -1;
 	private double voicePercentage = -1;
 	private String voiceRank = null;
@@ -48,7 +46,7 @@ public class UserProfileRender extends Renderer {
 	private long globalExperience = -1;
 
 	private List<PlayerInfo> playerData;
-	private final List<String> badges = new ArrayList<>();
+	//private final List<String> badges = new ArrayList<>();
 
 	private LocaleUtil lu;
 	private DiscordLocale locale;
@@ -85,8 +83,8 @@ public class UserProfileRender extends Renderer {
 			case MOD, HELPER -> UserRankColor.blue;
 			default -> UserRankColor.gray;
 		};
-		if (accessLevel == CmdAccessLevel.MOD)
-			badges.add("\uD83D\uDEE1️");
+//		if (accessLevel == CmdAccessLevel.MOD)
+//			badges.add("\uD83D\uDEE1️");
 		return this;
 	}
 
@@ -102,9 +100,9 @@ public class UserProfileRender extends Renderer {
 		return this;
 	}
 
-	public UserProfileRender setExperience(long textExperience, long voiceExperience) {
-		this.textExperience = textExperience;
-		this.voiceExperience = voiceExperience;
+	public UserProfileRender setCurrentLevelExperience(long textExperience, long voiceExperience) {
+		this.textLevelExperience = textExperience;
+		this.voiceLevelExperience = voiceExperience;
 		return this;
 	}
 
@@ -149,7 +147,7 @@ public class UserProfileRender extends Renderer {
 
 		createUserInfo(g);
 		createPlayerData(g);
-		createBadges(g);
+		//createBadges(g);
 
 		createXpBar(g);
 		createLevelAndRank(g);
@@ -309,46 +307,46 @@ public class UserProfileRender extends Renderer {
 		}
 	}
 
-	private void createBadges(Graphics2D g) {
-		List<String> rankBadges = PlayerRank.getEmojiFromPlayerData(playerData);
-		if (rankBadges.isEmpty() && badges.isEmpty()) return;
-
-		int x = 40;
-		int y = 210;
-		g.setFont(Fonts.NotoEmoji.monochrome.deriveFont(Font.PLAIN, 32F));
-		// Card
-		g.setColor(background.getColors().getCardColor());
-		FontMetrics fontMetrics = g.getFontMetrics();
-		g.fillRoundRect(
-			x-10, y-36,
-			(rankBadges.size()+badges.size())*50+10,
-			fontMetrics.getHeight()+14,
-			30, 30
-		);
-
-		g.setColor(background.getColors().getMainTextColor());
-
-		// Ranks
-		for (String emoji : rankBadges) {
-			g.setColor(background.getColors().getShadowColor());
-			g.drawString(emoji, x+2, y+2);
-			g.setColor(background.getColors().getMainTextColor());
-			g.drawString(emoji, x, y);
-			x += 50;
-		}
-		// Discord badges
-		for (String emoji : badges) {
-			g.setColor(background.getColors().getShadowColor());
-			g.drawString(emoji, x+2, y+2);
-			g.setColor(background.getColors().getMainTextColor());
-			g.drawString(emoji, x, y);
-			//x += 50;
-		}
-	}
+//	private void createBadges(Graphics2D g) {
+//		List<String> rankBadges = PlayerRank.getEmojiFromPlayerData(playerData);
+//		if (rankBadges.isEmpty() && badges.isEmpty()) return;
+//
+//		int x = 40;
+//		int y = 210;
+//		g.setFont(Fonts.NotoEmoji.monochrome.deriveFont(Font.PLAIN, 32F));
+//		// Card
+//		g.setColor(background.getColors().getCardColor());
+//		FontMetrics fontMetrics = g.getFontMetrics();
+//		g.fillRoundRect(
+//			x-10, y-36,
+//			(rankBadges.size()+badges.size())*50+10,
+//			fontMetrics.getHeight()+14,
+//			30, 30
+//		);
+//
+//		g.setColor(background.getColors().getMainTextColor());
+//
+//		// Ranks
+//		for (String emoji : rankBadges) {
+//			g.setColor(background.getColors().getShadowColor());
+//			g.drawString(emoji, x+2, y+2);
+//			g.setColor(background.getColors().getMainTextColor());
+//			g.drawString(emoji, x, y);
+//			x += 50;
+//		}
+//		// Discord badges
+//		for (String emoji : badges) {
+//			g.setColor(background.getColors().getShadowColor());
+//			g.drawString(emoji, x+2, y+2);
+//			g.setColor(background.getColors().getMainTextColor());
+//			g.drawString(emoji, x, y);
+//			//x += 50;
+//		}
+//	}
 
 	private void createXpBar(Graphics2D g) {
-		final String textXpBarText = String.format("%s / %s xp", textExperience, textMaxXpInLevel);
-		final String voiceXpBarText = String.format("%s / %s xp", voiceExperience, voiceMaxXpInLevel);
+		final String textXpBarText = formatXp(textLevelExperience, textMaxXpInLevel);
+		final String voiceXpBarText = formatXp(voiceLevelExperience, voiceMaxXpInLevel);
 
 		final int xpBarLength = 390;
 		final int hightDiff = 75; // between both bars
@@ -364,10 +362,10 @@ public class UserProfileRender extends Renderer {
 		g.fillRect(startX+5, startY+15, (int) Math.min(xpBarLength - 10, (xpBarLength - 10) * (textPercentage / 100)), 40);
 		g.fillRect(startX+5, startY+15+hightDiff, (int) Math.min(xpBarLength - 10, (xpBarLength - 10) * (voicePercentage / 100)), 40);
 
-		// Create a 5 pixel width bar that's just at the end of our "current xp bar"
+		// Create a 3 pixel width bar that's just at the end of our "current xp bar"
 		g.setColor(background.getColors().getExperienceSeparatorColor());
-		g.fillRect(startX+5+ (int) Math.min(xpBarLength - 10, (xpBarLength - 10) * (textPercentage / 100)), startY+15, 5, 40);
-		g.fillRect(startX+5+ (int) Math.min(xpBarLength - 10, (xpBarLength - 10) * (voicePercentage / 100)), startY+15+hightDiff, 5, 40);
+		g.fillRect(startX+5+ (int) Math.min(xpBarLength - 10, (xpBarLength - 10) * (textPercentage / 100)), startY+15, 3, 40);
+		g.fillRect(startX+5+ (int) Math.min(xpBarLength - 10, (xpBarLength - 10) * (voicePercentage / 100)), startY+15+hightDiff, 3, 40);
 
 		// Create the text that should be displayed in the middle of the XP bar
 		g.setColor(background.getColors().getExperienceTextColor());
@@ -403,30 +401,30 @@ public class UserProfileRender extends Renderer {
 		// Level text
 		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 16));
 
-		g.drawString("lvl", startX+110, startY+42);
-		g.drawString("lvl", startX+110, startY+42+hightDiff);
+		g.drawString("lvl", startX+96, startY+40);
+		g.drawString("lvl", startX+96, startY+40+hightDiff);
 
 		// Level number
-		g.setFont(Fonts.Montserrat.extraBold.deriveFont(Font.PLAIN, 32));
+		g.setFont(Fonts.Montserrat.extraBold.deriveFont(Font.PLAIN, 28));
 
 		FontMetrics infoTextGraphicsFontMetricsBold = g.getFontMetrics();
-		text = MessageUtil.formatNumber(textLevel);
-		g.drawString(text, startX+100-infoTextGraphicsFontMetricsBold.stringWidth(text), startY+42);
-		text = MessageUtil.formatNumber(voiceLevel);
-		g.drawString(text, startX+100-infoTextGraphicsFontMetricsBold.stringWidth(text), startY+42+hightDiff);
+		text = String.valueOf(textLevel);
+		g.drawString(text, startX+90-infoTextGraphicsFontMetricsBold.stringWidth(text), startY+40);
+		text = String.valueOf(voiceLevel);
+		g.drawString(text, startX+90-infoTextGraphicsFontMetricsBold.stringWidth(text), startY+40+hightDiff);
 
 		// Create Score Text
 		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 16));
-		g.drawString("#", startX+290, startY+42);
-		g.drawString("#", startX+290, startY+42+hightDiff);
-		g.setFont(Fonts.Montserrat.extraBold.deriveFont(Font.PLAIN, 32));
-		g.drawString(textRank, startX+310, startY+42);
-		g.drawString(voiceRank, startX+310, startY+42+hightDiff);
+		g.drawString("#", startX+290, startY+40);
+		g.drawString("#", startX+290, startY+40+hightDiff);
+		g.setFont(Fonts.Montserrat.extraBold.deriveFont(Font.PLAIN, 28));
+		g.drawString(textRank, startX+305, startY+40);
+		g.drawString(voiceRank, startX+305, startY+40+hightDiff);
 	}
 
 	private void createXpText(Graphics2D g) {
 		String text = lu.getLocalized(locale, "imagegen.profile.global_xp")+":";
-		String number = MessageUtil.formatNumber(globalExperience);
+		String number = String.valueOf(globalExperience);
 
 		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F));
 		FontMetrics fontMetrics = g.getFontMetrics(g.getFont());
@@ -450,6 +448,14 @@ public class UserProfileRender extends Renderer {
 		g.drawString(text, x+2, y+2);
 		g.setColor(background.getColors().getSecondaryTextColor());
 		g.drawString(text, x, y);
+	}
+
+	private String formatXp(long currentLevelXp, long maxXpInLevel) {
+		if (String.valueOf(currentLevelXp).length()+String.valueOf(maxXpInLevel).length() > 8) {
+			return "%s xp".formatted(currentLevelXp);
+		} else {
+			return "%s / %s xp".formatted(currentLevelXp, maxXpInLevel);
+		}
 	}
 
 	private List<GridData> gridPattern(int count) {

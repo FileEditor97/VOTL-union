@@ -101,7 +101,7 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	public void updatePlayer(PlayerObject player, PlayerData playerData) {
-		execute("INSERT INTO %s(guildId, userId, textExp, voiceExp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET textExp=%4$d, voiceExp=%4$d, globalExp=globalExp+%6$d, lastUpdate=%7$d;"
+		execute("INSERT INTO %s(guildId, userId, textExp, voiceExp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET textExp=%4$d, voiceExp=%5$d, globalExp=globalExp+%6$d, lastUpdate=%7$d;"
 			.formatted(
 				TABLE_PLAYERS, player.guildId, player.userId,
 				playerData.getExperience(ExpType.TEXT), playerData.getExperience(ExpType.VOICE), playerData.getAddedGlobalExperience(), playerData.getLastUpdate()

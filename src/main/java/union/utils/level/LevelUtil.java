@@ -116,8 +116,6 @@ public class LevelUtil {
 			player.setExperience(getHardCap(), expType);
 		}
 
-		System.out.println(updateQueue.add(new PlayerObject(member)));
-
 		int newLevel = getLevelFromExperience(player.getExperience(expType));
 		if (newLevel > level) {
 			// message

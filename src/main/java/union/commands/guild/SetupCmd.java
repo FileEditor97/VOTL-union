@@ -804,12 +804,18 @@ public class SetupCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
 
-			GuildChannel channel = event.optMentions("channel").getChannels().get(0);
-			long channelId = channel!=null ? channel.getIdLong() : event.optLong("channel");
-
-			if (channel!=null && !channel.getGuild().equals(event.getGuild())) {
-				editError(event, path+".invalid_args");
-				return;
+			GuildChannel channel = null;
+			long channelId;
+			try {
+				channel = event.optMentions("channel").getChannels().get(0);
+				channelId = channel.getIdLong();
+			} catch (Exception ex) {
+				try {
+					channelId = event.optLong("channel");
+				} catch (Exception ex2) {
+					editError(event, path+".invalid_args");
+					return;
+				}
 			}
 
 			LevelManager.LevelSettings settings = bot.getDBUtil().levels.getSettings(event.getGuild());

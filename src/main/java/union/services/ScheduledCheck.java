@@ -27,7 +27,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.UserSnowflake;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
@@ -422,6 +421,7 @@ public class ScheduledCheck {
 		try {
 			// level data
 			Iterator<PlayerObject> itr = bot.getLevelUtil().getUpdateQueue().iterator();
+			int updatedCount = 0;
 			while (itr.hasNext()) {
 				PlayerObject player = itr.next();
 				LevelManager.PlayerData playerData = db.levels.getPlayer(player);
@@ -429,7 +429,9 @@ public class ScheduledCheck {
 
 				db.levels.updatePlayer(player, playerData);
 				itr.remove();
+				updatedCount++;
 			}
+			if (updatedCount != 0) log.debug("Updated data for {} players", updatedCount);
 		} catch (Throwable t) {
 			log.error("Exception caught during DB queue update.", t);
 		}

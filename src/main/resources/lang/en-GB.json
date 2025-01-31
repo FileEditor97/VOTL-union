@@ -843,7 +843,7 @@
 					"view": {
 						"help": "View all levels",
 						"usage": "level_roles view",
-						"no_roles": "No roles set.",
+						"empty": "No roles set.",
 						"title": "Level roles"
 					}
 				},
@@ -879,7 +879,7 @@
 					"view": {
 						"help": "View all exemptions",
 						"usage": "level_exempt view",
-						"no_roles": "No exemptions set.",
+						"empty": "No exemptions set.",
 						"title": "Exempt channels"
 					}
 				}

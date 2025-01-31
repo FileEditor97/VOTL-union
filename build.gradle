@@ -21,7 +21,7 @@ repositories {
 dependencies {
 	// JDA library and additions
 	// https://mvnrepository.com/artifact/net.dv8tion/JDA
-	implementation('net.dv8tion:JDA:5.2.2') {						// JDA library
+	implementation('net.dv8tion:JDA:5.2.3') {						// JDA library
 		exclude module: 'opus-java'
 	}
 	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
@@ -51,7 +51,7 @@ dependencies {
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
-	implementation 'org.apache.groovy:groovy:4.0.24'				// Groovy - code evaluation
+	implementation 'org.apache.groovy:groovy:4.0.25'				// Groovy - code evaluation
 }
 
 // jar's Manifest

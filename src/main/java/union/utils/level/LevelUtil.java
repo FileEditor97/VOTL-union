@@ -96,11 +96,7 @@ public class LevelUtil {
 			return;
 		}
 
-		// If in cache - skip, else give exp and add to it
-		cache.get(asKey(member.getGuild(), member), (k)->{
-			giveExperience(member, RandomUtil.getInteger(maxRandomExperience)+maxGuaranteeVoiceExperience, ExpType.VOICE);
-			return true;
-		});
+		giveExperience(member, RandomUtil.getInteger(maxRandomExperience)+maxGuaranteeVoiceExperience, ExpType.VOICE);
 	}
 
 	public void giveExperience(@NotNull Member member, int amount, ExpType expType) {
@@ -115,6 +111,8 @@ public class LevelUtil {
 		if (player.getExperience(expType) >= getHardCap()-(maxGuaranteeMessageExperience+maxRandomExperience) || player.getExperience(expType) < -1) {
 			player.setExperience(getHardCap(), expType);
 		}
+
+		updateQueue.add(new PlayerObject(member)); // Add to update queue
 
 		int newLevel = getLevelFromExperience(player.getExperience(expType));
 		if (newLevel > level) {

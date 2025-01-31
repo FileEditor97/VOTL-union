@@ -10,7 +10,6 @@ import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
-import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
@@ -39,7 +38,6 @@ public class UserProfileCmd extends CommandBase {
 		);
 		this.cooldown = 120;
 		this.cooldownScope = CooldownScope.USER;
-		this.accessLevel = CmdAccessLevel.HELPER;
 	}
 
 	@Override

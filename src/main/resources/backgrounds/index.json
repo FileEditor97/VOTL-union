@@ -7,7 +7,10 @@
       "colors": {
         "background": "#2f3136",
         "mainText": "#e2e2e5d9",
-        "secondaryText": "#a6a6a6d9"
+        "secondaryText": "#a6a6a6d9",
+        "experienceBackground": "#2022253c",
+        "experienceForeground": "#7289da50",
+        "experienceSeparator": "#6d83d050"
       }
     },
     {
@@ -17,7 +20,11 @@
       "colors": {
         "background": "#f3f3f3",
         "mainText": "#2a2a2acc",
-        "secondaryText": "#626262cc"
+        "secondaryText": "#626262cc",
+        "experienceText": "#f3f3f3",
+        "experienceBackground": "#747f8d50",
+        "experienceForeground": "#7289da50",
+        "experienceSeparator": "#6d83d050"
       }
     },
     {

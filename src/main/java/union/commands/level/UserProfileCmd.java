@@ -12,6 +12,7 @@ import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
+import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
 import union.utils.SteamUtil;
 import union.utils.database.managers.LevelManager;
@@ -20,7 +21,6 @@ import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.UserBackground;
 import union.utils.imagegen.UserBackgroundHandler;
 import union.utils.imagegen.renders.UserProfileRender;
-import union.utils.message.MessageUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -100,24 +100,36 @@ public class UserProfileCmd extends CommandBase {
 
 		// Experience
 		LevelManager.PlayerData playerData = bot.getDBUtil().levels.getPlayer(guildId, userId);
-		long experience = playerData.getExperience();
 
-		int level = bot.getLevelUtil().getLevelFromExperience(experience);
-		long minXpInLevel = bot.getLevelUtil().getExperienceFromLevel(level);
+		long textExp = playerData.getExperience(ExpType.TEXT);
+		long voiceExp = playerData.getExperience(ExpType.VOICE);
 
-		long maxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(level + 1);
-		double percentage = ((double) (experience - minXpInLevel) / (maxXpInLevel - minXpInLevel)) * 100;
+		int textLevel = bot.getLevelUtil().getLevelFromExperience(textExp);
+		int voiceLevel = bot.getLevelUtil().getLevelFromExperience(textExp);
 
-		long totalExperience = bot.getDBUtil().levels.getSumGlobalExp(userId);
-		Integer rank = bot.getDBUtil().levels.getRankServer(guildId, userId);
+		long textMinXpInLevel = bot.getLevelUtil().getExperienceFromLevel(textLevel);
+		long voiceMinXpInLevel = bot.getLevelUtil().getExperienceFromLevel(voiceLevel);
 
-		render.setLevel(MessageUtil.formatNumber(level))
-			.setServerExperience(MessageUtil.formatNumber(experience))
-			.setGlobalExperience(MessageUtil.formatNumber(totalExperience))
-			.setMinXpInLevel(MessageUtil.formatNumber(minXpInLevel))
-			.setMaxXpInLevel(MessageUtil.formatNumber(maxXpInLevel))
-			.setPercentage(percentage)
-			.setServerRank(rank==null?"-":String.valueOf(rank));
+		long textMaxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(textLevel + 1);
+		long voiceMaxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(voiceLevel + 1);
+
+		Integer textRank = bot.getDBUtil().levels.getRankServer(guildId, userId, ExpType.TEXT);
+		Integer voiceRank = bot.getDBUtil().levels.getRankServer(guildId, userId, ExpType.VOICE);
+
+		long globalExperience = bot.getDBUtil().levels.getSumGlobalExp(userId);
+
+		render.setLevel(textLevel, voiceLevel)
+			.setExperience(textExp, voiceExp)
+			.setMaxXpInLevel(textMaxXpInLevel, voiceMaxXpInLevel)
+			.setPercentage(
+				((double) (textExp - textMinXpInLevel) / (textMaxXpInLevel - textMinXpInLevel)) * 100,
+				((double) (voiceExp - voiceMinXpInLevel) / (voiceMaxXpInLevel - voiceMinXpInLevel)) * 100
+			)
+			.setServerRank(
+				textRank==null?"-":String.valueOf(textRank),
+				voiceRank==null?"-":String.valueOf(voiceRank)
+			)
+			.setGlobalExperience(globalExperience);
 
 		// Send
 		final String attachmentName = EncodingUtil.encodeUserBg(guildId, userId);

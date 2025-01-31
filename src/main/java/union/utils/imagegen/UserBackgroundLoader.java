@@ -30,19 +30,24 @@ public class UserBackgroundLoader {
 		colors.setMainTextColor(loadColorFromString("mainText"));
 		colors.setSecondaryTextColor(loadColorFromString("secondaryText"));
 
+		colors.setExperienceTextColor(loadColorFromString("experienceText"));
+		colors.setExperienceBackgroundColor(loadColorFromString("experienceBackground"));
+		colors.setExperienceForegroundColor(loadColorFromString("experienceForeground"));
+		colors.setExperienceSeparatorColor(loadColorFromString("experienceSeparator"));
+
 		return colors;
 	}
 
 	// Formats
 	//  #ffffff - without alpha
-	//  #ffffff05 - with alpha 5
+	//  #ffffffa5 - with alpha a5
 	private Color loadColorFromString(String key) {
 		if (!colorData.has(key))
 			return null;
 		String input = colorData.getString(key);
 		if (input.startsWith("#") && input.length() > 7) {
 			int alpha = Integer.parseInt(input.substring(7,9), 16);
-			return ColorUtil.decode(input.substring(0,7), alpha);
+			return ColorUtil.decodeHex(input.substring(0,7), alpha);
 		}
 		return ColorUtil.decode(input);
 	}

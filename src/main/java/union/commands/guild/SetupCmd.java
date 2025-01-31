@@ -557,8 +557,8 @@ public class SetupCmd extends CommandBase {
 			this.name = "levels";
 			this.path = "bot.guild.setup.levels";
 			this.options = List.of(
-				new OptionData(OptionType.BOOLEAN, "enabled", lu.getText(path+".enabled.help")),
-				new OptionData(OptionType.BOOLEAN, "voice_enabled", lu.getText(path+".voice_enabled.help"))
+				new OptionData(OptionType.BOOLEAN, "enable", lu.getText(path+".enable.help")),
+				new OptionData(OptionType.BOOLEAN, "voice_enable", lu.getText(path+".voice_enable.help"))
 			);
 		}
 
@@ -582,8 +582,8 @@ public class SetupCmd extends CommandBase {
 			} else {
 				event.deferReply().queue();
 				// Edit settings
-				if (event.hasOption("enabled")) {
-					final boolean enabled = event.optBoolean("enabled");
+				if (event.hasOption("enable")) {
+					final boolean enabled = event.optBoolean("enable");
 
 					if (bot.getDBUtil().levels.setEnabled(event.getGuild().getIdLong(), enabled)) {
 						editErrorDatabase(event, "leveling settings set enabled");
@@ -591,8 +591,8 @@ public class SetupCmd extends CommandBase {
 					}
 					response.append(lu.getText(event, path+".changed_enabled").formatted(enabled ? Constants.SUCCESS : Constants.FAILURE));
 				}
-				if (event.hasOption("voice_enabled")) {
-					final boolean enabled = event.optBoolean("voice_enabled");
+				if (event.hasOption("voice_enable")) {
+					final boolean enabled = event.optBoolean("voice_enable");
 
 					if (bot.getDBUtil().levels.setEnabledVoice(event.getGuild().getIdLong(), enabled)) {
 						editErrorDatabase(event, "leveling settings set voice enabled");
@@ -867,19 +867,14 @@ public class SetupCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Set<Long> channelIds = bot.getDBUtil().levels.getSettings(event.getGuild()).getExemptChannels();
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
+				.setTitle(lu.getText(path+".title"));
 			if (channelIds.isEmpty()) {
-				editError(event, path+".empty");
-				return;
+				builder.setDescription(lu.getText(event, path+".empty"));
+			} else {
+				channelIds.forEach(id -> builder.appendDescription("<#%s> (%<s)\n".formatted(id)));
 			}
-
-			StringBuilder response = new StringBuilder();
-			channelIds.forEach(id -> response.append("\n> <#%s> `%<s`".formatted(id)));
-
-			editEmbed(event, bot.getEmbedUtil().getEmbed()
-				.setTitle(lu.getText(event, path+".title"))
-				.setDescription(response.toString())
-				.build()
-			);
+			editEmbed(event, builder.build());
 		}
 	}
 

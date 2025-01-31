@@ -81,9 +81,8 @@
 		"profile": {
 			"time_full": "Time: %d hours",
 			"time_short": "%dh",
-			"rank": "Rank: %s",
-			"level": "LEVEL",
-			"server_xp": "Server XP",
+			"text": "TEXT",
+			"voice": "VOICE",
 			"global_xp": "Global XP"
 		}
 	},
@@ -370,17 +369,18 @@
 			"bot_not_allowed": "Bot is not in the whitelist",
 			"bad_user": "Blacklisted user joined %s and was banned"
 		},
-		"level": {
+		"levels": {
+			"name": "Leveling logs",
 			"level_up": "Level up!",
 			"msg_random": [
-				"GG {user}, you just reached **Level {level}**",
-				"Eyy {user}, you just leveled up! You're now **Level {level}**",
-				"\uD83C\uDF1F You just reached **Level {level}** {user}! Congrats \uD83C\uDF1F",
-				"You're on \uD83D\uDD25 {user}, you've just reached **Level {level}**",
-				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **Level {level}**"
+				"GG {user}, you just reached **{type} {level}**",
+				"Eyy {user}, you just leveled up! You're now **{type} {level}**",
+				"\uD83C\uDF1F You just reached **{type} {level}** {user}! Congrats \uD83C\uDF1F",
+				"You're on \uD83D\uDD25 {user}, you've just reached **{type} {level}**",
+				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **{type} {level}**"
 			],
-			"text": "text level",
-			"voice": "voice level"
+			"text": "Text level",
+			"voice": "Voice level"
 		},
 		"other": {
 			"name": "Audit logs (not used!)",
@@ -795,28 +795,36 @@
 				},
 				"levels": {
 					"help": "Manage leveling settings (to view settings - don't select options)",
-					"usage": "levels [enabled?] [voice enabled?]",
-					"enabled": {
-						"name": "enabled",
+					"usage": "levels [enable?] [voice enable?]",
+					"enable": {
+						"name": "enable",
 						"help": "Enable leveling in this server"
+					},
+					"voice_enable": {
+						"name": "voice_enable",
+						"help": "Enable levels for voice activity"
 					},
 					"embed_view": "**Leveling settings**",
 					"embed_changes": "**Updated leveling settings**",
 					"changed_enabled": "\n> Enabled: %s",
-					"voice_enabled": "\n> Voice activity xp enabled: %s"
+					"changed_voice": "\n> Voice activity xp enabled: %s"
 				},
 				"level_roles": {
 					"help": "Manage leveling roles",
 					"set": {
 						"help": "Set role for achieved level",
-						"usage": "level_roles set <role> <@Role>",
+						"usage": "level_roles set <level> <@Role>",
 						"level": {
 							"name": "level",
-							"help": "At which level to assign this roles"
+							"help": "At which level to assign those roles"
 						},
 						"role": {
 							"name": "role",
 							"help": "Select role"
+						},
+						"type": {
+							"name": "type",
+							"help": "For which type of level to assign those roles"
 						},
 						"invalid_args": "You haven't selected any role.",
 						"incorrect_role": "Selected role can't be used.",
@@ -841,9 +849,9 @@
 				},
 				"level_exempt": {
 					"help": "Manage exempt channels for leveling",
-					"set": {
+					"add": {
 						"help": "Add channel to leveling exemption",
-						"usage": "level_exempt set <#Channel>",
+						"usage": "level_exempt add <#Channel>",
 						"channel": {
 							"name": "channel",
 							"help": "Select channel"
@@ -854,7 +862,7 @@
 						"done": "Channel %s added to exemption."
 					},
 					"remove": {
-						"help": "Remove channel to leveling exemption",
+						"help": "Remove channel from leveling exemption",
 						"usage": "level_exempt remove <#Channel>",
 						"channel": {
 							"name": "channel",

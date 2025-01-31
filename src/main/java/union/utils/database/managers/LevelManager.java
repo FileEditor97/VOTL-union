@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import static union.utils.CastUtil.*;
 
+@SuppressWarnings("unused")
 public class LevelManager extends LiteDBBase {
 	private final String TABLE_SETTINGS = "levelSettings";
 	private final String TABLE_PLAYERS = "levelPlayers";
@@ -125,7 +126,7 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	public Integer getRankServer(long guildId, long userId, ExpType expType) {
-		String type = expType==ExpType.TEXT?"text":"voice";
+		String type = expType==ExpType.TEXT?"textExp":"voiceExp";
 		return selectOne("WITH rankedUsers AS (SELECT userId, guildId, %s, DENSE_RANK() OVER (PARTITION BY guildId ORDER BY %<s DESC) AS rank FROM %s) SELECT rank FROM rankedUsers WHERE (guildId=%d AND userId=%d)"
 			.formatted(type, TABLE_PLAYERS, guildId, userId), "rank", Integer.class);
 	}

@@ -102,6 +102,10 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
+	public void sendErrorLive(IReplyCallback event, String path) {
+		event.replyEmbeds(bot.getEmbedUtil().getError(event, path)).setEphemeral(true).queue();
+	}
+
 	public void sendError(IReplyCallback event, String path) {
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, path)).setEphemeral(true).queue();
 	}
@@ -188,12 +192,12 @@ public class InteractionListener extends ListenerAdapter {
 				}
 				case "voice" -> {
 					if (!event.getMember().getVoiceState().inAudioChannel()) {
-						sendError(event, "bot.voice.listener.not_in_voice");
+						sendErrorLive(event, "bot.voice.listener.not_in_voice");
 						return;
 					}
 					Long channelId = db.voice.getChannel(event.getUser().getIdLong());
 					if (channelId == null) {
-						sendError(event, "errors.no_channel");
+						sendErrorLive(event, "errors.no_channel");
 						return;
 					}
 					VoiceChannel vc = event.getGuild().getVoiceChannelById(channelId);

@@ -585,7 +585,7 @@ public class SetupCmd extends CommandBase {
 				if (event.hasOption("enable")) {
 					final boolean enabled = event.optBoolean("enable");
 
-					if (bot.getDBUtil().levels.setEnabled(event.getGuild().getIdLong(), enabled)) {
+					if (!bot.getDBUtil().levels.setEnabled(event.getGuild().getIdLong(), enabled)) {
 						editErrorDatabase(event, "leveling settings set enabled");
 						return;
 					}
@@ -594,7 +594,7 @@ public class SetupCmd extends CommandBase {
 				if (event.hasOption("voice_enable")) {
 					final boolean enabled = event.optBoolean("voice_enable");
 
-					if (bot.getDBUtil().levels.setEnabledVoice(event.getGuild().getIdLong(), enabled)) {
+					if (!bot.getDBUtil().levels.setEnabledVoice(event.getGuild().getIdLong(), enabled)) {
 						editErrorDatabase(event, "leveling settings set voice enabled");
 						return;
 					}

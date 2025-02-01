@@ -1257,10 +1257,11 @@ public class LogEmbedUtil {
 	public MessageEmbed levelUp(DiscordLocale locale, Member member, int level, ExpType expType) {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon(LogEvent.LEVEL_UP, member.getEffectiveAvatarUrl(), member.getUser().getName())
-			.setDescription(lu.getLocalizedRandom(locale, "logger.levels.msg_random")
+			.setTitle(lu.getLocalizedRandom(locale, "logger.levels.msg_random")
 				.replace("{user}", member.getAsMention())
 				.replace("{level}", String.valueOf(level))
-				.replace("{type}", lu.getLocalized(locale, "logger.levels."+expType.name().toLowerCase())))
+				.replace("{type}", expType.equals(ExpType.TEXT) ? "\uD83D\uDCAC" : "\uD83C\uDF99️")
+			)
 			.build();
 	}
 

@@ -373,14 +373,12 @@
 			"name": "Leveling logs",
 			"level_up": "Level up!",
 			"msg_random": [
-				"GG {user}, you just reached **{type} {level}**",
-				"Eyy {user}, you just leveled up! You're now **{type} {level}**",
-				"\uD83C\uDF1F You just reached **{type} {level}** {user}! Congrats \uD83C\uDF1F",
-				"You're on \uD83D\uDD25 {user}, you've just reached **{type} {level}**",
-				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **{type} {level}**"
-			],
-			"text": "Text level",
-			"voice": "Voice level"
+				"GG {user}, you just reached **{type} Level {level}**",
+				"Eyy {user}, you just leveled up! You're now **{type} Level {level}**",
+				"\uD83C\uDF1F You just reached **{type} Level {level}** {user}! Congrats \uD83C\uDF1F",
+				"You're on \uD83D\uDD25 {user}, you've just reached **{type} Level {level}**",
+				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **{type} Level {level}**"
+			]
 		},
 		"other": {
 			"name": "Audit logs (not used!)",
@@ -3202,10 +3200,14 @@
 			},
 			"leaderboard": {
 				"help": "View levels leaderboard",
-				"usage": "leaderboard",
+				"usage": "leaderboard [type]",
+				"type": {
+					"name": "type",
+					"help": "The leaderboard type"
+				},
 				"embed_title": "Server Exp Leaderboards",
-				"top_text": "TOP %s TEXT",
-				"top_voice": "TOP %s VOICE",
+				"top_text": "TOP %s TEXT \uD83D\uDCAC",
+				"top_voice": "TOP %s VOICE \uD83C\uDF99\uFE0F",
 				"empty": "*Empty...*"
 			}
 		}

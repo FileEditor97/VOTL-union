@@ -172,7 +172,7 @@ public class LevelManager extends LiteDBBase {
 			keys.add("textExp");
 			keys.add("textRank");
 		}
-		if (fetchText) {
+		if (fetchVoice) {
 			keys.add("voiceExp");
 			keys.add("voiceRank");
 		}

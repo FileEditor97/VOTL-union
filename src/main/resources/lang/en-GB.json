@@ -98,7 +98,7 @@
 		"roles": "Role management",
 		"strikes": "Strike punishments",
 		"games": "Games",
-		"level": "Leveling",
+		"levels": "Leveling",
 		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {

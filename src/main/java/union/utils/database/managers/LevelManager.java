@@ -120,7 +120,7 @@ public class LevelManager extends LiteDBBase {
 
 	public Integer getServerRank(long guildId, long userId, ExpType expType) {
 		String type = expType==ExpType.TEXT?"textExp":"voiceExp";
-		return selectOne("WITH rankedUsers AS (SELECT userId, guildId, %s, DENSE_RANK() OVER (PARTITION BY guildId ORDER BY %<s DESC) AS rank FROM %s) SELECT rank FROM rankedUsers WHERE (guildId=%d AND userId=%d)"
+		return selectOne("WITH rankedUsers AS (SELECT userId, guildId, %s, DENSE_RANK() OVER (PARTITION BY guildId ORDER BY %<s DESC) AS rank FROM %s) SELECT rank FROM rankedUsers WHERE (guildId=%d AND userId=%d AND %1$s>0)"
 			.formatted(type, TABLE_PLAYERS, guildId, userId), "rank", Integer.class);
 	}
 
@@ -177,7 +177,7 @@ public class LevelManager extends LiteDBBase {
 			keys.add("voiceRank");
 		}
 
-		return new TopInfo(select(query.toString(), keys));
+		return new TopInfo(select(query.toString(), keys), limit);
 	}
 
 	public void deleteUser(long guildId, long userId) {
@@ -308,20 +308,24 @@ public class LevelManager extends LiteDBBase {
 		private final Map<Integer, TopUser> textTop = new HashMap<>();
 		private final Map<Integer, TopUser> voiceTop = new HashMap<>();
 
-		public TopInfo(List<Map<String, Object>> data) {
+		public TopInfo(List<Map<String, Object>> data, int limitRank) {
 			for (Map<String, Object> row : data) {
 				long userId = requireNonNull(row.get("userId"));
 
 				if (row.containsKey("textExp")) {
-					int rank = requireNonNull(row.get("textRank"));
 					long exp = castLong(row.get("textExp"));
-					textTop.put(rank, new TopUser(userId, exp));
+					int rank = requireNonNull(row.get("textRank"));
+					if (exp > 0 && rank <= limitRank) {
+						textTop.put(rank, new TopUser(userId, exp));
+					}
 				}
 
 				if (row.containsKey("voiceExp")) {
 					int rank = requireNonNull(row.get("voiceRank"));
 					long exp = castLong(row.get("voiceExp"));
-					voiceTop.put(rank, new TopUser(userId, exp));
+					if (exp > 0 && rank <= limitRank) {
+						voiceTop.put(rank, new TopUser(userId, exp));
+					}
 				}
 			}
 		}

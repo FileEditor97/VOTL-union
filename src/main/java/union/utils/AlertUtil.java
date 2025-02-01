@@ -3,14 +3,16 @@ package union.utils;
 import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class AlertUtil {
 
 	public static final int TRIGGER_AMOUNT = 6;
 
 	// cache
-	public static LinkedHashMap<String, Integer> alertPoints = new LinkedHashMap<>();
+	public static HashMap<String, Integer> alertPoints = new HashMap<>();
 
 	// returns new value
 	public int add(@NotNull Member member) {
@@ -28,13 +30,17 @@ public class AlertUtil {
 	}
 
 	public void decrease() {
-		alertPoints.forEach((k, v) -> {
-			int newValue = v - 1;
+		Iterator<Map.Entry<String, Integer>> it = alertPoints.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, Integer> item = it.next();
+
+			int newValue = item.getValue() - 1;
 			if (newValue <= 0)
-				alertPoints.remove(k);
+				it.remove();
 			else
-				alertPoints.put(k, newValue);
-		});
+				alertPoints.put(item.getKey(), newValue);
+
+		}
 	}
 
 	public static String asKey(long guildId, long userId) {

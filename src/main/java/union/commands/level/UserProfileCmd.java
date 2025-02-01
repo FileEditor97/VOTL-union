@@ -10,6 +10,7 @@ import union.App;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
@@ -34,7 +35,11 @@ public class UserProfileCmd extends CommandBase {
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
 			new OptionData(OptionType.INTEGER, "id", lu.getText(path+".id.help"))
-				.setRequiredRange(0, 100)
+				.setRequiredRange(0, 20)
+				.addChoice("Dark", 0)
+				.addChoice("Light", 1)
+				.addChoice("Mountains", 2)
+				.addChoice("SCP", 3)
 		);
 		this.cooldown = 120;
 		this.cooldownScope = CooldownScope.USER;
@@ -69,32 +74,35 @@ public class UserProfileCmd extends CommandBase {
 		long guildId = target.getGuild().getIdLong();
 		long userId = target.getIdLong();
 
-		// Get user account
-		Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
-		if (steam64 == null || steam64 == 0L) {
-			editError(event, path+".not_found_steam", "Not found: "+target.getAsMention());
-			return;
-		}
-		String steamId;
-		try {
-			steamId = SteamUtil.convertSteam64toSteamID(steam64);
-		} catch (NumberFormatException ex) {
-			editError(event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64));
-			return;
-		}
-
-		// Game info
-		List<PlayerInfo> playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(guildId, steamId)
-			.stream()
-			.filter(PlayerInfo::exists)
-			.limit(6)
-			.toList();
-
 		UserProfileRender render = new UserProfileRender(target)
 			.setLocale(bot.getLocaleUtil(), event.getUserLocale())
 			.setBackground(background)
-			.setPlayerData(playerInfo)
 			.setAccessLevel(bot.getCheckUtil().getAccessLevel(target));
+
+		// Get user account
+		// Only for Helper+
+		if (bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+			Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
+			if (steam64 != null && steam64 != 0L) {
+				String steamId;
+				try {
+					steamId = SteamUtil.convertSteam64toSteamID(steam64);
+				} catch (NumberFormatException ex) {
+					editError(event, "errors.error", "Failed to convert SteamID\nInput: `%s`".formatted(steam64));
+					return;
+				}
+
+				List<PlayerInfo> playerInfo = bot.getDBUtil().unionPlayers.getPlayerInfo(guildId, steamId)
+					.stream()
+					.filter(PlayerInfo::exists)
+					.limit(6)
+					.toList();
+
+				if (!playerInfo.isEmpty()) {
+					render.setPlayerData(playerInfo);
+				}
+			}
+		}
 
 		// Experience
 		LevelManager.PlayerData playerData = bot.getDBUtil().levels.getPlayer(guildId, userId);

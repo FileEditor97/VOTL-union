@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import union.objects.CmdAccessLevel;
+import union.utils.RandomUtil;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.imagegen.Fonts;
@@ -24,6 +25,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@SuppressWarnings("UnusedReturnValue")
 public class UserProfileRender extends Renderer {
 	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -45,7 +47,8 @@ public class UserProfileRender extends Renderer {
 
 	private long globalExperience = -1;
 
-	private List<PlayerInfo> playerData;
+	private boolean minimized = true;
+	private List<PlayerInfo> playerData = null;
 	//private final List<String> badges = new ArrayList<>();
 
 	private LocaleUtil lu;
@@ -73,6 +76,7 @@ public class UserProfileRender extends Renderer {
 
 	public UserProfileRender setPlayerData(@NotNull List<PlayerInfo> playerData) {
 		this.playerData = playerData;
+		this.minimized = false;
 		return this;
 	}
 
@@ -118,8 +122,9 @@ public class UserProfileRender extends Renderer {
 		return this;
 	}
 
-	public void setGlobalExperience(long globalExperience) {
+	public UserProfileRender setGlobalExperience(long globalExperience) {
 		this.globalExperience = globalExperience;
+		return this;
 	}
 
 	@Override
@@ -146,7 +151,9 @@ public class UserProfileRender extends Renderer {
 		createAvatar(g, ImageIO.read(connection.getInputStream()));
 
 		createUserInfo(g);
-		createPlayerData(g);
+		if (playerData != null) {
+			createPlayerData(g);
+		}
 		//createBadges(g);
 
 		createXpBar(g);
@@ -159,8 +166,9 @@ public class UserProfileRender extends Renderer {
 	}
 
 	private BufferedImage loadAndBuildBackground() throws IOException {
-		int WIDTH = 900;
-		int HEIGHT = 360;
+		final int MAX_WIDTH = 900;
+		final int WIDTH = minimized ? 420 : 900;
+		final int HEIGHT = 360;
 		BufferedImage backgroundImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
 
 		// Create graphics for background
@@ -174,15 +182,16 @@ public class UserProfileRender extends Renderer {
 
 		if (background.getBackgroundFile() != null) {
 			Image scaledInstance = ImageIO.read(new File(background.getBackgroundPath()))
-				.getScaledInstance(WIDTH, HEIGHT, Image.SCALE_SMOOTH);
-			g.drawImage(scaledInstance, 0, 0, null);
+				.getScaledInstance(MAX_WIDTH, HEIGHT, Image.SCALE_SMOOTH);
+			int x = minimized ? -RandomUtil.getInteger(MAX_WIDTH-WIDTH) : WIDTH; // Move image left to random amount
+			g.drawImage(scaledInstance, x, 0, null);
 		} else {
 			g.setColor(background.getColors().getBackgroundColor());
 			g.fillRect(0, 0, WIDTH, HEIGHT);
 		}
 
 		// Draw the border
-		RoundRectangle2D borderRectangle = new RoundRectangle2D.Float(3, 3, WIDTH -7, HEIGHT -7, 36, 36);
+		RoundRectangle2D borderRectangle = new RoundRectangle2D.Float(3, 3, WIDTH-7, HEIGHT-7, 36, 36);
 		g.setColor(new Color(0, 0, 0, 128)); // Semi-transparent black
 		g.setStroke(new BasicStroke(10));
 		g.draw(borderRectangle);
@@ -193,7 +202,7 @@ public class UserProfileRender extends Renderer {
 	}
 
 	private void createAvatar(Graphics2D g, BufferedImage image) {
-		int x = 25;
+		int x = 20;
 		int y = 20;
 		int size = 140;
 		// Draw avatar shadow
@@ -208,47 +217,51 @@ public class UserProfileRender extends Renderer {
 	}
 
 	private void createUserInfo(Graphics2D g) {
-		int x = 180;
+		int x = 160;
 		int y = 50;
 
-		g.setFont(Fonts.Montserrat.bold.deriveFont(Font.PLAIN, 30F));
 		String text = globalName==null ? "USER" : globalName;
-
-		g.setColor(background.getColors().getShadowColor());
-		g.drawString(text, x+2, y+2);
-		g.setColor(background.getColors().getMainTextColor());
-		g.drawString(text, x, y);
+		drawFittingText(
+			g, Fonts.Montserrat.bold, text,
+			x, y,
+			240, 700,
+			20, 30
+		);
 
 		y += 30;
 		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F));
 		text = "@"+MessageUtil.limitString(userName, 18);
 
 		g.setColor(background.getColors().getShadowColor());
-		g.drawString(text, x+2, y+2);
+		g.drawString(text, x+12, y+2);
 		g.setColor(background.getColors().getSecondaryTextColor());
-		g.drawString(text, x, y);
+		g.drawString(text, x+10, y);
 
 		y += 15;
 		String formattedTime = "     "+timeCreated.format(formatter);
 		g.setColor(background.getColors().getCardColor());
 		FontMetrics fontMetrics = g.getFontMetrics();
-		g.fillRoundRect(x, y,
+		g.fillRoundRect(
+			x+10, y,
 			fontMetrics.stringWidth(formattedTime)+22, fontMetrics.getHeight()+6,
-			30, 30);
+			30, 30
+		);
 
 		g.setColor(background.getColors().getShadowColor());
-		g.drawString(formattedTime, x+12, y+25);
+		g.drawString(formattedTime, x+22, y+25);
 		g.setColor(background.getColors().getMainTextColor());
-		g.drawString(formattedTime, x+10, y+23);
+		g.drawString(formattedTime, x+20, y+23);
 
 		y += 35;
 
 		formattedTime = "     "+timeJoined.format(formatter);
 		g.setColor(background.getColors().getCardColor());
 		fontMetrics = g.getFontMetrics();
-		g.fillRoundRect(x, y,
+		g.fillRoundRect(
+			x, y,
 			fontMetrics.stringWidth(formattedTime)+22, fontMetrics.getHeight()+6,
-			30, 30);
+			30, 30
+		);
 
 		g.setColor(background.getColors().getShadowColor());
 		g.drawString(formattedTime, x+12, y+25);
@@ -258,11 +271,11 @@ public class UserProfileRender extends Renderer {
 		// Draw emojis
 		g.setFont(Fonts.NotoEmoji.monochrome.deriveFont(Font.PLAIN, 14F));
 		g.setColor(background.getColors().getShadowColor());
-		g.drawString("\uD83D\uDC64", x+12, y-13);
-		g.drawString("\uD83C\uDFE0", x+12, y+22);
+		g.drawString("\uD83D\uDC64", x+22, y-13);
+		g.drawString("\uD83D\uDC4B", x+12, y+22);
 		g.setColor(background.getColors().getMainTextColor());
-		g.drawString("\uD83D\uDC64", x+10, y-15);
-		g.drawString("\uD83C\uDFE0", x+10, y+20);
+		g.drawString("\uD83D\uDC64", x+20, y-15);
+		g.drawString("\uD83D\uDC4B", x+10, y+20);
 	}
 
 	private void createPlayerData(Graphics2D g) {
@@ -398,6 +411,7 @@ public class UserProfileRender extends Renderer {
 		g.setColor(background.getColors().getMainTextColor());
 		g.drawString(text, startX, startY+hightDiff);
 
+		g.setColor(background.getColors().getExperienceTextColor()); // On bar
 		// Level text
 		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 16));
 
@@ -429,12 +443,16 @@ public class UserProfileRender extends Renderer {
 		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F));
 		FontMetrics fontMetrics = g.getFontMetrics(g.getFont());
 
+		g.setColor(background.getColors().getShadowColor());
+		g.drawString(text, 382-fontMetrics.stringWidth(text)-fontMetrics.stringWidth(number), 344);
 		g.setColor(background.getColors().getMainTextColor());
-		g.drawString(text, 380-fontMetrics.stringWidth(text)-fontMetrics.stringWidth(number), 345);
+		g.drawString(text, 380-fontMetrics.stringWidth(text)-fontMetrics.stringWidth(number), 342);
 
 		g.setFont(Fonts.Montserrat.regular.deriveFont(Font.PLAIN, 22F));
+		g.setColor(background.getColors().getShadowColor());
+		g.drawString(number, 392-fontMetrics.stringWidth(number), 344);
 		g.setColor(background.getColors().getSecondaryTextColor());
-		g.drawString(number, 390-fontMetrics.stringWidth(number), 345);
+		g.drawString(number, 390-fontMetrics.stringWidth(number), 342);
 	}
 
 	private void createAdditional(Graphics2D g) {
@@ -456,6 +474,54 @@ public class UserProfileRender extends Renderer {
 		} else {
 			return "%s / %s xp".formatted(currentLevelXp, maxXpInLevel);
 		}
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private void drawFittingText(Graphics2D g, Font baseFont, String text, int x, int y, int w1, int w2, int minFontSize, int maxFontSize) {
+		int maxWidth = minimized ? w1 : w2; // Adjust width based on 'minimized' flag
+
+		Font font = baseFont.deriveFont(Font.PLAIN, maxFontSize);
+
+		// Reduce font size until it fits or reaches the minimum size
+		int fontSize = maxFontSize;
+		while (fontSize >= minFontSize) {
+			g.setFont(font);
+			FontMetrics fm = g.getFontMetrics();
+			int textWidth = fm.stringWidth(text);
+
+			if (textWidth <= maxWidth) {
+				break;
+			}
+
+			fontSize--; // Reduce font size
+			font = baseFont.deriveFont(Font.PLAIN, fontSize);
+		}
+
+		// Final font set
+		g.setFont(font);
+		FontMetrics fm = g.getFontMetrics();
+
+		// If text is still too wide at minimum font size, truncate it
+		if (fm.stringWidth(text) > maxWidth) {
+			String dots = "...";
+			int dotWidth = fm.stringWidth(dots);
+			int maxTextWidth = maxWidth - dotWidth;
+			StringBuilder resultText = new StringBuilder();
+
+			for (char c : text.toCharArray()) {
+				if (fm.stringWidth(resultText.toString() + c) > maxTextWidth) {
+					break;
+				}
+				resultText.append(c);
+			}
+			resultText.append(dots);
+		}
+
+		// Draw
+		g.setColor(background.getColors().getShadowColor());
+		g.drawString(text, x + 2, y + 2);
+		g.setColor(background.getColors().getMainTextColor());
+		g.drawString(text, x, y);
 	}
 
 	private List<GridData> gridPattern(int count) {

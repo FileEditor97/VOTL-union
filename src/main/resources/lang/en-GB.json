@@ -640,6 +640,26 @@
 					"name": "file",
 					"help": "Provide txt or json(steam64+reason) file"
 				}
+			},
+			"experience": {
+				"help": "Manage user exp in server and overall",
+				"usage": "experience <choice>",
+				"server": {
+					"name": "server",
+					"help": "Enter server ID"
+				},
+				"user": {
+					"name": "user",
+					"help": "Enter user ID"
+				},
+				"action": {
+					"name": "action",
+					"help": "What action to perform"
+				},
+				"amount": {
+					"name": "amount",
+					"help": "Enter exp amount to add/remove"
+				}
 			}
 		},
 		"guild": {

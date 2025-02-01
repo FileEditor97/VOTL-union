@@ -136,6 +136,19 @@ public class LevelManager extends LiteDBBase {
 			.formatted(TABLE_PLAYERS, userId), "rank", Integer.class);
 	}
 
+	public void deleteUser(long guildId, long userId) {
+		playersCache.invalidate(PlayerObject.asKey(guildId, userId));
+		execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(TABLE_PLAYERS, guildId, userId));
+	}
+
+	public void deleteUser(long userId) {
+		execute("DELETE FROM %s WHERE (userId=%d)".formatted(TABLE_PLAYERS, userId));
+	}
+
+	public void deleteGuild(long guildId) {
+		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(TABLE_PLAYERS, guildId));
+	}
+
 	public static class LevelSettings {
 		private final boolean enabled, enabledVoice;
 		private final Set<Long> exemptChannels;
@@ -203,7 +216,7 @@ public class LevelManager extends LiteDBBase {
 			return switch (expType) {
 				case TEXT -> textExperience;
 				case VOICE -> voiceExperience;
-				case ALL -> textExperience+voiceExperience;
+				case TOTAL -> textExperience+voiceExperience;
 			};
 		}
 
@@ -225,6 +238,20 @@ public class LevelManager extends LiteDBBase {
 				case VOICE -> voiceExperience += amount;
 			}
 			this.addedGlobalExperience += amount;
+			this.lastUpdate = Instant.now().toEpochMilli();
+		}
+
+		public void decreaseExperienceBy(long amount, ExpType expType) {
+			switch (expType) {
+				case TEXT -> textExperience -= amount;
+				case VOICE -> voiceExperience -= amount;
+			}
+			this.lastUpdate = Instant.now().toEpochMilli();
+		}
+
+		public void clearExperience() {
+			this.textExperience = 0;
+			this.voiceExperience = 0;
 			this.lastUpdate = Instant.now().toEpochMilli();
 		}
 

@@ -174,6 +174,7 @@ public class App {
 				new SetStatusCmd(),
 				new ImportBanlistCmd(),
 				new CheckAccessCmd(),
+				new ExperienceCmd(),
 				// webhook
 				new WebhookCmd(),
 				// moderation

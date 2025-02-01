@@ -129,6 +129,30 @@ public class LevelUtil {
 		}
 	}
 
+	public void removeExperience(@NotNull Member member, int amount, ExpType expType) {
+		removeExperience(member, bot.getDBUtil().levels.getPlayer(member.getGuild().getIdLong(), member.getIdLong()), amount, expType);
+	}
+
+	private void removeExperience(@NotNull Member member, @NotNull LevelManager.PlayerData player, int amount, ExpType expType) {
+		player.decreaseExperienceBy(amount, expType);
+
+		if (player.getExperience(expType) < 0) {
+			player.setExperience(0, expType);
+		}
+
+		updateQueue.add(new PlayerObject(member)); // Add to update queue
+	}
+
+	public void clearExperience(@NotNull Member member) {
+		clearExperience(member, bot.getDBUtil().levels.getPlayer(member.getGuild().getIdLong(), member.getIdLong()));
+	}
+
+	private void clearExperience(@NotNull Member member, @NotNull LevelManager.PlayerData player) {
+		player.clearExperience();
+
+		updateQueue.add(new PlayerObject(member)); // Add to update queue
+	}
+
 	public HashSet<PlayerObject> getUpdateQueue() {
 		return updateQueue;
 	}

@@ -12,6 +12,7 @@ import union.base.waiter.EventWaiter;
 import union.commands.games.GameCmd;
 import union.commands.games.GameStrikeCmd;
 import union.commands.guild.*;
+import union.commands.level.LeaderboardCmd;
 import union.commands.level.UserProfileCmd;
 import union.commands.moderation.*;
 import union.commands.other.*;
@@ -231,7 +232,8 @@ public class App {
 				new GameCmd(),
 				new GameStrikeCmd(),
 				// level
-				new UserProfileCmd()
+				new UserProfileCmd(),
+				new LeaderboardCmd()
 			)
 			.addContextMenus(
 				new AccountContext(),

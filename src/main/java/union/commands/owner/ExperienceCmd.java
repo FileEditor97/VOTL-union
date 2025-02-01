@@ -140,7 +140,7 @@ public class ExperienceCmd extends CommandBase {
 					return;
 				}
 				// Delete all guild values
-				bot.getDBUtil().levels.deleteUser(userId);
+				bot.getDBUtil().levels.deleteGuild(guildId);
 
 				editMsg(event, "Deleted guild `%s`".formatted(guildId));
 			}

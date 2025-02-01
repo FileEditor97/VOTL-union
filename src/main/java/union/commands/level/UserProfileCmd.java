@@ -29,7 +29,7 @@ import java.util.List;
 public class UserProfileCmd extends CommandBase {
 	public UserProfileCmd() {
 		this.name = "profile";
-		this.path = "bot.image.profile";
+		this.path = "bot.level.profile";
 		this.category = CmdCategory.LEVELS;
 		this.module = CmdModule.LEVELS;
 		this.options = List.of(
@@ -119,8 +119,8 @@ public class UserProfileCmd extends CommandBase {
 		long textMaxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(textLevel + 1);
 		long voiceMaxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(voiceLevel + 1);
 
-		Integer textRank = bot.getDBUtil().levels.getRankServer(guildId, userId, ExpType.TEXT);
-		Integer voiceRank = bot.getDBUtil().levels.getRankServer(guildId, userId, ExpType.VOICE);
+		Integer textRank = bot.getDBUtil().levels.getServerRank(guildId, userId, ExpType.TEXT);
+		Integer voiceRank = bot.getDBUtil().levels.getServerRank(guildId, userId, ExpType.VOICE);
 
 		long globalExperience = bot.getDBUtil().levels.getSumGlobalExp(userId);
 

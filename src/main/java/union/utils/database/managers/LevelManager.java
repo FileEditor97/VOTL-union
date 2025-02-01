@@ -16,15 +16,13 @@ import union.utils.level.PlayerObject;
 
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static union.utils.CastUtil.*;
 
-@SuppressWarnings("unused")
 public class LevelManager extends LiteDBBase {
 	private final String TABLE_SETTINGS = "levelSettings";
 	private final String TABLE_PLAYERS = "levelPlayers";
@@ -115,25 +113,71 @@ public class LevelManager extends LiteDBBase {
 		);
 	}
 
-	public long getGlobalExp(long guildId, long userId) {
-		Long data = selectOne("SELECT globalExp FROM %s WHERE (guildId=%d AND userId=%d)".formatted(TABLE_PLAYERS, guildId, userId), "globalExp", Long.class);
-		return data==null?0:data;
-	}
-
 	public long getSumGlobalExp(long userId) {
 		Long data = selectOne("SELECT SUM(globalExp) AS sumGlobalExp FROM %s WHERE (userId=%d)".formatted(TABLE_PLAYERS, userId), "sumGlobalExp", Long.class);
 		return data==null?0:data;
 	}
 
-	public Integer getRankServer(long guildId, long userId, ExpType expType) {
+	public Integer getServerRank(long guildId, long userId, ExpType expType) {
 		String type = expType==ExpType.TEXT?"textExp":"voiceExp";
 		return selectOne("WITH rankedUsers AS (SELECT userId, guildId, %s, DENSE_RANK() OVER (PARTITION BY guildId ORDER BY %<s DESC) AS rank FROM %s) SELECT rank FROM rankedUsers WHERE (guildId=%d AND userId=%d)"
 			.formatted(type, TABLE_PLAYERS, guildId, userId), "rank", Integer.class);
 	}
 
-	public Integer getRankGlobal(long userId) {
+	@SuppressWarnings("unused")
+	public Integer getGlobalRank(long userId) {
 		return selectOne("WITH rankedUsers AS (SELECT userId, SUM(globalExp) as totalExp, DENSE_RANK() OVER (ORDER BY SUM(globalExp) DESC) AS rank FROM %s GROUP BY userId) SELECT rank FROM rankedUsers WHERE (userId=%d)"
 			.formatted(TABLE_PLAYERS, userId), "rank", Integer.class);
+	}
+
+	@NotNull
+	public TopInfo getServerTop(long guildId, ExpType expType, int limit) {
+		if (limit < 1 || limit > 20) {
+			throw new IllegalArgumentException("limit must be between 1 and 20");
+		}
+		final boolean fetchText = switch (expType) {
+			case TEXT, TOTAL -> true;
+			default -> false;
+		};
+		final boolean fetchVoice = switch (expType) {
+			case VOICE, TOTAL -> true;
+			default -> false;
+		};
+
+		StringBuilder query = new StringBuilder("WITH rankedUsers AS (SELECT userId, guildId");
+
+		if (fetchText) query.append(", textExp, ROW_NUMBER() OVER (PARTITION BY guildId ORDER BY textExp DESC) AS textRank");
+		if (fetchVoice) query.append(", voiceExp, ROW_NUMBER() OVER (PARTITION BY guildId ORDER BY voiceExp DESC) AS voiceRank");
+
+		query.append(" FROM ").append(TABLE_PLAYERS)
+			.append(" WHERE guildId=").append(guildId).append(")")
+			.append(" SELECT userId");
+
+		if (fetchText) query.append(", textExp, textRank");
+		if (fetchVoice) query.append(", voiceExp, voiceRank");
+		query.append(" FROM rankedUsers");
+
+		query.append(" WHERE ");
+		if (fetchText && fetchVoice) {
+			query.append("textRank <= ").append(limit).append(" OR voiceRank <= ").append(limit);
+		} else if (fetchText) {
+			query.append("textRank <= ").append(limit);
+		} else if (fetchVoice) {
+			query.append("voiceRank <= ").append(limit);
+		}
+
+		Set<String> keys = new HashSet<>();
+		keys.add("userId");
+		if (fetchText) {
+			keys.add("textExp");
+			keys.add("textRank");
+		}
+		if (fetchText) {
+			keys.add("voiceExp");
+			keys.add("voiceRank");
+		}
+
+		return new TopInfo(select(query.toString(), keys));
 	}
 
 	public void deleteUser(long guildId, long userId) {
@@ -259,4 +303,37 @@ public class LevelManager extends LiteDBBase {
 			return lastUpdate;
 		}
 	}
+
+	public class TopInfo {
+		private final Map<Integer, TopUser> textTop = new HashMap<>();
+		private final Map<Integer, TopUser> voiceTop = new HashMap<>();
+
+		public TopInfo(List<Map<String, Object>> data) {
+			for (Map<String, Object> row : data) {
+				long userId = requireNonNull(row.get("userId"));
+
+				if (row.containsKey("textExp")) {
+					int rank = requireNonNull(row.get("textRank"));
+					long exp = castLong(row.get("textExp"));
+					textTop.put(rank, new TopUser(userId, exp));
+				}
+
+				if (row.containsKey("voiceExp")) {
+					int rank = requireNonNull(row.get("voiceRank"));
+					long exp = castLong(row.get("voiceExp"));
+					voiceTop.put(rank, new TopUser(userId, exp));
+				}
+			}
+		}
+
+		public Map<Integer, TopUser> getTextTop() {
+			return textTop;
+		}
+
+		public Map<Integer, TopUser> getVoiceTop() {
+			return voiceTop;
+		}
+	}
+
+	public record TopUser(long userId, long exp) {}
 }

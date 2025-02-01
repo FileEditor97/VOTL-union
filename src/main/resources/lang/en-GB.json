@@ -3185,7 +3185,7 @@
 				"done": "User %s received Game strike in %s."
 			}
 		},
-		"image": {
+		"level": {
 			"profile": {
 				"help": "Get user profile",
 				"usage": "user [@User]",
@@ -3199,6 +3199,14 @@
 				},
 				"bad_user": "Can't select this user.",
 				"failed": "Failed to create background."
+			},
+			"leaderboard": {
+				"help": "View levels leaderboard",
+				"usage": "leaderboard",
+				"embed_title": "Server Exp Leaderboards",
+				"top_text": "TOP %s TEXT",
+				"top_voice": "TOP %s VOICE",
+				"empty": "*Empty...*"
 			}
 		}
 	},

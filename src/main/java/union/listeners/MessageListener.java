@@ -19,8 +19,6 @@ import net.dv8tion.jda.api.audit.AuditLogOption;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -101,12 +99,17 @@ public class MessageListener extends ListenerAdapter {
 		if (!bot.getDBUtil().getLogSettings(event.getGuild()).enabled(LogType.MESSAGE)) return;
 
 		final long guildId = event.getGuild().getIdLong();
+		// check channel
 		if (bot.getDBUtil().logExceptions.isException(guildId, event.getChannel().getIdLong())) return;
-		if (event.getChannel().getType().equals(ChannelType.TEXT)) {
-			Category parentCategory = event.getChannel().asTextChannel().getParentCategory();
-			if (parentCategory != null) {
-				if (bot.getDBUtil().logExceptions.isException(guildId, parentCategory.getIdLong())) return;
-			}
+		// check category
+		long categoryId = switch (event.getChannelType()) {
+			case TEXT, VOICE, STAGE, NEWS -> event.getGuildChannel().asStandardGuildChannel().getParentCategoryIdLong();
+			case GUILD_PUBLIC_THREAD, GUILD_NEWS_THREAD -> event.getChannel().asThreadChannel().getParentChannel()
+				.asStandardGuildChannel().getParentCategoryIdLong();
+			default -> 0;
+		};
+		if (categoryId != 0 && bot.getDBUtil().logExceptions.isException(guildId, categoryId)) {
+			return;
 		}
 		
 		final long messageId = event.getMessageIdLong();
@@ -128,12 +131,17 @@ public class MessageListener extends ListenerAdapter {
 		if (data != null) cache.invalidate(messageId);
 
 		final long guildId = event.getGuild().getIdLong();
+		// check channel
 		if (bot.getDBUtil().logExceptions.isException(guildId, event.getChannel().getIdLong())) return;
-		if (event.getChannel().getType().equals(ChannelType.TEXT)) {
-			Category parentCategory = event.getChannel().asTextChannel().getParentCategory();
-			if (parentCategory != null) {
-				if (bot.getDBUtil().logExceptions.isException(guildId, parentCategory.getIdLong())) return;
-			}
+		// check category
+		long categoryId = switch (event.getChannelType()) {
+			case TEXT, VOICE, STAGE, NEWS -> event.getGuildChannel().asStandardGuildChannel().getParentCategoryIdLong();
+			case GUILD_PUBLIC_THREAD, GUILD_NEWS_THREAD -> event.getChannel().asThreadChannel().getParentChannel()
+				.asStandardGuildChannel().getParentCategoryIdLong();
+			default -> 0;
+		};
+		if (categoryId != 0 && bot.getDBUtil().logExceptions.isException(guildId, categoryId)) {
+			return;
 		}
 
 		event.getGuild().retrieveAuditLogs()

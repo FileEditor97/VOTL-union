@@ -2,12 +2,8 @@ package union.utils.level;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +55,7 @@ public class LevelUtil {
 		return level<0 ? 0 : (int) Math.floor(level);
 	}
 
-	private final Set<ChannelType> allowedChannelTypes = Set.of(ChannelType.TEXT, ChannelType.VOICE, ChannelType.CATEGORY, ChannelType.GUILD_PUBLIC_THREAD, ChannelType.STAGE);
+	private final Set<ChannelType> allowedChannelTypes = Set.of(ChannelType.TEXT, ChannelType.VOICE, ChannelType.GUILD_PUBLIC_THREAD, ChannelType.STAGE);
 	public void rewardMessagePlayer(@NotNull MessageReceivedEvent event) {
 		// Check for length and if is allowed type
 		if (event.isWebhookMessage() || event.getMessage().getContentRaw().length() < 10 || !allowedChannelTypes.contains(event.getChannel().getType())) {
@@ -72,8 +68,13 @@ public class LevelUtil {
 			return;
 		}
 		// Check if exempt category
-		Long categoryId = Optional.ofNullable(event.getGuildChannel().asStandardGuildChannel().getParentCategory()).map(Category::getIdLong).orElse(null);
-		if (categoryId != null && settings.isExemptChannel(categoryId)) {
+		long categoryId = switch (event.getChannelType()) {
+			case TEXT, VOICE, STAGE -> event.getGuildChannel().asStandardGuildChannel().getParentCategoryIdLong();
+			case GUILD_PUBLIC_THREAD -> event.getChannel().asThreadChannel().getParentChannel()
+				.asStandardGuildChannel().getParentCategoryIdLong();
+			default -> 0;
+		};
+		if (categoryId != 0 && settings.isExemptChannel(categoryId)) {
 			return;
 		}
 
@@ -91,8 +92,8 @@ public class LevelUtil {
 			return;
 		}
 		// Check if exempt category
-		Long categoryId = Optional.ofNullable(channel.getParentCategory()).map(Category::getIdLong).orElse(null);
-		if (categoryId != null && settings.isExemptChannel(categoryId)) {
+		long categoryId = channel.getParentCategoryIdLong();
+		if (categoryId != 0 && settings.isExemptChannel(categoryId)) {
 			return;
 		}
 

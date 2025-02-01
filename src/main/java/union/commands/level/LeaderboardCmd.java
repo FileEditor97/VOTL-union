@@ -49,6 +49,7 @@ public class LeaderboardCmd extends CommandBase {
 			} else {
 				StringBuilder builder = new StringBuilder();
 				top.getTextTop().forEach((place, user) -> {
+					if (user.exp() <= 0) return;
 					if (user.userId() == authorId)
 						builder.append("\n**#%s | <@!%s> XP: `%s`**".formatted(place, user.userId(), user.exp()));
 					else
@@ -65,6 +66,7 @@ public class LeaderboardCmd extends CommandBase {
 			} else {
 				StringBuilder builder = new StringBuilder();
 				top.getVoiceTop().forEach((place, user) -> {
+					if (user.exp() <= 0) return;
 					if (user.userId() == authorId)
 						builder.append("\n**#%s | <@!%s> XP: `%s`**".formatted(place, user.userId(), user.exp()));
 					else

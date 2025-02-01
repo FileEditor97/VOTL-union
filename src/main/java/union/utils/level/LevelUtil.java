@@ -24,12 +24,12 @@ public class LevelUtil {
 
 	// Cache
 	public static final Cache<String, Boolean> cache = Caffeine.newBuilder()
-		.expireAfterWrite(30, TimeUnit.SECONDS)
+		.expireAfterWrite(60, TimeUnit.SECONDS)
 		.build();
 
 	private static final HashSet<PlayerObject> updateQueue = new LinkedHashSet<>();
 
-	private static final long hardCap = (long) Integer.MAX_VALUE*4;
+	private static final long hardCap = (long) Integer.MAX_VALUE*4L;
 
 	private static final int maxRandomExperience = 10;
 	private static final int maxGuaranteeMessageExperience = 10;

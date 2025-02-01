@@ -70,6 +70,7 @@ tasks.named('shadowJar', ShadowJar) {
 	archiveVersion = version
 	archiveClassifier = ''
 	minimize {
+		exclude(dependency('ch.qos.logback:logback-classic:.*'))
 		exclude(dependency('org.xerial:sqlite-jdbc:.*'))
 		exclude(dependency('org.mariadb.jdbc:mariadb-java-client:.*'))
 	}

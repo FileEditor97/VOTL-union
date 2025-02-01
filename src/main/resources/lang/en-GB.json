@@ -81,6 +81,7 @@
 		"profile": {
 			"time_full": "Time: %d hours",
 			"time_short": "%dh",
+			"rank": "Rank: %s",
 			"text": "TEXT",
 			"voice": "VOICE",
 			"global_xp": "Global XP"

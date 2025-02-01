@@ -81,6 +81,7 @@
 		"profile": {
 			"time_full": "Время: %d часов",
 			"time_short": "%dч",
+			"rank": "Ранг: %s",
 			"text": "ТЕКСТ",
 			"voice": "ГОЛОСОВОЙ",
 			"global_xp": "Глобал.опыт"

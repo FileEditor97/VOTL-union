@@ -4,11 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -31,7 +27,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.UserSnowflake;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
@@ -43,14 +38,16 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import union.utils.database.managers.LevelManager;
 import union.utils.encoding.EncodingUtil;
 import union.utils.imagegen.renders.ModReportRender;
+import union.utils.level.PlayerObject;
 import union.utils.message.TimeUtil;
 
 
 public class ScheduledCheck {
 
-	private final Logger logger = (Logger) LoggerFactory.getLogger(ScheduledCheck.class);
+	private final Logger log = (Logger) LoggerFactory.getLogger(ScheduledCheck.class);
 
 	private final App bot;
 	private final DBUtil db;
@@ -103,18 +100,14 @@ public class ScheduledCheck {
 			});
 
 			db.ticket.getCloseMarkedTickets().forEach(channelId -> {
-				GuildChannel channel = bot.JDA.getGuildChannelById(channelId);
-				if (channel == null) {
+				if (bot.JDA.getGuildChannelById(channelId) == null) {
 					bot.getDBUtil().ticket.forceCloseTicket(channelId);
 					return;
 				}
 				bot.getTicketUtil().closeTicket(channelId, null, "time", failure -> {
-					new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE)
-						.andThen(t -> {
-							logger.error("Failed to delete ticket channel, either already deleted or unknown error", t);
-						})
-						.accept(failure);
 					db.ticket.setRequestStatus(channelId, -1L);
+					if (ErrorResponse.UNKNOWN_MESSAGE.test(failure)) return;
+					log.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 				});
 			});
 
@@ -129,14 +122,15 @@ public class ScheduledCheck {
 					.thenAcceptAsync(list -> {
 						Message msg = list.get(0);
 						if (msg.getAuthor().isBot()) {
+							if (bot.JDA.getGuildChannelById(channelId) == null) {
+								bot.getDBUtil().ticket.forceCloseTicket(channelId);
+								return;
+							}
 							// Last message is bot - close ticket
 							bot.getTicketUtil().closeTicket(channelId, null, "activity", failure -> {
-								new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE)
-									.andThen(t -> {
-										logger.error("Failed to delete ticket channel, either already deleted or unknown error", t);
-									})
-									.accept(failure);
 								db.ticket.setWaitTime(channelId, -1L);
+								if (ErrorResponse.UNKNOWN_MESSAGE.test(failure)) return;
+								log.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 							});
 						} else {
 							// There is human reply
@@ -145,7 +139,7 @@ public class ScheduledCheck {
 					});
 			});
 		} catch (Throwable t) {
-			logger.error("Exception caught during tickets checks.", t);
+			log.error("Exception caught during tickets checks.", t);
 		}
 	}
 
@@ -155,25 +149,26 @@ public class ScheduledCheck {
 			if (expired.isEmpty()) return;
 
 			expired.forEach(data -> {
-				String roleId = (String) data.get("roleId");
+				long roleId = castLong(data.get("roleId"));
 				Role role = bot.JDA.getRoleById(roleId);
 				if (role == null) {
 					db.tempRole.removeRole(roleId);
 					return;
 				}
 				
-				String userId = (String) data.get("userId");
+				long userId = castLong(data.get("userId"));
 				if (db.tempRole.shouldDelete(roleId)) {
 					try {
 						role.delete().reason("Role expired for '"+userId+"'").queue();
 					} catch (InsufficientPermissionException | HierarchyException ex) {
-						logger.warn("Was unable to delete temporary role '{}' during scheduled check.", roleId, ex);
+						log.warn("Was unable to delete temporary role '{}' during scheduled check.", roleId, ex);
 					}
 					db.tempRole.removeRole(roleId);
 					
 				} else {
 					role.getGuild().removeRoleFromMember(User.fromId(userId), role).reason("Role expired").queue(null, failure -> {
-						logger.warn("Was unable to remove temporary role '{}' from '{}' during scheduled check.", roleId, userId, failure);
+						if (ErrorResponse.UNKNOWN_MEMBER.test(failure)) return;
+						log.warn("Was unable to remove temporary role '{}' from '{}' during scheduled check.", roleId, userId, failure);
 					});
 					db.tempRole.remove(roleId, userId);
 				}
@@ -181,7 +176,7 @@ public class ScheduledCheck {
 				bot.getLogger().role.onTempRoleAutoRemoved(role.getGuild(), castLong(userId), role);
 			});
 		} catch (Throwable t) {
-			logger.error("Exception caught during expired roles check.", t);
+			log.error("Exception caught during expired roles check.", t);
 		}
 	}
 
@@ -237,7 +232,7 @@ public class ScheduledCheck {
 				}
 			}
 		} catch (Throwable t) {
-			logger.error("Exception caught during expired warns check.", t);
+			log.error("Exception caught during expired warns check.", t);
 		}
 	}
 
@@ -251,7 +246,7 @@ public class ScheduledCheck {
 				TextChannel channel = bot.JDA.getTextChannelById(channelId);
 				if (channel == null) {
 					long guildId = castLong(data.get("guildId"));
-					logger.warn("Channel for modReport @ '{}' not found. Deleting.", guildId);
+					log.warn("Channel for modReport @ '{}' not found. Deleting.", guildId);
 					db.modReport.removeGuild(guildId);
 					return;
 				}
@@ -262,7 +257,7 @@ public class ScheduledCheck {
 					.map(guild::getRoleById)
 					.toList();
 				if (roles.isEmpty()) {
-					logger.warn("Roles for modReport @ '{}' not found. Deleting.", guild.getId());
+					log.warn("Roles for modReport @ '{}' not found. Deleting.", guild.getId());
 					db.modReport.removeGuild(guild.getIdLong());
 					return;
 				}
@@ -284,7 +279,7 @@ public class ScheduledCheck {
 
 					List<ReportData> reportData = new ArrayList<>(members.size());
 					members.forEach(m -> {
-						int countRoles = bot.getDBUtil().ticket.countTicketsByMod(guild.getId(), m.getId(), previous, now, true);
+						int countRoles = bot.getDBUtil().ticket.countTicketsByMod(guild.getIdLong(), m.getIdLong(), previous, now, true);
 						Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guild.getIdLong(), m.getIdLong(), previous, now);
 						reportData.add(new ReportData(m, countRoles, countCases));
 					});
@@ -300,12 +295,12 @@ public class ScheduledCheck {
 							attachmentName
 						)).queue();
 					} catch (IOException e) {
-						logger.error("Exception caught during rendering of modReport.", e);
+						log.error("Exception caught during rendering of modReport.", e);
 					}
 				});
 			});
 		} catch (Throwable t) {
-			logger.error("Exception caught during modReport schedule check.", t);
+			log.error("Exception caught during modReport schedule check.", t);
 		}
 	}
 
@@ -313,7 +308,7 @@ public class ScheduledCheck {
 		try {
 			db.persistent.removeExpired();
 		} catch (Throwable t) {
-			logger.error("Exception caught during expired persistent roles check.", t);
+			log.error("Exception caught during expired persistent roles check.", t);
 		}
 	}
 
@@ -321,7 +316,8 @@ public class ScheduledCheck {
 	public void regularChecks() {
 		CompletableFuture.runAsync(this::checkUnbans)
 			.thenRunAsync(this::checkAccountUpdates)
-			.thenRunAsync(this::removeAlertPoints);
+			.thenRunAsync(this::removeAlertPoints)
+			.thenRunAsync(this::updateDbQueue);
 	}
 
 	private void checkAccountUpdates() {
@@ -383,7 +379,7 @@ public class ScheduledCheck {
 				});
 			});
 		} catch (Throwable t) {
-			logger.error("Exception caught during verify checking.", t);
+			log.error("Exception caught during verify checking.", t);
 		}
 	}
 
@@ -398,7 +394,7 @@ public class ScheduledCheck {
 				if (guild == null || !guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) return;
 				guild.unban(User.fromId(caseData.getTargetId())).reason(bot.getLocaleUtil().getLocalized(guild.getLocale(), "misc.ban_expired")).queue(
 					s -> bot.getLogger().mod.onAutoUnban(caseData, guild),
-					f -> logger.warn("Exception at unban attempt. {}", f.getMessage())
+					f -> log.warn("Exception at unban attempt. {}", f.getMessage())
 				);
 				db.cases.setInactive(caseData.getRowId());
 			});
@@ -408,16 +404,36 @@ public class ScheduledCheck {
 				Optional.ofNullable(Helper.getInstance()).ifPresent(h -> h.unban(data.getLeft(), data.getRight(), "Remove temp ban"));
 			});
 		} catch (Throwable t) {
-			logger.error("Exception caught during scheduled unban.", t);
+			log.error("Exception caught during scheduled unban.", t);
 		}
 	}
 
 	private void removeAlertPoints() {
 		try {
-			db.alerts.removePoint();
+			bot.getAlertUtil().decrease();
 		} catch (Throwable t) {
-			logger.error("Exception caught during points removal.", t);
+			log.error("Exception caught during points removal.", t);
 		}
 	}
-	
+
+
+	private void updateDbQueue() {
+		try {
+			// level data
+			Iterator<PlayerObject> itr = bot.getLevelUtil().getUpdateQueue().iterator();
+			int updatedCount = 0;
+			while (itr.hasNext()) {
+				PlayerObject player = itr.next();
+				LevelManager.PlayerData playerData = db.levels.getPlayer(player);
+				if (playerData == null) continue;
+
+				db.levels.updatePlayer(player, playerData);
+				itr.remove();
+				updatedCount++;
+			}
+			if (updatedCount != 0) log.debug("Updated data for {} players", updatedCount);
+		} catch (Throwable t) {
+			log.error("Exception caught during DB queue update.", t);
+		}
+	}
 }

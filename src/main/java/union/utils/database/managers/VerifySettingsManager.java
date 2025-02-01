@@ -16,11 +16,12 @@ import union.utils.database.LiteDBBase;
 
 import net.dv8tion.jda.api.entities.Guild;
 
+@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "UnusedReturnValue"})
 public class VerifySettingsManager extends LiteDBBase {
 	private final Set<String> columns = Set.of("roleId", "mainText", "checkEnabled", "minimumPlaytime", "additionalRoles");
 
 	// Cache
-	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE/5);
+	private final FixedCache<Long, VerifySettings> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
 	private final VerifySettings blankSettings = new VerifySettings();
 
 	public VerifySettingsManager(ConnectionUtil cu) {

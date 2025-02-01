@@ -57,8 +57,9 @@ public class TicketCountCmd extends CommandBase {
 		}
 
 		User user = event.optUser("user");
-		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, true);
-		int countOther = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), user.getId(), afterTime, beforeTime, false);
+		long userId = user.getIdLong();
+		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getIdLong(), userId, afterTime, beforeTime, true);
+		int countOther = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getIdLong(), userId, afterTime, beforeTime, false);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
 		editEmbed(event, bot.getEmbedUtil().getEmbed()

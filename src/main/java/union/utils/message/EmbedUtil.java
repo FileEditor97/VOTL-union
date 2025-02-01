@@ -138,8 +138,9 @@ public class EmbedUtil {
 				.setTitle(lu.getLocalized(locale, "errors.title"))
 				.setDescription(lu.getLocalized(locale, "errors.unknown"))
 				.addField(lu.getLocalized(locale, "errors.additional"), MessageUtil.limitString(reason, 1024), false)
-				.build()
-		).setEphemeral(true).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+				.build())
+			.setEphemeral(true)
+			.queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 	}
 
 }

@@ -54,16 +54,21 @@
 			"usage": "no usage description"
 		},
 		"time": {
-			"second": "second",
-			"seconds": "seconds",
-			"minute": "minute",
-			"minutes": "minutes",
-			"hour": "hour",
-			"hours": "hours",
-			"day": "day",
-			"days": "days",
-			"week": "week",
-			"weeks": "weeks"
+			"s1": "second",
+			"s2": "seconds",
+			"s5": "seconds",
+			"m1": "minute",
+			"m2": "minutes",
+			"m5": "minutes",
+			"h1": "hour",
+			"h2": "hours",
+			"h5": "hours",
+			"d1": "day",
+			"d2": "days",
+			"d5": "days",
+			"w1": "week",
+			"w2": "weeks",
+			"w5": "weeks"
 		},
 		"permanently": "permanently",
 		"temporary": "until %s",
@@ -76,7 +81,9 @@
 		"profile": {
 			"time_full": "Time: %d hours",
 			"time_short": "%dh",
-			"rank": "Rank: %s"
+			"text": "TEXT",
+			"voice": "VOICE",
+			"global_xp": "Global XP"
 		}
 	},
 	"modules": {
@@ -90,7 +97,7 @@
 		"roles": "Role management",
 		"strikes": "Strike punishments",
 		"games": "Games",
-		"image": "Images",
+		"level": "Leveling",
 		"module_disabled": "This command/module is disabled."
 	},
 	"role_type": {
@@ -362,6 +369,17 @@
 			"bot_not_allowed": "Bot is not in the whitelist",
 			"bad_user": "Blacklisted user joined %s and was banned"
 		},
+		"levels": {
+			"name": "Leveling logs",
+			"level_up": "Level up!",
+			"msg_random": [
+				"GG {user}, you just reached **{type} Level {level}**",
+				"Eyy {user}, you just leveled up! You're now **{type} Level {level}**",
+				"\uD83C\uDF1F You just reached **{type} Level {level}** {user}! Congrats \uD83C\uDF1F",
+				"You're on \uD83D\uDD25 {user}, you've just reached **{type} Level {level}**",
+				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **{type} Level {level}**"
+			]
+		},
 		"other": {
 			"name": "Audit logs (not used!)",
 			"audit": "Audit logs (not used!)"
@@ -620,6 +638,26 @@
 					"name": "file",
 					"help": "Provide txt or json(steam64+reason) file"
 				}
+			},
+			"experience": {
+				"help": "Manage user exp in server and overall",
+				"usage": "experience <choice>",
+				"server": {
+					"name": "server",
+					"help": "Enter server ID"
+				},
+				"user": {
+					"name": "user",
+					"help": "Enter user ID"
+				},
+				"action": {
+					"name": "action",
+					"help": "What action to perform"
+				},
+				"amount": {
+					"name": "amount",
+					"help": "Enter exp amount to add/remove"
+				}
 			}
 		},
 		"guild": {
@@ -772,6 +810,96 @@
 						"help": "Enable role \"whitelist\""
 					},
 					"done": "Set role limiting - %s"
+				},
+				"levels": {
+					"help": "Manage leveling settings (to view settings - don't select options)",
+					"usage": "levels [enable?] [voice enable?]",
+					"enable": {
+						"name": "enable",
+						"help": "Enable leveling in this server"
+					},
+					"voice_enable": {
+						"name": "voice_enable",
+						"help": "Enable levels for voice activity"
+					},
+					"embed_view": "**Leveling settings**",
+					"embed_changes": "**Updated leveling settings**",
+					"changed_enabled": "\n> Enabled: %s",
+					"changed_voice": "\n> Voice activity xp enabled: %s"
+				},
+				"level_roles": {
+					"help": "Manage leveling roles",
+					"set": {
+						"help": "Set role for achieved level",
+						"usage": "level_roles set <level> <@Role>",
+						"level": {
+							"name": "level",
+							"help": "At which level to assign those roles"
+						},
+						"role": {
+							"name": "role",
+							"help": "Select role"
+						},
+						"type": {
+							"name": "type",
+							"help": "For which type of level to assign those roles"
+						},
+						"invalid_args": "You haven't selected any role.",
+						"incorrect_role": "Selected role can't be used.",
+						"limit": "Level roles limit reached (max 40)!",
+						"done": "Role %s will be assigned at level `%s`."
+					},
+					"remove": {
+						"help": "Remove roles from level",
+						"usage": "level_roles remove <level>",
+						"level": {
+							"name": "level",
+							"help": "Remove role from which level"
+						},
+						"done": "Cleared roles for `%s` level."
+					},
+					"view": {
+						"help": "View all levels",
+						"usage": "level_roles view",
+						"empty": "No roles set.",
+						"title": "Level roles"
+					}
+				},
+				"level_exempt": {
+					"help": "Manage exempt channels for leveling",
+					"add": {
+						"help": "Add channel to leveling exemption",
+						"usage": "level_exempt add <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select channel"
+						},
+						"invalid_args": "You haven't selected any role.",
+						"limit": "Exempt channels limit reached (max 40)!",
+						"already": "This channel is already exempt.",
+						"done": "Channel %s added to exemption."
+					},
+					"remove": {
+						"help": "Remove channel from leveling exemption",
+						"usage": "level_exempt remove <#Channel>",
+						"channel": {
+							"name": "channel",
+							"help": "Select channel to remove"
+						},
+						"not_exempt": "This channel is not exempt.",
+						"done": "Channel %s removed from exemption."
+					},
+					"clear": {
+						"help": "Remove all exempt channels",
+						"usage": "level_exempt clear",
+						"done": "Cleared all channels."
+					},
+					"view": {
+						"help": "View all exemptions",
+						"usage": "level_exempt view",
+						"empty": "No exemptions set.",
+						"title": "Exempt channels"
+					}
 				}
 			},
 			"module": {
@@ -2032,7 +2160,7 @@
 					"voice": "Voice",
 					"roles": "Roles",
 					"games": "Games",
-					"image": "Image",
+					"levels": "Leveling",
 					"other": "Other",
 					"title": "Categories"
 				},
@@ -2124,7 +2252,7 @@
 							"name": "role3",
 							"help": "Select role"
 						},
-						"invalid_args":"You haven't selected any role/-s.",
+						"invalid_args": "You haven't selected any role/-s.",
 						"incorrect_role": "Selected roles can't be added.",
 						"done": "Set %s as additional roles."
 					},
@@ -2800,7 +2928,7 @@
 						"name": "role3",
 						"help": "Select role"
 					},
-					"invalid_args":"You haven't selected any role/-s.",
+					"invalid_args": "You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be added.",
 					"not_whitelisted": "Selected roles is not whitelisted! Ask Administrator to add it to the list.",
 					"no_member": "Member not found.",
@@ -2826,7 +2954,7 @@
 						"name": "role3",
 						"help": "Select role"
 					},
-					"invalid_args":"You haven't selected any role/-s.",
+					"invalid_args": "You haven't selected any role/-s.",
 					"incorrect_role": "Selected roles can't be removed.",
 					"no_member": "Member not found.",
 					"done": "Removed roles {roles} from {user}.",
@@ -3055,7 +3183,7 @@
 				"done": "User %s received Game strike in %s."
 			}
 		},
-		"image": {
+		"level": {
 			"profile": {
 				"help": "Get user profile",
 				"usage": "user [@User]",
@@ -3069,6 +3197,18 @@
 				},
 				"bad_user": "Can't select this user.",
 				"failed": "Failed to create background."
+			},
+			"leaderboard": {
+				"help": "View levels leaderboard",
+				"usage": "leaderboard [type]",
+				"type": {
+					"name": "type",
+					"help": "The leaderboard type"
+				},
+				"embed_title": "Server Exp Leaderboards",
+				"top_text": "TOP %s TEXT \uD83D\uDCAC",
+				"top_voice": "TOP %s VOICE \uD83C\uDF99\uFE0F",
+				"empty": "*Empty...*"
 			}
 		}
 	},

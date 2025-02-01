@@ -16,10 +16,11 @@ import java.util.stream.Collectors;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import union.listeners.MessageListener.MessageData;
 import union.objects.CmdModule;
+import union.objects.ExpType;
 import union.objects.constants.Constants;
 import union.objects.logs.LogEvent;
+import union.objects.logs.MessageData;
 import union.utils.SteamUtil;
 import union.utils.database.managers.CaseManager.CaseData;
 import union.utils.file.lang.LocaleUtil;
@@ -44,11 +45,9 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
-import com.github.difflib.text.DiffRow;
-import com.github.difflib.text.DiffRowGenerator;
-import com.github.difflib.text.DiffRow.Tag;
 import com.jayway.jsonpath.JsonPath;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class LogEmbedUtil {
 
 	private final LocaleUtil lu;
@@ -70,6 +69,7 @@ public class LogEmbedUtil {
 		return lu.getLocalized(locale, "logger."+pathFooter);
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	private class LogEmbedBuilder {
 
 		private final DiscordLocale locale;
@@ -595,7 +595,7 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
-	public MessageEmbed tempRoleAddedEmbed(DiscordLocale locale, User mod, User user, String roleId, Duration duration, boolean deleteAfter) {
+	public MessageEmbed tempRoleAddedEmbed(DiscordLocale locale, User mod, User user, long roleId, Duration duration, boolean deleteAfter) {
 		return new LogEmbedBuilder(locale, GREEN_LIGHT)
 			.setHeaderIcon("roles.temp_added", user.getEffectiveAvatarUrl())
 			.setUser(user.getIdLong())
@@ -866,7 +866,7 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
-	public MessageEmbed ticketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, String authorId, String claimerId) {
+	public MessageEmbed ticketClosedEmbed(DiscordLocale locale, GuildMessageChannel channel, User userClosed, long authorId, @Nullable Long claimerId) {
 		return new LogEmbedBuilder(locale, RED_LIGHT)
 			.setHeader("tickets.closed_title")
 			.setDescription(localized(locale, "tickets.closed_value")
@@ -1166,9 +1166,8 @@ public class LogEmbedUtil {
 
 	// Message
 	@Nullable
-	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, @NotNull MessageData oldData, @NotNull MessageData newData) {
-		String diff = getDiffContent(oldData.getContentStripped(), newData.getContentStripped());
-		// If there is no change to report - return null
+	public MessageEmbed messageUpdate(DiscordLocale locale, Member member, long channelId, long messageId, @NotNull MessageData oldData, @NotNull MessageData newData , @Nullable MessageData.DiffData diff) {
+		// If it had no attachment
 		if ((oldData.getAttachment() == null || newData.getAttachment() != null) && diff == null) return null;
 
 		LogEmbedBuilder builder = new LogEmbedBuilder(locale, AMBER_LIGHT)
@@ -1183,7 +1182,7 @@ public class LogEmbedUtil {
 		}
 		if (diff != null) {
 			builder.appendDescription("**"+localized(locale, "messages.content")+"**: ```diff\n")
-				.appendDescription(MessageUtil.limitString(diff, 1600))
+				.appendDescription(MessageUtil.limitString(diff.content(), 1400))
 				.appendDescription("\n```");
 		}
 
@@ -1251,6 +1250,19 @@ public class LogEmbedUtil {
 			builder.setMod(modId);
 		}
 		return builder.build();
+	}
+
+	// Level
+	@NotNull
+	public MessageEmbed levelUp(DiscordLocale locale, Member member, int level, ExpType expType) {
+		return new LogEmbedBuilder(locale, GREEN_DARK)
+			.setHeaderIcon(LogEvent.LEVEL_UP, member.getEffectiveAvatarUrl(), member.getUser().getName())
+			.setTitle(lu.getLocalizedRandom(locale, "logger.levels.msg_random")
+				.replace("{user}", member.getAsMention())
+				.replace("{level}", String.valueOf(level))
+				.replace("{type}", expType.equals(ExpType.TEXT) ? "\uD83D\uDCAC" : "\uD83C\uDF99️")
+			)
+			.build();
 	}
 
 
@@ -1482,54 +1494,6 @@ public class LogEmbedUtil {
 		if (addedPerms.isEmpty() && removedPerms.isEmpty()) return null;
 		return Pair.of(removedPerms, addedPerms);
 
-	}
-
-	// Updated message content difference
-	@Nullable
-	private String getDiffContent(@NotNull String oldContent, @NotNull String newContent) {
-		if (oldContent.equals(newContent)) return null;
-		DiffRowGenerator generator = DiffRowGenerator.create()
-			.showInlineDiffs(true)
-			.inlineDiffByWord(true)
-			.ignoreWhiteSpaces(true)
-			.lineNormalizer(f -> f)
-			.newTag(f -> "")
-			.oldTag(f -> "")
-			.build();
-		List<DiffRow> rows = generator.generateDiffRows(
-			List.of(oldContent.split("\\n")),
-			List.of(newContent.split("\\n"))
-		);
-		
-		StringBuilder diff = new StringBuilder();
-		boolean skipped = false;
-		final int size = rows.size();
-		for (int i = 0; i<size; i++) {
-			DiffRow row = rows.get(i);
-			if (row.getTag().equals(Tag.EQUAL)) {
-				if ((i+1 >= size || rows.get(i+1).getTag().equals(Tag.EQUAL))
-					&& (i-1 < 0 || rows.get(i-1).getTag().equals(Tag.EQUAL)))
-				{
-					skipped = true;
-					continue;
-				}
-			}
-			if (skipped) {
-				diff.append(" ...\n");
-				skipped = false;
-			}
-
-			switch (row.getTag()) {
-				case INSERT -> diff.append("+ ").append(row.getNewLine());
-				case DELETE -> diff.append("- ").append(row.getOldLine());
-				case CHANGE -> diff.append("- ").append(row.getOldLine())
-						.append("\n")
-						.append("+ ").append(row.getNewLine());
-				default -> diff.append(" ").append(row.getOldLine());
-			}
-			diff.append("\n");
-		}
-		return diff.toString();
 	}
 
 }

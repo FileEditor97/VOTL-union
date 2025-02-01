@@ -31,8 +31,8 @@ public class CloseCmd extends CommandBase {
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 
-		String channelId = event.getChannel().getId();
-		String authorId = bot.getDBUtil().ticket.getUserId(channelId);
+		long channelId = event.getChannel().getIdLong();
+		Long authorId = bot.getDBUtil().ticket.getUserId(channelId);
 
 		if (authorId == null) {
 			// If this channel is not a ticket
@@ -46,7 +46,7 @@ public class CloseCmd extends CommandBase {
 		}
 
 		// Check access
-		final boolean isAuthor = authorId.equals(event.getUser().getId());
+		final boolean isAuthor = authorId.equals(event.getUser().getIdLong());
 		if (!isAuthor) {
 			switch (bot.getDBUtil().getTicketSettings(event.getGuild()).getAllowClose()) {
 				case EVERYONE -> {}
@@ -87,8 +87,7 @@ public class CloseCmd extends CommandBase {
 
 		String reason = event.optString(
 			"reason",
-			bot.getDBUtil().ticket.getUserId(channelId).equals(event.getUser().getId())
-				? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_author")
+			isAuthor ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_author")
 				: lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.closed_support")
 		);
 

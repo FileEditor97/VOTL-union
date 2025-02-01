@@ -3,8 +3,12 @@ package union.listeners;
 import java.time.OffsetDateTime;
 import java.util.EnumSet;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
 import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.logs.LogType;
@@ -24,15 +28,23 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import union.utils.database.managers.GuildVoiceManager;
+import union.utils.level.PlayerObject;
 
 public class VoiceListener extends ListenerAdapter {
+
+	// cache users in voice for exp
+	// userId and start time
+	private final Cache<PlayerObject, Long> cache = Caffeine.newBuilder()
+		.expireAfterWrite(10, TimeUnit.MINUTES)
+		.build();
 	
 	private final DBUtil db;
 	private final App bot;
 
-	public VoiceListener(App bot) {
+	public VoiceListener(App bot, ScheduledExecutorService executor) {
 		this.db = bot.getDBUtil();
 		this.bot = bot;
+		startRewardTask(executor);
 	}
 
 	@Override
@@ -86,6 +98,16 @@ public class VoiceListener extends ListenerAdapter {
 			channelLeft.delete().reason("Custom channel, empty").queueAfter(500, TimeUnit.MILLISECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL));
 			db.voice.remove(channelLeft.getIdLong());
 		}
+
+		if (db.levels.getSettings(event.getGuild()).isVoiceEnabled()) {
+			if (channelJoined != null && channelLeft == null) {
+				// Joined vc first time
+				cache.put(new PlayerObject(event.getGuild().getIdLong(), event.getMember().getIdLong()), System.currentTimeMillis());
+			} else if (channelJoined == null && channelLeft != null) {
+				// left voice
+				handleUserLeave(event.getMember());
+			}
+		}
 	}
 
 	private void handleVoiceCreate(Guild guild, Member member) {
@@ -128,5 +150,56 @@ public class VoiceListener extends ListenerAdapter {
 								.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
 				}
 			);
+	}
+
+	private boolean inVoice(GuildVoiceState state) {
+		return state != null && state.inAudioChannel();
+	}
+
+	private boolean isEligbleForRewards(GuildVoiceState state) {
+		return !state.isMuted() && !state.isDeafened() &&
+			!state.isSuppressed();
+	}
+
+	private void startRewardTask(ScheduledExecutorService executor) {
+		executor.scheduleAtFixedRate(() -> {
+			cache.asMap().forEach((player, joinTime) -> {
+				Member member = Optional.ofNullable(bot.JDA.getGuildById(player.guildId))
+					.map(g -> g.getMemberById(player.userId))
+					.orElse(null);
+
+				if (member == null) {
+					handleUserLeave(player);
+					return;
+				}
+
+				GuildVoiceState state = member.getVoiceState();
+				if (inVoice(state)) {
+					// In voice - check if not muted/deafened/AFK
+					if (isEligbleForRewards(state)) {
+						bot.getLevelUtil().rewardVoicePlayer(member, state.getChannel());
+					}
+				} else {
+					// Not in voice
+					handleUserLeave(player);
+				}
+			});
+		}, 3, 2, TimeUnit.MINUTES);
+	}
+
+	private void handleUserLeave(Member member) {
+		handleUserLeave(new PlayerObject(member));
+	}
+
+	private void handleUserLeave(PlayerObject player) {
+		Long timeJoined = cache.getIfPresent(player);
+
+		if (timeJoined != null) {
+			long duration = Math.round((System.currentTimeMillis()-timeJoined)/1000f); // to seconds
+			if (duration > 0) {
+				bot.getDBUtil().levels.addVoiceTime(player, duration);
+			}
+		}
+		cache.invalidate(player);
 	}
 }

@@ -79,7 +79,7 @@ public class TempRoleCmd extends CommandBase {
 			}
 			// Check if role whitelisted
 			if (bot.getDBUtil().getGuildSettings(guild).isRoleWhitelistEnabled()) {
-				if (!bot.getDBUtil().role.existsRole(role.getId())) {
+				if (!bot.getDBUtil().role.existsRole(role.getIdLong())) {
 					// Not whitelisted
 					editError(event, path+".not_whitelisted", "Role: %s".formatted(role.getAsMention()));
 					return;
@@ -97,8 +97,8 @@ public class TempRoleCmd extends CommandBase {
 			}
 			
 			// Check if already added
-			String roleId = role.getId();
-			String userId = member.getId();
+			long roleId = role.getIdLong();
+			long userId = member.getIdLong();
 			if (bot.getDBUtil().tempRole.expireAt(roleId, userId) != null) {
 				editError(event, path+".already_set");
 				return;
@@ -134,7 +134,7 @@ public class TempRoleCmd extends CommandBase {
 							e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
 							actionEvent -> {
 								guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
-									if (!bot.getDBUtil().tempRole.add(guild.getId(), roleId, userId, true, until)) {
+									if (!bot.getDBUtil().tempRole.add(guild.getIdLong(), roleId, userId, true, until)) {
 										editErrorUnknown(event, "Database error.");
 										return;
 									}
@@ -155,7 +155,7 @@ public class TempRoleCmd extends CommandBase {
 					});
 			} else {
 				guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
-					if (!bot.getDBUtil().tempRole.add(guild.getId(), roleId, userId, false, until)) {
+					if (!bot.getDBUtil().tempRole.add(guild.getIdLong(), roleId, userId, false, until)) {
 						editErrorUnknown(event, "Database error.");
 						return;
 					}
@@ -198,7 +198,7 @@ public class TempRoleCmd extends CommandBase {
 				return;
 			}
 			// Check time
-			Instant time = bot.getDBUtil().tempRole.expireAt(role.getId(), member.getId());
+			Instant time = bot.getDBUtil().tempRole.expireAt(role.getIdLong(), member.getIdLong());
 			if (time == null) {
 				editError(event, path+".not_found");
 				return;
@@ -206,7 +206,7 @@ public class TempRoleCmd extends CommandBase {
 
 			event.getGuild().removeRoleFromMember(member, role).reason("Canceled temporary role | by "+event.getMember().getEffectiveName()).queue();
 
-			if (!bot.getDBUtil().tempRole.remove(role.getId(), member.getId())) {
+			if (!bot.getDBUtil().tempRole.remove(role.getIdLong(), member.getIdLong())) {
 				editErrorUnknown(event, "Database error.");
 				return;
 			}
@@ -247,7 +247,7 @@ public class TempRoleCmd extends CommandBase {
 				return;
 			}
 			// Check time
-			Instant previousTime = bot.getDBUtil().tempRole.expireAt(role.getId(), member.getId());
+			Instant previousTime = bot.getDBUtil().tempRole.expireAt(role.getIdLong(), member.getIdLong());
 			if (previousTime == null) {
 				editError(event, path+".not_found");
 				return;
@@ -267,7 +267,7 @@ public class TempRoleCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().tempRole.updateTime(role.getId(), member.getId(), until)) {
+			if (!bot.getDBUtil().tempRole.updateTime(role.getIdLong(), member.getIdLong(), until)) {
 				editErrorUnknown(event, "Database error.");
 				return;
 			}
@@ -293,7 +293,7 @@ public class TempRoleCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Guild guild = event.getGuild();
-			List<Map<String, Object>> list = bot.getDBUtil().tempRole.getAll(guild.getId());
+			List<Map<String, Object>> list = bot.getDBUtil().tempRole.getAll(guild.getIdLong());
 			if (list.isEmpty()) {
 				editEmbed(event, bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, path+".empty")).build());
 				return;

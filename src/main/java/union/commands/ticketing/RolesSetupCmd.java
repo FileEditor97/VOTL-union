@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.dv8tion.jda.internal.utils.Checks;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -70,7 +69,7 @@ public class RolesSetupCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			
 			Role role = event.optRole("role");
 			if (role == null || role.hasPermission(Permission.ADMINISTRATOR, Permission.MANAGE_ROLES, Permission.MANAGE_SERVER)) {
@@ -81,7 +80,7 @@ public class RolesSetupCmd extends CommandBase {
 				editError(event, path+".cant_interact");
 				return;
 			}
-			if (bot.getDBUtil().role.existsRole(role.getId())) {
+			if (bot.getDBUtil().role.existsRole(role.getIdLong())) {
 				editError(event, path+".exists");
 				return;
 			}
@@ -115,7 +114,7 @@ public class RolesSetupCmd extends CommandBase {
 									editError(event, path+".invalid_invite", "Not server type invite");
 									return;
 								}
-								if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), rowTemp, type, invite.getUrl())) {
+								if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), rowTemp, type, invite.getUrl())) {
 									editErrorUnknown(event, "Database error.");
 									return;
 								}
@@ -123,7 +122,7 @@ public class RolesSetupCmd extends CommandBase {
 							},
 							failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
 					} else {
-						if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), row, type, "NULL")) {
+						if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), row, type, "NULL")) {
 							editErrorUnknown(event, "Database error.");
 							return;
 						}
@@ -136,7 +135,7 @@ public class RolesSetupCmd extends CommandBase {
 						return;
 					}
 					String description = event.optString("description", role.getName());
-					if (!bot.getDBUtil().role.add(guildId, role.getId(), description, null, RoleType.TOGGLE, "NULL")) {
+					if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), description, null, RoleType.TOGGLE, "NULL")) {
 						editErrorUnknown(event, "Database error.");
 						return;
 					}
@@ -147,7 +146,7 @@ public class RolesSetupCmd extends CommandBase {
 						editError(event, path+".custom_max");
 						return;
 					}
-					if (!bot.getDBUtil().role.add(guildId, role.getId(), event.optString("description", "NULL"), null, RoleType.CUSTOM, "NULL")) {
+					if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), null, RoleType.CUSTOM, "NULL")) {
 						editErrorUnknown(event, "Database error.");
 						return;
 					}
@@ -192,7 +191,7 @@ public class RolesSetupCmd extends CommandBase {
 				editError(event, path+".no_role");
 				return;
 			}
-			if (!bot.getDBUtil().role.existsRole(role.getId())) {
+			if (!bot.getDBUtil().role.existsRole(role.getIdLong())) {
 				editError(event, path+".not_exists");
 				return;
 			}
@@ -203,7 +202,7 @@ public class RolesSetupCmd extends CommandBase {
 				String description = event.optString("description");
 				if (description.equalsIgnoreCase("null")) description = null;
 
-				if (bot.getDBUtil().role.isToggleable(role.getId())) {
+				if (bot.getDBUtil().role.isToggleable(role.getIdLong())) {
 					if (description == null) {
 						description = role.getName();
 						response.append(lu.getText(event, path+".default_description"));
@@ -218,7 +217,7 @@ public class RolesSetupCmd extends CommandBase {
 						response.append(lu.getText(event, path+".changed_description").replace("{text}", description));
 					}
 				}
-				if (!bot.getDBUtil().role.setDescription(role.getId(), description)) {
+				if (!bot.getDBUtil().role.setDescription(role.getIdLong(), description)) {
 					editErrorUnknown(event, "Database error.");
 					return;
 				}
@@ -226,7 +225,7 @@ public class RolesSetupCmd extends CommandBase {
 
 			if (event.hasOption("row")) {
 				Integer row = event.optInteger("row");
-				if (!bot.getDBUtil().role.setRow(role.getId(), row)) {
+				if (!bot.getDBUtil().role.setRow(role.getIdLong(), row)) {
 					editErrorUnknown(event, "Database error.");
 					return;
 				}
@@ -236,7 +235,7 @@ public class RolesSetupCmd extends CommandBase {
 			if (event.hasOption("invite")) {
 				String link = event.optString("invite").replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim();
 				if (link.equalsIgnoreCase("null")) {
-					if (!bot.getDBUtil().role.setInvite(role.getId(), "NULL")) {
+					if (!bot.getDBUtil().role.setInvite(role.getIdLong(), "NULL")) {
 						editErrorUnknown(event, "Database error.");
 						return;
 					}
@@ -247,7 +246,7 @@ public class RolesSetupCmd extends CommandBase {
 						if (invite.isFromGuild() && invite.isTemporal()) {
 							response.append(lu.getText(event, path+".invalid_invite"));
 						} else {
-							if (!bot.getDBUtil().role.setInvite(role.getId(), invite.getUrl())) {
+							if (!bot.getDBUtil().role.setInvite(role.getIdLong(), invite.getUrl())) {
 								editErrorUnknown(event, "Database error.");
 								return;
 							}
@@ -294,13 +293,7 @@ public class RolesSetupCmd extends CommandBase {
 			String input = event.optString("id").trim();
 
 			Matcher matcher = rolePattern.matcher(input);
-			String roleId = matcher.find() ? matcher.group(1) : input;
-			try {
-				Checks.isSnowflake(roleId);
-			} catch (IllegalArgumentException e) {
-				editError(event, path+".no_role", "ID: "+roleId);
-				return;
-			}
+			long roleId = Long.parseLong(matcher.find() ? matcher.group(1) : input);
 
 			if (!bot.getDBUtil().role.existsRole(roleId)) {
 				editError(event, path+".no_role");
@@ -311,7 +304,7 @@ public class RolesSetupCmd extends CommandBase {
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").replace("{id}", roleId))
+				.setDescription(lu.getText(event, path+".done").replace("{id}", String.valueOf(roleId)))
 				.build());
 		}
 	}
@@ -327,7 +320,7 @@ public class RolesSetupCmd extends CommandBase {
 			event.deferReply(true).queue();
 
 			Guild guild = event.getGuild();
-			String guildId = guild.getId();
+			long guildId = guild.getIdLong();
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".title"));
 
@@ -366,7 +359,7 @@ public class RolesSetupCmd extends CommandBase {
 			roles.forEach(data -> {
 				Role role = guild.getRoleById(data.getIdLong());
 				if (role == null) {
-					bot.getDBUtil().role.remove(data.getId());
+					bot.getDBUtil().role.remove(data.getIdLong());
 					return;
 				}
 				String withLink = Optional.ofNullable(data.getDiscordInvite()).map(l -> "[`%s`](%s)".formatted(data.getId(), l)).orElse("`%s`".formatted(data.getId()));

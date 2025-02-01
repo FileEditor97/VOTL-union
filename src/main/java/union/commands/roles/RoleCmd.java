@@ -85,7 +85,7 @@ public class RoleCmd extends CommandBase {
 				}
 				// Check if role whitelisted
 				if (whitelistEnabled) {
-					if (!bot.getDBUtil().role.existsRole(r.getId())) {
+					if (!bot.getDBUtil().role.existsRole(r.getIdLong())) {
 						// Not whitelisted
 						editError(event, path+".not_whitelisted", "Role: %s".formatted(r.getAsMention()));
 						return;
@@ -160,7 +160,7 @@ public class RoleCmd extends CommandBase {
 				}
 				// Check if role whitelisted
 				if (whitelistEnabled) {
-					if (!bot.getDBUtil().role.existsRole(r.getId())) {
+					if (!bot.getDBUtil().role.existsRole(r.getIdLong())) {
 						// Not whitelisted
 						editError(event, path+".not_whitelisted", "Role: %s".formatted(r.getAsMention()));
 						return;
@@ -301,7 +301,7 @@ public class RoleCmd extends CommandBase {
 				if (denyReason != null) continue;
 				// Check if role whitelisted
 				if (whitelistEnabled) {
-					if (!bot.getDBUtil().role.existsRole(role.getId())) continue;
+					if (!bot.getDBUtil().role.existsRole(role.getIdLong())) continue;
 				}
 				SelectOption option = SelectOption.of(role.getName(), role.getId());
 

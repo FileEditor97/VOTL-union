@@ -23,13 +23,14 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import union.utils.database.managers.GuildSettingsManager.AnticrashAction;
 
+import static union.utils.AlertUtil.TRIGGER_AMOUNT;
+
 public class GuildListener extends ListenerAdapter {
 
 	private final Helper helper;
 
 	private final Set<ActionType> watchedTypes = Set.of(ActionType.BAN, ActionType.CHANNEL_DELETE, ActionType.ROLE_DELETE, ActionType.INTEGRATION_DELETE, ActionType.AUTO_MODERATION_RULE_DELETE);
-	@SuppressWarnings("FieldCanBeLocal")
-	private final int TRIGGER_AMOUNT = 6;
+
 
 	public GuildListener(Helper helper) {
 		this.helper = helper;
@@ -53,6 +54,7 @@ public class GuildListener extends ListenerAdapter {
 			UserSnowflake admin = UserSnowflake.fromId(event.getEntry().getUserIdLong());
 			// Ignore actions made by both bots
 			if (admin.equals(helper.getJDA().getSelfUser()) || admin.equals(helper.getMainJDA().getSelfUser())) return;
+
 			// Check if anticrash enabled in this guild or group's master guild
 			long guildId = event.getGuild().getIdLong();
 			AnticrashAction action = helper.getDBUtil().guildSettings.getCachedAnticrashAction(guildId);
@@ -74,9 +76,8 @@ public class GuildListener extends ListenerAdapter {
 			if (!action.isEnabled()) return;
 
 			// add 1 point for action
-			helper.getDBUtil().alerts.addPoint(guildId, admin.getIdLong());
-			int amount = helper.getDBUtil().alerts.getPoints(guildId, admin.getIdLong());
-			if (amount >= TRIGGER_AMOUNT && amount < TRIGGER_AMOUNT+3) {
+			int points = App.getInstance().getAlertUtil().add(guildId, admin.getIdLong());
+			if (points >= TRIGGER_AMOUNT && points < TRIGGER_AMOUNT+3) {
 				// Threshold amount reached - possible harmful behaviour
 				AnticrashAction finalAction = action;
 				event.getGuild().retrieveMember(admin).queue(member -> {

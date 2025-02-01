@@ -12,40 +12,43 @@ import union.utils.CastUtil;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import static union.utils.CastUtil.castLong;
+
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public class RoleManager extends LiteDBBase {
 
 	public RoleManager(ConnectionUtil cu) {
 		super(cu, "requestRole");
 	}
 
-	public boolean add(String guildId, String roleId, String description, Integer row, RoleType roleType, String discordInvite) {
+	public boolean add(long guildId, long roleId, String description, Integer row, RoleType roleType, String discordInvite) {
 		return execute("INSERT INTO %s(guildId, roleId, description, type, row, discordInvite) VALUES (%s, %s, %s, %d, %d, %s)"
 			.formatted(table, guildId, roleId, quote(description), roleType.getType(), Optional.ofNullable(row).orElse(0), quote(discordInvite)));
 	}
 
-	public boolean remove(String roleId) {
+	public boolean remove(long roleId) {
 		return execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
 	}
 
-	public void removeAll(String guildId) {
+	public void removeAll(long guildId) {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public List<RoleData> getRolesByType(String guildId, RoleType type) {
+	public List<RoleData> getRolesByType(long guildId, RoleType type) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)"
 			.formatted(table, guildId, type.getType()), Set.of("roleId", "description"));
 		if (data.isEmpty()) return List.of();
 		return data.stream().map(m -> new RoleData(m, type)).toList();
 	}
 
-	public List<Map<String, Object>> getAssignable(String guildId) {
+	public List<Map<String, Object>> getAssignable(long guildId) {
 		return select("SELECT * FROM %s WHERE (guildId=%s AND type IN (%d, %d))"
 			.formatted(table, guildId, RoleType.ASSIGN.getType(), RoleType.ASSIGN_TEMP.getType()),
 			Set.of("roleId", "description", "row")
 		);
 	}
 
-	public List<RoleData> getAssignableByRow(String guildId, Integer row) {
+	public List<RoleData> getAssignableByRow(long guildId, int row) {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (guildId=%s AND type IN (%d, %d) AND row=%d)"
 			.formatted(table, guildId, RoleType.ASSIGN.getType(), RoleType.ASSIGN_TEMP.getType(), row),
 			Set.of("roleId", "type", "description", "discordInvite")
@@ -54,64 +57,64 @@ public class RoleManager extends LiteDBBase {
 		return data.stream().map(RoleData::new).toList();
 	}
 
-	public List<Map<String, Object>> getToggleable(String guildId) {
+	public List<Map<String, Object>> getToggleable(long guildId) {
 		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.TOGGLE.getType()), Set.of("roleId", "description"));
 	}
 
-	public List<Map<String, Object>> getCustom(String guildId) {
+	public List<Map<String, Object>> getCustom(long guildId) {
 		return select("SELECT * FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, RoleType.CUSTOM.getType()), Set.of("roleId", "description"));
 	}
 
-	public Map<String, String> getRolesWithInvites(String guildId) {
+	public Map<Long, String> getRolesWithInvites(long guildId) {
 		List<Map<String, Object>> data = select("SELECT roleId, discordInvite FROM %s WHERE (guildId=%s AND discordInvite IS NOT NULL)".formatted(table, guildId),
 			Set.of("roleId", "discordInvite")
 		);
 		if (data.isEmpty()) return Collections.emptyMap();
-		return data.stream().collect(Collectors.toMap(s -> (String) s.get("roleId"), s -> (String) s.get("discordInvite")));
+		return data.stream().collect(Collectors.toMap(s -> castLong(s.get("roleId")), s -> (String) s.get("discordInvite")));
 	}
 
-	public Integer getRowSize(String guildId, Integer row) {
+	public Integer getRowSize(long guildId, int row) {
 		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND row=%d)".formatted(table, guildId, row));
 	}
 
-	public Integer countRoles(String guildId, RoleType type) {
+	public Integer countRoles(long guildId, RoleType type) {
 		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND type=%d)".formatted(table, guildId, type.getType()));
 	}
 
-	public String getDescription(String roleId) {
+	public String getDescription(long roleId) {
 		return selectOne("SELECT description FROM %s WHERE (roleId=%s)".formatted(table, roleId), "description", String.class);
 	}
 
-	public RoleType getType(String roleId) {
+	public RoleType getType(long roleId) {
 		Integer data = selectOne("SELECT type FROM %s WHERE (roleId=%s)".formatted(table, roleId), "type", Integer.class);
 		if (data == null) return null;
 		return RoleType.byType(data);
 	}
 
-	public boolean setDescription(String roleId, String description) {
+	public boolean setDescription(long roleId, String description) {
 		return execute("UPDATE %s SET description=%s WHERE (roleId=%s)".formatted(table, quote(description), roleId));
 	}
 
-	public boolean setRow(String roleId, Integer row) {
+	public boolean setRow(long roleId, Integer row) {
 		return execute("UPDATE %s SET row=%d WHERE (roleId=%s)".formatted(table, Optional.ofNullable(row).orElse(0), roleId));
 	}
 
-	public boolean setInvite(String roleId, String discordInvite) {
+	public boolean setInvite(long roleId, String discordInvite) {
 		return execute("UPDATE %s SET discordInvite=%s WHERE (roleId=%s)".formatted(table, quote(discordInvite), roleId));
 	}
 
-	public boolean isToggleable(String roleId) {
+	public boolean isToggleable(long roleId) {
 		RoleType type = getType(roleId);
 		return type != null && type.equals(RoleType.TOGGLE);
 	}
 
-	public boolean isTemp(String roleId) {
+	public boolean isTemp(long roleId) {
 		RoleType type = getType(roleId);
 		return type != null && type.equals(RoleType.ASSIGN_TEMP);
 	}
 
-	public boolean existsRole(String roleId) {
-		return selectOne("SELECT roleId FROM %s WHERE (roleId=%s)".formatted(table, roleId), "roleId", String.class) != null;
+	public boolean existsRole(long roleId) {
+		return selectOne("SELECT roleId FROM %s WHERE (roleId=%s)".formatted(table, roleId), "roleId", Long.class) != null;
 	}
 
 	public static class RoleData {
@@ -120,16 +123,14 @@ public class RoleManager extends LiteDBBase {
 		private final String description, discordInvite;
 
 		public RoleData(Map<String, Object> map) {
-			String roleId = CastUtil.requireNonNull(map.get("roleId")); // roleId is stored as String in DB
-			this.id = CastUtil.castLong(roleId);
+			this.id = CastUtil.requireNonNull(map.get("roleId"));
 			this.type = RoleType.byType(CastUtil.requireNonNull(map.get("type")));
 			this.description = CastUtil.getOrDefault(map.get("description"), null);
 			this.discordInvite = CastUtil.getOrDefault(map.get("discordInvite"), null);
 		}
 
 		public RoleData(Map<String, Object> map, RoleType roleType) {
-			String roleId = CastUtil.requireNonNull(map.get("roleId")); // roleId is stored as String in DB
-			this.id = CastUtil.castLong(roleId);
+			this.id = CastUtil.requireNonNull(map.get("roleId"));
 			this.type = roleType;
 			this.description = CastUtil.getOrDefault(map.get("description"), null);
 			this.discordInvite = null;

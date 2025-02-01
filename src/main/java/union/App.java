@@ -12,7 +12,8 @@ import union.base.waiter.EventWaiter;
 import union.commands.games.GameCmd;
 import union.commands.games.GameStrikeCmd;
 import union.commands.guild.*;
-import union.commands.image.UserProfileCmd;
+import union.commands.level.LeaderboardCmd;
+import union.commands.level.UserProfileCmd;
 import union.commands.moderation.*;
 import union.commands.other.*;
 import union.commands.owner.*;
@@ -37,6 +38,7 @@ import union.utils.file.FileManager;
 import union.utils.file.SettingsManager;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.imagegen.UserBackgroundHandler;
+import union.utils.level.LevelUtil;
 import union.utils.logs.LogEmbedUtil;
 import union.utils.logs.LoggingUtil;
 import union.utils.logs.WebhookLogger;
@@ -78,16 +80,19 @@ public class App {
 
     private final LoggingUtil logUtil;
 
+	private final SettingsManager settings;
     private final DBUtil dbUtil;
-	private final MessageUtil messageUtil;
+	private final LocaleUtil localeUtil;
+
 	private final EmbedUtil embedUtil;
 	private final CheckUtil checkUtil;
-	private final LocaleUtil localeUtil;
+	private final MessageUtil messageUtil;
 	private final LogEmbedUtil logEmbedUtil;
 	private final TicketUtil ticketUtil;
 	private final WebhookLogger webhookLogger;
 	private final ModerationUtil moderationUtil;
-	private final SettingsManager settings;
+	private final LevelUtil levelUtil;
+	private final AlertUtil alertUtil;
 
 	@SuppressWarnings("BusyWait")
 	public App() {
@@ -112,6 +117,7 @@ public class App {
 		settings	= new SettingsManager(fileManager);
 		dbUtil		= new DBUtil(fileManager, settings);
 		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
+
 		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this, ownerId);
@@ -120,18 +126,20 @@ public class App {
 		logUtil		= new LoggingUtil(this);
 		webhookLogger = new WebhookLogger(dbUtil);
 		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
+		levelUtil	= new LevelUtil(this);
+		alertUtil	= new AlertUtil();
+
+		ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 
 		WAITER = new EventWaiter();
         GuildListener guildListener				= new GuildListener(this);
         InteractionListener interactionListener = new InteractionListener(this, WAITER);
-        VoiceListener voiceListener				= new VoiceListener(this);
+        VoiceListener voiceListener				= new VoiceListener(this, scheduledExecutor);
         messageListener							= new MessageListener(this);
         MemberListener memberListener			= new MemberListener(this);
         ModerationListener moderationListener	= new ModerationListener(this);
         AuditListener auditListener				= new AuditListener(this);
 		EventListener eventListener				= new EventListener();
-
-        ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 
 		ScheduledCheck scheduledCheck = new ScheduledCheck(this);
 		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::timedChecks, 3, 10, TimeUnit.MINUTES);
@@ -167,6 +175,7 @@ public class App {
 				new SetStatusCmd(),
 				new ImportBanlistCmd(),
 				new CheckAccessCmd(),
+				new ExperienceCmd(),
 				// webhook
 				new WebhookCmd(),
 				// moderation
@@ -207,7 +216,7 @@ public class App {
 				new RolesPanelCmd(),
 				new TicketCountCmd(),
 				new RolesSetupCmd(),
-				new TicketPanelCmd(),
+				new TicketCmd(),
 				new CloseCmd(),
 				new RcloseCmd(),
 				new AddUserCmd(),
@@ -222,8 +231,9 @@ public class App {
 				// games
 				new GameCmd(),
 				new GameStrikeCmd(),
-				// image
-				new UserProfileCmd()
+				// level
+				new UserProfileCmd(),
+				new LeaderboardCmd()
 			)
 			.addContextMenus(
 				new AccountContext(),
@@ -385,6 +395,14 @@ public class App {
 
 	public SettingsManager getSettings() {
 		return settings;
+	}
+
+	public LevelUtil getLevelUtil() {
+		return levelUtil;
+	}
+
+	public AlertUtil getAlertUtil() {
+		return alertUtil;
 	}
 
 	public void shutdownUtils() {

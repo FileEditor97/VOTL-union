@@ -1,16 +1,20 @@
 package union.utils.database.managers;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import union.objects.constants.Constants;
-import union.utils.FixedCache;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class VerifyCacheManager extends LiteDBBase {
 	// Cache
 	// discordId - steam64
-	private final FixedCache<Long, Long> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE*20);
+	private final Cache<Long, Long> cache = Caffeine.newBuilder()
+		.maximumSize(1000)
+		.expireAfterAccess(1, TimeUnit.DAYS)
+		.build();
 
 	public VerifyCacheManager(ConnectionUtil cu) {
 		super(cu, "verified");
@@ -27,7 +31,7 @@ public class VerifyCacheManager extends LiteDBBase {
 	}
 
 	public boolean isVerified(long discordId) {
-		if (cache.contains(discordId))
+		if (cache.getIfPresent(discordId) != null)
 			return true;
 		Long steam64 = selectOne("SELECT steam64 FROM %s WHERE (discordId=%s)".formatted(table, discordId), "steam64", Long.class);
 		if (steam64 == null)
@@ -37,9 +41,10 @@ public class VerifyCacheManager extends LiteDBBase {
 	}
 
 	public Long getSteam64(long discordId) {
-		if (cache.contains(discordId))
-			return cache.pull(discordId);
-		Long steam64 = selectOne("SELECT steam64 FROM %s WHERE (discordId=%s)".formatted(table, discordId), "steam64", Long.class);
+		Long steam64 = cache.getIfPresent(discordId);
+		if (steam64 != null)
+			return steam64;
+		steam64 = selectOne("SELECT steam64 FROM %s WHERE (discordId=%s)".formatted(table, discordId), "steam64", Long.class);
 		if (steam64 == null)
 			return null;
 		cache.put(discordId, steam64);
@@ -53,6 +58,7 @@ public class VerifyCacheManager extends LiteDBBase {
 
 
 	public void addForcedUser(long discordId) {
+		invalidateCache(discordId);
 		execute("INSERT INTO %s(discordId) VALUES (%s) ON CONFLICT(discordId) DO NOTHING".formatted(table, discordId));
 	}
 
@@ -71,18 +77,12 @@ public class VerifyCacheManager extends LiteDBBase {
 			return false;
         return steam64 == 0L;
     }
-	
-
-	public void purgeVerified() {
-		cache.purge();
-		execute("DELETE FROM %s".formatted(table));
-	}
 
 	public Integer count() {
 		return count("SELECT COUNT(*) FROM %s".formatted(table));
 	}
 
 	private void invalidateCache(long discordId) {
-		cache.pull(discordId);
+		cache.invalidate(discordId);
 	}
 }

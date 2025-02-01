@@ -87,7 +87,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 		}
 		else if (focusedOption.equals("panel_id")) {
 			String value = event.getFocusedOption().getValue();
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			if (value.isBlank()) {
 				// if input is blank, show max 25 choices
 				List<Choice> choices = db.panels.getPanelsText(guildId).entrySet().stream()
@@ -116,7 +116,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 		}
 		else if (focusedOption.equals("tag_id")) {
 			String value = event.getFocusedOption().getValue();
-			String guildId = event.getGuild().getId();
+			long guildId = event.getGuild().getIdLong();
 			if (value.isBlank()) {
 				// if input is blank, show max 25 choices
 				List<Choice> choices = db.tags.getTagsText(guildId).entrySet().stream()

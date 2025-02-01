@@ -28,9 +28,8 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildLeave(@NotNull GuildLeaveEvent event) {
-		String guildId = event.getGuild().getId();
 		long guildIdLong = event.getGuild().getIdLong();
-		bot.getAppLogger().info("Left guild '{}'({})", event.getGuild().getName(), guildId);
+		bot.getAppLogger().info("Left guild '{}'({})", event.getGuild().getName(), guildIdLong);
 
 		// Deletes every information connected to this guild from bot's DB (except ban tables)
 		// May be dangerous, but provides privacy
@@ -68,11 +67,11 @@ public class GuildListener extends ListenerAdapter {
 		db.webhook.removeAll(guildIdLong);
 		db.verifySettings.remove(guildIdLong);
 		db.ticketSettings.remove(guildIdLong);
-		db.role.removeAll(guildId);
+		db.role.removeAll(guildIdLong);
 		db.guildVoice.remove(guildIdLong);
-		db.panels.deleteAll(guildId);
-		db.tags.deleteAll(guildId);
-		db.tempRole.removeAll(guildId);
+		db.panels.deleteAll(guildIdLong);
+		db.tags.deleteAll(guildIdLong);
+		db.tempRole.removeAll(guildIdLong);
 		db.autopunish.removeGuild(guildIdLong);
 		db.strike.removeGuild(guildIdLong);
 		db.logs.removeGuild(guildIdLong);
@@ -81,10 +80,12 @@ public class GuildListener extends ListenerAdapter {
 		db.games.removeGuild(guildIdLong);
 		db.modReport.removeGuild(guildIdLong);
 		db.persistent.removeGuild(guildIdLong);
+		db.levels.remove(guildIdLong);
+		db.levelRoles.removeGuild(guildIdLong);
 		
 		db.guildSettings.remove(guildIdLong);
 
-		bot.getAppLogger().info("Automatically removed guild '{}'({}) from db.", event.getGuild().getName(), guildId);
+		bot.getAppLogger().info("Automatically removed guild '{}'({}) from db.", event.getGuild().getName(), guildIdLong);
 	}
 
 }

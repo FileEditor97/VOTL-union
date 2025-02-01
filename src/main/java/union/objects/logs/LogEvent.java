@@ -33,7 +33,7 @@ public enum LogEvent {
 	MESSAGE_DELETE("delete", LogType.MESSAGE),
 	MESSAGE_BULK_DELETE("bulk_delete", LogType.MESSAGE),
 	MESSAGE_UPDATE("update", LogType.MESSAGE),
-	//INVITE_SENT("sent", LogType.INVITE),
+	LEVEL_UP("level_up", LogType.LEVEL),
 	OTHER("other");
 
 	private final String path;

@@ -82,7 +82,7 @@ public class ModStatsCmd extends CommandBase {
 			return;
 		}
 
-		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), afterTime, beforeTime, true);
+		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getIdLong(), mod.getIdLong(), afterTime, beforeTime, true);
 		Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), afterTime, beforeTime);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
@@ -110,9 +110,10 @@ public class ModStatsCmd extends CommandBase {
 	private void returnFullStats(SlashCommandEvent event) {
 		User mod = event.optUser("user", event.getUser());
 		long guildId = event.getGuild().getIdLong();
+		long modId = mod.getIdLong();
 
-		Map<Integer, Integer> countTotal = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong());
-		final int rolesTotal = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), true);
+		Map<Integer, Integer> countTotal = bot.getDBUtil().cases.countCasesByMod(guildId, modId);
+		final int rolesTotal = bot.getDBUtil().ticket.countTicketsByMod(guildId, modId, true);
 		if (countTotal.isEmpty() && rolesTotal==0) {
 			editError(event, path+".empty");
 			return;
@@ -120,17 +121,17 @@ public class ModStatsCmd extends CommandBase {
 
 		final Instant now = Instant.now();
 
-		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), now.minus(30, ChronoUnit.DAYS));
-		final int roles30 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), now.minus(30, ChronoUnit.DAYS), true);
+		Map<Integer, Integer> count30 = bot.getDBUtil().cases.countCasesByMod(guildId, modId, now.minus(30, ChronoUnit.DAYS));
+		final int roles30 = bot.getDBUtil().ticket.countTicketsByMod(guildId, modId, now.minus(30, ChronoUnit.DAYS), true);
 
-		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), now.minus(7, ChronoUnit.DAYS));
-		final int roles7 = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getId(), mod.getId(), now.minus(7, ChronoUnit.DAYS), true);
+		Map<Integer, Integer> count7 = bot.getDBUtil().cases.countCasesByMod(guildId, modId, now.minus(7, ChronoUnit.DAYS));
+		final int roles7 = bot.getDBUtil().ticket.countTicketsByMod(guildId, modId, now.minus(7, ChronoUnit.DAYS), true);
 
 		if (!event.optBoolean("as_text", false)) {
 			ModStatsRender render = new ModStatsRender(event.getGuildLocale(), mod.getName(),
 				countTotal, count30, count7, rolesTotal, roles30, roles7);
 
-			final String attachmentName = EncodingUtil.encodeModstats(guildId, mod.getIdLong(), now.getEpochSecond());
+			final String attachmentName = EncodingUtil.encodeModstats(guildId, modId, now.getEpochSecond());
 
 			EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 				.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())

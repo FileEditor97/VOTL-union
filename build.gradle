@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
 	id 'java'
 	// ShadowJar
@@ -19,7 +21,7 @@ repositories {
 dependencies {
 	// JDA library and additions
 	// https://mvnrepository.com/artifact/net.dv8tion/JDA
-	implementation('net.dv8tion:JDA:5.2.2') {						// JDA library
+	implementation('net.dv8tion:JDA:5.2.3') {						// JDA library
 		exclude module: 'opus-java'
 	}
 	// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
@@ -38,6 +40,8 @@ dependencies {
 	implementation 'io.github.java-diff-utils:java-diff-utils:4.15' // Diff finder
 	// https://mvnrepository.com/artifact/org.json/json
 	implementation 'org.json:json:20250107'                         // JsonObject
+	// https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
+	implementation 'com.github.ben-manes.caffeine:caffeine:3.2.0'	// Cache
 
 	// Metrics
     // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
@@ -47,7 +51,7 @@ dependencies {
 
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
-	implementation 'org.apache.groovy:groovy:4.0.24'				// Groovy - code evaluation
+	implementation 'org.apache.groovy:groovy:4.0.25'				// Groovy - code evaluation
 }
 
 // jar's Manifest
@@ -60,11 +64,15 @@ jar {
 	}
 }
 
-// ShadowJar
-shadowJar {
-	archiveBaseName.set('VOTL')
-	archiveVersion.set(version)
-	archiveClassifier.set('')
+// ShadowJar config
+tasks.named('shadowJar', ShadowJar) {
+	archiveBaseName = 'VOTL'
+	archiveVersion = version
+	archiveClassifier = ''
+	minimize {
+		exclude(dependency('org.xerial:sqlite-jdbc:.*'))
+		exclude(dependency('org.mariadb.jdbc:mariadb-java-client:.*'))
+	}
 }
 
 compileJava.options.encoding = 'UTF-8'

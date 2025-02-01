@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import union.utils.CastUtil;
 import union.utils.file.lang.LocaleUtil;
 
+@SuppressWarnings("unused")
 public class MessageUtil {
 
 	private static final Random random = new Random();
@@ -104,7 +105,7 @@ public class MessageUtil {
 	}
 
 	public static String formatNumber(long number) {
-		return decimalFormat.format(number);
+		return decimalFormat.format(number).strip();
 	}
 
 	private static String escapeAll(String name) {

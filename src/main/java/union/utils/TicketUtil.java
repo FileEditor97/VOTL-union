@@ -36,7 +36,7 @@ public class TicketUtil {
 		this.db = bot.getDBUtil();
 	}
 
-	public void closeTicket(@NotNull String channelId, @Nullable User userClosed, @Nullable String reasonClosed, @NotNull Consumer<? super Throwable> failureHandler) {
+	public void closeTicket(long channelId, @Nullable User userClosed, @Nullable String reasonClosed, @NotNull Consumer<? super Throwable> failureHandler) {
 		GuildMessageChannel channel = bot.JDA.getChannelById(GuildMessageChannel.class, channelId);
 		if (channel == null) return; // already gone :(
 
@@ -78,9 +78,9 @@ public class TicketUtil {
 		final Instant now = Instant.now();
 
 		channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
-			db.ticket.closeTicket(now, channel.getId(), reasonClosed);
+			db.ticket.closeTicket(now, channel.getIdLong(), reasonClosed);
 
-			String authorId = db.ticket.getUserId(channel.getId());
+			Long authorId = db.ticket.getUserId(channel.getIdLong());
 
 			bot.getLogger().ticket.onClose(channel.getGuild(), channel, userClosed, authorId, file);
 		}, failureHandler);
@@ -96,9 +96,9 @@ public class TicketUtil {
 		);
 
 		channel.delete().reason(finalReason).queueAfter(4, TimeUnit.SECONDS, done -> {
-			db.ticket.closeTicket(now, channel.getId(), finalReason);
+			db.ticket.closeTicket(now, channel.getIdLong(), finalReason);
 
-			String authorId = db.ticket.getUserId(channel.getId());
+			Long authorId = db.ticket.getUserId(channel.getIdLong());
 
 			bot.JDA.retrieveUserById(authorId).queue(user -> {
 				user.openPrivateChannel().queue(pm -> {

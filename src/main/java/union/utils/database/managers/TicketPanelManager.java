@@ -21,11 +21,11 @@ public class TicketPanelManager extends LiteDBBase {
 		super(cu, "ticketPanel");
 	}
 
-	public int createPanel(String guildId, String title, String description, String image, String footer) {
+	public int createPanel(Long guildId, String title, String description, String image, String footer) {
 		List<String> keys = new ArrayList<>(5);
 		List<String> values = new ArrayList<>(5);
 		keys.add("guildId");
-		values.add(guildId);
+		values.add(guildId.toString());
 		keys.add("title");
 		values.add(quote(title));
 		if (description != null) {
@@ -43,19 +43,19 @@ public class TicketPanelManager extends LiteDBBase {
 		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
-	public boolean delete(Integer panelId) {
+	public boolean delete(int panelId) {
 		return execute("DELETE FROM %s WHERE (panelId=%d)".formatted(table, panelId));
 	}
 
-	public void deleteAll(String guildId) {
+	public void deleteAll(long guildId) {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public String getGuildId(Integer panelId) {
-		return selectOne("SELECT guildId FROM %s WHERE (panelId=%d)".formatted(table, panelId), "guildId", String.class);
+	public Long getGuildId(int panelId) {
+		return selectOne("SELECT guildId FROM %s WHERE (panelId=%d)".formatted(table, panelId), "guildId", Long.class);
 	}
 
-	public boolean updatePanel(Integer panelId, String title, String description, String image, String footer) {
+	public boolean updatePanel(int panelId, String title, String description, String image, String footer) {
 		List<String> values = new ArrayList<>();
 		if (title != null)
 			values.add("title="+quote(title));
@@ -70,24 +70,24 @@ public class TicketPanelManager extends LiteDBBase {
 		return false;
 	}
 
-	public Panel getPanel(Integer panelId) {
+	public Panel getPanel(int panelId) {
 		Map<String, Object> data = selectOne("SELECT * FROM %s WHERE (panelId=%d)".formatted(table, panelId),
 			Set.of("title", "description", "image", "footer"));
 		if (data==null) return null;
 		return new Panel(data);
 	}
 
-	public String getPanelTitle(Integer panelId) {
+	public String getPanelTitle(int panelId) {
 		return selectOne("SELECT title FROM %s WHERE (panelId=%d)".formatted(table, panelId), "title", String.class);
 	}
 
-	public Map<Integer, String> getPanelsText(String guildId) {
+	public Map<Integer, String> getPanelsText(long guildId) {
 		List<Map<String, Object>> data = select("SELECT panelId, title FROM %s WHERE (guildId=%s)".formatted(table, guildId), Set.of("panelId", "title"));
 		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().limit(25).collect(Collectors.toMap(s -> (Integer) s.get("panelId"), s -> (String) s.get("title")));
 	}
 
-	public Integer countPanels(String guildId) {
+	public int countPanels(long guildId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
@@ -114,7 +114,7 @@ public class TicketPanelManager extends LiteDBBase {
 			return text.replaceAll("<br>", "\n");
 		}
 
-		public EmbedBuilder getPrefiledEmbed(final Integer color) {
+		public EmbedBuilder getPrefiledEmbed(int color) {
 			EmbedBuilder builder = new EmbedBuilder().setColor(color)
 				.setTitle(title);
 			if (description!=null) builder.setDescription(description);

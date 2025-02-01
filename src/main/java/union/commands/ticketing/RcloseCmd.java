@@ -31,14 +31,15 @@ public class RcloseCmd extends CommandBase {
 		this.accessLevel = CmdAccessLevel.HELPER;
 	}
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private final int CLOSE_AFTER_DELAY = 12; // hours
 
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
 
-		String channelId = event.getChannel().getId();
-		String authorId = bot.getDBUtil().ticket.getUserId(channelId);
+		long channelId = event.getChannelIdLong();
+		Long authorId = bot.getDBUtil().ticket.getUserId(channelId);
 
 		if (authorId == null) {
 			// If this channel is not a ticket

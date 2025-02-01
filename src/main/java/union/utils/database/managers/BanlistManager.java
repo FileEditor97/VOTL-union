@@ -31,6 +31,7 @@ public class BanlistManager extends LiteDBBase {
 			.formatted(table, steam64, quote(reason), quote(details), quote(command))) > 0;
 	}
 
+	@SuppressWarnings("unused")
 	public void purgeTable(String table) {
 		execute("DELETE FROM %s;".formatted(table));
 	}
@@ -54,7 +55,7 @@ public class BanlistManager extends LiteDBBase {
 		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (steam64=%d)".formatted(table, steam64),
 			octo?Set.of("reason","details","command"):Set.of("reason")
 		);
-		if (data==null || data.isEmpty()) return null;
+		if (data.isEmpty()) return null;
 		if (octo) return data.stream()
 			.map(m -> {
 				return Map.of(

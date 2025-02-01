@@ -22,7 +22,7 @@ public enum LogType {
 	MEMBER("members"),
 	VOICE("voice"),
 	CHANNEL("channels"),
-	//INVITE("invite"),
+	LEVEL("levels"),
 	OTHER("other");
 
 	private final String name;

@@ -1944,13 +1944,13 @@
 					},
 					"first_report": {
 						"name": "first_report",
-						"help": "When to send the first report (use 'dd/MM/yyyy' or 'dd/MM/yyyy HH:mm' format)"
+						"help": "When to send the first report (UTC time, 'dd/MM/yyyy' or 'dd/MM/yyyy HH:mm' format)"
 					},
 					"no_roles": "No roles provided (use @Role) or more than 4.",
 					"invalid_role": "Invalid role provided.",
 					"failed_parse": "Failed to parse input date! Use format `day/month/year`.",
 					"wrong_date": "Wrong dates provided (next report date is before now).",
-					"done": "Next report will be sent at %s to %s channel.\nIt will repeat every `%s` days.\nInclude roles: %s"
+					"done": "Next report will be sent at %s **(UTC)** to channel %s.\nIt will repeat every `%s` days.\nInclude roles: %s"
 				},
 				"delete": {
 					"help": "Delete automatic moderation reports creation",

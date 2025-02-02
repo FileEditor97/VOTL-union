@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -68,10 +68,10 @@ public class ModStatsCmd extends CommandBase {
 		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		try {
 			beforeTime = beforeDate!=null
-				? LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant()
+				? LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant()
 				: Instant.now();
 			afterTime = afterDate!=null
-				? LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant()
+				? LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant()
 				: Instant.now().minus(7, ChronoUnit.DAYS);
 		} catch (Exception ex) {
 			editError(event, path+".failed_parse", ex.getMessage());
@@ -85,7 +85,7 @@ public class ModStatsCmd extends CommandBase {
 		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getIdLong(), mod.getIdLong(), afterTime, beforeTime, true);
 		Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guildId, mod.getIdLong(), afterTime, beforeTime);
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneOffset.UTC);
 		String intervalText = "%s\n`%s` - `%s`".formatted(lu.getText(event, path+".title"), formatter.format(afterTime), formatter.format(beforeTime));
 		EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setAuthor(mod.getName(), null, mod.getEffectiveAvatarUrl())

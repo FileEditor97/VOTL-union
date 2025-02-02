@@ -2,7 +2,7 @@ package union.commands.ticketing;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -42,8 +42,8 @@ public class TicketCountCmd extends CommandBase {
 
 		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		try {
-			if (afterDate != null) afterTime = LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
-			if (beforeDate != null) beforeTime = LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant();
+			if (afterDate != null) afterTime = LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant();
+			if (beforeDate != null) beforeTime = LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant();
 		} catch (Exception ex) {
 			editError(event, path+".failed_parse", ex.getMessage());
 			return;
@@ -61,7 +61,7 @@ public class TicketCountCmd extends CommandBase {
 		int countRoles = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getIdLong(), userId, afterTime, beforeTime, true);
 		int countOther = bot.getDBUtil().ticket.countTicketsByMod(event.getGuild().getIdLong(), userId, afterTime, beforeTime, false);
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneOffset.UTC);
 		editEmbed(event, bot.getEmbedUtil().getEmbed()
 			.setTitle("`"+formatter.format(afterTime)+"` - `"+formatter.format(beforeTime)+"`")
 			.setDescription(lu.getText(event, path+".done").replace("{user}", user.getAsMention()).replace("{id}", user.getId())

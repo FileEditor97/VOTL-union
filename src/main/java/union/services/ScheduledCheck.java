@@ -275,7 +275,7 @@ public class ScheduledCheck {
 					Instant previous = (interval==30 ?
 						now.minus(Period.ofMonths(1)) :
 						now.minus(Period.ofDays(interval))
-					).atZone(ZoneId.systemDefault()).toInstant();
+					).atZone(ZoneOffset.UTC).toInstant();
 
 					List<ReportData> reportDataList = new ArrayList<>(members.size());
 					members.forEach(m -> {

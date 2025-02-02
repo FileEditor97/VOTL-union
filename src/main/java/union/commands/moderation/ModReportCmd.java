@@ -17,7 +17,7 @@ import union.objects.constants.Constants;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
@@ -122,7 +122,7 @@ public class ModReportCmd extends CommandBase {
 			// Reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, path+".done").formatted(
-					TimeFormat.DATE_TIME_SHORT.format(firstReport.atZone(ZoneId.systemDefault())), channel.getAsMention(),
+					TimeFormat.DATE_TIME_SHORT.format(firstReport.atZone(ZoneOffset.UTC)), channel.getAsMention(),
 					interval, roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "))
 				))
 				.build());

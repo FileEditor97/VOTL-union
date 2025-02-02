@@ -2,7 +2,7 @@ package union.utils.message;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
@@ -239,7 +239,7 @@ public class TimeUtil {
 	}
 
 	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-		.withZone(ZoneId.systemDefault());
+		.withZone(ZoneOffset.UTC);
 
 	public static String timeToString(TemporalAccessor time) {
 		if (time == null) return "indefinitely";

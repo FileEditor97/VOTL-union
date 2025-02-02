@@ -188,6 +188,11 @@ public class LogEmbedUtil {
 			return this;
 		}
 
+		public LogEmbedBuilder setTitleText(String path) {
+			builder.setTitle(localized(locale, path));
+			return this;
+		}
+
 		public LogEmbedBuilder setDescription(String text) {
 			builder.setDescription(text);
 			return this;
@@ -1257,8 +1262,8 @@ public class LogEmbedUtil {
 	public MessageEmbed levelUp(DiscordLocale locale, Member member, int level, ExpType expType) {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
 			.setHeaderIcon(LogEvent.LEVEL_UP, member.getEffectiveAvatarUrl(), member.getUser().getName())
-			.setTitle(lu.getLocalizedRandom(locale, "logger.levels.msg_random")
-				.replace("{user}", member.getAsMention())
+			.setTitleText(lu.getLocalizedRandom(locale, "logger.levels.msg_random")
+				.replace("{user}", "<@!%s>".formatted(member.getIdLong()))
 				.replace("{level}", String.valueOf(level))
 				.replace("{type}", expType.equals(ExpType.TEXT) ? "\uD83D\uDCAC" : "\uD83C\uDF99️")
 			)

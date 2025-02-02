@@ -805,11 +805,7 @@ public class LoggingUtil {
 		public void onLevelUp(Member target, int level, ExpType expType) {
 			final Guild guild = target.getGuild();
 
-			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
-			if (client == null) return;
-			try {
-				client.sendMessageEmbeds(logUtil.levelUp(guild.getLocale(), target, level, expType)).setAllowedMentions(List.of()).queue();
-			} catch (Exception ignored) {}
+			sendLog(guild, type, () -> logUtil.levelUp(guild.getLocale(), target, level, expType));
 		}
 	}
 }

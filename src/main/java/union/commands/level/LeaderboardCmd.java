@@ -35,7 +35,7 @@ public class LeaderboardCmd extends CommandBase {
 		long authorId = event.getUser().getIdLong();
 
 		ExpType expType = ExpType.values()[event.optInteger("type", 0)];
-		int limit = expType.equals(ExpType.TOTAL) ? 10 : 20;
+		int limit = expType.equals(ExpType.TOTAL) ? 5 : 10;
 		LevelManager.TopInfo top = bot.getDBUtil().levels.getServerTop(event.getGuild().getIdLong(), expType, limit);
 
 		EmbedBuilder embed = bot.getEmbedUtil().getEmbed(event)

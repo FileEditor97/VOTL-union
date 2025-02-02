@@ -125,6 +125,7 @@ public class UserProfileCmd extends CommandBase {
 		long globalExperience = bot.getDBUtil().levels.getSumGlobalExp(userId);
 
 		render.setLevel(textLevel, voiceLevel)
+			.setTotalExperience(textExp, voiceExp)
 			.setXpDiff(textXpDiff, voiceXpDiff)
 			.setPercentage(
 				((double) (textExp - textMinXpInLevel) / textXpDiff) * 100,

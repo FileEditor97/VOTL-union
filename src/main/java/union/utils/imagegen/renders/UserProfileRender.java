@@ -35,12 +35,14 @@ public class UserProfileRender extends Renderer {
 
 	private long textLevel = -1;
 	private long textExperience = -1;
+	private long textLevelXp = -1;
 	private long textXpDiff = -1;
 	private double textPercentage = -1;
 	private String textRank = null;
 
 	private long voiceLevel = -1;
 	private long voiceExperience = -1;
+	private long voiceLevelXp = -1;
 	private long voiceXpDiff = -1;
 	private double voicePercentage = -1;
 	private String voiceRank = null;
@@ -101,9 +103,15 @@ public class UserProfileRender extends Renderer {
 		return this;
 	}
 
-	public UserProfileRender setCurrentLevelExperience(long textExperience, long voiceExperience) {
+	public UserProfileRender setTotalExperience(long textExperience, long voiceExperience) {
 		this.textExperience = textExperience;
 		this.voiceExperience = voiceExperience;
+		return this;
+	}
+
+	public UserProfileRender setCurrentLevelExperience(long textLevelXp, long voiceLevelXp) {
+		this.textLevelXp = textLevelXp;
+		this.voiceLevelXp = voiceLevelXp;
 		return this;
 	}
 
@@ -220,13 +228,13 @@ public class UserProfileRender extends Renderer {
 		drawFittingText(
 			g, Fonts.Montserrat.bold, text,
 			x, y,
-			240, 700,
-			20, 30
+			250, 700,
+			18, 30
 		);
 
 		y += 30;
-		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F));
-		text = "@"+MessageUtil.limitString(userName, 18);
+		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 16F));
+		text = "@"+MessageUtil.limitString(userName, 22);
 
 		g.setColor(background.getColors().getShadowColor());
 		g.drawString(text, x+12, y+2);
@@ -234,6 +242,7 @@ public class UserProfileRender extends Renderer {
 		g.drawString(text, x+10, y);
 
 		y += 15;
+		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F));
 		String formattedTime = "     "+timeCreated.format(formatter);
 		g.setColor(background.getColors().getCardColor());
 		FontMetrics fontMetrics = g.getFontMetrics();
@@ -317,8 +326,8 @@ public class UserProfileRender extends Renderer {
 	}
 
 	private void createXpBar(Graphics2D g) {
-		final String textXpBarText = formatXp(textExperience, textXpDiff);
-		final String voiceXpBarText = formatXp(voiceExperience, voiceXpDiff);
+		final String textXpBarText = formatXp(textLevelXp, textXpDiff);
+		final String voiceXpBarText = formatXp(voiceLevelXp, voiceXpDiff);
 
 		final int xpBarLength = 390;
 		final int hightDiff = 75; // between both bars
@@ -342,7 +351,7 @@ public class UserProfileRender extends Renderer {
 		// Create the text that should be displayed in the middle of the XP bar
 		g.setColor(background.getColors().getExperienceTextColor());
 
-		Font smallText = Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F);
+		Font smallText = Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 19F);
 		g.setFont(smallText);
 
 		FontMetrics fontMetrics = g.getFontMetrics(smallText);
@@ -396,22 +405,50 @@ public class UserProfileRender extends Renderer {
 	}
 
 	private void createXpText(Graphics2D g) {
-		String text = lu.getLocalized(locale, "imagegen.profile.global_xp")+":";
-		String number = String.valueOf(globalExperience);
+		final int hightDiff = 75; // between both bars
+		int xRight = 395;
+		int y = 190;
 
-		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, 20F));
-		FontMetrics fontMetrics = g.getFontMetrics(g.getFont());
+		drawXpText(
+			g, xRight, y,
+			"XP:",
+			String.valueOf(textExperience),
+			18
+		);
+
+		y+=hightDiff;
+		drawXpText(
+			g, xRight, y,
+			"XP:",
+			String.valueOf(voiceExperience),
+			18
+		);
+
+		y+=hightDiff;
+		drawXpText(
+			g, xRight, y,
+			lu.getLocalized(locale, "imagegen.profile.global_xp")+":",
+			String.valueOf(globalExperience),
+			20
+		);
+	}
+
+	private void drawXpText(Graphics2D g, int xRight, int y, String text, String number, int fontSize) {
+		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, fontSize));
+		int numberWidth = g.getFontMetrics(g.getFont()).stringWidth(number);
 
 		g.setColor(background.getColors().getShadowColor());
-		g.drawString(text, 382-fontMetrics.stringWidth(text)-fontMetrics.stringWidth(number), 344);
-		g.setColor(background.getColors().getMainTextColor());
-		g.drawString(text, 380-fontMetrics.stringWidth(text)-fontMetrics.stringWidth(number), 342);
-
-		g.setFont(Fonts.Montserrat.regular.deriveFont(Font.PLAIN, 22F));
-		g.setColor(background.getColors().getShadowColor());
-		g.drawString(number, 392-fontMetrics.stringWidth(number), 344);
+		g.drawString(number, xRight-numberWidth+2, y+2);
 		g.setColor(background.getColors().getSecondaryTextColor());
-		g.drawString(number, 390-fontMetrics.stringWidth(number), 342);
+		g.drawString(number, xRight-numberWidth, y);
+
+		g.setFont(Fonts.Montserrat.medium.deriveFont(Font.PLAIN, fontSize-4));
+		int textWidth = g.getFontMetrics(g.getFont()).stringWidth(text);
+
+		g.setColor(background.getColors().getShadowColor());
+		g.drawString(text, xRight-textWidth-numberWidth-8, y+2);
+		g.setColor(background.getColors().getMainTextColor());
+		g.drawString(text, xRight-textWidth-numberWidth-10, y);
 	}
 
 	private void createAdditional(Graphics2D g) {
@@ -428,7 +465,7 @@ public class UserProfileRender extends Renderer {
 	}
 
 	private String formatXp(long currentLevelXp, long xpInLevel) {
-		if (String.valueOf(currentLevelXp).length()+String.valueOf(xpInLevel).length() > 8) {
+		if (String.valueOf(currentLevelXp).length()+String.valueOf(xpInLevel).length() > 10) {
 			return "%s xp".formatted(currentLevelXp);
 		} else {
 			return "%s / %s xp".formatted(currentLevelXp, xpInLevel);
@@ -474,6 +511,7 @@ public class UserProfileRender extends Renderer {
 				resultText.append(c);
 			}
 			resultText.append(dots);
+			text = resultText.toString();
 		}
 
 		// Draw

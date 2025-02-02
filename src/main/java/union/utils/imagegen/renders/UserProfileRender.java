@@ -34,14 +34,14 @@ public class UserProfileRender extends Renderer {
 	private UserRankColor rankColor = UserRankColor.gray;
 
 	private long textLevel = -1;
-	private long textLevelExperience = -1;
-	private long textMaxXpInLevel = -1;
+	private long textExperience = -1;
+	private long textXpDiff = -1;
 	private double textPercentage = -1;
 	private String textRank = null;
 
 	private long voiceLevel = -1;
-	private long voiceLevelExperience = -1;
-	private long voiceMaxXpInLevel = -1;
+	private long voiceExperience = -1;
+	private long voiceXpDiff = -1;
 	private double voicePercentage = -1;
 	private String voiceRank = null;
 
@@ -49,7 +49,6 @@ public class UserProfileRender extends Renderer {
 
 	private boolean minimized = true;
 	private List<PlayerInfo> playerData = null;
-	//private final List<String> badges = new ArrayList<>();
 
 	private LocaleUtil lu;
 	private DiscordLocale locale;
@@ -87,8 +86,6 @@ public class UserProfileRender extends Renderer {
 			case MOD, HELPER -> UserRankColor.blue;
 			default -> UserRankColor.gray;
 		};
-//		if (accessLevel == CmdAccessLevel.MOD)
-//			badges.add("\uD83D\uDEE1️");
 		return this;
 	}
 
@@ -98,15 +95,15 @@ public class UserProfileRender extends Renderer {
 		return this;
 	}
 
-	public UserProfileRender setMaxXpInLevel(long textMaxXp, long voiceMaxXp) {
-		this.textMaxXpInLevel = textMaxXp;
-		this.voiceMaxXpInLevel = voiceMaxXp;
+	public UserProfileRender setXpDiff(long textMaxXp, long voiceMaxXp) {
+		this.textXpDiff = textMaxXp;
+		this.voiceXpDiff = voiceMaxXp;
 		return this;
 	}
 
 	public UserProfileRender setCurrentLevelExperience(long textExperience, long voiceExperience) {
-		this.textLevelExperience = textExperience;
-		this.voiceLevelExperience = voiceExperience;
+		this.textExperience = textExperience;
+		this.voiceExperience = voiceExperience;
 		return this;
 	}
 
@@ -154,7 +151,6 @@ public class UserProfileRender extends Renderer {
 		if (playerData != null) {
 			createPlayerData(g);
 		}
-		//createBadges(g);
 
 		createXpBar(g);
 		createLevelAndRank(g);
@@ -320,46 +316,9 @@ public class UserProfileRender extends Renderer {
 		}
 	}
 
-//	private void createBadges(Graphics2D g) {
-//		List<String> rankBadges = PlayerRank.getEmojiFromPlayerData(playerData);
-//		if (rankBadges.isEmpty() && badges.isEmpty()) return;
-//
-//		int x = 40;
-//		int y = 210;
-//		g.setFont(Fonts.NotoEmoji.monochrome.deriveFont(Font.PLAIN, 32F));
-//		// Card
-//		g.setColor(background.getColors().getCardColor());
-//		FontMetrics fontMetrics = g.getFontMetrics();
-//		g.fillRoundRect(
-//			x-10, y-36,
-//			(rankBadges.size()+badges.size())*50+10,
-//			fontMetrics.getHeight()+14,
-//			30, 30
-//		);
-//
-//		g.setColor(background.getColors().getMainTextColor());
-//
-//		// Ranks
-//		for (String emoji : rankBadges) {
-//			g.setColor(background.getColors().getShadowColor());
-//			g.drawString(emoji, x+2, y+2);
-//			g.setColor(background.getColors().getMainTextColor());
-//			g.drawString(emoji, x, y);
-//			x += 50;
-//		}
-//		// Discord badges
-//		for (String emoji : badges) {
-//			g.setColor(background.getColors().getShadowColor());
-//			g.drawString(emoji, x+2, y+2);
-//			g.setColor(background.getColors().getMainTextColor());
-//			g.drawString(emoji, x, y);
-//			//x += 50;
-//		}
-//	}
-
 	private void createXpBar(Graphics2D g) {
-		final String textXpBarText = formatXp(textLevelExperience, textMaxXpInLevel);
-		final String voiceXpBarText = formatXp(voiceLevelExperience, voiceMaxXpInLevel);
+		final String textXpBarText = formatXp(textExperience, textXpDiff);
+		final String voiceXpBarText = formatXp(voiceExperience, voiceXpDiff);
 
 		final int xpBarLength = 390;
 		final int hightDiff = 75; // between both bars
@@ -468,11 +427,11 @@ public class UserProfileRender extends Renderer {
 		g.drawString(text, x, y);
 	}
 
-	private String formatXp(long currentLevelXp, long maxXpInLevel) {
-		if (String.valueOf(currentLevelXp).length()+String.valueOf(maxXpInLevel).length() > 8) {
+	private String formatXp(long currentLevelXp, long xpInLevel) {
+		if (String.valueOf(currentLevelXp).length()+String.valueOf(xpInLevel).length() > 8) {
 			return "%s xp".formatted(currentLevelXp);
 		} else {
-			return "%s / %s xp".formatted(currentLevelXp, maxXpInLevel);
+			return "%s / %s xp".formatted(currentLevelXp, xpInLevel);
 		}
 	}
 

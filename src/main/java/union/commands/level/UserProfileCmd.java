@@ -116,8 +116,8 @@ public class UserProfileCmd extends CommandBase {
 		long textMinXpInLevel = bot.getLevelUtil().getExperienceFromLevel(textLevel);
 		long voiceMinXpInLevel = bot.getLevelUtil().getExperienceFromLevel(voiceLevel);
 
-		long textMaxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(textLevel + 1);
-		long voiceMaxXpInLevel = bot.getLevelUtil().getExperienceFromLevel(voiceLevel + 1);
+		long textXpDiff = bot.getLevelUtil().getExperienceFromLevel(textLevel + 1) - textMinXpInLevel;
+		long voiceXpDiff = bot.getLevelUtil().getExperienceFromLevel(voiceLevel + 1) - voiceMinXpInLevel;
 
 		Integer textRank = bot.getDBUtil().levels.getServerRank(guildId, userId, ExpType.TEXT);
 		Integer voiceRank = bot.getDBUtil().levels.getServerRank(guildId, userId, ExpType.VOICE);
@@ -125,10 +125,10 @@ public class UserProfileCmd extends CommandBase {
 		long globalExperience = bot.getDBUtil().levels.getSumGlobalExp(userId);
 
 		render.setLevel(textLevel, voiceLevel)
-			.setMaxXpInLevel(textMaxXpInLevel, voiceMaxXpInLevel)
+			.setXpDiff(textXpDiff, voiceXpDiff)
 			.setPercentage(
-				((double) (textExp - textMinXpInLevel) / textMaxXpInLevel) * 100,
-				((double) (voiceExp - voiceMinXpInLevel) / voiceMaxXpInLevel) * 100
+				((double) (textExp - textMinXpInLevel) / textXpDiff) * 100,
+				((double) (voiceExp - voiceMinXpInLevel) / voiceXpDiff) * 100
 			)
 			.setCurrentLevelExperience(textExp - textMinXpInLevel, voiceExp - voiceMinXpInLevel)
 			.setServerRank(

@@ -32,12 +32,12 @@ public class LevelUtil {
 	private static final long hardCap = (long) Integer.MAX_VALUE*4L;
 
 	private static final int maxRandomExperience = 10;
-	private static final int maxGuaranteeMessageExperience = 10;
+	private static final int maxGuaranteeMessageExperience = 8;
 	private static final int maxGuaranteeVoiceExperience = 5;
 
-	private final double A = 1.75;
-	private final int B = 20;
-	private final int C = 100;
+	private final double A = 8;
+	private final int B = 100;
+	private final int C = 0;
 
 	public static long getHardCap() {
 		return hardCap;
@@ -46,12 +46,12 @@ public class LevelUtil {
 	// Min experience to reach this level
 	public long getExperienceFromLevel(int level) {
 		if (level<=0) return 0;
-		return (long) Math.pow(level, A) * B + C;
+		return (long) Math.floor( A*Math.pow(level,2) + B*level + C );
 	}
 
 	// Max level reachable with this exp
 	public int getLevelFromExperience(long exp) {
-		double level = Math.pow((exp-C)/ (double) B, 1.0/A);
+		double level = ( -B + Math.sqrt(Math.pow(B,2) - 4*A*(C-exp)) )/(2*A);
 		return level<0 ? 0 : (int) Math.floor(level);
 	}
 

@@ -106,7 +106,7 @@ public class ScheduledCheck {
 				}
 				bot.getTicketUtil().closeTicket(channelId, null, "time", failure -> {
 					db.ticket.setRequestStatus(channelId, -1L);
-					if (ErrorResponse.UNKNOWN_MESSAGE.test(failure)) return;
+					if (ErrorResponse.UNKNOWN_MESSAGE.test(failure) || ErrorResponse.UNKNOWN_CHANNEL.test(failure)) return;
 					log.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 				});
 			});
@@ -129,7 +129,7 @@ public class ScheduledCheck {
 							// Last message is bot - close ticket
 							bot.getTicketUtil().closeTicket(channelId, null, "activity", failure -> {
 								db.ticket.setWaitTime(channelId, -1L);
-								if (ErrorResponse.UNKNOWN_MESSAGE.test(failure)) return;
+								if (ErrorResponse.UNKNOWN_MESSAGE.test(failure) || ErrorResponse.UNKNOWN_CHANNEL.test(failure)) return;
 								log.error("Failed to delete ticket channel, either already deleted or unknown error", failure);
 							});
 						} else {
@@ -277,15 +277,18 @@ public class ScheduledCheck {
 						now.minus(Period.ofDays(interval))
 					).atZone(ZoneId.systemDefault()).toInstant();
 
-					List<ReportData> reportData = new ArrayList<>(members.size());
+					List<ReportData> reportDataList = new ArrayList<>(members.size());
 					members.forEach(m -> {
+						if (m.getUser().isBot()) return; // Skip bot
 						int countRoles = bot.getDBUtil().ticket.countTicketsByMod(guild.getIdLong(), m.getIdLong(), previous, now, true);
 						Map<Integer, Integer> countCases = bot.getDBUtil().cases.countCasesByMod(guild.getIdLong(), m.getIdLong(), previous, now);
-						reportData.add(new ReportData(m, countRoles, countCases));
+						ReportData reportData = new ReportData(m, countRoles, countCases);
+						if (reportData.getCountTotalInt() > 0) // Skip if 0 activity
+							reportDataList.add(reportData);
 					});
 
 					ModReportRender render = new ModReportRender(guild.getLocale(), bot.getLocaleUtil(),
-						previous, now, reportData);
+						previous, now, reportDataList);
 
 					final String attachmentName = EncodingUtil.encodeModreport(guild.getIdLong(), now.getEpochSecond());
 

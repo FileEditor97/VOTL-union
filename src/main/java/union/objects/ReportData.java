@@ -10,7 +10,6 @@ public class ReportData {
 	private final Member member;
 	private final int countTotal;
 	private final List<String> countValues;
-	private boolean skip = true;
 
 	public ReportData(final Member member, final int countRoles, final Map<Integer, Integer> countMap) {
 		this.member = member;
@@ -29,14 +28,6 @@ public class ReportData {
 		sum+=countRoles;
 		countValues.add(String.valueOf(countRoles));
 		this.countTotal = sum;
-	}
-
-	public void dontSkip() {
-		skip = false;
-	}
-
-	public boolean skip() {
-		return skip;
 	}
 
 	public Member getMember() {

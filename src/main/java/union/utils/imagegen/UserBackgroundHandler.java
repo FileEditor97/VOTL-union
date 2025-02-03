@@ -71,8 +71,8 @@ public class UserBackgroundHandler {
 			List<UserBackground> userBackgrounds = getIndexFile();
 			backgrounds.addAll(userBackgrounds);
 		} catch (IOException e) {
-			log.error("Invalid cache type given: {}", e.getMessage(), e);
-			System.exit(1);
+			log.error("Failed to load backgrounds: {}", e.getMessage(), e);
+			System.exit(101);
 		}
 	}
 

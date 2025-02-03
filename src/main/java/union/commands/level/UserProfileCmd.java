@@ -81,7 +81,7 @@ public class UserProfileCmd extends CommandBase {
 
 		// Get user account
 		// Only for Helper+
-		if (bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
+		if (bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER) || target.getUser().equals(event.getUser())) {
 			Long steam64 = bot.getDBUtil().verifyCache.getSteam64(userId);
 			if (steam64 != null && steam64 != 0L) {
 				String steamId;

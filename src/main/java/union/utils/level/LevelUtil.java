@@ -123,10 +123,14 @@ public class LevelUtil {
 			Set<Long> roleIds = bot.getDBUtil().levelRoles.getRoles(member.getGuild().getIdLong(), newLevel, expType);
 			if (roleIds.isEmpty()) return;
 
-			Role role = member.getGuild().getRoleById(roleIds.stream().findFirst().orElseThrow()); // TODO only first roles
-			if (role == null) return;
+			Set<Role> addRoles = new HashSet<>();
+			roleIds.forEach(roleId -> {
+				Role role = member.getGuild().getRoleById(roleId);
+				if (role == null) return;
+				addRoles.add(role);
+			});
 
-			member.getGuild().addRoleToMember(member, role).reason("New level: "+newLevel).queue();
+			member.getGuild().modifyMemberRoles(member, addRoles, null).reason("New level: "+newLevel).queue();
 		}
 	}
 

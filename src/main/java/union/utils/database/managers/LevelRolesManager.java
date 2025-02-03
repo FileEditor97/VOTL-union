@@ -27,7 +27,7 @@ public class LevelRolesManager extends LiteDBBase {
 
 	public boolean add(long guildId, int level, String roleIds, boolean exact, ExpType type) {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, level, roles, exact, type) VALUES (%d, %d, %s, %d, %d) ON CONFLICT(guildId, level) DO UPDATE SET roles=%4$s, exact=%5$d, type=%6$d".formatted(table, guildId, level, quote(roleIds), exact?1:0, type.ordinal()));
+		return execute("INSERT INTO %s(guildId, level, roles, exact, type) VALUES (%d, %d, %s, %d, %d) ON CONFLICT(guildId, level, type) DO UPDATE SET roles=%4$s, exact=%5$d, type=%6$d".formatted(table, guildId, level, quote(roleIds), exact?1:0, type.ordinal()));
 	}
 
 	public void removeGuild(long guildId) {

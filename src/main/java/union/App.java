@@ -74,8 +74,6 @@ public class App {
 	public final EventWaiter WAITER;
 	private final CommandClient commandClient;
 
-	private final MessageListener messageListener;
-
 	private final FileManager fileManager = new FileManager();
 
     private final LoggingUtil logUtil;
@@ -135,7 +133,7 @@ public class App {
         GuildListener guildListener				= new GuildListener(this);
         InteractionListener interactionListener = new InteractionListener(this, WAITER);
         VoiceListener voiceListener				= new VoiceListener(this, scheduledExecutor);
-        messageListener							= new MessageListener(this);
+		MessageListener messageListener 		= new MessageListener(this);
         MemberListener memberListener			= new MemberListener(this);
         ModerationListener moderationListener	= new ModerationListener(this);
         AuditListener auditListener				= new AuditListener(this);
@@ -406,7 +404,7 @@ public class App {
 	}
 
 	public void shutdownUtils() {
-		messageListener.shutdownCache();
+		// ignore
 	}
 
 	private void createWebhookAppender() {

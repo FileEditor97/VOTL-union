@@ -41,20 +41,27 @@ public class MessageListener extends ListenerAdapter {
 		this.bot = bot;
 	}
 
-	public void shutdownCache() {
-		// ignore
-	}
-
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getAuthor().isBot() || !event.isFromGuild()) return; //ignore bots and Private messages
-		
+
 		// cache message if not exception channel
 		final Guild guild = event.getGuild();
-		if (bot.getDBUtil().getLogSettings(event.getGuild()).enabled(LogType.MESSAGE)
-			&& !bot.getDBUtil().logExceptions.isException(guild.getIdLong(), event.getChannel().getIdLong()))
-		{
-			cache.put(event.getMessageIdLong(), new MessageData(event.getMessage()));
+		final long guildId = guild.getIdLong();
+		if (bot.getDBUtil().getLogSettings(guild).enabled(LogType.MESSAGE)) {
+			// check channel
+			if (!bot.getDBUtil().logExceptions.isException(guildId, event.getChannel().getIdLong())) {
+				// check category
+				long categoryId = switch (event.getChannelType()) {
+					case TEXT, VOICE, STAGE, NEWS -> event.getGuildChannel().asStandardGuildChannel().getParentCategoryIdLong();
+					case GUILD_PUBLIC_THREAD, GUILD_NEWS_THREAD -> event.getChannel().asThreadChannel().getParentChannel()
+						.asStandardGuildChannel().getParentCategoryIdLong();
+					default -> 0;
+				};
+				if (categoryId == 0 || !bot.getDBUtil().logExceptions.isException(guildId, categoryId)) {
+					cache.put(event.getMessageIdLong(), new MessageData(event.getMessage()));
+				}
+			}
 		}
 
 		// reward

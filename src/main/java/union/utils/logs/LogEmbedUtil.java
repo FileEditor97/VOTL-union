@@ -188,8 +188,8 @@ public class LogEmbedUtil {
 			return this;
 		}
 
-		public LogEmbedBuilder setTitleText(String path) {
-			builder.setTitle(localized(locale, path));
+		public LogEmbedBuilder setTitleText(String text) {
+			builder.setTitle(text);
 			return this;
 		}
 

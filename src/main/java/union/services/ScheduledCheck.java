@@ -424,14 +424,24 @@ public class ScheduledCheck {
 		try {
 			// level data
 			Iterator<PlayerObject> itr = bot.getLevelUtil().getUpdateQueue().iterator();
-			int updatedCount = 0;
+			if (!itr.hasNext()) return;
+
+			Set<PlayerObject> players = new HashSet<>(); // to (try) avoid ConcurrentModificationException
 			while (itr.hasNext()) {
 				PlayerObject player = itr.next();
+				players.add(player);
+
+				itr.remove();
+
+			}
+			if (players.isEmpty()) return;
+
+			int updatedCount = 0;
+			for (PlayerObject player : players) {
 				LevelManager.PlayerData playerData = db.levels.getPlayer(player);
 				if (playerData == null) continue;
 
 				db.levels.updatePlayer(player, playerData);
-				itr.remove();
 				updatedCount++;
 			}
 			if (updatedCount != 0) log.debug("Updated data for {} players", updatedCount);

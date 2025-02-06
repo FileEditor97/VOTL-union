@@ -35,7 +35,7 @@ public class VoiceListener extends ListenerAdapter {
 	// cache users in voice for exp
 	// userId and start time
 	private final Cache<PlayerObject, Long> cache = Caffeine.newBuilder()
-		.expireAfterWrite(10, TimeUnit.MINUTES)
+		.expireAfterAccess(10, TimeUnit.MINUTES)
 		.build();
 	
 	private final DBUtil db;

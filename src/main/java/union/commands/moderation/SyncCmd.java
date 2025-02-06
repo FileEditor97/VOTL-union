@@ -22,7 +22,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 
 public class SyncCmd extends CommandBase {
 
@@ -79,16 +78,14 @@ public class SyncCmd extends CommandBase {
 				return;
 			}
 
-			ActionRow button = ActionRow.of(
-				Button.of(ButtonStyle.PRIMARY, "button:confirm", lu.getText(event, path+".button_confirm"))
-			);
+			Button confirm = Button.primary("button:confirm", lu.getText(event, path+".button_confirm"));
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 				.setDescription(lu.getText(event, path+".embed_title"))
 				.build()
-			).setComponents(button).queue(msg -> {
+			).setActionRow(confirm).queue(msg -> {
 				waiter.waitForEvent(
 					ButtonInteractionEvent.class,
-					e -> msg.getId().equals(e.getMessageId()) && e.getComponentId().equals("button:confirm"),
+					e -> msg.getIdLong() == e.getMessageIdLong(),
 					action -> {
 						if (bot.getDBUtil().group.countMembers(groupId) < 1) {
 							editError(event, path+".no_guilds");
@@ -104,7 +101,7 @@ public class SyncCmd extends CommandBase {
 					},
 					20,
 					TimeUnit.SECONDS,
-					() -> event.getHook().editOriginalComponents(ActionRow.of(Button.of(ButtonStyle.SECONDARY, "timed_out", "Timed out").asDisabled())).queue()
+					() -> event.getHook().editOriginalComponents(ActionRow.of(Button.primary("timed_out", "Timed out").asDisabled())).queue()
 				);
 			});
 		}

@@ -107,9 +107,10 @@ public class ModuleCmd extends CommandBase {
 			hook.editOriginalEmbeds(embed.build()).setActionRow(menu).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
-					e -> e.getComponentId().equals("disable-module") && e.getMessageId().equals(msg.getId()),
+					e -> msg.getIdLong() == e.getMessageIdLong(),
 					actionEvent -> {
 						actionEvent.deferEdit().queue();
+
 						CmdModule sModule = CmdModule.valueOf(actionEvent.getSelectedOptions().get(0).getValue());
 						if (bot.getDBUtil().getGuildSettings(guildId).isDisabled(sModule)) {
 							hook.editOriginalEmbeds(bot.getEmbedUtil().getError(event, path+".already")).setComponents().queue();
@@ -178,34 +179,30 @@ public class ModuleCmd extends CommandBase {
 			hook.editOriginalEmbeds(embed.build()).setActionRow(menu).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
-					e -> e.getComponentId().equals("enable-module") && e.getMessageId().equals(msg.getId()),
+					e -> msg.getIdLong() == e.getMessageIdLong(),
 					actionEvent -> {
+						actionEvent.deferEdit().queue();
 
-						actionEvent.deferEdit().queue(
-							actionHook -> {
-								CmdModule sModule = CmdModule.valueOf(actionEvent.getSelectedOptions().get(0).getValue());
-								if (!bot.getDBUtil().getGuildSettings(guildId).isDisabled(sModule)) {
-									hook.editOriginalEmbeds(bot.getEmbedUtil().getError(event, path+".already")).setComponents().queue();
-									return;
-								}
-								// set new data
-								final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() - sModule.getValue();
-								if (!bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData)) {
-									editErrorUnknown(event, "Database error.");
-									return;
-								}
-								// Send reply
-								hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-									.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
-									.build()
-								).setComponents().queue();
-								// Log
-								bot.getLogger().server.onModuleEnabled(event.getGuild(), event.getUser(), sModule);
-							}
-						);
-
+						CmdModule sModule = CmdModule.valueOf(actionEvent.getSelectedOptions().get(0).getValue());
+						if (!bot.getDBUtil().getGuildSettings(guildId).isDisabled(sModule)) {
+							hook.editOriginalEmbeds(bot.getEmbedUtil().getError(event, path+".already")).setComponents().queue();
+							return;
+						}
+						// set new data
+						final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() - sModule.getValue();
+						if (!bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData)) {
+							editErrorUnknown(event, "Database error.");
+							return;
+						}
+						// Send reply
+						hook.editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+							.setTitle(lu.getText(event, path+".done").replace("{module}", lu.getText(event, sModule.getPath())))
+							.build()
+						).setComponents().queue();
+						// Log
+						bot.getLogger().server.onModuleEnabled(event.getGuild(), event.getUser(), sModule);
 					},
-					10,
+					30,
 					TimeUnit.SECONDS,
 					() -> {
 						hook.editOriginalComponents(

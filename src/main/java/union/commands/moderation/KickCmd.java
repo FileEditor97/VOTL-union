@@ -152,7 +152,7 @@ public class KickCmd extends CommandBase {
 		message.replyEmbeds(builder.build()).setActionRow(menu).queue(msg -> {
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
-				e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
+				e -> (msg.getIdLong() == e.getMessageIdLong()) && e.getUser().equals(event.getUser()),
 				selectEvent -> {
 					List<SelectOption> selected = selectEvent.getSelectedOptions();
 					

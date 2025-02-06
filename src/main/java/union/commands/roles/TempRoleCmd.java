@@ -131,7 +131,7 @@ public class TempRoleCmd extends CommandBase {
 					.setActionRow(confirm).queue(msg -> {
 						waiter.waitForEvent(
 							ButtonInteractionEvent.class,
-							e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
+							e -> (msg.getIdLong() == e.getMessageIdLong()) && e.getUser().equals(event.getUser()),
 							actionEvent -> {
 								guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
 									if (!bot.getDBUtil().tempRole.add(guild.getIdLong(), roleId, userId, true, until)) {

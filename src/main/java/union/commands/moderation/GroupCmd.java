@@ -328,7 +328,7 @@ public class GroupCmd extends CommandBase {
 			event.getHook().editOriginalEmbeds(embed).setComponents(rows).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
-					e -> e.getMessageId().equals(msg.getId()),
+					e -> msg.getIdLong() == e.getMessageIdLong(),
 					actionMenu -> {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);
@@ -591,7 +591,7 @@ public class GroupCmd extends CommandBase {
 			event.getHook().editOriginalEmbeds(embed).setComponents(rows).queue(msg -> {
 				waiter.waitForEvent(
 					StringSelectInteractionEvent.class,
-					e -> e.getMessageId().equals(msg.getId()),
+					e -> msg.getIdLong() == e.getMessageIdLong(),
 					actionMenu -> {
 						long targetId = Long.parseLong(actionMenu.getSelectedOptions().get(0).getValue());
 						Guild targetGuild = event.getJDA().getGuildById(targetId);

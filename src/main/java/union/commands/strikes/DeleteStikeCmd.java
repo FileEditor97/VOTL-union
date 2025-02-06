@@ -97,9 +97,9 @@ public class DeleteStikeCmd extends CommandBase {
 		).setActionRow(caseSelectMenu).queue(msg -> {
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
-				e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
+				e -> (msg.getIdLong() == e.getMessageIdLong()) && e.getUser().equals(event.getUser()),
 				selectAction -> strikeSelected(selectAction, msg, cases, tu),
-				60,
+				40,
 				TimeUnit.SECONDS,
 				() -> msg.editMessageComponents(ActionRow.of(
 					caseSelectMenu.createCopy().setPlaceholder(lu.getText(event, "errors.timed_out")).setDisabled(true).build()
@@ -168,7 +168,7 @@ public class DeleteStikeCmd extends CommandBase {
 			).setActionRow(buttons).queue(msgN -> {
 				waiter.waitForEvent(
 					ButtonInteractionEvent.class,
-					e -> e.getMessageId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
+					e -> (msg.getIdLong() == e.getMessageIdLong()) && e.getUser().equals(event.getUser()),
 					buttonAction -> buttonPressed(buttonAction, msgN, strikesInfo, tu, activeAmount),
 					30,
 					TimeUnit.SECONDS,
@@ -208,7 +208,7 @@ public class DeleteStikeCmd extends CommandBase {
 				);
 		} else {
 			// Delete selected amount of strikes (not all)
-			Collections.replaceAll(cases, caseRowId+"-"+activeAmount, caseRowId+"-"+(activeAmount-removeAmount));
+			boolean ignore = Collections.replaceAll(cases, caseRowId+"-"+activeAmount, caseRowId+"-"+(activeAmount-removeAmount));
 			bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
 				Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 				removeAmount, String.join(";", cases)

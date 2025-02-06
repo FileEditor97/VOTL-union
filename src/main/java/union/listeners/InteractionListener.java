@@ -60,7 +60,6 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu.SelectTarget;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
@@ -254,7 +253,7 @@ public class InteractionListener extends ListenerAdapter {
 						runButtonInteraction(event, Cooldown.BUTTON_COMMENTS_SHOW, () -> buttonCommentsShow(event));
 					}
 				}
-				default -> bot.getAppLogger().warn("Unknown button interaction: {}", event.getComponentId());
+				default -> bot.getAppLogger().debug("Unknown button interaction: {}", event.getComponentId());
 			}
 		} catch(Throwable t) {
 			// Log throwable and try to respond to the user with the error
@@ -449,7 +448,8 @@ public class InteractionListener extends ListenerAdapter {
 				);
 			}
 		} else {
-			Button refresh = Button.of(ButtonStyle.PRIMARY, "verify:refresh", lu.getText(event, "bot.verification.listener.refresh"), Emoji.fromUnicode("🔁"));
+			Button refresh = Button.primary("verify:refresh", lu.getText(event, "bot.verification.listener.refresh"))
+				.withEmoji(Emoji.fromUnicode("🔁"));
 			// Check if user pressed refresh button
 			if (event.getButton().getId().endsWith("refresh")) {
 				// Ask user to wait for 30 seconds each time
@@ -575,7 +575,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.ticketing.listener.remove_title")).build()).setActionRow(menu).setEphemeral(true).queue(msg ->
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
-				e -> e.getComponentId().equals("menu:role_remove"),
+				e -> msg.getIdLong() == e.getMessageIdLong(),
 				actionEvent -> {
 					List<Role> remove = actionEvent.getSelectedOptions().stream().map(option -> guild.getRoleById(option.getValue())).toList();
 					guild.modifyMemberRoles(event.getMember(), null, remove).reason("User request").queue(done -> {
@@ -752,25 +752,28 @@ public class InteractionListener extends ListenerAdapter {
 				Modal modal = Modal.create("ticket:role_temp:"+channelId, lu.getText(event, "bot.ticketing.listener.temp_time"))
 					.addComponents(rows)
 					.build();
-				String buttonUid = String.valueOf(System.currentTimeMillis());
-				Button continueButton = Button.success(buttonUid, "Continue");
-				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, "bot.ticketing.listener.temp_continue").formatted(rows.size()))
-					.build()
-				).setActionRow(continueButton).setEphemeral(true).queue(msg -> {
-					waiter.waitForEvent(
-						ButtonInteractionEvent.class,
-						e -> e.getComponentId().equals(buttonUid),
-						buttonEvent -> {
-							buttonEvent.replyModal(modal).queue();
-							msg.delete().queue();
-							// Maybe reply, that other mod started to fill modal
-						},
-						10,
-						TimeUnit.SECONDS,
-						() -> msg.delete().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
-					);
-				});
+				Button continueButton = Button.success("ticket:role_temp_continue", "Continue");
+				event.getHook().sendMessageEmbeds(
+					bot.getEmbedUtil().getEmbed(event)
+						.setDescription(lu.getText(event, "bot.ticketing.listener.temp_continue").formatted(rows.size()))
+						.build()
+					).setActionRow(continueButton)
+					.setEphemeral(true)
+					.queue(msg -> {
+						waiter.waitForEvent(
+							ButtonInteractionEvent.class,
+							e -> msg.getIdLong() == e.getMessageIdLong(),
+							buttonEvent -> {
+								buttonEvent.replyModal(modal).queue();
+								msg.delete().queue();
+								// Maybe reply, that other mod started to fill modal
+							},
+							10,
+							TimeUnit.SECONDS,
+							() -> msg.delete().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
+						);
+					}
+				);
 				return;
 			}
 			if (roles.isEmpty()) {
@@ -1288,7 +1291,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
-				e -> e.getMessageId().equals(msg.getId()),
+				e -> msg.getIdLong() == e.getMessageIdLong(),
 				selectEvent -> {
 					selectEvent.deferEdit().queue();
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
@@ -1317,7 +1320,7 @@ public class InteractionListener extends ListenerAdapter {
 						).setComponents().queue();
 					});
 				},
-				20,
+				30,
 				TimeUnit.SECONDS,
 				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
 			);
@@ -1366,7 +1369,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
-				e -> e.getMessageId().equals(msg.getId()),
+				e -> msg.getIdLong() == e.getMessageIdLong(),
 				selectEvent -> {
 					selectEvent.deferEdit().queue();
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
@@ -1386,7 +1389,7 @@ public class InteractionListener extends ListenerAdapter {
 						).setComponents().queue();
 					});
 				},
-				20,
+				30,
 				TimeUnit.SECONDS,
 				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
 			);
@@ -1428,7 +1431,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
-				e -> e.getMessageId().equals(msg.getId()),
+				e -> msg.getIdLong() == e.getMessageIdLong(),
 				selectEvent -> {
 					selectEvent.deferEdit().queue();
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
@@ -1456,7 +1459,7 @@ public class InteractionListener extends ListenerAdapter {
 						).setComponents().queue();
 					});
 				},
-				20,
+				30,
 				TimeUnit.SECONDS,
 				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
 			);
@@ -1505,7 +1508,7 @@ public class InteractionListener extends ListenerAdapter {
 		event.getHook().sendMessageEmbeds(embed).setActionRow(menu).setEphemeral(true).queue(msg -> {
 			waiter.waitForEvent(
 				StringSelectInteractionEvent.class,
-				e -> e.getMessageId().equals(msg.getId()),
+				e -> msg.getIdLong() == e.getMessageIdLong(),
 				selectEvent -> {
 					selectEvent.deferEdit().queue();
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
@@ -1525,7 +1528,7 @@ public class InteractionListener extends ListenerAdapter {
 						).setComponents().queue();
 					});
 				},
-				20,
+				30,
 				TimeUnit.SECONDS,
 				() -> msg.editMessageComponents(ActionRow.of(menu.asDisabled())).queue()
 			);

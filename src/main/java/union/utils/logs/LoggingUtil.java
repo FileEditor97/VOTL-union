@@ -500,7 +500,10 @@ public class LoggingUtil {
 		}
 
 		public void onClose(Guild guild, GuildMessageChannel messageChannel, User userClosed, long authorId, FileUpload file) {
-			if (file == null) onClose(guild, messageChannel, userClosed, authorId);
+			if (file == null) {
+				onClose(guild, messageChannel, userClosed, authorId);
+				return;
+			}
 
 			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
 			if (client == null) return;

@@ -20,6 +20,7 @@ package union.base.command;
  *
  * @author John Grosh (jagrosh)
  */
+@SuppressWarnings("unused")
 public interface CommandListener {
 	/**
 	 * Called when a {@link SlashCommand} is triggered by a {@link SlashCommandEvent SlashCommandEvent}.

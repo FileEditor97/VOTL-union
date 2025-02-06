@@ -58,6 +58,7 @@ import java.util.concurrent.ScheduledExecutorService;
  *                      if you provide {@code null} for the Owner ID, that'll just flat out throw an {@link
  *                      java.lang.IllegalArgumentException IllegalArgumentException}).
  */
+@SuppressWarnings("unused")
 public interface CommandClient
 {
 	/**

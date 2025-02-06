@@ -15,6 +15,7 @@
  */
 package union.base.command;
 
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import org.jetbrains.annotations.NotNull;
 import union.objects.CmdAccessLevel;
 import union.utils.exception.CheckException;
@@ -26,6 +27,8 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+
+import java.util.Set;
 
 public abstract class MessageContextMenu extends ContextMenu
 {
@@ -136,7 +139,7 @@ public abstract class MessageContextMenu extends ContextMenu
 		else
 			data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
 
-		data.setGuildOnly(this.guildOnly);
+		data.setContexts(this.guildOnly ? Set.of(InteractionContextType.GUILD) : Set.of(InteractionContextType.GUILD, InteractionContextType.BOT_DM));
 
 		return data;
 	}

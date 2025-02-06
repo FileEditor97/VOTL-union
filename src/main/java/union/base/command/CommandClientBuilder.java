@@ -33,6 +33,7 @@ import union.base.command.impl.CommandClientImpl;
  *
  * @author John Grosh (jagrosh)
  */
+@SuppressWarnings("unused")
 public class CommandClientBuilder
 {
 	private Activity activity = Activity.playing("default");

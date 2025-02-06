@@ -15,11 +15,9 @@
  */
 package union.base.command;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import org.jetbrains.annotations.NotNull;
 import union.objects.CmdAccessLevel;
 
@@ -177,7 +175,7 @@ public abstract class ContextMenu extends Interaction
 		else
 			data.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
 
-		data.setGuildOnly(this.guildOnly);
+		data.setContexts(this.guildOnly ? Set.of(InteractionContextType.GUILD) : Set.of(InteractionContextType.GUILD, InteractionContextType.BOT_DM));
 
 		return data;
 	}

@@ -177,7 +177,7 @@ public class App {
 				// moderation
 				new BanCmd(),
 				new UnbanCmd(),
-				new KickCmd(WAITER),
+				new KickCmd(),
 				new SyncCmd(WAITER),
 				new CaseCmd(),
 				new ReasonCmd(),

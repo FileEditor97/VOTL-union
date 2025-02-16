@@ -1519,11 +1519,6 @@
 				"kick_abort": "Could not kick mentioned member.",
 				"higher_access": "Mentioned member has higher access than you do.",
 				"success": "\uD83D\uDC5F **User was kicked.**",
-				"sync": {
-					"title": "**Sync this kick?**\nSelect groups bellow.",
-					"value": "Select group/-s",
-					"done": "Kick sync in progress! Result will be posted in log channel."
-				}
 			},
 			"mute": {
 				"help": "Time out member",

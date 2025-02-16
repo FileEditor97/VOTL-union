@@ -9,6 +9,7 @@ import union.objects.constants.CmdCategory;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 public class DebugCmd extends CommandBase {
 
@@ -29,8 +30,15 @@ public class DebugCmd extends CommandBase {
 		if (event.optBoolean("debug_logs", false)) {
 			event.getHook().editOriginalAttachments(FileUpload.fromData(new File("./logs/App-debug.log"))).queue();
 		} else {
-			String date = event.optString("date");
-			event.getHook().editOriginalAttachments(FileUpload.fromData(new File("./logs/App%s.log".formatted(date!=null?"."+date:"")))).queue();
+			String date = Optional.ofNullable(event.optString("date"))
+				.map(s->"."+s)
+				.orElse("");
+			File file = new File("./logs/App%s.log".formatted(date));
+			if (!file.exists()) {
+				editErrorOther(event, "No file by ");
+			} else {
+				event.getHook().editOriginalAttachments(FileUpload.fromData(file)).queue();
+			}
 		}
 	}
 

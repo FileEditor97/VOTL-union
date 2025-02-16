@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
@@ -96,6 +97,7 @@ public class CloseCmd extends CommandBase {
 			.build()
 		).queue(msg -> {
 			bot.getTicketUtil().closeTicket(channelId, event.getUser(), reason, failure -> {
+				if (ErrorResponse.UNKNOWN_MESSAGE.test(failure) || ErrorResponse.UNKNOWN_CHANNEL.test(failure)) return;
 				msg.editMessageEmbeds(bot.getEmbedUtil().getError(event, "bot.ticketing.listener.close_failed")).queue();
 				bot.getAppLogger().error("Couldn't close ticket with channelID: {}", channelId, failure);
 			});

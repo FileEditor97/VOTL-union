@@ -28,7 +28,6 @@ import union.listeners.*;
 import union.menus.*;
 import union.metrics.Metrics;
 import union.objects.constants.Constants;
-import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
 import union.services.ScheduledMetrics;
@@ -149,7 +148,6 @@ public class App {
 		// Define a command client
 		commandClient = new CommandClientBuilder()
 			.setOwnerId(ownerId)
-			.setServerInvite(Links.DISCORD)
 			.setScheduleExecutor(scheduledExecutor)
 			.setStatus(OnlineStatus.ONLINE)
 			.setActivity(Activity.customStatus("/about | unionteams.ru"))

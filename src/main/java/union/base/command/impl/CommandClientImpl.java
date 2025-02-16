@@ -70,7 +70,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 	private final Activity activity;
 	private final OnlineStatus status;
 	private final String ownerId;
-	private final String serverInvite;
 	private final HashMap<String, Integer> slashCommandIndex;
 	private final ArrayList<SlashCommand> slashCommands;
 	private final ArrayList<ContextMenu> contextMenus;
@@ -84,7 +83,7 @@ public class CommandClientImpl implements CommandClient, EventListener {
 
 	private CommandListener listener = null;
 
-	public CommandClientImpl(String ownerId, Activity activity, OnlineStatus status, String serverInvite,
+	public CommandClientImpl(String ownerId, Activity activity, OnlineStatus status,
 							 ArrayList<SlashCommand> slashCommands, ArrayList<ContextMenu> contextMenus, String forcedGuildId, String[] devGuildIds, boolean manualUpsert,
 							 boolean shutdownAutomatically, ScheduledExecutorService executor)
 	{
@@ -99,7 +98,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 
 		this.activity = activity;
 		this.status = status;
-		this.serverInvite = serverInvite;
 		this.slashCommandIndex = new HashMap<>();
 		this.slashCommands = new ArrayList<>();
 		this.contextMenus = new ArrayList<>();
@@ -274,12 +272,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 	public ScheduledExecutorService getScheduleExecutor()
 	{
 		return executor;
-	}
-
-	@Override
-	public String getServerInvite()
-	{
-		return serverInvite;
 	}
 
 	@Override

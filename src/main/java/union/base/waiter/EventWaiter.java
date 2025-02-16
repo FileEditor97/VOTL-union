@@ -52,7 +52,7 @@ import java.util.function.Predicate;
  * 
  * @author John Grosh (jagrosh)
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public class EventWaiter implements EventListener
 {
     private static final Logger LOG = LoggerFactory.getLogger(EventWaiter.class);
@@ -246,7 +246,7 @@ public class EventWaiter implements EventListener
             if(set != null)
             {
                 // WaitingEvent#attempt invocations that return true have passed their condition tests
-                // and executed the action. We remove the ones that have successfully ran (those that returns true)
+                // and executed the action. We remove the ones that have successfully run (those that returns true)
                 set.removeIf(wEvent -> wEvent.attempt(event));
             }
             if(event instanceof ShutdownEvent && shutdownAutomatically)

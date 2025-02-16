@@ -23,7 +23,7 @@ public enum LogType {
 	VOICE("voice"),
 	CHANNEL("channels"),
 	LEVEL("levels"),
-	OTHER("other");
+	BOT("bot");
 
 	private final String name;
 	private final String path;

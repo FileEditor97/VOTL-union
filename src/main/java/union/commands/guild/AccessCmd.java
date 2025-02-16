@@ -153,7 +153,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			// Log
-			bot.getLogger().server.onAccessAdded(guild, event.getUser(), null, role, level);
+			bot.getLogger().botLog.onAccessAdded(guild, event.getUser(), null, role, level);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.role.done")
@@ -198,7 +198,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			// Log
-			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
+			bot.getLogger().botLog.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.role.done")
@@ -249,7 +249,7 @@ public class AccessCmd extends CommandBase {
 			}
 			
 			// Log
-			bot.getLogger().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
+			bot.getLogger().botLog.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.operator.done").replace("{user}", member.getAsMention()))
@@ -293,7 +293,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			// Log
-			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
+			bot.getLogger().botLog.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.operator.done").replace("{user}", user.getAsMention()))

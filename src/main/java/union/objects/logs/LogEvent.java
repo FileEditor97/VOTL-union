@@ -7,9 +7,9 @@ public enum LogEvent {
 	CHANNEL_OVERRIDE_CREATE("override_create", LogType.CHANNEL),
 	CHANNEL_OVERRIDE_UPDATE("override_update", LogType.CHANNEL),
 	CHANNEL_OVERRIDE_DELETE("override_delete", LogType.CHANNEL),
-	ROLE_CREATE("create", LogType.ROLE),
-	ROLE_UPDATE("update", LogType.ROLE),
-	ROLE_DELETE("delete", LogType.ROLE),
+	ROLE_CREATE("role_create", LogType.SERVER),
+	ROLE_UPDATE("role_update", LogType.SERVER),
+	ROLE_DELETE("role_delete", LogType.SERVER),
 	GUILD_UPDATE("update", LogType.SERVER),
 	EMOJI_CREATE("emoji_create", LogType.SERVER),
 	EMOJI_UPDATE("emoji_update", LogType.SERVER),
@@ -34,7 +34,7 @@ public enum LogEvent {
 	MESSAGE_BULK_DELETE("bulk_delete", LogType.MESSAGE),
 	MESSAGE_UPDATE("update", LogType.MESSAGE),
 	LEVEL_UP("level_up", LogType.LEVEL),
-	OTHER("other");
+	BOT(LogType.BOT);
 
 	private final String path;
 	private final LogType type;
@@ -44,9 +44,9 @@ public enum LogEvent {
 		this.type = type;
 	}
 
-	LogEvent(String path) {
-		this.path = LogType.OTHER.getPath()+"."+path;
-		this.type = LogType.OTHER;
+	LogEvent(LogType type) {
+		this.path = type.getPath();
+		this.type = type;
 	}
 
 	public String getPath() {

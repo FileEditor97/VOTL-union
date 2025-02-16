@@ -279,9 +279,6 @@
 		},
 		"roles": {
 			"name": "Role logs",
-			"create": "Role created | %s",
-			"update": "Role updated | %s",
-			"delete": "Role deleted | %s",
 			"rank": "Rank",
 			"roles": "Roles",
 			"role": "Role",
@@ -308,12 +305,9 @@
 			"sticker_create": "Sticker created",
 			"sticker_update": "Sticker updated",
 			"sticker_delete": "Sticker deleted",
-			"access_added": "Access granted to target",
-			"access_removed": "Access removed from target",
-			"access_level": "Access level",
-			"module": "Module",
-			"module_enabled": "Module enabled",
-			"module_disabled": "Module disabled"
+			"role_create": "Role created | %s",
+			"role_update": "Role updated | %s",
+			"role_delete": "Role deleted | %s"
 		},
 		"messages": {
 			"name": "Message logs",
@@ -381,9 +375,14 @@
 				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **{type} Level {level}**"
 			]
 		},
-		"other": {
-			"name": "Audit logs (not used!)",
-			"audit": "Audit logs (not used!)"
+		"bot": {
+			"name": "Bot settings logs",
+			"access_added": "Access granted to target",
+			"access_removed": "Access removed from target",
+			"access_level": "Access level",
+			"module": "Module",
+			"module_enabled": "Module enabled",
+			"module_disabled": "Module disabled"
 		},
 		"keys": {
 			"name": "Name",

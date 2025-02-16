@@ -893,15 +893,15 @@ public class LogEmbedUtil {
 	}
 
 
-	// Server
+	// Bot
 	@NotNull
 	public MessageEmbed accessAdded(DiscordLocale locale, User mod, User userTarget, Role roleTarget, String levelName) {
 		String targetMention = userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention();
 		String targetId = userTarget!=null ? userTarget.getId() : roleTarget.getId();
 		return new LogEmbedBuilder(locale, GREEN_DARK)
-			.setHeaderIcon("server.access_added", userTarget != null ? userTarget.getEffectiveAvatarUrl() : null)
+			.setHeaderIcon("bot.access_added", userTarget != null ? userTarget.getEffectiveAvatarUrl() : null)
 			.addField("target", targetMention)
-			.addField("server.access_level", levelName)
+			.addField("bot.access_level", levelName)
 			.setEnforcer(mod.getIdLong())
 			.setId(targetId)
 			.build();
@@ -912,9 +912,9 @@ public class LogEmbedUtil {
 		String targetMention = userTarget!=null ? userTarget.getAsMention() : roleTarget.getAsMention();
 		String targetId = userTarget!=null ? userTarget.getId() : roleTarget.getId();
 		return new LogEmbedBuilder(locale, RED_DARK)
-			.setHeaderIcon("server.access_removed", userTarget != null ? userTarget.getEffectiveAvatarUrl() : null)
+			.setHeaderIcon("bot.access_removed", userTarget != null ? userTarget.getEffectiveAvatarUrl() : null)
 			.addField("target", targetMention)
-			.addField("server.access_level", levelName)
+			.addField("bot.access_level", levelName)
 			.setEnforcer(mod.getIdLong())
 			.setId(targetId)
 			.build();
@@ -923,8 +923,8 @@ public class LogEmbedUtil {
 	@NotNull
 	public MessageEmbed moduleEnabled(DiscordLocale locale, User mod, CmdModule module) {
 		return new LogEmbedBuilder(locale, GREEN_DARK)
-			.setHeader("server.module_enabled")
-			.addField("server.module", lu.getLocalized(locale, module.getPath()))
+			.setHeader("bot.module_enabled")
+			.addField("bot.module", lu.getLocalized(locale, module.getPath()))
 			.setEnforcer(mod.getIdLong())
 			.build();
 	}
@@ -932,13 +932,13 @@ public class LogEmbedUtil {
 	@NotNull
 	public MessageEmbed moduleDisabled(DiscordLocale locale, User mod, CmdModule module) {
 		return new LogEmbedBuilder(locale, RED_DARK)
-			.setHeader("server.module_disabled")
-			.addField("server.module", lu.getLocalized(locale, module.getPath()))
+			.setHeader("bot.module_disabled")
+			.addField("bot.module", lu.getLocalized(locale, module.getPath()))
 			.setEnforcer(mod.getIdLong())
 			.build();
 	}
 
-	//  Channels
+	// Channels
 	@NotNull
 	public MessageEmbed channelCreated(DiscordLocale locale, long channelId, String channelName, Collection<AuditLogChange> changes, long userId) {
 		return new LogEmbedBuilder(locale, GREEN_LIGHT)
@@ -1012,7 +1012,7 @@ public class LogEmbedUtil {
 			.build();
 	}
 
-	// Roles
+	// Server
 	@NotNull
 	public MessageEmbed roleCreated(DiscordLocale locale, long roleId, String roleName, Collection<AuditLogChange> changes, long userId, String reason) {
 		return new LogEmbedBuilder(locale, GREEN_LIGHT)
@@ -1047,7 +1047,7 @@ public class LogEmbedUtil {
 			.build();
 	}
 
-	// Server
+
 	@NotNull
 	public MessageEmbed guildUpdate(DiscordLocale locale, long guildId, String guildName, Collection<AuditLogChange> changes, long userId) {
 		return new LogEmbedBuilder(locale, AMBER_LIGHT)

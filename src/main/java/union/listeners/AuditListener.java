@@ -76,19 +76,19 @@ public class AuditListener extends ListenerAdapter {
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
-				logger.role.onRoleCreate(entry);
+				logger.server.onRoleCreate(entry);
 			}
 			case ROLE_DELETE -> {
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
-				logger.role.onRoleDelete(entry);
+				logger.server.onRoleDelete(entry);
 			}
 			case ROLE_UPDATE -> {
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
-				logger.role.onRoleUpdate(entry);
+				logger.server.onRoleUpdate(entry);
 			}
 			case GUILD_UPDATE -> {
 				// check if enabled log

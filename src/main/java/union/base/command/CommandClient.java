@@ -237,18 +237,11 @@ public interface CommandClient
 	void cleanCooldowns();
 
 	/**
-	 * Gets the ID of the owner of this bot as a String.
-	 *
-	 * @return The String ID of the owner of the bot
-	 */
-	String getOwnerId();
-
-	/**
-	 * Gets the ID of the owner of this bot as a {@code long}.
+	 * Gets the ID of the owner of this bot.
 	 *
 	 * @return The {@code long} ID of the owner of the bot
 	 */
-	long getOwnerIdLong();
+	long getOwnerId();
 
 	/**
 	 * Gets the {@link java.util.concurrent.ScheduledExecutorService ScheduledExecutorService} held by this client.

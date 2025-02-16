@@ -21,12 +21,13 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
+@SuppressWarnings("UnusedReturnValue")
 public class CheckUtil {
 
 	private final App bot;
-	private final String ownerId;
+	private final long ownerId;
 
-	public CheckUtil(App bot, String ownerId) {
+	public CheckUtil(App bot, long ownerId) {
 		this.bot = bot;
 		this.ownerId = ownerId;
 	}
@@ -36,7 +37,7 @@ public class CheckUtil {
 	}
 
 	public boolean isBotOwner(UserSnowflake user) {
-		return user.getId().equals(ownerId);
+		return user.getIdLong() == ownerId;
 	}
 
 	public CmdAccessLevel getAccessLevel(Member member) {

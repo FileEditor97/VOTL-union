@@ -265,7 +265,7 @@ public abstract class SlashCommand extends Interaction
 	 * @return {@code true} if the User is the Owner, else {@code false}
 	 */
 	public boolean isOwner(SlashCommandEvent event, CommandClient client) {
-        return client.getOwnerIdLong() == event.getUser().getIdLong();
+        return client.getOwnerId() == event.getUser().getIdLong();
     }
 
 	/**

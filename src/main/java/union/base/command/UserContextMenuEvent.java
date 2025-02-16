@@ -123,6 +123,6 @@ public class UserContextMenuEvent extends UserContextInteractionEvent
 	 */
 	public boolean isOwner()
 	{
-		return getUser().getId().equals(this.getClient().getOwnerId());
+		return getUser().getIdLong() == this.getClient().getOwnerId();
     }
 }

@@ -62,6 +62,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 
+import static java.lang.Long.parseLong;
+
 public class App {
 	protected static App instance;
 	
@@ -108,7 +110,7 @@ public class App {
 			System.exit(0);
 		}
 
-		final String ownerId = fileManager.getString("config", "owner-id");
+		final long ownerId = parseLong(fileManager.getString("config", "owner-id"));
 		
 		// Define for default
 		settings	= new SettingsManager(fileManager);

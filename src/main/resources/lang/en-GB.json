@@ -1518,7 +1518,7 @@
 				"not_self": "You can't kick yourself or me... (for good)",
 				"kick_abort": "Could not kick mentioned member.",
 				"higher_access": "Mentioned member has higher access than you do.",
-				"success": "\uD83D\uDC5F **User was kicked.**",
+				"success": "\uD83D\uDC5F **User was kicked.**"
 			},
 			"mute": {
 				"help": "Time out member",

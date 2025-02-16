@@ -37,7 +37,7 @@ import union.base.command.impl.CommandClientImpl;
 public class CommandClientBuilder {
 	private Activity activity = Activity.playing("default");
 	private OnlineStatus status = OnlineStatus.ONLINE;
-	private String ownerId;
+	private Long ownerId;
 	private final LinkedList<SlashCommand> slashCommands = new LinkedList<>();
 	private final LinkedList<ContextMenu> contextMenus = new LinkedList<>();
 	private String forcedGuildId = null;
@@ -76,23 +76,8 @@ public class CommandClientBuilder {
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
-		return this;
-	}
-
-	/**
-	 * Sets the owner for the bot.
-	 * <br>Make sure to verify that the ID provided is ISnowflake compatible when setting this.
-	 * If it is not, this will warn the developer.
-	 *
-	 * @param  ownerId
-	 *         The ID of the owner.
-	 *
-	 * @return This builder
-	 */
 	public CommandClientBuilder setOwnerId(long ownerId) {
-		this.ownerId = String.valueOf(ownerId);
+		this.ownerId = ownerId;
 		return this;
 	}
 

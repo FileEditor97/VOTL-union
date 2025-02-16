@@ -44,6 +44,7 @@ public class LoggingUtil {
 	private final App bot;
 	private final DBUtil db;
 	private final LogEmbedUtil logUtil;
+	private final WebhookLogger webhookLogger;
 
 	public final ModerationLogs mod =	new ModerationLogs();
 	public final RoleLogs role =		new RoleLogs();
@@ -62,14 +63,15 @@ public class LoggingUtil {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
 		this.logUtil = bot.getLogEmbedUtil();
+		this.webhookLogger = new WebhookLogger(db);
 	}
 
 	private IncomingWebhookClientImpl getWebhookClient(LogType type, Guild guild) {
-		return bot.getGuildLogger().getWebhookClient(guild, type);
+		return webhookLogger.getWebhookClient(guild, type);
 	}
 
-	private void sendLog(Guild guild, LogType type, Supplier<MessageEmbed> embedSupplier) {
-		bot.getGuildLogger().sendMessageEmbed(guild, type, embedSupplier);
+	public void sendLog(Guild guild, LogType type, Supplier<MessageEmbed> embedSupplier) {
+		webhookLogger.sendMessageEmbed(guild, type, embedSupplier);
 	}
 
 	private CompletableFuture<String> submitLog(@NotNull IncomingWebhookClientImpl webhookClient, MessageEmbed embed) {

@@ -40,9 +40,7 @@ import union.utils.imagegen.UserBackgroundHandler;
 import union.utils.level.LevelUtil;
 import union.utils.logs.LogEmbedUtil;
 import union.utils.logs.LoggingUtil;
-import union.utils.logs.WebhookLogger;
 import union.utils.message.EmbedUtil;
-import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -72,7 +70,6 @@ public class App {
 	public final String VERSION = Optional.ofNullable(App.class.getPackage().getImplementationVersion()).map(ver -> "v"+ver).orElse("DEVELOPMENT");
 
 	public final JDA JDA;
-	public final EventWaiter WAITER;
 	private final CommandClient commandClient;
 
 	private final FileManager fileManager = new FileManager();
@@ -85,10 +82,8 @@ public class App {
 
 	private final EmbedUtil embedUtil;
 	private final CheckUtil checkUtil;
-	private final MessageUtil messageUtil;
 	private final LogEmbedUtil logEmbedUtil;
 	private final TicketUtil ticketUtil;
-	private final WebhookLogger webhookLogger;
 	private final ModerationUtil moderationUtil;
 	private final LevelUtil levelUtil;
 	private final AlertUtil alertUtil;
@@ -117,20 +112,19 @@ public class App {
 		dbUtil		= new DBUtil(fileManager, settings);
 		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
 
-		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this, ownerId);
 		ticketUtil	= new TicketUtil(this);
 		logEmbedUtil = new LogEmbedUtil(localeUtil);
 		logUtil		= new LoggingUtil(this);
-		webhookLogger = new WebhookLogger(dbUtil);
 		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
 		levelUtil	= new LevelUtil(this);
 		alertUtil	= new AlertUtil();
 
 		ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 
-		WAITER = new EventWaiter();
+		final EventWaiter WAITER = new EventWaiter();
+
         GuildListener guildListener				= new GuildListener(this);
         InteractionListener interactionListener = new InteractionListener(this, WAITER);
         VoiceListener voiceListener				= new VoiceListener(this, scheduledExecutor);
@@ -355,10 +349,6 @@ public class App {
 		return dbUtil;
 	}
 
-	public MessageUtil getMessageUtil() {
-		return messageUtil;
-	}
-
 	public EmbedUtil getEmbedUtil() {
 		return embedUtil;
 	}
@@ -381,10 +371,6 @@ public class App {
 
 	public TicketUtil getTicketUtil() {
 		return ticketUtil;
-	}
- 
-	public WebhookLogger getGuildLogger() {
-		return webhookLogger;
 	}
 
 	public ModerationUtil getModerationUtil() {

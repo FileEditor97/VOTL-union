@@ -35,7 +35,7 @@ public class ForceAccessCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-		Guild guild = bot.JDA.getGuildById(event.optString("server"));
+		Guild guild = event.getJDA().getGuildById(event.optString("server"));
 		if (guild == null) {
 			editError(event, path+".no_guild");
 			return;

@@ -93,7 +93,7 @@ public class GroupCmd extends CommandBase {
 				}
 
 				long appealGuildIdTemp = appealGuildId;
-				InviteImpl.resolve(bot.JDA, link.replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim(), false).queue(invite -> {
+				InviteImpl.resolve(event.getJDA(), link.replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim(), false).queue(invite -> {
 					if (!invite.isFromGuild() || invite.isTemporal() || invite.getGuild().getIdLong() != event.getGuild().getIdLong()) {
 						editError(event, path+".invalid_invite", "Link `%s`".formatted(invite.getUrl()));
 						return;
@@ -462,7 +462,7 @@ public class GroupCmd extends CommandBase {
 					return;
 				}
 
-				InviteImpl.resolve(bot.JDA, link.replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim(), false).queue(invite -> {
+				InviteImpl.resolve(event.getJDA(), link.replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim(), false).queue(invite -> {
 					if (!invite.isFromGuild() || invite.isTemporal() || invite.getGuild().getIdLong() != event.getGuild().getIdLong()) {
 						editError(event, path+".invalid_invite", "Link `%s`".formatted(invite.getUrl()));
 						return;

@@ -75,7 +75,7 @@ public class CheckUtil {
 
 	public boolean hasAccess(Member member, CmdAccessLevel accessLevel) {
 		if (accessLevel.equals(CmdAccessLevel.ALL)) return true;
-		return !accessLevel.isHigherThan(getAccessLevel(member));
+		return getAccessLevel(member).satisfies(accessLevel);
     }
 
 	public CheckUtil hasAccess(IReplyCallback replyCallback, Member member, CmdAccessLevel accessLevel) throws CheckException {

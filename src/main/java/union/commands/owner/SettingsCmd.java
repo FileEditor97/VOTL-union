@@ -163,7 +163,7 @@ public class SettingsCmd extends CommandBase {
 			}
 
 			if (event.optBoolean("add")) {
-				if (bot.JDA.getGuildById(guildId) == null) {
+				if (event.getJDA().getGuildById(guildId) == null) {
 					editError(event, path+".guild_not_found", "Provided: "+guildId);
 					return;
 				}

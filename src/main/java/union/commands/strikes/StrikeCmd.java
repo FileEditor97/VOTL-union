@@ -149,7 +149,8 @@ public class StrikeCmd extends CommandBase {
 			lu.getLocalized(locale, path+".autopunish_higher"),
 			false
 		);
-		if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.HELPER)) return new Field(
+		CmdAccessLevel targetLevel = bot.getCheckUtil().getAccessLevel(target);
+		if (targetLevel.satisfies(CmdAccessLevel.HELPER)) return new Field(
 			lu.getLocalized(locale, path+".autopunish_error"),
 			lu.getLocalized(locale, path+".autopunish_exception"),
 			false
@@ -158,29 +159,34 @@ public class StrikeCmd extends CommandBase {
 		// Execute
 		StringBuilder builder = new StringBuilder();
 		if (actions.contains(PunishActions.KICK)) {
-			String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
-			// Send PM to user
-			target.getUser().openPrivateChannel().queue(pm -> {
-				MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.KICK, guild, reason, null, null, false);
-				if (embed == null) return;
-				pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-			});
-
-			guild.kick(target).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
-				// add case to DB
-				CaseData caseData = bot.getDBUtil().cases.add(CaseType.KICK, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
-					guild.getIdLong(), reason, Instant.now(), null);
-				// log case
-				bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
-					bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
+			if (targetLevel.satisfies(CmdAccessLevel.EXEMPT)) {
+				builder.append(":warning: Not banned, use is exempt from bans.")
+					.append("\n");
+			} else {
+				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
+				// Send PM to user
+				target.getUser().openPrivateChannel().queue(pm -> {
+					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.KICK, guild, reason, null, null, false);
+					if (embed == null) return;
+					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
-			},
-			failure -> bot.getAppLogger().error("Strike punishment execution, Kick member", failure));
-			builder.append(lu.getLocalized(locale, PunishActions.KICK.getPath()))
-				.append("\n");
+
+				guild.kick(target).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
+						// add case to DB
+						CaseData caseData = bot.getDBUtil().cases.add(CaseType.KICK, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
+							guild.getIdLong(), reason, Instant.now(), null);
+						// log case
+						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
+							bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
+						});
+					},
+					failure -> bot.getAppLogger().error("Strike punishment execution, Kick member", failure));
+				builder.append(lu.getLocalized(locale, PunishActions.KICK.getPath()))
+					.append("\n");
+			}
 		}
 		if (actions.contains(PunishActions.BAN)) {
-			if (bot.getCheckUtil().getAccessLevel(target).isHigherThan(CmdAccessLevel.EXEMPT)) {
+			if (targetLevel.satisfies(CmdAccessLevel.EXEMPT)) {
 				builder.append(":warning: Not banned, use is exempt from bans.")
 					.append("\n");
 			} else {

@@ -1043,11 +1043,11 @@
 						"none": "**None**\n\n*Use `/logs enable` to setup logging*"
 					}
 				},
-				"exceptions": {
-					"help": "Manage logging exceptions",
+				"exemptions": {
+					"help": "Manage logging exemptions",
 					"add": {
 						"help": "Exclude channel from logging",
-						"usage": "exceptions add <#Channel>",
+						"usage": "exemptions add <#Channel>",
 						"target": {
 							"name": "target",
 							"help": "Select channel or category"
@@ -1057,18 +1057,18 @@
 						"done": "Done! Target `%s` excluded from future logging (deleted messages)."
 					},
 					"remove": {
-						"help": "Remove target from logging exception",
-						"usage": "exceptions remove <ID>",
+						"help": "Remove target from logging exemptions",
+						"usage": "exemptions remove <ID>",
 						"id": {
 							"name": "id",
 							"help": "Enter target's (channel/category) ID"
 						},
-						"not_found": "Selected target is not in the exceptions list.",
+						"not_found": "Selected target is not in the exemptions list.",
 						"done": "Done! Target `%s` will be logged."
 					},
 					"view": {
-						"help": "View logging exceptions",
-						"usage": "exceptions view",
+						"help": "View logging exemptions",
+						"usage": "exemptions view",
 						"title": "Excluded channels/categories",
 						"none": "*None*"
 					}

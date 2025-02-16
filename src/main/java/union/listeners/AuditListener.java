@@ -52,7 +52,7 @@ public class AuditListener extends ListenerAdapter {
 				
 				logger.channel.onChannelDelete(entry);
 				// remove from db exceptions
-				db.logExceptions.removeException(event.getGuild().getIdLong(), entry.getTargetIdLong());
+				db.logExemption.removeExemption(event.getGuild().getIdLong(), entry.getTargetIdLong());
 			}
 			case CHANNEL_OVERRIDE_CREATE -> {
 				// check if enabled log

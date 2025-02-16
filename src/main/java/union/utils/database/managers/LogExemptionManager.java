@@ -9,21 +9,21 @@ import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
-public class LogExceptionManager extends LiteDBBase {
+public class LogExemptionManager extends LiteDBBase {
 
 	// Cache
 	private final FixedCache<Long, Set<Long>> cache = new FixedCache<>(Constants.DEFAULT_CACHE_SIZE);
 	
-	public LogExceptionManager(ConnectionUtil cu) {
+	public LogExemptionManager(ConnectionUtil cu) {
 		super(cu, "logExceptions");
 	}
 
-	public boolean addException(long guildId, long targetId) {
+	public boolean addExemption(long guildId, long targetId) {
 		invalidateCache(guildId);
 		return execute("INSERT INTO %s(guildId, targetId) VALUES (%s, %s)".formatted(table, guildId, targetId));
 	}
 
-	public boolean removeException(long guildId, long targetId) {
+	public boolean removeExemption(long guildId, long targetId) {
 		invalidateCache(guildId);
 		return execute("DELETE FROM %s WHERE (guildId=%s AND targetId=%s)".formatted(table, guildId, targetId));
 	}
@@ -33,11 +33,11 @@ public class LogExceptionManager extends LiteDBBase {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public boolean isException(long guildId, long targetId) {
-		return getExceptions(guildId).contains(targetId);
+	public boolean isExemption(long guildId, long targetId) {
+		return getExemptions(guildId).contains(targetId);
 	}
 
-	public Set<Long> getExceptions(long guildId) {
+	public Set<Long> getExemptions(long guildId) {
 		if (cache.contains(guildId))
 			return cache.get(guildId);
 		List<Long> data = select("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), "targetId", Long.class);

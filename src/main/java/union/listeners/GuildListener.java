@@ -75,7 +75,7 @@ public class GuildListener extends ListenerAdapter {
 		db.autopunish.removeGuild(guildIdLong);
 		db.strike.removeGuild(guildIdLong);
 		db.logs.removeGuild(guildIdLong);
-		db.logExceptions.removeGuild(guildIdLong);
+		db.logExemption.removeGuild(guildIdLong);
 		db.threadControl.removeAll(guildIdLong);
 		db.games.removeGuild(guildIdLong);
 		db.modReport.removeGuild(guildIdLong);

@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public enum CmdAccessLevel {
 	ALL     (0, "everyone"),		// Default
-	EXCEPT  (1, "automod exception"),// Role
+	EXEMPT	(1, "ban exempt"),		// Role
 	HELPER	(2, "helper"),			// Role
 	MOD     (3, "moderator"),		// Role
 	ADMIN   (5, "administrator"),	// by Permission (Administrator)

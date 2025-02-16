@@ -1001,7 +1001,7 @@
 						"title": "Roles with access",
 						"none_found": "*None of the roles/users has any access.*",
 						"none": "None",
-						"except": "**Automod exception roles:**",
+						"exempt": "**Ban exemption roles:**",
 						"helper": "**Helper roles:**",
 						"mod": "**Moderator roles:**",
 						"operator": "**Operators:**"

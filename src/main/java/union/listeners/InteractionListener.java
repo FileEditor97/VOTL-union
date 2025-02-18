@@ -463,7 +463,7 @@ public class InteractionListener extends ListenerAdapter {
 				EmbedBuilder builder = new EmbedBuilder().setColor(bot.getDBUtil().getGuildSettings(guild).getColor())
 					.setTitle(lu.getLocalized(locale, "bot.verification.embed.title"))
 					.setDescription(lu.getLocalized(locale, "bot.verification.embed.description"))
-					.addField(lu.getLocalized(locale, "bot.verification.embed.howto"), lu.getText(event, "bot.verification.embed.guide"), false)
+					.addField(lu.getLocalized(locale, "bot.verification.embed.howto"), lu.getLocalized(locale, "bot.verification.embed.guide"), false)
 					.addField(lu.getLocalized(locale, "bot.verification.embed.video"), Links.VERIFY_VIDEO_GUIDE, false);
 
 				event.getHook().sendMessageEmbeds(builder.build()).setActionRow(verify, refresh).setEphemeral(true).queue();

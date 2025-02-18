@@ -30,8 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * automatically to handle and execute {@link union.base.command.SlashCommand SlashCommand}s.
  *
  * <p>Implementations also serve as a useful platforms, carrying reference info such as the bot's
- * {@linkplain #getOwnerId() Owner ID} and a {@linkplain #getServerInvite()
- * support server invite}.
+ * {@linkplain #getOwnerId() Owner ID}.
  *
  * <p>For the CommandClientImpl, once initialized, only the following can be modified:
  * <ul>
@@ -238,18 +237,11 @@ public interface CommandClient
 	void cleanCooldowns();
 
 	/**
-	 * Gets the ID of the owner of this bot as a String.
-	 *
-	 * @return The String ID of the owner of the bot
-	 */
-	String getOwnerId();
-
-	/**
-	 * Gets the ID of the owner of this bot as a {@code long}.
+	 * Gets the ID of the owner of this bot.
 	 *
 	 * @return The {@code long} ID of the owner of the bot
 	 */
-	long getOwnerIdLong();
+	long getOwnerId();
 
 	/**
 	 * Gets the {@link java.util.concurrent.ScheduledExecutorService ScheduledExecutorService} held by this client.
@@ -257,13 +249,6 @@ public interface CommandClient
 	 * @return The ScheduledExecutorService held by this client.
 	 */
 	ScheduledExecutorService getScheduleExecutor();
-
-	/**
-	 * Gets the invite to the bot's support server.
-	 *
-	 * @return A possibly-null server invite
-	 */
-	String getServerInvite();
 
 	/**
 	 * Shuts down internals of the Command Client, such as the threadpool and guild settings manager

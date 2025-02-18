@@ -34,7 +34,6 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.command.UserContextMenu;
 import union.base.command.UserContextMenuEvent;
-import union.base.utils.SafeIdUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -69,8 +68,7 @@ public class CommandClientImpl implements CommandClient, EventListener {
 	private final OffsetDateTime start;
 	private final Activity activity;
 	private final OnlineStatus status;
-	private final String ownerId;
-	private final String serverInvite;
+	private final long ownerId;
 	private final HashMap<String, Integer> slashCommandIndex;
 	private final ArrayList<SlashCommand> slashCommands;
 	private final ArrayList<ContextMenu> contextMenus;
@@ -84,14 +82,11 @@ public class CommandClientImpl implements CommandClient, EventListener {
 
 	private CommandListener listener = null;
 
-	public CommandClientImpl(String ownerId, Activity activity, OnlineStatus status, String serverInvite,
+	public CommandClientImpl(long ownerId, Activity activity, OnlineStatus status,
 							 ArrayList<SlashCommand> slashCommands, ArrayList<ContextMenu> contextMenus, String forcedGuildId, String[] devGuildIds, boolean manualUpsert,
 							 boolean shutdownAutomatically, ScheduledExecutorService executor)
 	{
-		Checks.check(ownerId != null, "Owner ID was set null or not set! Please provide an User ID to register as the owner!");
-
-		if (!SafeIdUtil.checkId(ownerId))
-			LOG.warn("The provided Owner ID ({}) was found unsafe! Make sure ID is a non-negative long!", ownerId);
+		Checks.check(ownerId > 0L, "Provided owner ID is incorrect (<0).");
 
 		this.start = OffsetDateTime.now();
 
@@ -99,7 +94,6 @@ public class CommandClientImpl implements CommandClient, EventListener {
 
 		this.activity = activity;
 		this.status = status;
-		this.serverInvite = serverInvite;
 		this.slashCommandIndex = new HashMap<>();
 		this.slashCommands = new ArrayList<>();
 		this.contextMenus = new ArrayList<>();
@@ -259,27 +253,15 @@ public class CommandClientImpl implements CommandClient, EventListener {
 	}
 
 	@Override
-	public String getOwnerId()
+	public long getOwnerId()
 	{
 		return ownerId;
-	}
-
-	@Override
-	public long getOwnerIdLong()
-	{
-		return Long.parseLong(ownerId);
 	}
 
 	@Override
 	public ScheduledExecutorService getScheduleExecutor()
 	{
 		return executor;
-	}
-
-	@Override
-	public String getServerInvite()
-	{
-		return serverInvite;
 	}
 
 	@Override

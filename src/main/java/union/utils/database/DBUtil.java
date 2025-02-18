@@ -56,7 +56,7 @@ public class DBUtil {
 	public final AutopunishManager autopunish;
 	public final BlacklistManager blacklist;
 	public final GuildLogsManager logs;
-	public final LogExceptionManager logExceptions;
+	public final LogExemptionManager logExemption;
 	public final ModifyRoleManager modifyRole;
 	public final ThreadControlManager threadControl;
 	public final GameStrikeManager games;
@@ -117,7 +117,7 @@ public class DBUtil {
 		autopunish = new AutopunishManager(connectionUtil);
 		blacklist = new BlacklistManager(connectionUtil);
 		logs = new GuildLogsManager(connectionUtil);
-		logExceptions = new LogExceptionManager(connectionUtil);
+		logExemption = new LogExemptionManager(connectionUtil);
 		modifyRole = new ModifyRoleManager(connectionUtil);
 		threadControl = new ThreadControlManager(connectionUtil);
 		games = new GameStrikeManager(connectionUtil);

@@ -50,7 +50,7 @@ public class ExperienceCmd extends CommandBase {
 					return;
 				}
 
-				Guild guild = bot.JDA.getGuildById(guildId);
+				Guild guild = event.getJDA().getGuildById(guildId);
 				if (guild == null) {
 					editErrorOther(event, "Guild not found");
 					return;
@@ -98,7 +98,7 @@ public class ExperienceCmd extends CommandBase {
 					return;
 				}
 
-				Guild guild = bot.JDA.getGuildById(guildId);
+				Guild guild = event.getJDA().getGuildById(guildId);
 				if (guild == null) {
 					editErrorOther(event, "Guild not found");
 					return;

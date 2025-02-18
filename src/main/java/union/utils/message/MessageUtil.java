@@ -16,15 +16,10 @@ import union.utils.file.lang.LocaleUtil;
 public class MessageUtil {
 
 	private static final Random random = new Random();
-	private final LocaleUtil lu;
 
 	private static final DecimalFormat decimalFormat = new DecimalFormat("# ### ###");
 
 	private static final Pattern rolePattern = Pattern.compile("<@&(\\d+)>", Pattern.CASE_INSENSITIVE);
-
-	public MessageUtil(LocaleUtil localeUtil) {
-		this.lu = localeUtil;
-	}
 
 	public static String capitalize(final String str) {
 		if (str == null || str.isEmpty()) {
@@ -79,7 +74,7 @@ public class MessageUtil {
 		return color;
 	}
 
-	public String getFormattedMembers(String... members) {
+	public static String getFormattedMembers(LocaleUtil lu, String... members) {
 		if (members.length == 1)
 			return "**" + escapeAll(members[0]) + "**";
 

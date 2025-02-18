@@ -44,6 +44,7 @@ public class LoggingUtil {
 	private final App bot;
 	private final DBUtil db;
 	private final LogEmbedUtil logUtil;
+	private final WebhookLogger webhookLogger;
 
 	public final ModerationLogs mod =	new ModerationLogs();
 	public final RoleLogs role =		new RoleLogs();
@@ -56,19 +57,21 @@ public class LoggingUtil {
 	public final MessageLogs message =	new MessageLogs();
 	public final VoiceLogs voice =		new VoiceLogs();
 	public final LevelLogs level =		new LevelLogs();
+	public final BotLogs botLog =		new BotLogs();
 
 	public LoggingUtil(App bot) {
 		this.bot = bot;
 		this.db = bot.getDBUtil();
 		this.logUtil = bot.getLogEmbedUtil();
+		this.webhookLogger = new WebhookLogger(db);
 	}
 
 	private IncomingWebhookClientImpl getWebhookClient(LogType type, Guild guild) {
-		return bot.getGuildLogger().getWebhookClient(guild, type);
+		return webhookLogger.getWebhookClient(guild, type);
 	}
 
-	private void sendLog(Guild guild, LogType type, Supplier<MessageEmbed> embedSupplier) {
-		bot.getGuildLogger().sendMessageEmbed(guild, type, embedSupplier);
+	public void sendLog(Guild guild, LogType type, Supplier<MessageEmbed> embedSupplier) {
+		webhookLogger.sendMessageEmbed(guild, type, embedSupplier);
 	}
 
 	private CompletableFuture<String> submitLog(@NotNull IncomingWebhookClientImpl webhookClient, MessageEmbed embed) {
@@ -308,30 +311,6 @@ public class LoggingUtil {
 		public void onRoleCheckChildGuild(Guild guild, User admin, Role role, Guild targetGuild) {
 			sendLog(guild, type, () -> logUtil.checkRoleChildGuild(guild.getLocale(), admin.getIdLong(), role.getIdLong(), targetGuild.getName(), targetGuild.getIdLong()));
 		}
-
-		public void onRoleCreate(AuditLogEntry entry) {
-			final Guild guild = entry.getGuild();
-			final long id = entry.getTargetIdLong();
-			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getNewValue();
-
-			sendLog(guild, type, () -> logUtil.roleCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
-		}
-
-		public void onRoleDelete(AuditLogEntry entry) {
-			final Guild guild = entry.getGuild();
-			final long id = entry.getTargetIdLong();
-			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getOldValue();
-
-			sendLog(guild, type, () -> logUtil.roleDeleted(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
-		}
-
-		public void onRoleUpdate(AuditLogEntry entry) {
-			final Guild guild = entry.getGuild();
-			final long id = entry.getTargetIdLong();
-			final String name = guild.getRoleById(id).getName();
-
-			sendLog(guild, type, () -> logUtil.roleUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
-		}
 	}
 
 	// Group actions
@@ -523,22 +502,6 @@ public class LoggingUtil {
 	public class ServerLogs {
 		private final LogType type = LogType.SERVER;
 
-		public void onAccessAdded(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
-			sendLog(guild, type, () -> logUtil.accessAdded(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
-		}
-
-		public void onAccessRemoved(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
-			sendLog(guild, type, () -> logUtil.accessRemoved(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
-		}
-
-		public void onModuleEnabled(Guild guild, User mod, CmdModule module) {
-			sendLog(guild, type, () -> logUtil.moduleEnabled(guild.getLocale(), mod, module));
-		}
-
-		public void onModuleDisabled(Guild guild, User mod, CmdModule module) {
-			sendLog(guild, type, () -> logUtil.moduleDisabled(guild.getLocale(), mod, module));
-		}
-
 		public void onGuildUpdate(AuditLogEntry entry) {
 			final Guild guild = entry.getGuild();
 			final long id = guild.getIdLong();
@@ -589,6 +552,29 @@ public class LoggingUtil {
 			sendLog(guild, type, () -> logUtil.stickerDelete(guild.getLocale(), id, entry.getChanges().values(), entry.getUserIdLong()));
 		}
 
+		public void onRoleCreate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getNewValue();
+
+			sendLog(guild, type, () -> logUtil.roleCreated(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onRoleDelete(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = entry.getChangeByKey(AuditLogKey.ROLE_NAME).getOldValue();
+
+			sendLog(guild, type, () -> logUtil.roleDeleted(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong(), entry.getReason()));
+		}
+
+		public void onRoleUpdate(AuditLogEntry entry) {
+			final Guild guild = entry.getGuild();
+			final long id = entry.getTargetIdLong();
+			final String name = guild.getRoleById(id).getName();
+
+			sendLog(guild, type, () -> logUtil.roleUpdate(guild.getLocale(), id, name, entry.getChanges().values(), entry.getUserIdLong()));
+		}
 	}
 
 	// Channel actions
@@ -802,6 +788,7 @@ public class LoggingUtil {
 		}
 	}
 
+	// Level actions
 	public class LevelLogs {
 		private final LogType type = LogType.LEVEL;
 
@@ -810,5 +797,28 @@ public class LoggingUtil {
 
 			sendLog(guild, type, () -> logUtil.levelUp(guild.getLocale(), target, level, expType));
 		}
+	}
+
+	// Bot settings actions
+	public class BotLogs {
+		private final LogType type = LogType.BOT;
+
+		public void onAccessAdded(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
+			sendLog(guild, type, () -> logUtil.accessAdded(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
+		}
+
+		public void onAccessRemoved(Guild guild, User mod, @Nullable User userTarget, @Nullable Role roleTarget, CmdAccessLevel level) {
+			sendLog(guild, type, () -> logUtil.accessRemoved(guild.getLocale(), mod, userTarget, roleTarget, level.getName()));
+		}
+
+		public void onModuleEnabled(Guild guild, User mod, CmdModule module) {
+			sendLog(guild, type, () -> logUtil.moduleEnabled(guild.getLocale(), mod, module));
+		}
+
+		public void onModuleDisabled(Guild guild, User mod, CmdModule module) {
+			sendLog(guild, type, () -> logUtil.moduleDisabled(guild.getLocale(), mod, module));
+		}
+
+
 	}
 }

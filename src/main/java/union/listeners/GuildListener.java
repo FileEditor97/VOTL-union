@@ -41,7 +41,7 @@ public class GuildListener extends ListenerAdapter {
 			try {
 				Guild master = event.getJDA().getGuildById(masterId);
 				String masterIcon = event.getJDA().getGuildById(masterId).getIconUrl();
-				bot.getGuildLogger().sendMessageEmbed(master, LogType.GROUP,
+				bot.getLogger().sendLog(master, LogType.GROUP,
 					() -> bot.getLogEmbedUtil().groupOwnerLeftEmbed(master.getLocale(), masterId, masterIcon, guildName, guildIdLong, groupId, groupName)
 				);
 			} catch (Exception ignored) {}
@@ -52,8 +52,8 @@ public class GuildListener extends ListenerAdapter {
 			for (Long memberId : db.group.getGroupMembers(groupId)) {
 				try {
 					Guild member = event.getJDA().getGuildById(memberId);
-					
-					bot.getGuildLogger().sendMessageEmbed(member, LogType.GROUP,
+
+					bot.getLogger().sendLog(member, LogType.GROUP,
 						() -> bot.getLogEmbedUtil().groupMemberDeletedEmbed(member.getLocale(), guildIdLong, ownerIcon, groupId, groupName)
 					);
 				} catch (Exception ignored) {}
@@ -75,7 +75,7 @@ public class GuildListener extends ListenerAdapter {
 		db.autopunish.removeGuild(guildIdLong);
 		db.strike.removeGuild(guildIdLong);
 		db.logs.removeGuild(guildIdLong);
-		db.logExceptions.removeGuild(guildIdLong);
+		db.logExemption.removeGuild(guildIdLong);
 		db.threadControl.removeAll(guildIdLong);
 		db.games.removeGuild(guildIdLong);
 		db.modReport.removeGuild(guildIdLong);

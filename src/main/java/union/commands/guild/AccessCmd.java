@@ -46,7 +46,7 @@ public class AccessCmd extends CommandBase {
 			Guild guild = event.getGuild();
 			long guildId = guild.getIdLong();
 
-			List<Long> exceptIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.EXCEPT);
+			List<Long> exemptIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.EXEMPT);
 			List<Long> helperIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.HELPER);
 			List<Long> modIds = bot.getDBUtil().access.getRoles(guildId, CmdAccessLevel.MOD);
 			List<Long> operatorIds = bot.getDBUtil().access.getOperators(guildId);
@@ -54,7 +54,7 @@ public class AccessCmd extends CommandBase {
 			EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, "bot.guild.access.view.embed.title"));
 
-			if (exceptIds.isEmpty() && helperIds.isEmpty() && modIds.isEmpty() && operatorIds.isEmpty()) {
+			if (exemptIds.isEmpty() && helperIds.isEmpty() && modIds.isEmpty() && operatorIds.isEmpty()) {
 				editEmbed(event,
 					embedBuilder.setDescription(
 						lu.getText(event, "bot.guild.access.view.embed.none_found")
@@ -65,9 +65,9 @@ public class AccessCmd extends CommandBase {
 
 			StringBuilder sb = new StringBuilder();
 
-			sb.append(lu.getText(event, "bot.guild.access.view.embed.except")).append("\n");
-			if (exceptIds.isEmpty()) sb.append("> %s\n".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
-			else for (long roleId : exceptIds) {
+			sb.append(lu.getText(event, "bot.guild.access.view.embed.exempt")).append("\n");
+			if (exemptIds.isEmpty()) sb.append("> %s\n".formatted(lu.getText(event, "bot.guild.access.view.embed.none")));
+			else for (long roleId : exemptIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
 					bot.getDBUtil().access.removeRole(guildId, roleId);
@@ -117,7 +117,7 @@ public class AccessCmd extends CommandBase {
 			this.options = List.of(
 				new OptionData(OptionType.ROLE, "role", lu.getText(path+".role.help"), true),
 				new OptionData(OptionType.INTEGER, "access_level", lu.getText(path+".access_level.help"), true)
-					.addChoice("Automod Exception", CmdAccessLevel.EXCEPT.getLevel())
+					.addChoice("Ban exemption", CmdAccessLevel.EXEMPT.getLevel())
 					.addChoice("Helper", CmdAccessLevel.HELPER.getLevel())
 					.addChoice("Moderator", CmdAccessLevel.MOD.getLevel())
 			);
@@ -153,7 +153,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			// Log
-			bot.getLogger().server.onAccessAdded(guild, event.getUser(), null, role, level);
+			bot.getLogger().botLog.onAccessAdded(guild, event.getUser(), null, role, level);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.role.done")
@@ -198,7 +198,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			// Log
-			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
+			bot.getLogger().botLog.onAccessRemoved(event.getGuild(), event.getUser(), null, role, level);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.role.done")
@@ -249,7 +249,7 @@ public class AccessCmd extends CommandBase {
 			}
 			
 			// Log
-			bot.getLogger().server.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
+			bot.getLogger().botLog.onAccessAdded(event.getGuild(), event.getUser(), member.getUser(), null, CmdAccessLevel.OPERATOR);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.add.operator.done").replace("{user}", member.getAsMention()))
@@ -293,7 +293,7 @@ public class AccessCmd extends CommandBase {
 			}
 
 			// Log
-			bot.getLogger().server.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
+			bot.getLogger().botLog.onAccessRemoved(event.getGuild(), event.getUser(), user, null, CmdAccessLevel.OPERATOR);
 			// Send reply
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(lu.getText(event, "bot.guild.access.remove.operator.done").replace("{user}", user.getAsMention()))

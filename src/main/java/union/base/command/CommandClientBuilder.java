@@ -34,12 +34,10 @@ import union.base.command.impl.CommandClientImpl;
  * @author John Grosh (jagrosh)
  */
 @SuppressWarnings("unused")
-public class CommandClientBuilder
-{
+public class CommandClientBuilder {
 	private Activity activity = Activity.playing("default");
 	private OnlineStatus status = OnlineStatus.ONLINE;
-	private String ownerId;
-	private String serverInvite;
+	private Long ownerId;
 	private final LinkedList<SlashCommand> slashCommands = new LinkedList<>();
 	private final LinkedList<ContextMenu> contextMenus = new LinkedList<>();
 	private String forcedGuildId = null;
@@ -56,12 +54,14 @@ public class CommandClientBuilder
 	 *
 	 * @return The CommandClient built.
 	 */
-	public CommandClient build()
-	{
-		CommandClient client = new CommandClientImpl(ownerId, activity, status, serverInvite,
-													 new ArrayList<>(slashCommands), new ArrayList<>(contextMenus),forcedGuildId, devGuildIds, manualUpsert,
-													 shutdownAutomatically, executor);
-		if(listener!=null)
+	public CommandClient build() {
+		CommandClient client = new CommandClientImpl(
+			ownerId, activity, status,
+			new ArrayList<>(slashCommands), new ArrayList<>(contextMenus),
+			forcedGuildId, devGuildIds, manualUpsert,
+			shutdownAutomatically, executor
+		);
+		if (listener!=null)
 			client.setListener(listener);
 		return client;
 	}
@@ -76,39 +76,8 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder setOwnerId(String ownerId)
-	{
+	public CommandClientBuilder setOwnerId(long ownerId) {
 		this.ownerId = ownerId;
-		return this;
-	}
-
-	/**
-	 * Sets the owner for the bot.
-	 * <br>Make sure to verify that the ID provided is ISnowflake compatible when setting this.
-	 * If it is not, this will warn the developer.
-	 *
-	 * @param  ownerId
-	 *         The ID of the owner.
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setOwnerId(long ownerId)
-	{
-		this.ownerId = String.valueOf(ownerId);
-		return this;
-	}
-
-	/**
-	 * Sets the bot's support server invite.
-	 *
-	 * @param  serverInvite
-	 *         The support server invite
-	 *
-	 * @return This builder
-	 */
-	public CommandClientBuilder setServerInvite(String serverInvite)
-	{
-		this.serverInvite = serverInvite;
 		return this;
 	}
 
@@ -121,8 +90,7 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder setActivity(Activity activity)
-	{
+	public CommandClientBuilder setActivity(Activity activity) {
 		this.activity = activity;
 		return this;
 	}
@@ -136,8 +104,7 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder setStatus(OnlineStatus status)
-	{
+	public CommandClientBuilder setStatus(OnlineStatus status) {
 		this.status = status;
 		return this;
 	}
@@ -151,8 +118,7 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder addSlashCommand(SlashCommand command)
-	{
+	public CommandClientBuilder addSlashCommand(SlashCommand command) {
 		slashCommands.add(command);
 		return this;
 	}
@@ -167,9 +133,8 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder addSlashCommands(SlashCommand... commands)
-	{
-		for(SlashCommand command: commands)
+	public CommandClientBuilder addSlashCommands(SlashCommand... commands) {
+		for (SlashCommand command: commands)
 			this.addSlashCommand(command);
 		return this;
 	}
@@ -183,8 +148,7 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder addContextMenu(ContextMenu contextMenu)
-	{
+	public CommandClientBuilder addContextMenu(ContextMenu contextMenu) {
 		contextMenus.add(contextMenu);
 		return this;
 	}
@@ -199,9 +163,8 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder addContextMenus(ContextMenu... contextMenus)
-	{
-		for(ContextMenu contextMenu: contextMenus)
+	public CommandClientBuilder addContextMenus(ContextMenu... contextMenus) {
+		for (ContextMenu contextMenu: contextMenus)
 			this.addContextMenu(contextMenu);
 		return this;
 	}
@@ -213,8 +176,7 @@ public class CommandClientBuilder
 	 * @param guildId the guild ID.
 	 * @return This Builder
 	 */
-	public CommandClientBuilder forceGuildOnly(String guildId)
-	{
+	public CommandClientBuilder forceGuildOnly(String guildId) {
 		this.forcedGuildId = guildId;
 		return this;
 	}
@@ -226,8 +188,7 @@ public class CommandClientBuilder
 	 * @param guildId the guild ID.
 	 * @return This Builder
 	 */
-	public CommandClientBuilder forceGuildOnly(long guildId)
-	{
+	public CommandClientBuilder forceGuildOnly(long guildId) {
 		this.forcedGuildId = String.valueOf(guildId);
 		return this;
 	}
@@ -239,8 +200,7 @@ public class CommandClientBuilder
 	 * @param guildIds the guild IDs.
 	 * @return This Builder
 	 */
-	public CommandClientBuilder setDevGuildIds(String... guildIds)
-	{
+	public CommandClientBuilder setDevGuildIds(String... guildIds) {
 		this.devGuildIds = guildIds;
 		return this;
 	}
@@ -252,8 +212,7 @@ public class CommandClientBuilder
 	 * @param guildIds the guild IDs.
 	 * @return This Builder
 	 */
-	public CommandClientBuilder setDevGuildIds(long... guildIds)
-	{
+	public CommandClientBuilder setDevGuildIds(long... guildIds) {
 		this.devGuildIds = Arrays.stream(guildIds).mapToObj(String::valueOf).toArray(String[]::new);
 		return this;
 	}
@@ -266,8 +225,7 @@ public class CommandClientBuilder
 	 * @param manualUpsert your option.
 	 * @return This Builder
 	 */
-	public CommandClientBuilder setManualUpsert(boolean manualUpsert)
-	{
+	public CommandClientBuilder setManualUpsert(boolean manualUpsert) {
 		this.manualUpsert = manualUpsert;
 		return this;
 	}
@@ -281,8 +239,7 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder setListener(CommandListener listener)
-	{
+	public CommandClientBuilder setListener(CommandListener listener) {
 		this.listener = listener;
 		return this;
 	}
@@ -296,8 +253,7 @@ public class CommandClientBuilder
 	 *
 	 * @return This builder
 	 */
-	public CommandClientBuilder setScheduleExecutor(ScheduledExecutorService executor)
-	{
+	public CommandClientBuilder setScheduleExecutor(ScheduledExecutorService executor) {
 		this.executor = executor;
 		return this;
 	}
@@ -310,8 +266,7 @@ public class CommandClientBuilder
 	 *        {@code false} to disable calling the shutdown method when a ShutdownEvent is received
 	 * @return This builder
 	 */
-	public CommandClientBuilder setShutdownAutomatically(boolean shutdownAutomatically)
-	{
+	public CommandClientBuilder setShutdownAutomatically(boolean shutdownAutomatically) {
 		this.shutdownAutomatically = shutdownAutomatically;
 		return this;
 	}

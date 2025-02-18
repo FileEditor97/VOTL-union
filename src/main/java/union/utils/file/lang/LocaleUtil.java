@@ -13,6 +13,7 @@ import union.objects.Emotes;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import union.utils.message.MessageUtil;
 
 @SuppressWarnings("unused")
 public class LocaleUtil {
@@ -40,7 +41,7 @@ public class LocaleUtil {
 	@NotNull
 	public String getLocalized(DiscordLocale locale, String path, String user, boolean format) {
 		if (format)
-			user = bot.getMessageUtil().getFormattedMembers(user);
+			user = MessageUtil.getFormattedMembers(this, user);
 
 		return Objects.requireNonNull(getLocalized(locale, path).replace("{user}", user));
 	}
@@ -59,7 +60,7 @@ public class LocaleUtil {
 
 	@NotNull
 	public String getLocalized(DiscordLocale locale, String path, String user, List<String> targets, boolean format) {
-		String targetReplacement = targets.isEmpty() ? "null" : bot.getMessageUtil().getFormattedMembers(targets.toArray(new String[0]));
+		String targetReplacement = targets.isEmpty() ? "null" : MessageUtil.getFormattedMembers(this, targets.toArray(new String[0]));
 
 		return Objects.requireNonNull(getLocalized(locale, path, user, format)
 			.replace("{target}", targetReplacement)

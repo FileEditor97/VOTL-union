@@ -48,7 +48,7 @@ public class AddUserCmd extends CommandBase {
 			return;
 		}
 		User user = event.optUser("user");
-		if (user.equals(event.getUser()) || user.equals(bot.JDA.getSelfUser()) || authorId.equals(user.getIdLong())) {
+		if (user.equals(event.getUser()) || user.equals(event.getJDA().getSelfUser()) || authorId.equals(user.getIdLong())) {
 			editError(event, path+".not_self");
 			return;
 		}

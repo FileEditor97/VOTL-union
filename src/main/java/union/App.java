@@ -28,7 +28,6 @@ import union.listeners.*;
 import union.menus.*;
 import union.metrics.Metrics;
 import union.objects.constants.Constants;
-import union.objects.constants.Links;
 import union.services.CountingThreadFactory;
 import union.services.ScheduledCheck;
 import union.services.ScheduledMetrics;
@@ -41,9 +40,7 @@ import union.utils.imagegen.UserBackgroundHandler;
 import union.utils.level.LevelUtil;
 import union.utils.logs.LogEmbedUtil;
 import union.utils.logs.LoggingUtil;
-import union.utils.logs.WebhookLogger;
 import union.utils.message.EmbedUtil;
-import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -63,6 +60,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 
+import static java.lang.Long.parseLong;
+
 public class App {
 	protected static App instance;
 	
@@ -71,7 +70,6 @@ public class App {
 	public final String VERSION = Optional.ofNullable(App.class.getPackage().getImplementationVersion()).map(ver -> "v"+ver).orElse("DEVELOPMENT");
 
 	public final JDA JDA;
-	public final EventWaiter WAITER;
 	private final CommandClient commandClient;
 
 	private final FileManager fileManager = new FileManager();
@@ -84,10 +82,8 @@ public class App {
 
 	private final EmbedUtil embedUtil;
 	private final CheckUtil checkUtil;
-	private final MessageUtil messageUtil;
 	private final LogEmbedUtil logEmbedUtil;
 	private final TicketUtil ticketUtil;
-	private final WebhookLogger webhookLogger;
 	private final ModerationUtil moderationUtil;
 	private final LevelUtil levelUtil;
 	private final AlertUtil alertUtil;
@@ -109,27 +105,26 @@ public class App {
 			System.exit(0);
 		}
 
-		final String ownerId = fileManager.getString("config", "owner-id");
+		final long ownerId = parseLong(fileManager.getString("config", "owner-id"));
 		
 		// Define for default
 		settings	= new SettingsManager(fileManager);
 		dbUtil		= new DBUtil(fileManager, settings);
 		localeUtil	= new LocaleUtil(this, DiscordLocale.ENGLISH_UK);
 
-		messageUtil	= new MessageUtil(localeUtil);
 		embedUtil	= new EmbedUtil(localeUtil);
 		checkUtil	= new CheckUtil(this, ownerId);
 		ticketUtil	= new TicketUtil(this);
 		logEmbedUtil = new LogEmbedUtil(localeUtil);
 		logUtil		= new LoggingUtil(this);
-		webhookLogger = new WebhookLogger(dbUtil);
 		moderationUtil = new ModerationUtil(dbUtil, localeUtil);
 		levelUtil	= new LevelUtil(this);
 		alertUtil	= new AlertUtil();
 
 		ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(4, new CountingThreadFactory("UTB", "Scheduler", false));
 
-		WAITER = new EventWaiter();
+		final EventWaiter WAITER = new EventWaiter();
+
         GuildListener guildListener				= new GuildListener(this);
         InteractionListener interactionListener = new InteractionListener(this, WAITER);
         VoiceListener voiceListener				= new VoiceListener(this, scheduledExecutor);
@@ -149,7 +144,6 @@ public class App {
 		// Define a command client
 		commandClient = new CommandClientBuilder()
 			.setOwnerId(ownerId)
-			.setServerInvite(Links.DISCORD)
 			.setScheduleExecutor(scheduledExecutor)
 			.setStatus(OnlineStatus.ONLINE)
 			.setActivity(Activity.customStatus("/about | unionteams.ru"))
@@ -179,7 +173,7 @@ public class App {
 				// moderation
 				new BanCmd(),
 				new UnbanCmd(),
-				new KickCmd(WAITER),
+				new KickCmd(),
 				new SyncCmd(WAITER),
 				new CaseCmd(),
 				new ReasonCmd(),
@@ -355,10 +349,6 @@ public class App {
 		return dbUtil;
 	}
 
-	public MessageUtil getMessageUtil() {
-		return messageUtil;
-	}
-
 	public EmbedUtil getEmbedUtil() {
 		return embedUtil;
 	}
@@ -381,10 +371,6 @@ public class App {
 
 	public TicketUtil getTicketUtil() {
 		return ticketUtil;
-	}
- 
-	public WebhookLogger getGuildLogger() {
-		return webhookLogger;
 	}
 
 	public ModerationUtil getModerationUtil() {

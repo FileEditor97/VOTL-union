@@ -32,7 +32,7 @@ public class PurgeCmd extends CommandBase {
 		this.options = List.of(
 			new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
 			new OptionData(OptionType.INTEGER, "count", lu.getText(path+".count.help"))
-				.setRequiredRange(1, 60)
+				.setRequiredRange(1, 50)
 		);
 		this.botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
 		this.category = CmdCategory.MODERATION;

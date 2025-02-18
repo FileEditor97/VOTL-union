@@ -109,7 +109,7 @@ public class RolesSetupCmd extends CommandBase {
 					String link = event.optString("invite", "").replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim();
 					if (!link.isBlank()) {
 						final int rowTemp = row;
-						InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
+						InviteImpl.resolve(event.getJDA(), link, false).queue(invite -> {
 								if (!invite.isFromGuild() || invite.isTemporal()) {
 									editError(event, path+".invalid_invite", "Not server type invite");
 									return;
@@ -242,7 +242,7 @@ public class RolesSetupCmd extends CommandBase {
 					response.append(lu.getText(event, path+".default_invite"));
 					sendReply(event, response, role);
 				} else {
-					InviteImpl.resolve(bot.JDA, link, false).queue(invite -> {
+					InviteImpl.resolve(event.getJDA(), link, false).queue(invite -> {
 						if (invite.isFromGuild() && invite.isTemporal()) {
 							response.append(lu.getText(event, path+".invalid_invite"));
 						} else {

@@ -52,7 +52,7 @@ public class AuditListener extends ListenerAdapter {
 				
 				logger.channel.onChannelDelete(entry);
 				// remove from db exceptions
-				db.logExceptions.removeException(event.getGuild().getIdLong(), entry.getTargetIdLong());
+				db.logExemption.removeExemption(event.getGuild().getIdLong(), entry.getTargetIdLong());
 			}
 			case CHANNEL_OVERRIDE_CREATE -> {
 				// check if enabled log
@@ -76,19 +76,19 @@ public class AuditListener extends ListenerAdapter {
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
-				logger.role.onRoleCreate(entry);
+				logger.server.onRoleCreate(entry);
 			}
 			case ROLE_DELETE -> {
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
-				logger.role.onRoleDelete(entry);
+				logger.server.onRoleDelete(entry);
 			}
 			case ROLE_UPDATE -> {
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
-				logger.role.onRoleUpdate(entry);
+				logger.server.onRoleUpdate(entry);
 			}
 			case GUILD_UPDATE -> {
 				// check if enabled log

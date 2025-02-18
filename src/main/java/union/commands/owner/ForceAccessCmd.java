@@ -25,7 +25,7 @@ public class ForceAccessCmd extends CommandBase {
 			new OptionData(OptionType.STRING, "target", lu.getText(path+".target.help"), true).setMaxLength(30),
 			new OptionData(OptionType.INTEGER, "access_level", lu.getText(path+".access_level.help"), true)
 				.addChoice("- Remove -", CmdAccessLevel.ALL.getLevel())
-				.addChoice("Automod Exception", CmdAccessLevel.EXCEPT.getLevel())
+				.addChoice("Automod Exception", CmdAccessLevel.EXEMPT.getLevel())
 				.addChoice("Helper", CmdAccessLevel.HELPER.getLevel())
 				.addChoice("Moderator", CmdAccessLevel.MOD.getLevel())
 				.addChoice("Operator", CmdAccessLevel.OPERATOR.getLevel())
@@ -35,7 +35,7 @@ public class ForceAccessCmd extends CommandBase {
 	@Override
 	protected void execute(SlashCommandEvent event) {
 		event.deferReply().queue();
-		Guild guild = bot.JDA.getGuildById(event.optString("server"));
+		Guild guild = event.getJDA().getGuildById(event.optString("server"));
 		if (guild == null) {
 			editError(event, path+".no_guild");
 			return;

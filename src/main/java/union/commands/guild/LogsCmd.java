@@ -37,7 +37,7 @@ public class LogsCmd extends CommandBase {
 		this.name = "logs";
 		this.path = "bot.guild.logs";
 		this.children = new SlashCommand[]{new Enable(), new Disable(), new View(),
-			new AddException(), new RemoveException(), new ViewException()};
+			new AddExemption(), new RemoveExemption(), new ViewExemption()};
 		this.accessLevel = CmdAccessLevel.ADMIN;
 		this.category = CmdCategory.GUILD;
 	}
@@ -201,15 +201,15 @@ public class LogsCmd extends CommandBase {
 		}
 	}
 
-	private class AddException extends SlashCommand {
-		public AddException() {
+	private class AddExemption extends SlashCommand {
+		public AddExemption() {
 			this.name = "add";
-			this.path = "bot.guild.logs.exceptions.add";
+			this.path = "bot.guild.logs.exemptions.add";
 			this.options = List.of(
 				new OptionData(OptionType.CHANNEL, "target", lu.getText(path+".target.help"), true)
 					.setChannelTypes(ChannelType.TEXT, ChannelType.CATEGORY)
 			);
-			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));
+			this.subcommandGroup = new SubcommandGroupData("exemptions", lu.getText("bot.guild.logs.exemptions.help"));
 		}
 
 		@Override
@@ -219,13 +219,13 @@ public class LogsCmd extends CommandBase {
 			long guildId = event.getGuild().getIdLong();
 			switch (channelUnion.getType()) {
 				case TEXT -> {
-					if (bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), channelUnion.getIdLong())) {
+					if (bot.getDBUtil().logExemption.isExemption(event.getGuild().getIdLong(), channelUnion.getIdLong())) {
 						editError(event, path+".already", "Channel: "+channelUnion.getAsMention());
 						return;
 					}
 				}
 				case CATEGORY -> {
-					if (bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), channelUnion.getIdLong())) {
+					if (bot.getDBUtil().logExemption.isExemption(event.getGuild().getIdLong(), channelUnion.getIdLong())) {
 						editError(event, path+".already", "Category: "+channelUnion.getName());
 						return;
 					}
@@ -235,7 +235,7 @@ public class LogsCmd extends CommandBase {
 					return;
 				}
 			}
-			if (!bot.getDBUtil().logExceptions.addException(guildId, channelUnion.getIdLong())) {
+			if (!bot.getDBUtil().logExemption.addExemption(guildId, channelUnion.getIdLong())) {
 				editErrorUnknown(event, "Database error.");
 				return;
 			}
@@ -246,14 +246,14 @@ public class LogsCmd extends CommandBase {
 		}
 	}
 
-	private class RemoveException extends SlashCommand {
-		public RemoveException() {
+	private class RemoveExemption extends SlashCommand {
+		public RemoveExemption() {
 			this.name = "remove";
-			this.path = "bot.guild.logs.exceptions.remove";
+			this.path = "bot.guild.logs.exemptions.remove";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"), true)
 			);
-			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));
+			this.subcommandGroup = new SubcommandGroupData("exemptions", lu.getText("bot.guild.logs.exemptions.help"));
 		}
 
 		@Override
@@ -268,11 +268,11 @@ public class LogsCmd extends CommandBase {
 				return;
 			}
 			long guildId = event.getGuild().getIdLong();
-			if (!bot.getDBUtil().logExceptions.isException(event.getGuild().getIdLong(), targetId)) {
+			if (!bot.getDBUtil().logExemption.isExemption(event.getGuild().getIdLong(), targetId)) {
 				editError(event, path+".not_found", "Provided ID: "+targetId);
 				return;
 			}
-			if (!bot.getDBUtil().logExceptions.removeException(guildId, targetId)) {
+			if (!bot.getDBUtil().logExemption.removeExemption(guildId, targetId)) {
 				editErrorUnknown(event, "Database error.");
 				return;
 			}
@@ -283,17 +283,17 @@ public class LogsCmd extends CommandBase {
 		}
 	}
 
-	private class ViewException extends SlashCommand {
-		public ViewException() {
+	private class ViewExemption extends SlashCommand {
+		public ViewExemption() {
 			this.name = "view";
-			this.path = "bot.guild.logs.exceptions.view";
-			this.subcommandGroup = new SubcommandGroupData("exceptions", lu.getText("bot.guild.logs.exceptions.help"));
+			this.path = "bot.guild.logs.exemptions.view";
+			this.subcommandGroup = new SubcommandGroupData("exemptions", lu.getText("bot.guild.logs.exemptions.help"));
 		}
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
-			Set<Long> targets = bot.getDBUtil().logExceptions.getExceptions(event.getGuild().getIdLong());
+			Set<Long> targets = bot.getDBUtil().logExemption.getExemptions(event.getGuild().getIdLong());
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(path+".title"));
 			if (targets.isEmpty()) {

@@ -279,9 +279,6 @@
 		},
 		"roles": {
 			"name": "Role logs",
-			"create": "Role created | %s",
-			"update": "Role updated | %s",
-			"delete": "Role deleted | %s",
 			"rank": "Rank",
 			"roles": "Roles",
 			"role": "Role",
@@ -308,12 +305,9 @@
 			"sticker_create": "Sticker created",
 			"sticker_update": "Sticker updated",
 			"sticker_delete": "Sticker deleted",
-			"access_added": "Access granted to target",
-			"access_removed": "Access removed from target",
-			"access_level": "Access level",
-			"module": "Module",
-			"module_enabled": "Module enabled",
-			"module_disabled": "Module disabled"
+			"role_create": "Role created | %s",
+			"role_update": "Role updated | %s",
+			"role_delete": "Role deleted | %s"
 		},
 		"messages": {
 			"name": "Message logs",
@@ -381,9 +375,14 @@
 				"Congratulations {user} \uD83C\uDF89 You just leveled up! You're now **{type} Level {level}**"
 			]
 		},
-		"other": {
-			"name": "Audit logs (not used!)",
-			"audit": "Audit logs (not used!)"
+		"bot": {
+			"name": "Bot settings logs",
+			"access_added": "Access granted to target",
+			"access_removed": "Access removed from target",
+			"access_level": "Access level",
+			"module": "Module",
+			"module_enabled": "Module enabled",
+			"module_disabled": "Module disabled"
 		},
 		"keys": {
 			"name": "Name",
@@ -832,7 +831,7 @@
 					"help": "Manage leveling roles",
 					"set": {
 						"help": "Set role for achieved level",
-						"usage": "level_roles set <level> <@Role>",
+						"usage": "level_roles set <level> <@Role> [type]",
 						"level": {
 							"name": "level",
 							"help": "At which level to assign those roles"
@@ -1001,7 +1000,7 @@
 						"title": "Roles with access",
 						"none_found": "*None of the roles/users has any access.*",
 						"none": "None",
-						"except": "**Automod exception roles:**",
+						"exempt": "**Ban exemption roles:**",
 						"helper": "**Helper roles:**",
 						"mod": "**Moderator roles:**",
 						"operator": "**Operators:**"
@@ -1044,11 +1043,11 @@
 						"none": "**None**\n\n*Use `/logs enable` to setup logging*"
 					}
 				},
-				"exceptions": {
-					"help": "Manage logging exceptions",
+				"exemptions": {
+					"help": "Manage logging exemptions",
 					"add": {
 						"help": "Exclude channel from logging",
-						"usage": "exceptions add <#Channel>",
+						"usage": "exemptions add <#Channel>",
 						"target": {
 							"name": "target",
 							"help": "Select channel or category"
@@ -1058,18 +1057,18 @@
 						"done": "Done! Target `%s` excluded from future logging (deleted messages)."
 					},
 					"remove": {
-						"help": "Remove target from logging exception",
-						"usage": "exceptions remove <ID>",
+						"help": "Remove target from logging exemptions",
+						"usage": "exemptions remove <ID>",
 						"id": {
 							"name": "id",
 							"help": "Enter target's (channel/category) ID"
 						},
-						"not_found": "Selected target is not in the exceptions list.",
+						"not_found": "Selected target is not in the exemptions list.",
 						"done": "Done! Target `%s` will be logged."
 					},
 					"view": {
-						"help": "View logging exceptions",
-						"usage": "exceptions view",
+						"help": "View logging exemptions",
+						"usage": "exemptions view",
 						"title": "Excluded channels/categories",
 						"none": "*None*"
 					}
@@ -1518,12 +1517,7 @@
 				"not_self": "You can't kick yourself or me... (for good)",
 				"kick_abort": "Could not kick mentioned member.",
 				"higher_access": "Mentioned member has higher access than you do.",
-				"success": "\uD83D\uDC5F **User was kicked.**",
-				"sync": {
-					"title": "**Sync this kick?**\nSelect groups bellow.",
-					"value": "Select group/-s",
-					"done": "Kick sync in progress! Result will be posted in log channel."
-				}
+				"success": "\uD83D\uDC5F **User was kicked.**"
 			},
 			"mute": {
 				"help": "Time out member",

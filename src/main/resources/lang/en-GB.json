@@ -831,7 +831,7 @@
 					"help": "Manage leveling roles",
 					"set": {
 						"help": "Set role for achieved level",
-						"usage": "level_roles set <level> <@Role>",
+						"usage": "level_roles set <level> <@Role> [type]",
 						"level": {
 							"name": "level",
 							"help": "At which level to assign those roles"

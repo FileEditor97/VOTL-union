@@ -319,16 +319,20 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		// Check if user is blacklisted
-		List<Integer> groupIds = new ArrayList<>();
-		groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
-		groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
-		for (int groupId : groupIds) {
-			if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
-				sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
-				bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), null, guild,
-					lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
-				return;
+		final List<Integer> groupIds = new ArrayList<>();
+		try {
+			groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
+			groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
+			for (int groupId : groupIds) {
+				if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
+					sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
+					bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), null, guild,
+						lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
+					return;
+				}
 			}
+		} catch (Exception ex) {
+			bot.getAppLogger().warn("Exception at verify blacklist check, skipped.", ex);
 		}
 
 		if (bot.getSettings().isDbVerifyDisabled()) {
@@ -386,25 +390,31 @@ public class InteractionListener extends ListenerAdapter {
 			try {
 				final int minimumPlaytime = db.getVerifySettings(guild).getMinimumPlaytime();
 				if (minimumPlaytime > -1) {
-					String steamid = SteamUtil.convertSteam64toSteamID(steam64);
-					final Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), steamid);
+					String steamId = SteamUtil.convertSteam64toSteamID(steam64);
+					final Long playtime = db.unionPlayers.getPlayTime(guild.getIdLong(), steamId);
 					// if user has not joined at least once
 					if (playtime == null) {
 						// Check backup table, if exists in other table but not in SAM - skip
-						if (db.unionPlayers.existsAxePlayer(guild.getIdLong(), steamid)) return;
-						// No user
-						sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
-						bot.getLogger().verify.onVerifyAttempted(member.getUser(), steam64, guild,
-							lu.getText(event, "logger_embed.verify.playtime").formatted("none", minimumPlaytime));
-						return;
-					}
-					// if user doesn't have minimum playtime required
-					final long played = Math.floorDiv(playtime, 3600);
-					if (played < minimumPlaytime) {
-						sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minimumPlaytime, steam64));
-						bot.getLogger().verify.onVerifyAttempted(member.getUser(), steam64, guild,
-							lu.getText(event, "logger_embed.verify.playtime").formatted(played, minimumPlaytime));
-						return;
+						if (db.unionPlayers.existsAxePlayer(guild.getIdLong(), steamId)) {
+							// log and skip this check
+							bot.getAppLogger().warn("User not found in SAM DB, skipped playtime check.\nGuild: '{}', userId: '{}' , steamId: '{}'", guild.getName(), member.getId(), steamId);
+							bot.getLogger().verify.onVerifyAttempted(member.getUser(), steam64, guild, "INFO: player record in DB is conflicting, skipped playtime check!");
+						} else {
+							// No user
+							sendError(event, "bot.verification.playtime_none", "[Your profile (link)](https://unionteams.ru/player/%s)".formatted(steam64));
+							bot.getLogger().verify.onVerifyAttempted(member.getUser(), steam64, guild,
+								lu.getText(event, "logger_embed.verify.playtime").formatted("none", minimumPlaytime));
+							return;
+						}
+					} else {
+						// if user doesn't have minimum playtime required
+						final long played = Math.floorDiv(playtime, 3600);
+						if (played < minimumPlaytime) {
+							sendError(event, "bot.verification.playtime_minimum", "Required minimum - %s hour/-s\n[Your profile (link)](https://unionteams.ru/player/%s)".formatted(minimumPlaytime, steam64));
+							bot.getLogger().verify.onVerifyAttempted(member.getUser(), steam64, guild,
+								lu.getText(event, "logger_embed.verify.playtime").formatted(played, minimumPlaytime));
+							return;
+						}
 					}
 				}
 			} catch (Exception ex) {
@@ -1985,7 +1995,7 @@ public class InteractionListener extends ListenerAdapter {
 
 
 	private enum Cooldown {
-		BUTTON_VERIFY(10, CooldownScope.USER),
+		BUTTON_VERIFY(15, CooldownScope.USER),
 		BUTTON_ROLE_SHOW(20, CooldownScope.USER),
 		BUTTON_ROLE_OTHER(2, CooldownScope.USER),
 		BUTTON_ROLE_CLEAR(4, CooldownScope.USER),

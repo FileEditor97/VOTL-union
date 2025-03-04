@@ -61,14 +61,10 @@ public class RoleCmd extends CommandBase {
 
 			// Get roles
 			List<Role> roles = new ArrayList<>(3);
-			Role role = event.optRole("role1");
-			if (role != null) roles.add(role);
 
-			role = event.optRole("role2");
-			if (role != null) roles.add(role);
-
-			role = event.optRole("role3");
-			if (role != null) roles.add(role);
+			Optional.ofNullable(event.optRole("role1")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role2")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role3")).ifPresent(roles::add);
 
 			if (roles.isEmpty()) {
 				editError(event, path+".invalid_args");
@@ -136,14 +132,10 @@ public class RoleCmd extends CommandBase {
 			
 			// Get roles
 			List<Role> roles = new ArrayList<>(3);
-			Role role = event.optRole("role1");
-			if (role != null) roles.add(role);
 
-			role = event.optRole("role2");
-			if (role != null) roles.add(role);
-
-			role = event.optRole("role3");
-			if (role != null) roles.add(role);
+			Optional.ofNullable(event.optRole("role1")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role2")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role3")).ifPresent(roles::add);
 
 			if (roles.isEmpty()) {
 				editError(event, path+".invalid_args");

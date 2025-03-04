@@ -89,7 +89,6 @@ public class ModReportCmd extends CommandBase {
 				try {
 					firstReport = LocalDateTime.parse(input, DATE_TIME_FORMAT);
 				} catch (DateTimeParseException ex) {
-					System.out.println(ex.getMessage());
 					editError(event, path+".failed_parse", ex.getMessage());
 					return;
 				}

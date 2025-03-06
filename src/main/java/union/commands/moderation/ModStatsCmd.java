@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -62,17 +63,17 @@ public class ModStatsCmd extends CommandBase {
 
 		String afterDate = event.optString("start_date");
 		String beforeDate = event.optString("end_date");
-		Instant afterTime;
-		Instant beforeTime;
+		LocalDateTime afterTime;
+		LocalDateTime beforeTime;
 
 		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		try {
 			beforeTime = beforeDate!=null
-				? LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant()
-				: Instant.now();
+				? LocalDate.parse(beforeDate, inputFormatter).atStartOfDay()
+				: LocalDateTime.now();
 			afterTime = afterDate!=null
-				? LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant()
-				: Instant.now().minus(7, ChronoUnit.DAYS);
+				? LocalDate.parse(afterDate, inputFormatter).atStartOfDay()
+				: LocalDateTime.now().minusDays(7);
 		} catch (Exception ex) {
 			editError(event, path+".failed_parse", ex.getMessage());
 			return;

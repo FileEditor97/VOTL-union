@@ -271,11 +271,11 @@ public class ScheduledCheck {
 				// Search for members with any of required roles (Mod, Admin, ...)
 				guild.findMembers(m -> !Collections.disjoint(m.getRoles(), roles)).setTimeout(10, TimeUnit.SECONDS).onSuccess(members -> {
 					if (members.isEmpty() || members.size() > 20) return; // TODO normal reply - too much users
-					Instant now = Instant.now();
-					Instant previous = (interval==30 ?
-						now.minus(Period.ofMonths(1)) :
-						now.minus(Period.ofDays(interval))
-					).atZone(ZoneOffset.UTC).toInstant();
+					LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+					LocalDateTime previous = (interval==30 ?
+						now.minusMonths(1) :
+						now.minusDays(interval)
+					);
 
 					List<ReportData> reportDataList = new ArrayList<>(members.size());
 					members.forEach(m -> {
@@ -290,7 +290,7 @@ public class ScheduledCheck {
 					ModReportRender render = new ModReportRender(guild.getLocale(), bot.getLocaleUtil(),
 						previous, now, reportDataList);
 
-					final String attachmentName = EncodingUtil.encodeModreport(guild.getIdLong(), now.getEpochSecond());
+					final String attachmentName = EncodingUtil.encodeModreport(guild.getIdLong(), now.toEpochSecond(ZoneOffset.UTC));
 
 					try {
 						channel.sendFiles(FileUpload.fromData(

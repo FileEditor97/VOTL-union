@@ -1,6 +1,8 @@
 package union.utils.database.managers;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
@@ -112,10 +114,10 @@ public class TicketManager extends LiteDBBase {
 		return selectOne("SELECT tagId FROM %s WHERE (channelId=%s)".formatted(table, channelId), "tagId", Integer.class);
 	}
 
-	public int countTicketsByMod(long guildId, long modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
+	public int countTicketsByMod(long guildId, long modId, LocalDateTime afterTime, LocalDateTime beforeTime, boolean roleTag) {
 		String tagType = roleTag ? "tagId=0" : "tagId>=1";
 		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND modId=%s AND timeClosed>=%d AND timeClosed<=%d AND %s)"
-			.formatted(table, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond(), tagType));
+			.formatted(table, guildId, modId, afterTime.toEpochSecond(ZoneOffset.UTC), beforeTime.toEpochSecond(ZoneOffset.UTC), tagType));
 	}
 
 	public int countTicketsByMod(long guildId, long modId, Instant afterTime, boolean roleTag) {

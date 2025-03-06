@@ -254,9 +254,7 @@ public class AutopunishCmd extends CommandBase {
 				builder.append("`%3s` ".formatted(prefix+strikeCount));
 				actions.forEach(action -> {
 					switch (action) {
-						case KICK -> {
-							builder.append(lu.getText(event, action.getPath()));
-						}
+						case KICK -> builder.append(lu.getText(event, action.getPath()));
 						case MUTE, BAN -> {
 							Duration duration;
 							try {

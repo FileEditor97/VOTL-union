@@ -1,10 +1,8 @@
 package union.commands.ticketing;
 
-import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import union.base.command.SlashCommandEvent;
@@ -37,20 +35,20 @@ public class TicketCountCmd extends CommandBase {
 
 		String afterDate = event.optString("start_date");
 		String beforeDate = event.optString("end_date");
-		Instant afterTime = null;
-		Instant beforeTime = null;
+		LocalDateTime afterTime = null;
+		LocalDateTime beforeTime = null;
 
 		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		try {
-			if (afterDate != null) afterTime = LocalDate.parse(afterDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant();
-			if (beforeDate != null) beforeTime = LocalDate.parse(beforeDate, inputFormatter).atStartOfDay(ZoneOffset.UTC).toInstant();
+			if (afterDate != null) afterTime = LocalDateTime.parse(afterDate, inputFormatter);
+			if (beforeDate != null) beforeTime = LocalDateTime.parse(beforeDate, inputFormatter);
 		} catch (Exception ex) {
 			editError(event, path+".failed_parse", ex.getMessage());
 			return;
 		}
 
-		if (beforeTime == null) beforeTime = Instant.now();
-		if (afterTime == null) afterTime = Instant.now().minus(7, ChronoUnit.DAYS);
+		if (beforeTime == null) beforeTime = LocalDateTime.now();
+		if (afterTime == null) afterTime = LocalDateTime.now().minusDays(7);
 		if (beforeTime.isBefore(afterTime)) {
 			editError(event, path+".wrong_date");
 			return;

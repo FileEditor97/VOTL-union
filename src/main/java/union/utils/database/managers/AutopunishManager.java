@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetbrains.annotations.Nullable;
 import union.objects.PunishActions;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
@@ -16,7 +17,7 @@ public class AutopunishManager extends LiteDBBase {
 		super(cu, "autopunish");
 	}
 
-	public boolean addAction(long guildId, int atStrikeCount, List<PunishActions> actions, String data) {
+	public boolean addAction(long guildId, int atStrikeCount, List<PunishActions> actions, @Nullable String data) {
 		return execute("INSERT INTO %s(guildId, strike, actions, data) VALUES (%d, %d, %d, %s)".formatted(table, guildId, atStrikeCount, PunishActions.encodeActions(actions), quote(data)));
 	}
 

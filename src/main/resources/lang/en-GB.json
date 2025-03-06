@@ -1022,7 +1022,7 @@
 							"name": "channel",
 							"help": "Select channel where to log actions"
 						},
-						"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+						"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 						"as_log": "This channel is selected as a log channel for %s events.",
 						"done": "Successfully set %s for logging %s!"
 					},
@@ -2198,7 +2198,7 @@
 						"name": "channel",
 						"help": "Select channel in which to create the panel"
 					},
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"no_role": "Verification role is not set!\nUse `/verifyrole`",
 					"continue": "Continue",
 					"done": "Panel created in {channel}!"
@@ -2451,7 +2451,7 @@
 						"name": "channel",
 						"help": "Select channel in which to create the panel"
 					},
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
 					"done": "Panel created in {channel}!"
 				},
@@ -2462,7 +2462,7 @@
 						"name": "channel",
 						"help": "Select channel in which panel is located"
 					},
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"not_found": "Existing panel not found in selected channel",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
 					"done": "Panel updated in {channel}!"

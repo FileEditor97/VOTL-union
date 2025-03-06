@@ -279,7 +279,7 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 			List<Role> userRoles = target.getRoles();
-			List<Role> allRoles = event.getGuild().getRoleCache().asList();
+			List<Role> allRoles = event.getGuild().getRoles();
 
 			List<ActionRow> actionRows = new ArrayList<>();
 			StringSelectMenu.Builder menuBuilder = StringSelectMenu.create("role:manage-select:1:"+target.getId()).setRequiredRange(0, 25);

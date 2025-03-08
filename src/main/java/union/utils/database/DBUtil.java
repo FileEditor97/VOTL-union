@@ -34,7 +34,7 @@ public class DBUtil {
 	private final FileManager fileManager;
 	private final ConnectionUtil connectionUtil;
 	
-	protected final Logger logger = (Logger) LoggerFactory.getLogger(DBUtil.class);
+	protected final Logger log = (Logger) LoggerFactory.getLogger(DBUtil.class);
 
 	public final GuildSettingsManager guildSettings;
 	public final WebhookManager webhook;
@@ -79,7 +79,7 @@ public class DBUtil {
 		try {
 			Class.forName("org.mariadb.jdbc.Driver").getDeclaredConstructor().newInstance();
 		} catch (Exception ex) {
-			logger.error("MariaDB: Exiting!\nMariaDB java client driver not found.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
+			log.error("MariaDB: Exiting!\nMariaDB java client driver not found.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
 			System.exit(666);
 		}
 
@@ -93,7 +93,7 @@ public class DBUtil {
 		String userCentral = fileManager.getNullableString("config", "central-user");
 		String passCentral = fileManager.getNullableString("config", "central-pass");
 		
-		this.connectionUtil = new ConnectionUtil(urlSQLite, logger);
+		this.connectionUtil = new ConnectionUtil(urlSQLite, log);
 
 		updateDB();
 		
@@ -174,7 +174,7 @@ public class DBUtil {
 			PreparedStatement st = conn.prepareStatement("PRAGMA user_version")) {
 			version = st.executeQuery().getInt(1);
 		} catch(SQLException ex) {
-			logger.warn("SQLite: Failed to get active database version", ex);
+			log.warn("SQLite: Failed to get active database version", ex);
 		}
 		return version;
 	}
@@ -184,19 +184,19 @@ public class DBUtil {
 		try {
 			File tempFile = File.createTempFile("local-", ".tmp");
 			if (!fileManager.export(getClass().getResourceAsStream("/server.db"), tempFile.toPath())) {
-				logger.error("Failed to write temp file {}!", tempFile.getName());
+				log.error("Failed to write temp file {}!", tempFile.getName());
 				return version;
 			} else {
 				try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + tempFile.getAbsolutePath());
 				PreparedStatement st = conn.prepareStatement("PRAGMA user_version")) {
 					version = st.executeQuery().getInt(1);
 				} catch(SQLException ex) {
-					logger.warn("Failed to get resources database version", ex);
+					log.warn("Failed to get resources database version", ex);
 				}
 			}
 			boolean ignored = tempFile.delete();
 		} catch (IOException ioException) {
-			logger.error("Exception at version check\n", ioException);
+			log.error("Exception at version check\n", ioException);
 		}
 		return version;
 	}
@@ -206,12 +206,12 @@ public class DBUtil {
 		try {
 			File tempFile = File.createTempFile("database_updates", ".tmp");
 			if (!fileManager.export(App.class.getResourceAsStream("/database_updates"), tempFile.toPath())) {
-				logger.error("Failed to write instruction temp file {}!", tempFile.getName());
+				log.error("Failed to write instruction temp file {}!", tempFile.getName());
 			} else {
 				lines = Files.readAllLines(tempFile.toPath(), StandardCharsets.UTF_8);
 			}
 		} catch (Exception ex) {
-			logger.error("SQLite: Failed to open update file", ex);
+			log.error("SQLite: Failed to open update file", ex);
 		}
 		lines = lines.subList(activeVersion - 1, lines.size());
 		List<List<String>> result = new ArrayList<>();
@@ -231,16 +231,25 @@ public class DBUtil {
 		if (activeVersion == 0) return;
 
 		if (newVersion > activeVersion) {
-			try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
-			Statement st = conn.createStatement()) {
-                for (List<String> version : loadInstructions(activeVersion)) {
-                    for (String sql : version) {
-                        logger.debug(sql);
-                        st.execute(sql);
-                    }
-                }
-            } catch(SQLException ex) {
-				logger.error("SQLite: Failed to execute update!\nPerform database update manually or delete it.\n{}", ex.getMessage());
+			try (
+				Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
+				Statement st = conn.createStatement()
+			) {
+				conn.setAutoCommit(false);
+				try {
+					for (List<String> version : loadInstructions(activeVersion)) {
+						for (String sql : version) {
+							log.debug(sql);
+							st.execute(sql);
+						}
+						conn.commit();
+					}
+				} catch (SQLException ex) {
+					conn.rollback();
+					throw ex; // rethrow
+				}
+			} catch(SQLException ex) {
+				log.error("SQLite: Failed to execute update!\nRollback performed. Continue database update manually.\n{}", ex.getMessage());
 				return;
 			}
 			
@@ -248,9 +257,9 @@ public class DBUtil {
 			try (Connection conn = DriverManager.getConnection(connectionUtil.getUrlSQLite());
 			Statement st = conn.createStatement()) {
 				st.execute("PRAGMA user_version = "+newVersion);
-				logger.info("SQLite: Database version updated to {}", newVersion);
+				log.info("SQLite: Database version updated to {}", newVersion);
 			} catch(SQLException ex) {
-				logger.error("SQLite: Failed to set active database version", ex);
+				log.error("SQLite: Failed to set active database version", ex);
 			}
 		}
 	}

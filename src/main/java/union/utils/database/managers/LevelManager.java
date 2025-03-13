@@ -15,6 +15,7 @@ import union.utils.level.LevelUtil;
 import union.utils.level.PlayerObject;
 
 import java.math.BigInteger;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -58,24 +59,24 @@ public class LevelManager extends LiteDBBase {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(TABLE_SETTINGS, guildId), Set.of("enabled", "exemptChannels", "enabledVoice"));
 	}
 
-	public void remove(long guildId) {
+	public void remove(long guildId) throws SQLException {
 		invalidateSettings(guildId);
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(TABLE_SETTINGS, guildId));
 	}
 
-	public boolean setEnabled(long guildId, boolean enabled) {
+	public void setEnabled(long guildId, boolean enabled) throws SQLException {
 		invalidateSettings(guildId);
-		return execute("INSERT INTO %s(guildId, enabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabled=%<d".formatted(TABLE_SETTINGS, guildId, enabled?1:0));
+		execute("INSERT INTO %s(guildId, enabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabled=%<d".formatted(TABLE_SETTINGS, guildId, enabled?1:0));
 	}
 
-	public boolean setExemptChannels(long guildId, @Nullable String channelIds) {
+	public void setExemptChannels(long guildId, @Nullable String channelIds) throws SQLException {
 		invalidateSettings(guildId);
-		return execute("INSERT INTO %s(guildId, exemptChannels) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET exemptChannels=%<s".formatted(TABLE_SETTINGS, guildId, quote(channelIds)));
+		execute("INSERT INTO %s(guildId, exemptChannels) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET exemptChannels=%<s".formatted(TABLE_SETTINGS, guildId, quote(channelIds)));
 	}
 
-	public boolean setEnabledVoice(long guildId, boolean enabled) {
+	public void setEnabledVoice(long guildId, boolean enabled) throws SQLException {
 		invalidateSettings(guildId);
-		return execute("INSERT INTO %s(guildId, enabledVoice) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabledVoice=%<d".formatted(TABLE_SETTINGS, guildId, enabled?1:0));
+		execute("INSERT INTO %s(guildId, enabledVoice) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET enabledVoice=%<d".formatted(TABLE_SETTINGS, guildId, enabled?1:0));
 	}
 
 	public void invalidateSettings(long guildId) {
@@ -98,7 +99,7 @@ public class LevelManager extends LiteDBBase {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d AND userId=%d)".formatted(TABLE_PLAYERS, guildId, userId), Set.of("textExp", "voiceExp", "lastUpdate"));
 	}
 
-	public void updatePlayer(PlayerObject player, PlayerData playerData) {
+	public void updatePlayer(PlayerObject player, PlayerData playerData) throws SQLException {
 		execute("INSERT INTO %s(guildId, userId, textExp, voiceExp, globalExp, lastUpdate) VALUES (%d, %d, %d, %d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET textExp=%4$d, voiceExp=%5$d, globalExp=globalExp+%6$d, lastUpdate=%7$d;"
 			.formatted(
 				TABLE_PLAYERS, player.guildId, player.userId,
@@ -108,9 +109,11 @@ public class LevelManager extends LiteDBBase {
 	}
 
 	public void addVoiceTime(PlayerObject player, long duration) {
-		execute("INSERT INTO %s(guildId, userId, voiceTime) VALUES (%d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET voiceTime=voiceTime+%<d;"
-			.formatted(TABLE_PLAYERS, player.guildId, player.userId, duration)
-		);
+		try {
+			execute("INSERT INTO %s(guildId, userId, voiceTime) VALUES (%d, %d, %d) ON CONFLICT(guildId, userId) DO UPDATE SET voiceTime=voiceTime+%<d;"
+				.formatted(TABLE_PLAYERS, player.guildId, player.userId, duration)
+			);
+		} catch (SQLException ignored) {}
 	}
 
 	public long getSumGlobalExp(long userId) {
@@ -180,16 +183,16 @@ public class LevelManager extends LiteDBBase {
 		return new TopInfo(select(query.toString(), keys), limit);
 	}
 
-	public void deleteUser(long guildId, long userId) {
+	public void deleteUser(long guildId, long userId) throws SQLException {
 		playersCache.invalidate(PlayerObject.asKey(guildId, userId));
 		execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(TABLE_PLAYERS, guildId, userId));
 	}
 
-	public void deleteUser(long userId) {
+	public void deleteUser(long userId) throws SQLException {
 		execute("DELETE FROM %s WHERE (userId=%d)".formatted(TABLE_PLAYERS, userId));
 	}
 
-	public void deleteGuild(long guildId) {
+	public void deleteGuild(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(TABLE_PLAYERS, guildId));
 	}
 

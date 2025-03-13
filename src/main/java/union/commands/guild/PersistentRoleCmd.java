@@ -12,6 +12,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
+import java.sql.SQLException;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -63,8 +64,10 @@ public class PersistentRoleCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().persistent.addRole(event.getGuild().getIdLong(), role.getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().persistent.addRole(event.getGuild().getIdLong(), role.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "persistent add role");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -88,8 +91,10 @@ public class PersistentRoleCmd extends CommandBase {
 
 			Role role = event.optRole("role");
 
-			if (!bot.getDBUtil().persistent.removeRole(event.getGuild().getIdLong(), role.getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().persistent.removeRole(event.getGuild().getIdLong(), role.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "persistent remove role");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -120,7 +125,7 @@ public class PersistentRoleCmd extends CommandBase {
 			for (Long roleId : roleIds) {
 				Role role = event.getGuild().getRoleById(roleId);
 				if (role == null) {
-					bot.getDBUtil().persistent.removeRole(event.getGuild().getIdLong(), roleId);
+					ignoreExc(() -> bot.getDBUtil().persistent.removeRole(event.getGuild().getIdLong(), roleId));
 					continue;
 				}
 				sb.append(role.getAsMention()).append("\n");

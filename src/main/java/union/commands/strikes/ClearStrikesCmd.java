@@ -1,5 +1,6 @@
 package union.commands.strikes;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import union.base.command.CooldownScope;
@@ -52,13 +53,11 @@ public class ClearStrikesCmd extends CommandBase {
 		}
 		int activeCount = strikeData.getLeft();
 		// Clear strike DB
-		if (!bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong())) {
-			editErrorUnknown(event, "Database error.");
-			return;
-		}
-		// Set all strikes cases inactive
-		if (!bot.getDBUtil().cases.setInactiveStrikeCases(guildId, tu.getIdLong())) {
-			editErrorUnknown(event, "Database error.");
+		try {
+			bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
+			bot.getDBUtil().cases.setInactiveStrikeCases(guildId, tu.getIdLong());
+		} catch (SQLException e) {
+			editErrorDatabase(event, e, "clear strikes failed");
 			return;
 		}
 		// Log

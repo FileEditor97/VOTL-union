@@ -1,5 +1,6 @@
 package union.commands.voice;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import net.dv8tion.jda.api.entities.ISnowflake;
@@ -251,7 +252,12 @@ public class VoiceCmd extends CommandBase {
 		name = name.replace("{user}", event.getMember().getEffectiveName());
 		event.getGuild().getVoiceChannelById(channelId).getManager().setName(name.substring(0, Math.min(100, name.length()))).queue();
 
-		bot.getDBUtil().user.setName(userId, name);
+		try {
+			bot.getDBUtil().user.setName(userId, name);
+		} catch (SQLException e) {
+			editErrorDatabase(event, e, "voice set name");
+			return;
+		}
 
 		editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, "bot.voice.voice.name.done").replace("{value}", name))
@@ -306,7 +312,12 @@ public class VoiceCmd extends CommandBase {
 
 		event.getGuild().getVoiceChannelById(channelId).getManager().setUserLimit(limit).queue();
 
-		bot.getDBUtil().user.setLimit(userId, limit);
+		try {
+			bot.getDBUtil().user.setLimit(userId, limit);
+		} catch (SQLException e) {
+			editErrorDatabase(event, e, "voice set limit");
+			return;
+		}
 
 		editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, "bot.voice.voice.limit.done").replace("{value}", limit.toString()))
@@ -354,12 +365,15 @@ public class VoiceCmd extends CommandBase {
 					try {
 						vc.getManager().removePermissionOverride(owner).queue();
 						vc.getManager().putPermissionOverride(author, EnumSet.of(Permission.MANAGE_CHANNEL), null).queue();
+						bot.getDBUtil().voice.setUser(author.getIdLong(), vc.getIdLong());
 					} catch (InsufficientPermissionException ex) {
 						editPermError(event, ex.getPermission(), true);
 						return;
+					} catch (SQLException ex) {
+						editErrorDatabase(event, ex, "voice set new owner");
+						return;
 					}
-					bot.getDBUtil().voice.setUser(author.getIdLong(), vc.getIdLong());
-					
+
 					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 						.setDescription(lu.getText(event, path+".done").replace("{channel}", vc.getAsMention()))
 						.build()

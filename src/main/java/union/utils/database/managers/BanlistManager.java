@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class BanlistManager extends LiteDBBase {
@@ -14,25 +15,25 @@ public class BanlistManager extends LiteDBBase {
 	}
 
 	// Plain SteamID, unique
-	public boolean add(String table, long steam64) {
-		return executeWithRow("INSERT OR IGNORE INTO %s(steam64) VALUES (%d);"
-			.formatted(table, steam64)) > 0;
+	public void add(String table, long steam64) throws SQLException {
+		execute("INSERT OR IGNORE INTO %s(steam64) VALUES (%d);"
+			.formatted(table, steam64));
 	}
 
 	// With reason, not unique
-	public boolean add(String table, long steam64, String reason) {
-		return executeWithRow("INSERT OR IGNORE INTO %s(steam64, reason) VALUES (%d, %s);"
-			.formatted(table, steam64, quote(reason))) > 0;
+	public void add(String table, long steam64, String reason) throws SQLException {
+		execute("INSERT OR IGNORE INTO %s(steam64, reason) VALUES (%d, %s);"
+			.formatted(table, steam64, quote(reason)));
 	}
 
 	// Octo, not unique
-	public boolean add(String table, long steam64, String reason, String details, String command) {
-		return executeWithRow("INSERT OR IGNORE INTO %s(steam64, reason, details, command) VALUES (%d, %s, %s, %s);"
-			.formatted(table, steam64, quote(reason), quote(details), quote(command))) > 0;
+	public void add(String table, long steam64, String reason, String details, String command) throws SQLException {
+		execute("INSERT OR IGNORE INTO %s(steam64, reason, details, command) VALUES (%d, %s, %s, %s);"
+			.formatted(table, steam64, quote(reason), quote(details), quote(command)));
 	}
 
 	@SuppressWarnings("unused")
-	public void purgeTable(String table) {
+	public void purgeTable(String table) throws SQLException {
 		execute("DELETE FROM %s;".formatted(table));
 	}
 

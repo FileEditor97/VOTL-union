@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,17 +19,17 @@ public class LogExemptionManager extends LiteDBBase {
 		super(cu, "logExceptions");
 	}
 
-	public boolean addExemption(long guildId, long targetId) {
+	public void addExemption(long guildId, long targetId) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, targetId) VALUES (%s, %s)".formatted(table, guildId, targetId));
+		execute("INSERT INTO %s(guildId, targetId) VALUES (%s, %s)".formatted(table, guildId, targetId));
 	}
 
-	public boolean removeExemption(long guildId, long targetId) {
+	public void removeExemption(long guildId, long targetId) throws SQLException {
 		invalidateCache(guildId);
-		return execute("DELETE FROM %s WHERE (guildId=%s AND targetId=%s)".formatted(table, guildId, targetId));
+		execute("DELETE FROM %s WHERE (guildId=%s AND targetId=%s)".formatted(table, guildId, targetId));
 	}
 
-	public void removeGuild(long guildId) {
+	public void removeGuild(long guildId) throws SQLException {
 		invalidateCache(guildId);
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}

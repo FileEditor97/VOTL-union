@@ -329,7 +329,6 @@ public class LoggingUtil {
 			// For each group guild (except master) remove if from group DB and send log to log channel
 			List<Long> memberIds = db.group.getGroupMembers(groupId);
 			for (Long memberId : memberIds) {
-				db.group.remove(groupId, memberId);
 				Guild member = bot.JDA.getGuildById(memberId);
 
 				sendLog(member, type, () -> logUtil.groupMemberDeletedEmbed(member.getLocale(), ownerId, ownerIcon, groupId, name));
@@ -369,7 +368,6 @@ public class LoggingUtil {
 			// Send log to each group guild
 			List<Long> memberIds = db.group.getGroupMembers(groupId);
 			for (Long memberId : memberIds) {
-				db.group.remove(groupId, memberId);
 				Guild member = bot.JDA.getGuildById(memberId);
 
 				sendLog(member, type, () -> logUtil.groupMemberRenamedEmbed(member.getLocale(), ownerId, ownerIcon, groupId, oldName, newName));

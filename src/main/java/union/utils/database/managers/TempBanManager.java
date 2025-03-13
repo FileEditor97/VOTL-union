@@ -4,6 +4,7 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -14,15 +15,15 @@ public class TempBanManager extends LiteDBBase {
 		super(cu, "tempBan");
 	}
 
-	public void add(long guildId, long userId, Instant until) {
+	public void add(long guildId, long userId, Instant until) throws SQLException {
 		execute("INSERT INTO %s(guildId, userId, until) VALUES (%s, %s, %s)".formatted(table, guildId, userId, until.getEpochSecond()));
 	}
 
-	public void remove(long guildId, long userId) {
+	public void remove(long guildId, long userId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s AND userId=%s)".formatted(table, guildId, userId));
 	}
 
-	public void removeGuild(long guildId) {
+	public void removeGuild(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 

@@ -45,6 +45,10 @@ public enum CaseType {
 		return active ? 1 : 0;
 	}
 
+	public boolean isActive() {
+		return active;
+	}
+
 	@Override
 	public String toString() {
 		return this.name().toLowerCase();

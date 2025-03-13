@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -94,10 +95,12 @@ public class KickCmd extends CommandBase {
 
 		tm.kick().reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
 			// add info to db
-			CaseData kickData = bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
-				guild.getIdLong(), reason, Instant.now(), null);
-			if (kickData == null) {
-				editErrorOther(event, "Failed to create action data.");
+			CaseData kickData;
+			try {
+				kickData = bot.getDBUtil().cases.add(CaseType.KICK, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+					guild.getIdLong(), reason, Instant.now(), null);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to create new case.");
 				return;
 			}
 			// log kick

@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -13,25 +14,27 @@ public class TempRoleManager extends LiteDBBase {
 		super(cu, "tempRoles");
 	}
 
-	public boolean add(long guildId, long roleId, long userId, Boolean deleteAfter, Instant expireAfter) {
-		return execute("INSERT INTO %s(guildId, roleId, userId, deleteAfter, expireAfter) VALUES (%s, %s, %s, %d, %d)"
+	public void add(long guildId, long roleId, long userId, Boolean deleteAfter, Instant expireAfter) throws SQLException {
+		execute("INSERT INTO %s(guildId, roleId, userId, deleteAfter, expireAfter) VALUES (%s, %s, %s, %d, %d)"
 			.formatted(table, guildId, roleId, userId, (deleteAfter ? 1 : 0), expireAfter.getEpochSecond()));
 	}
 
-	public boolean remove(long roleId, long userId) {
-		return execute("DELETE FROM %s WHERE (roleId=%s AND userId=%s)".formatted(table, roleId, userId));
+	public void remove(long roleId, long userId) throws SQLException {
+		execute("DELETE FROM %s WHERE (roleId=%s AND userId=%s)".formatted(table, roleId, userId));
 	}
 
 	public void removeRole(long roleId) {
-		execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
+		try {
+			execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
+		} catch (SQLException ignored) {}
 	}
 
-	public void removeAll(long guildId) {
+	public void removeAll(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public boolean updateTime(long roleId, long userId, Instant expireAfter) {
-		return execute("UPDATE %s SET expireAfter=%s WHERE (roleId=%s AND userId=%s)".formatted(table, expireAfter.getEpochSecond(), roleId, userId));
+	public void updateTime(long roleId, long userId, Instant expireAfter) throws SQLException {
+		execute("UPDATE %s SET expireAfter=%s WHERE (roleId=%s AND userId=%s)".formatted(table, expireAfter.getEpochSecond(), roleId, userId));
 	}
 
 	public Instant expireAt(long roleId, long userId) {

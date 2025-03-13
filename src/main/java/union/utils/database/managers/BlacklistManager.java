@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,12 +17,14 @@ public class BlacklistManager extends LiteDBBase {
 	}
 
 	public void add(long guildId, int groupId, long userId, @Nullable Long steam64, @Nullable String reason, long modId) {
-		execute("INSERT INTO %s(guildId, groupId, userId, steam64, reason, modId) VALUES (%d, %d, %d, %d, %s, %s)"
-			.formatted(table, guildId, groupId, userId, steam64, quote(reason), modId));
+		try {
+			execute("INSERT INTO %s(guildId, groupId, userId, steam64, reason, modId) VALUES (%d, %d, %d, %d, %s, %s)"
+				.formatted(table, guildId, groupId, userId, steam64, quote(reason), modId));
+		} catch (SQLException ignored) {}
 	}
 
-	public boolean addSteam(long guildId, int groupId, @NotNull Long steam64, long modId) {
-		return execute("INSERT INTO %s(guildId, groupId, userId, steam64, modId) VALUES (%d, %d, -1, %d, %s)"
+	public void addSteam(long guildId, int groupId, @NotNull Long steam64, long modId)  throws SQLException{
+		execute("INSERT INTO %s(guildId, groupId, userId, steam64, modId) VALUES (%d, %d, -1, %d, %s)"
 			.formatted(table, guildId, groupId, steam64, modId));
 	}
 
@@ -33,12 +36,12 @@ public class BlacklistManager extends LiteDBBase {
 		return selectOne("SELECT steam64 FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64), "steam64", Long.class) != null;
 	}
 
-	public boolean removeUser(int groupId, long userId) {
-		return execute("DELETE FROM %s WHERE (groupId=%d AND userId=%d)".formatted(table, groupId, userId));
+	public void removeUser(int groupId, long userId) throws SQLException {
+		execute("DELETE FROM %s WHERE (groupId=%d AND userId=%d)".formatted(table, groupId, userId));
 	}
 
-	public boolean removeSteam64(int groupId, long steam64) {
-		return execute("DELETE FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64));
+	public void removeSteam64(int groupId, long steam64) throws SQLException {
+		execute("DELETE FROM %s WHERE (groupId=%d AND steam64=%d)".formatted(table, groupId, steam64));
 	}
 
 	public List<Map<String, Object>> getByPage(int groupId, int page) {

@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,16 +22,16 @@ public class RoleManager extends LiteDBBase {
 		super(cu, "requestRole");
 	}
 
-	public boolean add(long guildId, long roleId, String description, Integer row, RoleType roleType, String discordInvite) {
-		return execute("INSERT INTO %s(guildId, roleId, description, type, row, discordInvite) VALUES (%s, %s, %s, %d, %d, %s)"
+	public void add(long guildId, long roleId, String description, Integer row, RoleType roleType, String discordInvite) throws SQLException {
+		execute("INSERT INTO %s(guildId, roleId, description, type, row, discordInvite) VALUES (%s, %s, %s, %d, %d, %s)"
 			.formatted(table, guildId, roleId, quote(description), roleType.getType(), Optional.ofNullable(row).orElse(0), quote(discordInvite)));
 	}
 
-	public boolean remove(long roleId) {
-		return execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
+	public void remove(long roleId) throws SQLException {
+		execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table, roleId));
 	}
 
-	public void removeAll(long guildId) {
+	public void removeAll(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
@@ -91,16 +92,16 @@ public class RoleManager extends LiteDBBase {
 		return RoleType.byType(data);
 	}
 
-	public boolean setDescription(long roleId, String description) {
-		return execute("UPDATE %s SET description=%s WHERE (roleId=%s)".formatted(table, quote(description), roleId));
+	public void setDescription(long roleId, String description) throws SQLException {
+		execute("UPDATE %s SET description=%s WHERE (roleId=%s)".formatted(table, quote(description), roleId));
 	}
 
-	public boolean setRow(long roleId, Integer row) {
-		return execute("UPDATE %s SET row=%d WHERE (roleId=%s)".formatted(table, Optional.ofNullable(row).orElse(0), roleId));
+	public void setRow(long roleId, Integer row) throws SQLException {
+		execute("UPDATE %s SET row=%d WHERE (roleId=%s)".formatted(table, Optional.ofNullable(row).orElse(0), roleId));
 	}
 
-	public boolean setInvite(long roleId, String discordInvite) {
-		return execute("UPDATE %s SET discordInvite=%s WHERE (roleId=%s)".formatted(table, quote(discordInvite), roleId));
+	public void setInvite(long roleId, String discordInvite) throws SQLException {
+		execute("UPDATE %s SET discordInvite=%s WHERE (roleId=%s)".formatted(table, quote(discordInvite), roleId));
 	}
 
 	public boolean isToggleable(long roleId) {

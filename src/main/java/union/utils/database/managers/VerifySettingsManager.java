@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import static union.utils.CastUtil.getOrDefault;
 import static union.utils.CastUtil.resolveOrDefault;
 
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,35 +47,35 @@ public class VerifySettingsManager extends LiteDBBase {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
 	}
 
-	public void remove(long guildId) {
+	public void remove(long guildId) throws SQLException {
 		invalidateCache(guildId);
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public boolean setVerifyRole(long guildId, long roleId) {
+	public void setVerifyRole(long guildId, long roleId) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET roleId=%<d".formatted(table, guildId, roleId));
+		execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET roleId=%<d".formatted(table, guildId, roleId));
 	}
 
-	public void setMainText(long guildId, String text) {
+	public void setMainText(long guildId, String text) throws SQLException {
 		invalidateCache(guildId);
 		final String textParsed = quote(text.replace("\\n", "<br>"));
 		execute("INSERT INTO %s(guildId, mainText) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET mainText=%<s".formatted(table, guildId, textParsed));
 	}
 
-	public boolean setCheckState(long guildId, boolean enabled) {
+	public void setCheckState(long guildId, boolean enabled) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET checkEnabled=%<d".formatted(table, guildId, enabled?1:0));
+		execute("INSERT INTO %s(guildId, checkEnabled) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET checkEnabled=%<d".formatted(table, guildId, enabled?1:0));
 	}
 
-	public void setRequiredPlaytime(long guildId, int hours) {
+	public void setRequiredPlaytime(long guildId, int hours) throws SQLException {
 		invalidateCache(guildId);
 		execute("INSERT INTO %s(guildId, minimumPlaytime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET minimumPlaytime=%<d".formatted(table, guildId, hours));
 	}
 
-	public boolean setAdditionalRoles(long guildId, @Nullable String roleIds) {
+	public void setAdditionalRoles(long guildId, @Nullable String roleIds) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, additionalRoles) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET additionalRoles=%<s".formatted(table, guildId, quote(roleIds)));
+		execute("INSERT INTO %s(guildId, additionalRoles) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET additionalRoles=%<s".formatted(table, guildId, quote(roleIds)));
 	}
 
 	private void invalidateCache(long guildId) {

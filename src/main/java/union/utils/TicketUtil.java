@@ -1,5 +1,6 @@
 package union.utils;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +79,9 @@ public class TicketUtil {
 		final Instant now = Instant.now();
 
 		channel.delete().reason(reasonClosed).queueAfter(4, TimeUnit.SECONDS, done -> {
-			db.ticket.closeTicket(now, channel.getIdLong(), reasonClosed);
+			try{
+				db.ticket.closeTicket(now, channel.getIdLong(), reasonClosed);
+			} catch (SQLException ignored) {}
 
 			Long authorId = db.ticket.getUserId(channel.getIdLong());
 
@@ -96,7 +99,9 @@ public class TicketUtil {
 		);
 
 		channel.delete().reason(finalReason).queueAfter(4, TimeUnit.SECONDS, done -> {
-			db.ticket.closeTicket(now, channel.getIdLong(), finalReason);
+			try {
+				db.ticket.closeTicket(now, channel.getIdLong(), finalReason);
+			} catch (SQLException ignored) {}
 
 			Long authorId = db.ticket.getUserId(channel.getIdLong());
 

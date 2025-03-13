@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -120,10 +121,23 @@ public class MuteCmd extends CommandBase {
 				});
 
 				// Set previous mute case inactive, as member is not timed-out
-				if (oldMuteData != null) bot.getDBUtil().cases.setInactive(oldMuteData.getRowId());
+				if (oldMuteData != null) {
+					try {
+						bot.getDBUtil().cases.setInactive(oldMuteData.getRowId());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "Failed to set privious case inactive.");
+						return;
+					}
+				}
 				// add info to db
-				CaseData newMuteData = bot.getDBUtil().cases.add(CaseType.MUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
-					guild.getIdLong(), reason, Instant.now(), duration);
+				CaseData newMuteData;
+				try {
+					newMuteData = bot.getDBUtil().cases.add(CaseType.MUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+						guild.getIdLong(), reason, Instant.now(), duration);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "Failed to create new case.");
+					return;
+				}
 				// log mute
 				bot.getLogger().mod.onNewCase(guild, tm.getUser(), newMuteData, proofData).thenAccept(logUrl -> {
 					// Add log url to db

@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -61,8 +62,12 @@ public abstract class CommandBase extends SlashCommand {
 		editError(event, bot.getEmbedUtil().getError(event, "errors.unknown", reason));
 	}
 
-	public final void editErrorDatabase(IReplyCallback event, String details) {
-		editError(event, bot.getEmbedUtil().getError(event, "errors.database", details));
+	public final void editErrorDatabase(IReplyCallback event, Exception exception, String details) {
+		if (exception instanceof SQLException ex) {
+			editError(event, bot.getEmbedUtil().getError(event, "errors.database", "%s: %s".formatted(ex.getErrorCode(), details)));
+		} else {
+			editError(event, bot.getEmbedUtil().getError(event, "errors.database", "%s\n> %s".formatted(details, exception.getMessage())));
+		}
 	}
 
 	// PermError
@@ -74,4 +79,12 @@ public abstract class CommandBase extends SlashCommand {
 	protected static final Consumer<Throwable> ignoreRest = ignored -> {
 		// Nothing to see here
 	};
+
+	protected void ignoreExc(RunnableExc runnable) {
+		try {
+			runnable.run();
+		} catch (SQLException ignored) {}
+	}
+
+	@FunctionalInterface protected interface RunnableExc { void run() throws SQLException; }
 }

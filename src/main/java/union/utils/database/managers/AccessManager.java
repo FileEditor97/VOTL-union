@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,27 +26,27 @@ public class AccessManager extends LiteDBBase {
 		super(cu, null);
 	}
 
-	public boolean addRole(long guildId, long roleId, CmdAccessLevel level) {
+	public void addRole(long guildId, long roleId, CmdAccessLevel level) throws SQLException {
 		invalidateRoleCache(guildId);
-		return execute("INSERT INTO %s(guildId, roleId, level) VALUES (%s, %s, %d)".formatted(table_role, guildId, roleId, level.getLevel()));
+		execute("INSERT INTO %s(guildId, roleId, level) VALUES (%s, %s, %d)".formatted(table_role, guildId, roleId, level.getLevel()));
 	}
 
-	public boolean addOperator(long guildId, long userId) {
+	public void addOperator(long guildId, long userId) throws SQLException {
 		invalidateOperatorCache(guildId);
-		return execute("INSERT INTO %s(guildId, userId, level) VALUES (%s, %s, %d)".formatted(table_user, guildId, userId, CmdAccessLevel.OPERATOR.getLevel()));
+		execute("INSERT INTO %s(guildId, userId, level) VALUES (%s, %s, %d)".formatted(table_user, guildId, userId, CmdAccessLevel.OPERATOR.getLevel()));
 	}
 
-	public boolean removeRole(long guildId, long roleId) {
+	public void removeRole(long guildId, long roleId) throws SQLException {
 		invalidateRoleCache(guildId);
-		return execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table_role, roleId));
+		execute("DELETE FROM %s WHERE (roleId=%s)".formatted(table_role, roleId));
 	}
 	
-	public boolean removeUser(long guildId, long userId) {
+	public void removeUser(long guildId, long userId) throws SQLException {
 		invalidateOperatorCache(guildId);
-		return execute("DELETE FROM %s WHERE (guildId=%s AND userId=%s)".formatted(table_user, guildId, userId));
+		execute("DELETE FROM %s WHERE (guildId=%s AND userId=%s)".formatted(table_user, guildId, userId));
 	}
 
-	public void removeAll(long guildId) {
+	public void removeAll(long guildId) throws SQLException {
 		invalidateRoleCache(guildId);
 		invalidateOperatorCache(guildId);
 		execute("DELETE FROM %1$s WHERE (guildId=%3$s); DELETE FROM %2$s WHERE (guildId=%3$s);".formatted(table_role, table_user, guildId));

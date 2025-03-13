@@ -2,6 +2,7 @@ package union.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -170,7 +171,7 @@ public class ScheduledCheck {
 						if (ErrorResponse.UNKNOWN_MEMBER.test(failure)) return;
 						log.warn("Was unable to remove temporary role '{}' from '{}' during scheduled check.", roleId, userId, failure);
 					});
-					db.tempRole.remove(roleId, userId);
+					ignoreExc(() -> db.tempRole.remove(roleId, userId));
 				}
 				// Log
 				bot.getLogger().role.onTempRoleAutoRemoved(role.getGuild(), castLong(userId), role);
@@ -247,7 +248,7 @@ public class ScheduledCheck {
 				if (channel == null) {
 					long guildId = castLong(data.get("guildId"));
 					log.warn("Channel for modReport @ '{}' not found. Deleting.", guildId);
-					db.modReport.removeGuild(guildId);
+					ignoreExc(() -> db.modReport.removeGuild(guildId));
 					return;
 				}
 
@@ -258,7 +259,7 @@ public class ScheduledCheck {
 					.toList();
 				if (roles.isEmpty()) {
 					log.warn("Roles for modReport @ '{}' not found. Deleting.", guild.getId());
-					db.modReport.removeGuild(guild.getIdLong());
+					ignoreExc(() -> db.modReport.removeGuild(guild.getIdLong()));
 					return;
 				}
 
@@ -266,7 +267,11 @@ public class ScheduledCheck {
 				LocalDateTime nextReport = LocalDateTime.ofEpochSecond(castLong(data.get("nextReport")), 0, ZoneOffset.UTC);
 				nextReport = interval==30 ? nextReport.plusMonths(1) : nextReport.plusDays(interval);
 				// Update next report date
-				db.modReport.updateNext(channelId, nextReport);
+				try {
+					db.modReport.updateNext(channelId, nextReport);
+				} catch (SQLException ignored) {
+					ignoreExc(() -> db.modReport.removeGuild(guild.getIdLong()));
+				}
 
 				// Search for members with any of required roles (Mod, Admin, ...)
 				guild.findMembers(m -> !Collections.disjoint(m.getRoles(), roles)).setTimeout(10, TimeUnit.SECONDS).onSuccess(members -> {
@@ -317,7 +322,7 @@ public class ScheduledCheck {
 
 	// Each 2-5 minutes
 	public void regularChecks() {
-		CompletableFuture.runAsync(this::checkUnbans)
+		CompletableFuture.runAsync(this::checkExpiredCases)
 			.thenRunAsync(this::checkAccountUpdates)
 			.thenRunAsync(this::removeAlertPoints)
 			.thenRunAsync(this::updateDbQueue);
@@ -386,11 +391,11 @@ public class ScheduledCheck {
 		}
 	}
 
-	private void checkUnbans() {
+	private void checkExpiredCases() {
 		try {
 			db.cases.getExpired().forEach(caseData -> {
 				if (caseData.getCaseType().equals(CaseType.MUTE)) {
-					db.cases.setInactive(caseData.getRowId());
+					ignoreExc(() -> db.cases.setInactive(caseData.getRowId()));
 					return;
 				}
 				Guild guild = bot.JDA.getGuildById(caseData.getGuildId());
@@ -399,11 +404,11 @@ public class ScheduledCheck {
 					s -> bot.getLogger().mod.onAutoUnban(caseData, guild),
 					f -> log.warn("Exception at unban attempt. {}", f.getMessage())
 				);
-				db.cases.setInactive(caseData.getRowId());
+				ignoreExc(() -> db.cases.setInactive(caseData.getRowId()));
 			});
 
 			db.tempBan.getExpired().forEach(data -> {
-				db.tempBan.remove(data.getLeft(), data.getRight());
+				ignoreExc(() -> db.tempBan.remove(data.getLeft(), data.getRight()));
 				Optional.ofNullable(Helper.getInstance()).ifPresent(h -> h.unban(data.getLeft(), data.getRight(), "Remove temp ban"));
 			});
 		} catch (Throwable t) {
@@ -449,4 +454,12 @@ public class ScheduledCheck {
 			log.error("Exception caught during DB queue update.", t);
 		}
 	}
+
+	private void ignoreExc(RunnableExc runnable) {
+		try {
+			runnable.run();
+		} catch (SQLException ignored) {}
+	}
+
+	@FunctionalInterface public interface RunnableExc { void run() throws SQLException; }
 }

@@ -1,5 +1,6 @@
 package union.commands.guild;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import union.base.command.SlashCommand;
@@ -70,7 +71,7 @@ public class AccessCmd extends CommandBase {
 			else for (long roleId : exemptIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
-					bot.getDBUtil().access.removeRole(guildId, roleId);
+					ignoreExc(() -> bot.getDBUtil().access.removeRole(guildId, roleId));
 					continue;
 				}
 				sb.append("> %s `%s`\n".formatted(role.getAsMention(), roleId));
@@ -81,7 +82,7 @@ public class AccessCmd extends CommandBase {
 			else for (long roleId : helperIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
-					bot.getDBUtil().access.removeRole(guildId, roleId);
+					ignoreExc(() -> bot.getDBUtil().access.removeRole(guildId, roleId));
 					continue;
 				}
 				sb.append("> %s `%s`\n".formatted(role.getAsMention(), roleId));
@@ -92,7 +93,7 @@ public class AccessCmd extends CommandBase {
 			else for (long roleId : modIds) {
 				Role role = guild.getRoleById(roleId);
 				if (role == null) {
-					bot.getDBUtil().access.removeRole(guildId, roleId);
+					ignoreExc(() -> bot.getDBUtil().access.removeRole(guildId, roleId));
 					continue;
 				}
 				sb.append("> %s `%s`\n".formatted(role.getAsMention(), roleId));
@@ -147,8 +148,10 @@ public class AccessCmd extends CommandBase {
 			}
 
 			CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
-			if (!bot.getDBUtil().access.addRole(guild.getIdLong(), roleId, level)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().access.addRole(guild.getIdLong(), roleId, level);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "access add role");
 				return;
 			}
 
@@ -192,8 +195,10 @@ public class AccessCmd extends CommandBase {
 				editError(event, "bot.guild.access.remove.role.no_access");
 			}
 
-			if (!bot.getDBUtil().access.removeRole(event.getGuild().getIdLong(), roleId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().access.removeRole(event.getGuild().getIdLong(), roleId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "game remove role");
 				return;
 			}
 
@@ -243,8 +248,10 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().access.addOperator(guildId, userId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().access.addOperator(guildId, userId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "game add user");
 				return;
 			}
 			
@@ -287,8 +294,10 @@ public class AccessCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().access.removeUser(guildId, userId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().access.removeUser(guildId, userId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "access remove user");
 				return;
 			}
 

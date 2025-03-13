@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import union.base.command.SlashCommandEvent;
@@ -45,8 +46,11 @@ public class ReasonCmd extends CommandBase {
 		}
 
 		String newReason = event.optString("reason");
-		if (!bot.getDBUtil().cases.updateReason(caseData.getRowId(), newReason)) {
-			editErrorUnknown(event, "Database error.");
+
+		try {
+			bot.getDBUtil().cases.updateReason(caseData.getRowId(), newReason);
+		} catch (SQLException e) {
+			editErrorDatabase(event, e, "Failed to create new case.");
 			return;
 		}
 

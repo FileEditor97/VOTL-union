@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class StrikeManager extends LiteDBBase {
 		super(cu, "strikeExpire");
 	}
 
-	public void addStrikes(long guildId, long userId, Instant expireAfter, int count, String caseInfo) {
+	public void addStrikes(long guildId, long userId, Instant expireAfter, int count, String caseInfo) throws SQLException {
 		execute("INSERT INTO %s(guildId, userId, expireAfter, count, data, lastAddition) VALUES (%d, %d, %d, %d, %s, %s) ON CONFLICT(guildId, userId) DO UPDATE SET count=count+%5$d, data=data || ';' || %6$s, lastAddition=%7$s"
 			.formatted(table, guildId, userId, expireAfter.getEpochSecond(), count, quote(caseInfo), Instant.now().getEpochSecond()));
 	}
@@ -41,15 +42,15 @@ public class StrikeManager extends LiteDBBase {
 		return Pair.of((Integer) data.get("count"), (Integer) data.get("expireAfter"));
 	}
 
-	public void removeStrike(long guildId, long userId, Instant expireAfter, int amount, String newData) {
+	public void removeStrike(long guildId, long userId, Instant expireAfter, int amount, String newData) throws SQLException {
 		execute("UPDATE %s SET expireAfter=%d, count=count-%d, data=%s WHERE (guildId=%d AND userId=%d)".formatted(table, expireAfter.getEpochSecond(), amount, quote(newData), guildId, userId));
 	}
 
-	public boolean removeGuildUser(long guildId, long userId) {
-		return execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId));
+	public void removeGuildUser(long guildId, long userId) throws SQLException {
+		execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table, guildId, userId));
 	}
 
-	public void removeGuild(long guildId) {
+	public void removeGuild(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 

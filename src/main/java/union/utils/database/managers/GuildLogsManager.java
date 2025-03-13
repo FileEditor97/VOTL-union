@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,21 +26,21 @@ public class GuildLogsManager extends LiteDBBase {
 		super(cu, "logWebhooks");
 	}
 
-	public boolean setLogWebhook(@NotNull LogType type, long guildId, WebhookData webhookData) {
+	public void setLogWebhook(@NotNull LogType type, long guildId, WebhookData webhookData) throws SQLException {
 		invalidateCache(guildId);
 		String data = webhookData==null ? "NULL" : webhookData.encodeData();
-		return execute("INSERT INTO %s(guildId, %s) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET %2$s=%4$s"
+		execute("INSERT INTO %s(guildId, %s) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET %2$s=%4$s"
 			.formatted(table, quote(type.getName()), guildId, quote(data)));
 	}
 
-	public boolean removeLogWebhook(LogType type, long guildId) {
+	public void removeLogWebhook(LogType type, long guildId) throws SQLException {
 		invalidateCache(guildId);
-		return execute("UPDATE %s SET %s=NULL WHERE (guildId=%d)".formatted(table, type.getName(), guildId));
+		execute("UPDATE %s SET %s=NULL WHERE (guildId=%d)".formatted(table, type.getName(), guildId));
 	}
 
-	public boolean removeGuild(long guildId) {
+	public void removeGuild(long guildId) throws SQLException {
 		invalidateCache(guildId);
-		return execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
+		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
 	public WebhookData getLogWebhook(LogType type, long guildId) {

@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import static union.utils.CastUtil.getOrDefault;
 import static union.utils.CastUtil.resolveOrDefault;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,57 +50,57 @@ public class TicketSettingsManager extends LiteDBBase {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
 	}
 
-	public void remove(long guildId) {
+	public void remove(long guildId) throws SQLException {
 		invalidateCache(guildId);
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public boolean setRowText(long guildId, int row, String text) {
+	public void setRowText(long guildId, int row, String text) throws SQLException {
 		if (row < 1 || row > 3)
 			throw new IndexOutOfBoundsException(row);
 		invalidateCache(guildId);
-		return execute("INSERT INTO %1$s(guildId, rowName%2$d) VALUES (%3$d, %4$s) ON CONFLICT(guildId) DO UPDATE SET rowName%2$d=%4$s".formatted(table, row, guildId, quote(text)));
+		execute("INSERT INTO %1$s(guildId, rowName%2$d) VALUES (%3$d, %4$s) ON CONFLICT(guildId) DO UPDATE SET rowName%2$d=%4$s".formatted(table, row, guildId, quote(text)));
 	}
 
-	public boolean setAutocloseTime(long guildId, int hours) {
+	public void setAutocloseTime(long guildId, int hours) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%<d".formatted(table, guildId, hours));
+		execute("INSERT INTO %s(guildId, autocloseTime) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseTime=%<d".formatted(table, guildId, hours));
 	}
 
-	public boolean setAutocloseLeft(long guildId, boolean close) {
+	public void setAutocloseLeft(long guildId, boolean close) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close ? 1 : 0));
+		execute("INSERT INTO %s(guildId, autocloseLeft) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET autocloseLeft=%<d".formatted(table, guildId, close ? 1 : 0));
 	}
 
-	public boolean setTimeToReply(long guildId, int hours) {
+	public void setTimeToReply(long guildId, int hours) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, timeToReply) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET timeToReply=%<d".formatted(table, guildId, hours));
+		execute("INSERT INTO %s(guildId, timeToReply) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET timeToReply=%<d".formatted(table, guildId, hours));
 	}
 
-	public boolean setOtherRole(long guildId, boolean otherRole) {
+	public void setOtherRole(long guildId, boolean otherRole) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole ? 1 : 0));
+		execute("INSERT INTO %s(guildId, otherRole) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET otherRole=%<d".formatted(table, guildId, otherRole ? 1 : 0));
 	}
 
-	public boolean setSupportRoles(long guildId, @NotNull List<Long> roleIds) {
+	public void setSupportRoles(long guildId, @NotNull List<Long> roleIds) throws SQLException {
 		invalidateCache(guildId);
 		final String text = roleIds.stream().map(String::valueOf).collect(Collectors.joining(";"));
-		return execute("INSERT INTO %s(guildId, roleSupport) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET roleSupport=%<s".formatted(table, guildId, quote(text)));
+		execute("INSERT INTO %s(guildId, roleSupport) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET roleSupport=%<s".formatted(table, guildId, quote(text)));
 	}
 
-	public boolean setDeletePings(long guildId, boolean deletePing) {
+	public void setDeletePings(long guildId, boolean deletePing) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, deletePing) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET deletePing=%<d".formatted(table, guildId, deletePing ? 1 : 0));
+		execute("INSERT INTO %s(guildId, deletePing) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET deletePing=%<d".formatted(table, guildId, deletePing ? 1 : 0));
 	}
 
-	public boolean setAllowClose(long guildId, AllowClose value) {
+	public void setAllowClose(long guildId, AllowClose value) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, allowClose) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET allowClose=%<d".formatted(table, guildId, value.getValue()));
+		execute("INSERT INTO %s(guildId, allowClose) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET allowClose=%<d".formatted(table, guildId, value.getValue()));
 	}
 
-	public boolean setTranscript(long guildId, TranscriptsMode value) {
+	public void setTranscript(long guildId, TranscriptsMode value) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, transcripts) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET transcripts=%<d".formatted(table, guildId, value.getValue()));
+		execute("INSERT INTO %s(guildId, transcripts) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET transcripts=%<d".formatted(table, guildId, value.getValue()));
 	}
 
 	private void invalidateCache(long guildId) {

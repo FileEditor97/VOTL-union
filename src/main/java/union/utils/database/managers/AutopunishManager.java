@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,15 +18,15 @@ public class AutopunishManager extends LiteDBBase {
 		super(cu, "autopunish");
 	}
 
-	public boolean addAction(long guildId, int atStrikeCount, List<PunishActions> actions, @Nullable String data) {
-		return execute("INSERT INTO %s(guildId, strike, actions, data) VALUES (%d, %d, %d, %s)".formatted(table, guildId, atStrikeCount, PunishActions.encodeActions(actions), quote(data)));
+	public void addAction(long guildId, int atStrikeCount, List<PunishActions> actions, @Nullable String data) throws SQLException {
+		execute("INSERT INTO %s(guildId, strike, actions, data) VALUES (%d, %d, %d, %s)".formatted(table, guildId, atStrikeCount, PunishActions.encodeActions(actions), quote(data)));
 	}
 
-	public boolean removeAction(long guildId, int atStrikeCount) {
-		return execute("DELETE FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount));
+	public void removeAction(long guildId, int atStrikeCount) throws SQLException {
+		execute("DELETE FROM %s WHERE (guildId=%d AND strike=%d)".formatted(table, guildId, atStrikeCount));
 	}
 
-	public void removeGuild(long guildId) {
+	public void removeGuild(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 

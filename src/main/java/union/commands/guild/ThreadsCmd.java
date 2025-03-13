@@ -13,6 +13,7 @@ import union.objects.CmdAccessLevel;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class ThreadsCmd extends CommandBase {
@@ -51,8 +52,10 @@ public class ThreadsCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().threadControl.add(event.getGuild().getIdLong(), channel.getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().threadControl.add(event.getGuild().getIdLong(), channel.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "threads add channel");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -86,8 +89,10 @@ public class ThreadsCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().threadControl.remove(channelId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().threadControl.remove(channelId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "threads remove channel");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)

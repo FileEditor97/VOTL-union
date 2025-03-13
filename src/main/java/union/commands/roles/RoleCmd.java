@@ -1,5 +1,6 @@
 package union.commands.roles;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -323,8 +324,13 @@ public class RoleCmd extends CommandBase {
 			}
 			actionRows.add(ActionRow.of(Button.primary("role:manage-confirm:"+target.getId(), lu.getText(event, path+".button"))));
 
-			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getMember().getIdLong(),
-					target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
+			try {
+				bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getMember().getIdLong(),
+						target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "role modify failed");
+				return;
+			}
 
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, path+".title").formatted(target.getAsMention()))

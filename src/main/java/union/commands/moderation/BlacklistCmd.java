@@ -2,6 +2,7 @@ package union.commands.moderation;
 
 import static union.utils.CastUtil.castLong;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -108,8 +109,10 @@ public class BlacklistCmd extends CommandBase {
 			if (event.hasOption("user")) {
 				User user = event.optUser("user");
 				if (bot.getDBUtil().blacklist.inGroupUser(groupId, user.getIdLong())) {
-					if (!bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong())) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "blacklist remove user");
 						return;
 					}
 					// Log into master
@@ -139,8 +142,10 @@ public class BlacklistCmd extends CommandBase {
 				}
 
 				if (bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
-					if (!bot.getDBUtil().blacklist.removeSteam64(groupId, steam64)) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().blacklist.removeSteam64(groupId, steam64);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "blacklist remove steam");
 						return;
 					}
 					// Log into master
@@ -198,8 +203,10 @@ public class BlacklistCmd extends CommandBase {
 			}
 
 			if (!bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
-				if (!bot.getDBUtil().blacklist.addSteam(guildId, groupId, steam64, event.getUser().getIdLong())) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().blacklist.addSteam(guildId, groupId, steam64, event.getUser().getIdLong());
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "blacklist add steam");
 					return;
 				}
 				// Log into master

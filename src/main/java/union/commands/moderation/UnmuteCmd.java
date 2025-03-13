@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -50,14 +51,24 @@ public class UnmuteCmd extends CommandBase {
 		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
 		
 		CaseData muteData = bot.getDBUtil().cases.getMemberActive(tm.getIdLong(), guild.getIdLong(), CaseType.MUTE);
-		if (muteData != null) bot.getDBUtil().cases.setInactive(muteData.getRowId());
+		if (muteData != null) {
+			try {
+				bot.getDBUtil().cases.setInactive(muteData.getRowId());
+			} catch (SQLException ignored) {}
+		}
 
 		if (tm.isTimedOut()) {
 			tm.removeTimeout().reason(reason).queue(done -> {
 				Member mod = event.getMember();
 				// add info to db
-				CaseData unmuteData = bot.getDBUtil().cases.add(CaseType.UNMUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
-					guild.getIdLong(), reason, Instant.now(), null);
+				CaseData unmuteData;
+				try {
+					unmuteData = bot.getDBUtil().cases.add(CaseType.UNMUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+						guild.getIdLong(), reason, Instant.now(), null);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "Failed to create new case.");
+					return;
+				}
 				// log unmute
 				bot.getLogger().mod.onNewCase(guild, tm.getUser(), unmuteData, muteData != null ? muteData.getReason() : null).thenAccept(logUrl -> {
 					// reply

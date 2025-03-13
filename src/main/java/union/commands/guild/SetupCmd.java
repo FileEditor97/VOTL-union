@@ -2,6 +2,7 @@ package union.commands.guild;
 
 import java.awt.Color;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,8 +78,10 @@ public class SetupCmd extends CommandBase {
 				editError(event, path+".no_color");
 				return;
 			}
-			if (!bot.getDBUtil().guildSettings.setColor(guildId, color.getRGB() & 0xFFFFFF)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().guildSettings.setColor(guildId, color.getRGB() & 0xFFFFFF);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup set color");
 				return;
 			}
 
@@ -109,8 +112,10 @@ public class SetupCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().guildSettings.setAppealLink(guildId, link)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().guildSettings.setAppealLink(guildId, link);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup appeal link");
 				return;
 			}
 			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -122,8 +127,10 @@ public class SetupCmd extends CommandBase {
 					editError(event, path+".not_valid", "Received invalid rules URL: `%s`".formatted(rulesLink));
 					return;
 				}
-				if (!bot.getDBUtil().guildSettings.setRulesLink(guildId, rulesLink)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().guildSettings.setRulesLink(guildId, rulesLink);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "setup rules link");
 					return;
 				}
 				builder.appendDescription(lu.getText(event, path+".add_rules").replace("{link}", rulesLink));
@@ -164,8 +171,10 @@ public class SetupCmd extends CommandBase {
 				editError(event, path+".cant_send");
 			}
 
-			if (!bot.getDBUtil().guildSettings.setReportChannelId(guildId, channel.getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().guildSettings.setReportChannelId(guildId, channel.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup report channel");
 				return;
 			}
 
@@ -198,8 +207,10 @@ public class SetupCmd extends CommandBase {
 			AnticrashAction action = AnticrashAction.byValue(event.optInteger("action", 0));
 
 			long guildId = event.getGuild().getIdLong();
-			if (!bot.getDBUtil().guildSettings.setAnticrash(guildId, action)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().guildSettings.setAnticrash(guildId, action);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup anticrash");
 				return;
 			}
 			// Clear anticrash cache (easier to purge all cache, than for of each member)
@@ -215,8 +226,10 @@ public class SetupCmd extends CommandBase {
 
 					ping = String.join(" ", pingSet);
 				}
-				if (!bot.getDBUtil().guildSettings.setAnticrashPing(guildId, ping)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().guildSettings.setAnticrashPing(guildId, ping);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "setup anticrash ping");
 					return;
 				}
 
@@ -260,8 +273,10 @@ public class SetupCmd extends CommandBase {
 									.addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VOICE_SPEAK))
 									.queue(
 										channel -> {
-											if (!bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong())) {
-												editErrorUnknown(event, "Database error.");
+											try {
+												bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong());
+											} catch (SQLException e) {
+												editErrorDatabase(event, e, "setup create voice");
 												return;
 											}
 											editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -310,8 +325,10 @@ public class SetupCmd extends CommandBase {
 			try {
 				category.upsertPermissionOverride(guild.getBotRole()).setAllowed(getBotPermissions()).queue(doneCategory -> {
 					channel.upsertPermissionOverride(guild.getPublicRole()).setDenied(Permission.VOICE_SPEAK).queue(doneChannel -> {
-						if (!bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong())) {
-							editErrorUnknown(event, "Database error.");
+						try {
+							bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong());
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "setup voice select");
 							return;
 						}
 						editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -396,8 +413,10 @@ public class SetupCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().guildVoice.setName(event.getGuild().getIdLong(), filName)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().guildVoice.setName(event.getGuild().getIdLong(), filName);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup voice name");
 				return;
 			}
 
@@ -424,8 +443,10 @@ public class SetupCmd extends CommandBase {
 			event.deferReply().queue();
 			Integer filLimit = event.optInteger("limit");
 
-			if (!bot.getDBUtil().guildVoice.setLimit(event.getGuild().getIdLong(), filLimit)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().guildVoice.setLimit(event.getGuild().getIdLong(), filLimit);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup voice limit");
 				return;
 			}
 
@@ -459,16 +480,20 @@ public class SetupCmd extends CommandBase {
 			StringBuilder builder = new StringBuilder(lu.getText(event, path+".embed_title"));
 			Integer expiresAfter = event.optInteger("expires_after");
 			if (expiresAfter != null) {
-				if (!bot.getDBUtil().guildSettings.setStrikeExpiresAfter(event.getGuild().getIdLong(), expiresAfter)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().guildSettings.setStrikeExpiresAfter(event.getGuild().getIdLong(), expiresAfter);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "setup strike expires after");
 					return;
 				}
 				builder.append(lu.getText(event, path+".expires_changed").formatted(expiresAfter));
 			}
 			Integer cooldown = event.optInteger("cooldown");
 			if (cooldown != null) {
-				if (!bot.getDBUtil().guildSettings.setStrikeCooldown(event.getGuild().getIdLong(), cooldown)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().guildSettings.setStrikeCooldown(event.getGuild().getIdLong(), cooldown);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "setup strike cooldown");
 					return;
 				}
 				builder.append(lu.getText(event, path+".cooldown_changed").formatted(cooldown));
@@ -509,15 +534,16 @@ public class SetupCmd extends CommandBase {
 				return;
 			}
 			ModerationInformLevel informLevel = ModerationInformLevel.byLevel(event.optInteger("level"));
-			if (switch (action) {
-				case "ban" -> !bot.getDBUtil().guildSettings.setInformBanLevel(guildId, informLevel);
-				case "kick" -> !bot.getDBUtil().guildSettings.setInformKickLevel(guildId, informLevel);
-				case "mute" -> !bot.getDBUtil().guildSettings.setInformMuteLevel(guildId, informLevel);
-				case "strike" -> !bot.getDBUtil().guildSettings.setInformStrikeLevel(guildId, informLevel);
-				case "delstrike" -> !bot.getDBUtil().guildSettings.setInformDelstrikeLevel(guildId, informLevel);
-				default -> true;
-			}) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				switch (action) {
+					case "ban" -> bot.getDBUtil().guildSettings.setInformBanLevel(guildId, informLevel);
+					case "kick" -> bot.getDBUtil().guildSettings.setInformKickLevel(guildId, informLevel);
+					case "mute" -> bot.getDBUtil().guildSettings.setInformMuteLevel(guildId, informLevel);
+					case "strike" -> bot.getDBUtil().guildSettings.setInformStrikeLevel(guildId, informLevel);
+					case "delstrike" -> bot.getDBUtil().guildSettings.setInformDelstrikeLevel(guildId, informLevel);
+				}
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup inform level");
 				return;
 			}
 
@@ -541,8 +567,10 @@ public class SetupCmd extends CommandBase {
 			event.deferReply().queue();
 			boolean enabled = event.optBoolean("enable");
 			// DB
-			if (!bot.getDBUtil().guildSettings.setRoleWhitelist(event.getGuild().getIdLong(), enabled)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().guildSettings.setRoleWhitelist(event.getGuild().getIdLong(), enabled);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup role whitelist");
 				return;
 			}
 			// Reply
@@ -585,8 +613,10 @@ public class SetupCmd extends CommandBase {
 				if (event.hasOption("enable")) {
 					final boolean enabled = event.optBoolean("enable");
 
-					if (!bot.getDBUtil().levels.setEnabled(event.getGuild().getIdLong(), enabled)) {
-						editErrorDatabase(event, "leveling settings set enabled");
+					try {
+						bot.getDBUtil().levels.setEnabled(event.getGuild().getIdLong(), enabled);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "setup levels");
 						return;
 					}
 					response.append(lu.getText(event, path+".changed_enabled").formatted(enabled ? Constants.SUCCESS : Constants.FAILURE));
@@ -594,8 +624,10 @@ public class SetupCmd extends CommandBase {
 				if (event.hasOption("voice_enable")) {
 					final boolean enabled = event.optBoolean("voice_enable");
 
-					if (!bot.getDBUtil().levels.setEnabledVoice(event.getGuild().getIdLong(), enabled)) {
-						editErrorDatabase(event, "leveling settings set voice enabled");
+					try {
+						bot.getDBUtil().levels.setEnabledVoice(event.getGuild().getIdLong(), enabled);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "setup voice levels");
 						return;
 					}
 					response.append(lu.getText(event, path+".changed_voice").formatted(enabled ? Constants.SUCCESS : Constants.FAILURE));
@@ -653,8 +685,11 @@ public class SetupCmd extends CommandBase {
 
 			int typeValue = event.optInteger("type", 0);
 			ExpType type = ExpType.values()[typeValue];
-			if (!bot.getDBUtil().levelRoles.add(event.getGuild().getIdLong(), level, role.getId(), true, type)) {
-				editErrorDatabase(event, "level roles set");
+
+			try {
+				bot.getDBUtil().levelRoles.add(event.getGuild().getIdLong(), level, role.getId(), true, type);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup add level roles");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -686,8 +721,10 @@ public class SetupCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().levelRoles.remove(event.getGuild().getIdLong(), level)) {
-				editErrorDatabase(event, "level roles remove");
+			try {
+				bot.getDBUtil().levelRoles.remove(event.getGuild().getIdLong(), level);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup remvoe level roles");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -735,7 +772,6 @@ public class SetupCmd extends CommandBase {
 				});
 			}
 
-
 			editEmbed(event, bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".title"))
 				.setDescription(response.toString())
@@ -779,8 +815,10 @@ public class SetupCmd extends CommandBase {
 			channels.add(channel.getIdLong());
 			String channelIds = channels.stream().map(String::valueOf).collect(Collectors.joining(";"));
 
-			if (!bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), channelIds)) {
-				editErrorDatabase(event, "set level exempt channels");
+			try {
+				bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), channelIds);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup add level exempt channel");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -828,8 +866,10 @@ public class SetupCmd extends CommandBase {
 			channels.remove(channelId);
 			String channelIds = channels.stream().map(String::valueOf).collect(Collectors.joining(";"));
 
-			if (!bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), channelIds)) {
-				editErrorDatabase(event, "set level exempt channels");
+			try {
+				bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), channelIds);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup remove level exempt channel");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -850,8 +890,10 @@ public class SetupCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 
-			if (!bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), null)) {
-				editErrorDatabase(event, "clear level exempt channels");
+			try {
+				bot.getDBUtil().levels.setExemptChannels(event.getGuild().getIdLong(), null);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "setup clear level exempt channels");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)

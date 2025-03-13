@@ -8,6 +8,7 @@ import union.commands.CommandBase;
 import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class ExperienceCmd extends CommandBase {
@@ -121,15 +122,21 @@ public class ExperienceCmd extends CommandBase {
 					return;
 				}
 
-				bot.getDBUtil().levels.deleteUser(guildId, userId);
-
-				editMsg(event, "Deleted user `%s` in guild `%s`".formatted(userId, guildId));
+				try {
+					bot.getDBUtil().levels.deleteUser(guildId, userId);
+					editMsg(event, "Deleted user `%s` in guild `%s`".formatted(userId, guildId));
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "level delete member");
+				}
 			}
 			case 6 -> {
 				// Delete all user values
-				bot.getDBUtil().levels.deleteUser(userId);
-
-				editMsg(event, "Deleted user `%s`".formatted(userId));
+				try {
+					bot.getDBUtil().levels.deleteUser(userId);
+					editMsg(event, "Deleted user `%s`".formatted(userId));
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "level delete user");
+				}
 			}
 			case 7 -> {
 				long guildId;
@@ -140,9 +147,12 @@ public class ExperienceCmd extends CommandBase {
 					return;
 				}
 				// Delete all guild values
-				bot.getDBUtil().levels.deleteGuild(guildId);
-
-				editMsg(event, "Deleted guild `%s`".formatted(guildId));
+				try {
+					bot.getDBUtil().levels.deleteGuild(guildId);
+					editMsg(event, "Deleted guild `%s`".formatted(guildId));
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "level delete guild");
+				}
 			}
 		}
 	}

@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -58,20 +59,24 @@ public class ImportBanlistCmd extends CommandBase {
 					editMsg(event, "Starting data import...");
 					int added = 0;
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-						String firstLine = reader.readLine();
-						if (isSteamID(firstLine)) {
+						String line;
+						if (isSteamID(reader.readLine())) {
 							// SteamID
-							String line;
 							while ((line = reader.readLine()) != null) {
 								long steam64 = SteamUtil.convertSteamIDtoSteam64(line);
-								if (bot.getDBUtil().banlist.add(table, steam64)) added++;
+								try {
+									bot.getDBUtil().banlist.add(table, steam64);
+									added++;
+								} catch (SQLException ignored) {}
 							}
 						} else {
 							// Steam64
-							String line;
 							while ((line = reader.readLine()) != null) {
 								long steam64 = Long.parseLong(line);
-								if (bot.getDBUtil().banlist.add(table, steam64)) added++;
+								try {
+									bot.getDBUtil().banlist.add(table, steam64);
+									added++;
+								} catch (SQLException ignored) {}
 							}
 						}
 					} catch (IOException e) {
@@ -93,23 +98,32 @@ public class ImportBanlistCmd extends CommandBase {
 						if (keySize == 4) {
 							// Octo table
 							for (Map<String, String> map : list) {
-								if (bot.getDBUtil().banlist.add(
-									table, CastUtil.castLong(map.get("steamID")), map.get("reason"), map.get("details"), map.get("command"))
-								) added++;
+								try {
+									bot.getDBUtil().banlist.add(
+										table, CastUtil.castLong(map.get("steamID")), map.get("reason"), map.get("details"), map.get("command")
+									);
+									added++;
+								} catch (SQLException ignored) {}
 							}
 						} else if (keySize == 2) {
 							// Custom with reason
 							for (Map<String, String> map : list) {
-								if (bot.getDBUtil().banlist.add(
-									table, CastUtil.castLong(map.get("steam64")), map.get("reason"))
-								) added++;
+								try {
+									bot.getDBUtil().banlist.add(
+										table, CastUtil.castLong(map.get("steam64")), map.get("reason")
+									);
+									added++;
+								} catch (SQLException ignored) {}
 							}
 						} else if (keySize == 1) {
 							// Custom without reason
 							for (Map<String, String> map : list) {
-								if (bot.getDBUtil().banlist.add(
-									table, CastUtil.castLong(map.get("steam64"))
-								)) added++;
+								try {
+									bot.getDBUtil().banlist.add(
+										table, CastUtil.castLong(map.get("steam64"))
+									);
+									added++;
+								} catch (SQLException ignored) {}
 							}
 						}
 					}

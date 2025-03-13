@@ -1,5 +1,6 @@
 package union.listeners;
 
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +96,9 @@ public class MessageListener extends ListenerAdapter {
 			} catch (Exception ignored) {}
 		} else {
 			// add user to local database
-			bot.getDBUtil().verifyCache.addUser(userId, steam64);
+			try {
+				bot.getDBUtil().verifyCache.addUser(userId, steam64);
+			} catch (SQLException ignored) {}
 		}
 	}
 

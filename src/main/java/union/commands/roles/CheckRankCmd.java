@@ -70,8 +70,8 @@ public class CheckRankCmd extends CommandBase {
 				editError(event, path+".empty");
 				return;
 			}
-			if (maxSize > 200) {
-				editErrorOther(event, "Amount of members to be processed reached maximum limit of **200**! Manually clear the selected role.");
+			if (maxSize > 400) {
+				editErrorOther(event, "Amount of members to be processed reached maximum limit of **400**! Manually clear the selected role.");
 				return;
 			}
 			editEmbed(event, builder.appendDescription(lu.getText(event, path+".estimate").formatted(maxSize)).build());

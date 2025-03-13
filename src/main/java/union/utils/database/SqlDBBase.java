@@ -1,10 +1,6 @@
 package union.utils.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +10,7 @@ import union.metrics.Metrics;
 import union.utils.database.managers.UnionPlayerManager.PlayerInfo;
 import union.utils.file.SettingsManager;
 
+@SuppressWarnings({"LoggingSimilarMessage", "SqlSourceToSinkFlow", "SameParameterValue"})
 public class SqlDBBase {
 
 	private final ConnectionUtil cu;
@@ -51,6 +48,8 @@ public class SqlDBBase {
 			while (rs.next()) {
 				results.add(rs.getString(selectKey));
 			}
+		} catch (SQLTimeoutException ex) {
+			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql.toString(), ex);
 		}
@@ -92,7 +91,7 @@ public class SqlDBBase {
 			List<String> keys = new ArrayList<>();
 
 			if (selectKeys.isEmpty()) {
-				for (int i = 1; i<=rs.getMetaData().getColumnCount(); i++) {
+				for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
 					keys.add(rs.getMetaData().getColumnName(i));
 				}
 			} else {
@@ -106,6 +105,8 @@ public class SqlDBBase {
 				}
 				results.add(data);
 			}
+		} catch (SQLTimeoutException ex) {
+			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql.toString(), ex);
 		}
@@ -147,6 +148,8 @@ public class SqlDBBase {
 				for (String key : selectKeys) {
 					result.put(key, rs.getString(key));
 				}
+		} catch (SQLTimeoutException ex) {
+			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
@@ -166,6 +169,8 @@ public class SqlDBBase {
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
+		} catch (SQLTimeoutException ex) {
+			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
@@ -183,6 +188,8 @@ public class SqlDBBase {
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
+		} catch (SQLTimeoutException ex) {
+			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at UPDATE\nrequest: {}", sql, ex);
 		}

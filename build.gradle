@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	// ShadowJar
 	// https://mvnrepository.com/artifact/com.gradleup.shadow/shadow-gradle-plugin
-	id 'com.gradleup.shadow' version '9.0.0-beta9'
+	id 'com.gradleup.shadow' version '9.0.0-beta10'
 }
 
 // Getting version
@@ -33,7 +33,7 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
 	implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.2'		// mariaDB (MySQL) database
 	// https://mvnrepository.com/artifact/org.jsoup/jsoup
-	implementation 'org.jsoup:jsoup:1.18.3'							// HTML tools
+	implementation 'org.jsoup:jsoup:1.19.1'							// HTML tools
 	// https://mvnrepository.com/artifact/io.github.java-diff-utils/java-diff-utils
 	implementation 'io.github.java-diff-utils:java-diff-utils:4.15' // Diff finder
 	// https://mvnrepository.com/artifact/org.json/json
@@ -50,6 +50,10 @@ dependencies {
 	// Eval
 	// https://mvnrepository.com/artifact/org.apache.groovy/groovy
 	implementation 'org.apache.groovy:groovy:4.0.26'				// Groovy - code evaluation
+}
+
+java {
+	sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 }
 
 // jar's Manifest

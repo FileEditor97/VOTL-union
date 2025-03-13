@@ -35,7 +35,7 @@ import net.dv8tion.jda.api.utils.TimeFormat;
 public class TempRoleCmd extends CommandBase {
 
 	private final EventWaiter waiter;
-	private final int MAX_DAYS = 150;
+	private final int MAX_DAYS = 400;
 	
 	public TempRoleCmd(EventWaiter waiter) {
 		this.waiter = waiter;

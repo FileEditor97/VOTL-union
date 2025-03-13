@@ -553,6 +553,14 @@
 						"help": "Enter full webhook URL"
 					}
 				},
+				"appeal_guild": {
+					"help": "Appeal guild",
+					"usage": "appeal_guild <guild ID>",
+					"id": {
+						"name": "id",
+						"help": "Enter guild ID (or null)"
+					}
+				},
 				"view": {
 					"help": "View settings",
 					"usage": "view"
@@ -1714,14 +1722,10 @@
 				"help": "Server Groups management",
 				"create": {
 					"help": "Create new server Group",
-					"usage": "create <name> [appeal server ID] [invite link]",
+					"usage": "create <name> [invite link]",
 					"name": {
 						"name": "name",
 						"help": "Enter name for new Group"
-					},
-					"appeal_server": {
-						"name": "appeal_server",
-						"help": "(Optional) Enter appeal server's ID. Selected server will be excluded from sync bans."
 					},
 					"invite": {
 						"name": "invite",
@@ -1779,7 +1783,7 @@
 				},
 				"modify": {
 					"help": "Modify Group settings",
-					"usage": "modify <Group> [name] [appeal server ID] [invite link] [verify]",
+					"usage": "modify <Group> [name] [invite link] [verify]",
 					"group_owned": {
 						"name": "group_owned",
 						"help": "Select Group"
@@ -1787,10 +1791,6 @@
 					"name": {
 						"name": "name",
 						"help": "Enter new name for this Group"
-					},
-					"appeal_server": {
-						"name": "appeal_server",
-						"help": "Enter appeal server's ID. Selected server will be excluded from sync bans."
 					},
 					"invite": {
 						"name": "invite",
@@ -1805,7 +1805,6 @@
 					"only_one_change": "Only one group parameter can be changed at this time.",
 					"invalid_invite": "Provided invite is invalid. Check that it's correct, is not temporal and for this server.",
 					"name_change": "Renamed to `%s`.",
-					"appeal_change": "Appeal server ID set to `%s`.",
 					"invite_change": "This server invite link set to `%s`.",
 					"verify_change": "Verification set to: %s",
 					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"

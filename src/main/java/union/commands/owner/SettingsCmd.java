@@ -21,7 +21,8 @@ public class SettingsCmd extends CommandBase {
 		this.path = "bot.owner.settings";
 		this.children = new SlashCommand[]{
 			new Database(), new BotWhitelist(), new GameServer(),
-			new Server(), new PanicWebhook(), new View()
+			new Server(), new PanicWebhook(), new AppealGuild(),
+			new View()
 		};
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;
@@ -206,7 +207,34 @@ public class SettingsCmd extends CommandBase {
 
 			bot.getSettings().setPanicWebhook(webhook);
 
-			editMsg(event, "Panic Webhook set: "+webhook);
+			editMsg(event, "Panic Webhook set: %s".formatted(webhook==null?"*none*":webhook));
+		}
+	}
+
+	private class AppealGuild extends SlashCommand {
+		public AppealGuild() {
+			this.name = "appeal_guild";
+			this.path = "bot.owner.settings.appeal_guild";
+			this.options = List.of(
+				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"))
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+			String id = event.optString("id");
+
+			Long appealGuildId;
+			if (id.equalsIgnoreCase("null")) {
+				appealGuildId = null; // Clear
+			} else {
+				appealGuildId = Long.parseLong(id);
+			}
+
+			bot.getSettings().setAppealGuildId(appealGuildId);
+
+			editMsg(event, "Appeal Guild set: %s".formatted(appealGuildId==null?"*none*":appealGuildId.toString()));
 		}
 	}
 
@@ -237,6 +265,7 @@ public class SettingsCmd extends CommandBase {
 				.formatted(id, String.join(", ", dbs))
 			));
 			builder.append("\n\nPanicWebhooks: ").append(settings.getPanicWebhook());
+			builder.append("\n\nAppealGuild: ").append(settings.getAppealGuildId());
 
 			event.getHook().editOriginal(builder.toString()).queue();
 		}

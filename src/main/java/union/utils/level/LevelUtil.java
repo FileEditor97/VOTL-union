@@ -31,12 +31,12 @@ public class LevelUtil {
 
 	private static final long hardCap = (long) Integer.MAX_VALUE*4L;
 
-	private static final int maxRandomExperience = 5;
-	private static final int maxGuaranteeMessageExperience = 10;
-	private static final int maxGuaranteeVoiceExperience = 5;
+	private static final int maxRandomExperience = 4;
+	private static final int maxGuaranteeMessageExperience = 5;
+	private static final int maxGuaranteeVoiceExperience = 3;
 
-	private final double A = 12;
-	private final int B = 80;
+	private final double A = 16;
+	private final int B = 100;
 	private final int C = 0;
 
 	public static long getHardCap() {
@@ -79,6 +79,7 @@ public class LevelUtil {
 		}
 
 		// If in cache - skip, else give exp and add to it
+		//noinspection ResultOfMethodCallIgnored
 		cache.get(asKey(event), (k)->{
 			giveExperience(event.getMember(), RandomUtil.getInteger(maxRandomExperience)+maxGuaranteeMessageExperience, ExpType.TEXT);
 			return true;

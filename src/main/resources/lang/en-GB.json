@@ -153,7 +153,7 @@
 	},
 	"logger_embed": {
 		"verify": {
-			"blacklisted": "Blacklisted in group #%d",
+			"blacklisted": "Blacklisted in group #%d\nReason: %s\nBy: <@%s>",
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
@@ -2025,7 +2025,7 @@
 					"cant_view": "Can't view selected group. (Not group's owner or manager)",
 					"no_options": "No options provided. Either select *user* or enter *SteamID*.",
 					"not_found": "**User not found.**\nInput: %s",
-					"value": "User: %s\nSteamID: `%s`\nServer: `%s`\nModerator: %s\nReason: `%s`\n*Group ID*: `%s`"
+					"value": "User: %s\nSteamID: `%s`\nServer: `%s`\nModerator: %s\nReason: `%s`"
 				},
 				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
 				"no_groups": "This server can't manage any group.",

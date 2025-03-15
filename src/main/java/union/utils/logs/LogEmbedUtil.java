@@ -845,7 +845,7 @@ public class LogEmbedUtil {
 	public MessageEmbed verifyAttempt(DiscordLocale locale, String memberTag, long memberId, String memberIcon, Long steam64, String reason) {
 		return new LogEmbedBuilder(locale, AMBER_DARK)
 			.setHeaderIcon("verify.attempt", memberIcon, memberTag)
-			.setDescription(localized(locale, "reason")+":\n> "+reason)
+			.setDescription(localized(locale, "reason")+":\n>>> "+reason)
 			.addField("verify.steam", (steam64 == null || steam64 == 0L ? "None" :
 				"`%s`\n[UnionTeam](https://unionteams.ru/player/%s)\n[Steam](https://steamcommunity.com/profiles/%<s)".formatted(SteamUtil.convertSteam64toSteamID(steam64), steam64)
 				))

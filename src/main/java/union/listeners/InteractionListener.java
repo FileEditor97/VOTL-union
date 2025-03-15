@@ -52,6 +52,7 @@ import union.objects.constants.Links;
 import union.utils.CastUtil;
 import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.BlacklistManager;
 import union.utils.database.managers.CaseManager;
 import union.utils.database.managers.RoleManager;
 import union.utils.database.managers.TicketTagManager;
@@ -345,10 +346,13 @@ public class InteractionListener extends ListenerAdapter {
 				groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
 				groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
 				for (int groupId : groupIds) {
-					if (db.blacklist.inGroupUser(groupId, member.getIdLong())) {
-						sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
-						bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), null, guild,
-							lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
+					BlacklistManager.BlacklistData data = db.blacklist.getByUserId(groupId, member.getIdLong());
+					if (data != null) {
+						sendError(event, "bot.verification.blacklisted", "Reason: "+data.getReason());
+						bot.getLogger().verify.onVerifyBlacklisted(
+							member.getUser(), guild,
+							groupId, data
+						);
 						return;
 					}
 				}
@@ -402,10 +406,13 @@ public class InteractionListener extends ListenerAdapter {
 			// Check if steam64 is not blacklisted
 			if (checkBlacklist) {
 				for (int groupId : groupIds) {
-					if (db.blacklist.inGroupSteam64(groupId, steam64)) {
-						sendError(event, "bot.verification.blacklisted", "SteamID: "+ SteamUtil.convertSteam64toSteamID(steam64));
-						bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), steam64, guild,
-							lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
+					BlacklistManager.BlacklistData data = db.blacklist.getByUserId(groupId, member.getIdLong());
+					if (data != null) {
+						sendError(event, "bot.verification.blacklisted", "Reason: "+data.getReason());
+						bot.getLogger().verify.onVerifyBlacklisted(
+							member.getUser(), guild,
+							groupId, data
+						);
 						return;
 					}
 				}

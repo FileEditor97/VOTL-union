@@ -8,10 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import ch.qos.logback.classic.Logger;
@@ -186,6 +183,7 @@ public class CaseManager extends LiteDBBase {
 		private final Long modId;
 		private final String targetTag, modTag, reason, logUrl;
 		private final Instant timeStart;
+		@NotNull
 		private final Duration duration;
 		private final boolean active;
 
@@ -200,7 +198,7 @@ public class CaseManager extends LiteDBBase {
 			this.modTag = getOrDefault(map.get("modTag"), null);
 			this.reason = getOrDefault(map.get("reason"), null);
 			this.timeStart = Instant.ofEpochSecond(getOrDefault(map.get("timeStart"), 0L));
-			this.duration = Duration.ofSeconds(getOrDefault(map.get("duration"), 0L));
+			this.duration = Duration.ofSeconds(getOrDefault(map.get("duration"), -1L));
 			this.active = ((Integer) requireNonNull(map.get("active"))) == 1;
 			this.logUrl = getOrDefault(map.get("logUrl"), null);
 		}
@@ -224,7 +222,7 @@ public class CaseManager extends LiteDBBase {
 			this.modTag = modTag;
 			this.reason = reason;
 			this.timeStart = timeStart;
-			this.duration = duration;
+			this.duration = Optional.ofNullable(duration).orElse(Duration.ofSeconds(-1));
 			this.active = active;
 			this.logUrl = logUrl;
 		}
@@ -269,6 +267,7 @@ public class CaseManager extends LiteDBBase {
 			return timeStart;
 		}
 
+		@NotNull
 		public Duration getDuration() {
 			return duration;
 		}

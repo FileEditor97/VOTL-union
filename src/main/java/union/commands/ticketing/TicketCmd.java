@@ -28,6 +28,7 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
+import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.TicketPanelManager.Panel;
@@ -45,6 +46,7 @@ public class TicketCmd extends CommandBase {
 			new Automation(), new Settings()};
 		this.category = CmdCategory.TICKETING;
 		this.accessLevel = CmdAccessLevel.ADMIN;
+		this.module = CmdModule.TICKETING;
 	}
 
 	@Override

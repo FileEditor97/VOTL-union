@@ -1,5 +1,6 @@
 package union.commands.other;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,11 +14,11 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import union.utils.message.MessageUtil;
 
 public class HelpCmd extends CommandBase {
 
@@ -72,40 +73,60 @@ public class HelpCmd extends CommandBase {
 		if (command == null) {
 			editError(event, "bot.help.command_info.no_command", "Requested: "+findCmd);
 		} else {
-			MessageEmbed embed = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
-				.setTitle(lu.getLocalized(userLocale, "bot.help.command_info.title").replace("{command}", command.getName()))
+			EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+				.setTitle(lu.getLocalized(userLocale, "bot.help.command_info.title").formatted(command.getName()))
 				.setDescription(lu.getLocalized(userLocale, "bot.help.command_info.value")
-					.replace("{category}", Optional.ofNullable(command.getCategory())
-						.map(cat -> lu.getLocalized(userLocale, "bot.help.command_menu.categories."+cat.name())).orElse(Constants.NONE))
-					.replace("{owner}", command.isOwnerCommand() ? Emotes.CHECK_C.getEmote() : Emotes.CROSS_C.getEmote())
-					.replace("{guild}", command.isGuildOnly() ? Emotes.CROSS_C.getEmote() : Emotes.CHECK_C.getEmote())
-					.replace("{module}", Optional.ofNullable(command.getModule()).map(mod -> lu.getLocalized(userLocale, mod.getPath())).orElse(Constants.NONE)))
+					.formatted(
+						Optional.ofNullable(command.getCategory())
+							.map(cat -> lu.getLocalized(userLocale, "bot.help.command_menu.categories."+cat.name()))
+							.orElse(Constants.NONE),
+						MessageUtil.capitalize(command.getAccessLevel().getName()),
+						command.isGuildOnly() ? Emotes.CROSS_C.getEmote() : Emotes.CHECK_C.getEmote(),
+						Optional.ofNullable(command.getModule())
+							.map(mod -> lu.getLocalized(userLocale, mod.getPath()))
+							.orElse(Constants.NONE)
+					)
+				)
 				.addField(lu.getLocalized(userLocale, "bot.help.command_info.help_title"), lu.getLocalized(userLocale, command.getHelpPath()), false)
-				.addField(lu.getLocalized(userLocale, "bot.help.command_info.usage_title"), getUsageText(userLocale, command), false)
-				.setFooter(lu.getLocalized(userLocale, "bot.help.command_info.usage_subvalue"))
-				.build();
-			
-			editEmbed(event, embed);
+				.setFooter(lu.getLocalized(userLocale, "bot.help.command_info.usage_subvalue"));
+
+			List<String> v = getUsageText(userLocale, command);
+			builder.addField(lu.getLocalized(userLocale, "bot.help.command_info.usage_title"), v.get(0), false);
+			for (int i = 1; i < v.size(); i++) {
+				builder.addField("", v.get(i), false);
+			}
+			editEmbed(event, builder.build());
 		}
 		
 	}
 
-	private String getUsageText(DiscordLocale locale, SlashCommand command) {
+	private List<String> getUsageText(DiscordLocale locale, SlashCommand command) {
+		List<String> values = new ArrayList<>();
 		StringBuilder builder = new StringBuilder();
 		if (command.getChildren().length > 0) {
 			String base = command.getName();
 			for (SlashCommand child : command.getChildren()) {
-				builder.append(
-					lu.getLocalized(locale, "bot.help.command_info.usage_child")
-						.replace("{base}", base)
-						.replace("{usage}", lu.getLocalized(locale, child.getUsagePath()))
-						.replace("{help}", lu.getLocalized(locale, child.getHelpPath()))
-					).append("\n");
+				String text = lu.getLocalized(locale, "bot.help.command_info.usage_child")
+					.formatted(
+						base,
+						lu.getLocalized(locale, child.getUsagePath()),
+						lu.getLocalized(locale, child.getHelpPath())
+					);
+				if (builder.length() + text.length() > 1020) {
+					values.add(builder.toString());
+					builder = new StringBuilder(text);
+				} else {
+					builder.append(text);
+				}
+				builder.append("\n");
 			}
 		} else {
-			builder.append(lu.getLocalized(locale, "bot.help.command_info.usage_value").replace("{usage}", lu.getLocalized(locale, command.getUsagePath()))).append("\n");
+			builder.append(lu.getLocalized(locale, "bot.help.command_info.usage_value")
+					.formatted(lu.getLocalized(locale, command.getUsagePath()))
+				).append("\n");
 		}
-		return builder.substring(0, Math.min(1024, builder.length()));
+		values.add(builder.toString());
+		return values;
 	}
 
 	private void sendHelp(SlashCommandEvent event, String filCat) {
@@ -148,7 +169,7 @@ public class HelpCmd extends CommandBase {
 		if (owner != null) {
 			fieldTitle = lu.getLocalized(userLocale, "bot.help.command_menu.description.support_title");
 			fieldValue = new StringBuilder()
-				.append(lu.getLocalized(userLocale, "bot.help.command_menu.description.support_value").replace("{owner_name}", "@"+owner.getName()));
+				.append(lu.getLocalized(userLocale, "bot.help.command_menu.description.support_value").formatted("@"+owner.getName()));
 			builder.addField(fieldTitle, fieldValue.toString(), false);
 		}
 		

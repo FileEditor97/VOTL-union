@@ -153,7 +153,7 @@
 	},
 	"logger_embed": {
 		"verify": {
-			"blacklisted": "Blacklisted in group #%d\nReason: %s\nBy: <@%s>",
+			"blacklisted": "Blacklisted in group #`%d`\nReason: %s\nBy: <@%s>",
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
@@ -2134,12 +2134,12 @@
 			"command_info": {
 				"docs": "Docs",
 				"no_command": "The provided command doesn't exist!\nMake sure you typed it correctly.",
-				"title": "Command help: {command}",
-				"value": "Category: **{category}**\nOwner command: {owner}\nCan be used in DMs: {guild}\nModule: **{module}**",
+				"title": "Command help: %s",
+				"value": "Category: **%s**\nRequired access: **%s**\nCan be used in DMs: %s\nModule: **%s**",
 				"help_title": "Description",
 				"usage_title": "Usage options",
-				"usage_value": "```/{usage}```",
-				"usage_child": "```/{base} {usage}```└ {help}",
+				"usage_value": "```/%s```",
+				"usage_child": "```/%s %s```└ %s",
 				"usage_subvalue": "[] ─ Optional\n<> ─ Required\nA | B ─ Selection"
 			},
 			"command_menu": {
@@ -2161,7 +2161,7 @@
 				"description": {
 					"command_value": "To get more info about a specific command run `/help command:[command]`.\nYou can also run `/help category:[category]` to show the commands of a specific category.",
 					"support_title": "*Additional help*",
-					"support_value": "If you need help with the bot, contact the owner `{owner_name}`."
+					"support_value": "If you need help with the bot, contact the owner `%s`."
 				}
 			}
 		},

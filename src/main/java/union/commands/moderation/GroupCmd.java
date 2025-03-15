@@ -1,10 +1,8 @@
 package union.commands.moderation;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import union.base.command.CooldownScope;
@@ -52,7 +50,6 @@ public class GroupCmd extends CommandBase {
 			this.path = "bot.moderation.group.create";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"), true).setMaxLength(120),
-				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help")).setRequiredLength(12, 20),
 				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help"))
 			);
 			this.cooldown = 30;
@@ -70,20 +67,6 @@ public class GroupCmd extends CommandBase {
 
 			String groupName = event.optString("name");
 
-			long appealGuildId = 0L;
-			if (event.hasOption("appeal_server")) {
-				try {
-					appealGuildId = Long.parseLong(event.optString("appeal_server"));
-				} catch (NumberFormatException ex) {
-					editErrorOther(event, ex.getMessage());
-					return;
-				}
-				if (appealGuildId != 0L && event.getJDA().getGuildById(appealGuildId) == null) {
-					editErrorOther(event, "Unknown appeal server ID.\nReceived: "+appealGuildId);
-					return;
-				}
-			}
-
 			if (event.hasOption("invite")) {
 				String link = event.optString("invite");
 
@@ -92,15 +75,17 @@ public class GroupCmd extends CommandBase {
 					return;
 				}
 
-				long appealGuildIdTemp = appealGuildId;
 				InviteImpl.resolve(event.getJDA(), link.replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim(), false).queue(invite -> {
 					if (!invite.isFromGuild() || invite.isTemporal() || invite.getGuild().getIdLong() != event.getGuild().getIdLong()) {
 						editError(event, path+".invalid_invite", "Link `%s`".formatted(invite.getUrl()));
 						return;
 					}
-					int groupId = bot.getDBUtil().group.create(guildId, groupName, appealGuildIdTemp, invite.getUrl());
-					if (groupId == 0) {
-						editErrorOther(event, "Group creation failed.");
+
+					int groupId;
+					try {
+						groupId = bot.getDBUtil().group.create(guildId, groupName, invite.getUrl());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "group create");
 						return;
 					}
 					bot.getLogger().group.onCreation(event, groupId, groupName);
@@ -108,9 +93,11 @@ public class GroupCmd extends CommandBase {
 					sendSuccess(event, groupName, groupId, true);
 				}, failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
 			} else {
-				int groupId = bot.getDBUtil().group.create(guildId, groupName, appealGuildId, null);
-				if (groupId == 0) {
-					editErrorOther(event, "Group creation failed.");
+				int groupId;
+				try {
+					groupId = bot.getDBUtil().group.create(guildId, groupName, null);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "group create");
 					return;
 				}
 				bot.getLogger().group.onCreation(event, groupId, groupName);
@@ -164,11 +151,14 @@ public class GroupCmd extends CommandBase {
 
 			String groupName = bot.getDBUtil().group.getName(groupId);
 
-			if (!bot.getDBUtil().group.deleteGroup(groupId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().group.deleteGroup(groupId);
+				bot.getLogger().group.onDeletion(event, groupId, groupName);
+				bot.getDBUtil().group.clearGroup(groupId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "group delete & clear");
 				return;
 			}
-			bot.getLogger().group.onDeletion(event, groupId, groupName);
 
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 				.setDescription(
@@ -222,40 +212,28 @@ public class GroupCmd extends CommandBase {
 			// Search for server in both bots
 			String groupName = bot.getDBUtil().group.getName(groupId);
 			Boolean canManage = event.optBoolean("manage", false);
-			Guild guild;
+
 			try {
-				guild = event.getJDA().getGuildById(targetId);
-			} catch (NumberFormatException ex) {
-				editError(event, path+".no_guild", "Server ID: `%d`".formatted(targetId));
-				return;
-			} 
-			if (guild == null) {
-				guild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
-				if (guild == null) {
-					editError(event, path+".no_guild", "Server ID: `%d`".formatted(targetId));
-					return;
-				} else {
-					if (!bot.getDBUtil().group.add(groupId, targetId, canManage)) {
-						editErrorUnknown(event, "Database error.");
-						return;
-					}
-					bot.getLogger().group.onGuildAdded(event, groupId, groupName, targetId, guild.getName());
-				}
-			} else {
-				if (!bot.getDBUtil().group.add(groupId, targetId, canManage)) {
-					editErrorUnknown(event, "Database error.");
-					return;
-				}
+				Guild guild = Optional.ofNullable(event.getJDA().getGuildById(targetId))
+					.or(() -> {
+						return Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(targetId));
+					})
+					.orElseThrow();
+
+				bot.getDBUtil().group.add(groupId, targetId, canManage);
 				bot.getLogger().group.onGuildAdded(event, groupId, groupName, targetId, guild.getName());
+
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done").formatted(
+						guild.getName(), targetId, groupName
+					)).build()
+				);
+			} catch (NoSuchElementException e) {
+				editError(event, path+".no_guild", "Server ID: `%d`".formatted(targetId));
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "group add server");
 			}
-
-			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").formatted(
-					guild.getName(), targetId, groupName
-				)).build()
-			);
 		}
-
 	}
 
 	private class Remove extends SlashCommand {
@@ -335,8 +313,10 @@ public class GroupCmd extends CommandBase {
 						if (targetGuild == null)
 							targetGuild = Optional.ofNullable(Helper.getInstance()).map(helper -> helper.getJDA().getGuildById(targetId)).orElse(null);
 
-						if (!bot.getDBUtil().group.remove(groupId, targetId)) {
-							editErrorUnknown(event, "Database error.");
+						try {
+							bot.getDBUtil().group.remove(groupId, targetId);
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "group remove server");
 							return;
 						}
 						if (targetGuild != null)
@@ -370,8 +350,6 @@ public class GroupCmd extends CommandBase {
 					.setMinValue(0),
 				new OptionData(OptionType.STRING, "name", lu.getText(path+".name.help"))
 					.setMaxLength(120),
-				new OptionData(OptionType.STRING, "appeal_server", lu.getText(path+".appeal_server.help"))
-					.setRequiredLength(12, 20),
 				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help")),
 				new OptionData(OptionType.INTEGER, "enable_verification", lu.getText(path+".enable_verification.help"))
 					.setRequiredRange(-1, 10)
@@ -401,8 +379,10 @@ public class GroupCmd extends CommandBase {
 				String oldName = bot.getDBUtil().group.getName(groupId);
 				String newName = event.optString("name");
 
-				if (!bot.getDBUtil().group.rename(groupId, newName)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().group.rename(groupId, newName);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "group rename");
 					return;
 				}
 				bot.getLogger().group.onRenamed(event, oldName, groupId, newName);
@@ -413,39 +393,16 @@ public class GroupCmd extends CommandBase {
 					)).build()
 				);
 			}
-			else if (event.hasOption("appeal_server")) {
-				long appealGuildId;
-
-				try {
-					appealGuildId = Long.parseLong(event.optString("appeal_server"));
-				} catch (NumberFormatException ex) {
-					editErrorOther(event, ex.getMessage());
-					return;
-				}
-				if (appealGuildId != 0L && event.getJDA().getGuildById(appealGuildId) == null) {
-					editErrorOther(event, "Unknown appeal server ID.\nReceived: "+appealGuildId);
-					return;
-				}
-
-				if (!bot.getDBUtil().group.setAppealGuildId(groupId, appealGuildId)) {
-					editErrorUnknown(event, "Database error.");
-					return;
-				}
-
-				String groupName = bot.getDBUtil().group.getName(groupId);
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").formatted(
-						groupName, lu.getText(event, path+".appeal_change").formatted(appealGuildId), groupId
-					)).build()
-				);
-			}
 			else if (event.hasOption("invite")) {
 				String link = event.optString("invite");
 				String groupName = bot.getDBUtil().group.getName(groupId);
 
+
 				if (link.equalsIgnoreCase("null")) {
-					if (!bot.getDBUtil().group.setSelfInvite(groupId, null)) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().group.setSelfInvite(groupId, null);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "group invite");
 						return;
 					}
 
@@ -468,8 +425,10 @@ public class GroupCmd extends CommandBase {
 						return;
 					}
 
-					if (!bot.getDBUtil().group.setSelfInvite(groupId, invite.getUrl())) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().group.setSelfInvite(groupId, invite.getUrl());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "group invite");
 						return;
 					}
 
@@ -482,8 +441,10 @@ public class GroupCmd extends CommandBase {
 			}
 			else if (event.hasOption("enable_verification")) {
 				int verifyValue = event.optInteger("enable_verification");
-				if (!bot.getDBUtil().group.setVerify(groupId, verifyValue)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().group.setVerify(groupId, verifyValue);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "group verification");
 					return;
 				}
 
@@ -602,8 +563,10 @@ public class GroupCmd extends CommandBase {
 						StringBuilder builder = new StringBuilder(lu.getText(event, path+".done")
 							.formatted(targetGuild.getName(), groupName));
 
-						if (!bot.getDBUtil().group.setManage(groupId, targetId, canManage)) {
-							editErrorUnknown(event, "Database error.");
+						try {
+							bot.getDBUtil().group.setManage(groupId, targetId, canManage);
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "group can mange");
 							return;
 						}
 						builder.append(lu.getText(event, path+".manage_change").formatted(canManage ? Constants.SUCCESS : Constants.FAILURE));
@@ -664,7 +627,7 @@ public class GroupCmd extends CommandBase {
 					.setDescription(lu.getText(event, path+".embed_full").formatted(
 						event.getGuild().getName(), event.getGuild().getId(), groupSize,
 						Optional.ofNullable(bot.getDBUtil().group.getSelfInvite(groupId)).orElse("-"),
-						Optional.ofNullable(bot.getDBUtil().group.getAppealGuildId(groupId)).map(String::valueOf).orElse("-"),
+						Optional.ofNullable(bot.getSettings().getAppealGuildId()).map(String::valueOf).orElse("-"),
 						verifyValue==-1 ? Constants.FAILURE : (verifyValue==0 ? "Kick" : "Ban for "+verifyValue)
 					));
 				

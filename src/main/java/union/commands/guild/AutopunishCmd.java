@@ -1,5 +1,6 @@
 package union.commands.guild;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -165,8 +166,10 @@ public class AutopunishCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().autopunish.addAction(event.getGuild().getIdLong(), strikeCount, actions, String.join(";", data))) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().autopunish.addAction(event.getGuild().getIdLong(), strikeCount, actions, String.join(";", data));
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "autopunish add action");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed().setColor(Constants.COLOR_SUCCESS).setDescription(builder.toString()).build());
@@ -192,8 +195,10 @@ public class AutopunishCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().autopunish.removeAction(event.getGuild().getIdLong(), strikeCount)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().autopunish.removeAction(event.getGuild().getIdLong(), strikeCount);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "autopunish remove action");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed()
@@ -254,9 +259,7 @@ public class AutopunishCmd extends CommandBase {
 				builder.append("`%3s` ".formatted(prefix+strikeCount));
 				actions.forEach(action -> {
 					switch (action) {
-						case KICK -> {
-							builder.append(lu.getText(event, action.getPath()));
-						}
+						case KICK -> builder.append(lu.getText(event, action.getPath()));
 						case MUTE, BAN -> {
 							Duration duration;
 							try {

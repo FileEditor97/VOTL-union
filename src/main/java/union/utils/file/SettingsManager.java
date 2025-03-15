@@ -6,6 +6,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class SettingsManager {
 	private final Map<String, GameServerInfo> databases = new HashMap<>();
 	private final Map<Long, List<String>> servers = new HashMap<>();
 	private String panicWebhook = null;
+	private Long appealGuildId = null;
 
 	public SettingsManager(FileManager fileManager) {
 		this.fileManager = fileManager;
@@ -60,55 +62,62 @@ public class SettingsManager {
 			}
 
 			String panicWebhook = context.read("$.panicWebhook");
-			if (panicWebhook != null && panicWebhook.isBlank()) this.panicWebhook = panicWebhook.trim();
+			if (panicWebhook != null && panicWebhook.isBlank()) this.panicWebhook = null;
+
+			this.appealGuildId = context.read("$.appealGuildId");
 		} catch (IOException ex) {
 			log.error("Couldn't read settings.json\n{}", ex.getMessage());
 		}
 	}
 
 	public void setDbVerifyEnabled(boolean enabled) {
-		dbVerifyEnabled = enabled;
+		this.dbVerifyEnabled = enabled;
 		writeChange("$.unionVerify", dbVerifyEnabled);
 	}
 
 	public void setDbPlayerEnabled(boolean enabled) {
-		dbPlayerEnabled = enabled;
+		this.dbPlayerEnabled = enabled;
 		writeChange("$.unionPlayer", dbPlayerEnabled);
 	}
 
 	public void addBotWhitelisted(long value) {
-		botWhitelist.add(value);
+		this.botWhitelist.add(value);
 		writeChange("$.botWhitelist", botWhitelist);
 	}
 
 	public void removeBotWhitelisted(long value) {
-		botWhitelist.remove(value);
+		this.botWhitelist.remove(value);
 		writeChange("$.botWhitelist", botWhitelist);
 	}
 
 	public void addDatabase(String name, GameServerInfo value) {
-		databases.put(name, value);
+		this.databases.put(name, value);
 		writeChange("$.databases", databases);
 	}
 
 	public void removeDatabase(String name) {
-		databases.remove(name);
+		this.databases.remove(name);
 		writeChange("$.databases", databases);
 	}
 
 	public void addServer(long guildId, List<String> dbs) {
-		servers.put(guildId, dbs);
+		this.servers.put(guildId, dbs);
 		writeChange("$.servers", servers);
 	}
 
 	public void removeServer(long guildId) {
-		servers.remove(guildId);
+		this.servers.remove(guildId);
 		writeChange("$.servers", servers);
 	}
 
 	public void setPanicWebhook(String webhook) {
-		panicWebhook = webhook;
-		writeChange("$.panicWebhook", panicWebhook==null?"":panicWebhook);
+		this.panicWebhook = webhook;
+		writeChange("$.panicWebhook", webhook);
+	}
+
+	public void setAppealGuildId(Long appealGuildId) {
+		this.appealGuildId = appealGuildId;
+		writeChange("$.appealGuildId", appealGuildId);
 	}
 
 	public boolean isDbVerifyDisabled() {
@@ -154,12 +163,20 @@ public class SettingsManager {
 		return panicWebhook;
 	}
 
+	public Long getAppealGuildId() {
+		return appealGuildId;
+	}
 
-	private void writeChange(String name, Object value) {
+
+	private void writeChange(String name, @Nullable Object value) {
 		File file = fileManager.getFile("settings");
 		try {
 			DocumentContext context = JsonPath.using(CONF.jsonProvider(new JsonOrgJsonProvider())).parse(file);
-			context.set(name, value);
+			if (value == null) {
+				context.delete(name);
+			} else {
+				context.set(name, value);
+			}
 
 			String json = context.jsonString();
 			String prettyJson;

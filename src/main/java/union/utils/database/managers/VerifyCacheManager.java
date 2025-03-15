@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -20,12 +21,12 @@ public class VerifyCacheManager extends LiteDBBase {
 		super(cu, "verified");
 	}
 
-	public void addUser(long discordId, long steam64) {
+	public void addUser(long discordId, long steam64) throws SQLException {
 		invalidateCache(discordId);
 		execute("INSERT INTO %s(discordId, steam64) VALUES (%s, %s) ON CONFLICT(discordId) DO UPDATE SET steam64=%s".formatted(table, discordId, steam64, steam64));
 	}
 
-	public void removeByDiscord(long discordId) {
+	public void removeByDiscord(long discordId) throws SQLException {
 		invalidateCache(discordId);
 		execute("DELETE FROM %s WHERE (discordId=%s)".formatted(table, discordId));
 	}
@@ -57,12 +58,12 @@ public class VerifyCacheManager extends LiteDBBase {
 	}
 
 
-	public void addForcedUser(long discordId) {
+	public void addForcedUser(long discordId) throws SQLException {
 		invalidateCache(discordId);
 		execute("INSERT INTO %s(discordId) VALUES (%s) ON CONFLICT(discordId) DO NOTHING".formatted(table, discordId));
 	}
 
-	public void forceRemoveSteam64(long discordId) {
+	public void forceRemoveSteam64(long discordId) throws SQLException {
 		invalidateCache(discordId);
 		execute("UPDATE %s SET steam64=0 WHERE (discordId=%s)".formatted(table, discordId));
 	}

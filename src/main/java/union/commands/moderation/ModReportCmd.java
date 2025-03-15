@@ -15,6 +15,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -89,7 +90,6 @@ public class ModReportCmd extends CommandBase {
 				try {
 					firstReport = LocalDateTime.parse(input, DATE_TIME_FORMAT);
 				} catch (DateTimeParseException ex) {
-					System.out.println(ex.getMessage());
 					editError(event, path+".failed_parse", ex.getMessage());
 					return;
 				}
@@ -112,11 +112,13 @@ public class ModReportCmd extends CommandBase {
 				.collect(Collectors.joining(";"));
 
 			// Add to DB
-			if (!bot.getDBUtil().modReport.setup(
-				event.getGuild().getIdLong(), channel.getIdLong(), roleIds,
-				firstReport, interval
-			)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().modReport.setup(
+					event.getGuild().getIdLong(), channel.getIdLong(), roleIds,
+					firstReport, interval
+				);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "modreport setup");
 				return;
 			}
 			// Reply
@@ -125,7 +127,8 @@ public class ModReportCmd extends CommandBase {
 					TimeFormat.DATE_TIME_SHORT.format(firstReport.atZone(ZoneOffset.UTC)), channel.getAsMention(),
 					interval, roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "))
 				))
-				.build());
+				.build()
+			);
 		}
 	}
 
@@ -138,8 +141,10 @@ public class ModReportCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
-			if (!bot.getDBUtil().modReport.removeGuild(event.getGuild().getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().modReport.removeGuild(event.getGuild().getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "modreport delete");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)

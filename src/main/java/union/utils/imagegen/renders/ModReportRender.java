@@ -10,7 +10,7 @@ import union.utils.message.MessageUtil;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -21,14 +21,14 @@ public class ModReportRender extends Renderer {
 
 	private final DiscordLocale locale;
 	private final LocaleUtil lu;
-	private final Instant previous, now;
+	private final LocalDateTime previous, now;
 	private final List<ReportData> reportData;
 
 	public ModReportRender(
 		DiscordLocale locale,
 		LocaleUtil lu,
-		Instant previous,
-		Instant now,
+		LocalDateTime previous,
+		LocalDateTime now,
 		List<ReportData> reportData
 	) {
 		this.locale = locale;

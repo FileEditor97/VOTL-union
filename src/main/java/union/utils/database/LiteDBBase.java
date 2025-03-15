@@ -28,8 +28,11 @@ public class LiteDBBase {
 		this.table = table;
 	}
 
-	// Execute statement and return true if exception
-	protected boolean execute(final String sql) {
+	/**
+	 * @param sql SQL statement to execute
+	 * @throws SQLException Rethrows error
+	 */
+	protected void execute(final String sql) throws SQLException {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue(sql.split(" ")[0].toUpperCase()).inc();
 
@@ -39,12 +42,16 @@ public class LiteDBBase {
 			st.executeUpdate();
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at statement execution\nRequest: {}", sql, ex);
-			return false;
+			throw ex;
 		}
-		return true;
 	}
 
-	protected int executeWithRow(final String sql) {
+	/**
+	 * @param sql SQL statement to execute
+	 * @return inserted row ID.
+	 * @throws SQLException Rethrows error
+	 */
+	protected int executeWithRow(final String sql) throws SQLException {
 		// Metrics
 		Metrics.databaseLiteQueries.labelValue(sql.split(" ")[0].toUpperCase()).inc();
 
@@ -55,7 +62,7 @@ public class LiteDBBase {
 			return st.getGeneratedKeys().getInt(1);
 		} catch (SQLException ex) {
 			util.logger.warn("DB SQLite: Error at statement execution\nRequest: {}", sql, ex);
-			return 0;
+			throw ex;
 		}
 	}
 
@@ -200,6 +207,9 @@ public class LiteDBBase {
 		return result;
 	}
 
+	protected String getUrl() {
+		return util.getUrlSQLite();
+	}
 
 	// UTILS
 	@NotNull

@@ -3,19 +3,26 @@ package union.utils.database.managers;
 import static union.utils.CastUtil.getOrDefault;
 import static union.utils.CastUtil.requireNonNull;
 
+import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.qos.logback.classic.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 import union.objects.CaseType;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 public class CaseManager extends LiteDBBase {
+	protected final Logger log = (Logger) LoggerFactory.getLogger(CaseManager.class);
 
 	private final Set<String> fullCaseKeys = Set.of("rowId", "localId", "type", "targetId",
 		"targetTag", "modId", "modTag", "guildId", "reason",
@@ -26,33 +33,61 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// add new case
-	public CaseData add(CaseType type, long userId, String userName, long modId, String modName, long guildId, String reason, Instant timeStart, Duration duration) {
-		int rowId = executeWithRow("INSERT INTO %s(type, targetId, targetTag, modId, modTag, guildId, reason, timeStart, duration, active) VALUES (%d, %d, %s, %d, %s, %d, %s, %d, %d, %d)"
-			.formatted(table, type.getType(), userId, quote(userName), modId, quote(modName), guildId, quote(reason),
-			timeStart.getEpochSecond(), duration == null ? -1 : duration.getSeconds(), type.isActiveInt()));
-		if (rowId == 0) return null;
-		execute("UPDATE %s SET localId=(SELECT IFNULL(MAX(localId), 0) + 1 FROM cases WHERE guildId=%s) WHERE rowId=%s;".formatted(table, guildId, rowId));
-		return getInfo(rowId);
+	public CaseData add(CaseType type, long userId, String userName, long modId, String modName, long guildId, String reason, Instant timeStart, Duration duration) throws SQLException {
+		final String sql = """
+			INSERT INTO %s (type, targetId, targetTag, modId, modTag, guildId, reason, timeStart, duration, active, localId)
+			VALUES (%d, %d, %s, %d, %s, %d, %s, %d, %d, %d, COALESCE((SELECT MAX(localId) + 1 FROM cases WHERE guildId=%d), 1))
+			RETURNING rowId, localId;
+			""".formatted(table, type.getType(), userId, quote(userName), modId, quote(modName), guildId, quote(reason),
+			timeStart.getEpochSecond(), duration == null ? -1 : duration.getSeconds(), type.isActiveInt(), guildId);
+
+		final int rowId, localId;
+		//noinspection SqlSourceToSinkFlow
+		try (
+			Connection conn = DriverManager.getConnection(getUrl());
+			ResultSet rs = conn.prepareStatement(sql).executeQuery()
+		) {
+			if (rs.next()) {
+				rowId = rs.getInt("rowId");
+				localId = rs.getInt("localId");
+			} else {
+				throw new SQLException("Failed to create new case.");
+			}
+		} catch (SQLException ex) {
+			log.warn("DB SQLite: Error at case creation\nRequest: {}", sql, ex);
+			throw ex;
+		}
+		return new CaseData(
+			rowId, localId,
+			type, guildId,
+			userId, userName,
+			modId, modName,
+			reason,
+			timeStart, duration,
+			type.isActive(), null
+		);
 	}
 
 	// update case reason
-	public boolean updateReason(int rowId, String reason) {
-		return execute("UPDATE %s SET reason=%s WHERE (rowId=%d)".formatted(table, quote(reason), rowId));
+	public void updateReason(int rowId, String reason) throws SQLException {
+		execute("UPDATE %s SET reason=%s WHERE (rowId=%d)".formatted(table, quote(reason), rowId));
 	}
 
 	// update case duration
-	public boolean updateDuration(int rowId, Duration duration) {
-		return execute("UPDATE %s SET duration=%d WHERE (rowId=%d)".formatted(table, duration.getSeconds(), rowId));
+	public void updateDuration(int rowId, Duration duration) throws SQLException {
+		execute("UPDATE %s SET duration=%d WHERE (rowId=%d)".formatted(table, duration.getSeconds(), rowId));
 	}
 
 	// set case inactive
-	public void setInactive(int rowId) {
+	public void setInactive(int rowId) throws SQLException {
 		execute("UPDATE %s SET active=0 WHERE (rowId=%d)".formatted(table, rowId));
 	}
 
 	public void setLogUrl(int rowId, String logUrl) {
 		if (logUrl==null) return;
-		execute("UPDATE %s SET logUrl=%s WHERE (rowId=%d)".formatted(table, quote(logUrl), rowId));
+		try {
+			execute("UPDATE %s SET logUrl=%s WHERE (rowId=%d)".formatted(table, quote(logUrl), rowId));
+		} catch (SQLException ignored) {}
 	}
 
 	// get case info
@@ -94,14 +129,16 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// set all ban cases for user inactive
-	public boolean setInactiveStrikeCases(long userId, long guildId) {
-		return execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
+	public void setInactiveStrikeCases(long userId, long guildId) throws SQLException {
+		execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type>20)".formatted(table, userId, guildId));
 	}
 
 	// set all strike cases for user inactive
 	// Better way for this is harder...
 	public void setInactiveByType(long userId, long guildId, CaseType type) {
-		execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type=%d)".formatted(table, userId, guildId, type.getType()));
+		try {
+			execute("UPDATE %s SET active=0 WHERE (targetId=%d AND guildId=%d AND type=%d)".formatted(table, userId, guildId, type.getType()));
+		} catch (SQLException ignored) {}
 	}
 
 	// get case pages
@@ -126,9 +163,9 @@ public class CaseManager extends LiteDBBase {
 	}
 
 	// count all cases by moderator after and before certain dates
-	public Map<Integer, Integer> countCasesByMod(long guildId, long modId, Instant afterTime, Instant beforeTime) {
+	public Map<Integer, Integer> countCasesByMod(long guildId, long modId, LocalDateTime afterTime, LocalDateTime beforeTime) {
 		List<Map<String, Object>> data = select("SELECT type, COUNT(*) AS cc FROM %s WHERE (guildId=%d AND modId=%d AND timeStart>%d AND timeStart<%d) GROUP BY type"
-			.formatted(table, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond()), Set.of("type", "cc"));
+			.formatted(table, guildId, modId, afterTime.toEpochSecond(ZoneOffset.UTC), beforeTime.toEpochSecond(ZoneOffset.UTC)), Set.of("type", "cc"));
 		if (data.isEmpty()) return Collections.emptyMap();
 		return data.stream().collect(Collectors.toMap(s -> (Integer) s.get("type"), s -> (Integer) s.get("cc")));
 	}
@@ -156,16 +193,40 @@ public class CaseManager extends LiteDBBase {
 			this.rowId = requireNonNull(map.get("rowId"));
 			this.localId = requireNonNull(map.get("localId"));
 			this.type = CaseType.byType(requireNonNull(map.get("type")));
+			this.guildId = requireNonNull(map.get("guildId"));
 			this.targetId = requireNonNull(map.get("targetId"));
 			this.targetTag = getOrDefault(map.get("targetTag"), null);
 			this.modId = getOrDefault(map.get("modId"), 0L);
 			this.modTag = getOrDefault(map.get("modTag"), null);
-			this.guildId = requireNonNull(map.get("guildId"));
 			this.reason = getOrDefault(map.get("reason"), null);
 			this.timeStart = Instant.ofEpochSecond(getOrDefault(map.get("timeStart"), 0L));
 			this.duration = Duration.ofSeconds(getOrDefault(map.get("duration"), 0L));
 			this.active = ((Integer) requireNonNull(map.get("active"))) == 1;
 			this.logUrl = getOrDefault(map.get("logUrl"), null);
+		}
+
+		public CaseData(
+			int rowId, int localId,
+			@NotNull CaseType type, long guildId,
+			long targetId, String targetTag,
+			Long modId, String modTag,
+			String reason,
+			Instant timeStart, Duration duration,
+			boolean active, String logUrl
+		) {
+			this.rowId = rowId;
+			this.localId = localId;
+			this.type = type;
+			this.guildId = guildId;
+			this.targetId = targetId;
+			this.targetTag = targetTag;
+			this.modId = modId;
+			this.modTag = modTag;
+			this.reason = reason;
+			this.timeStart = timeStart;
+			this.duration = duration;
+			this.active = active;
+			this.logUrl = logUrl;
 		}
 
 		public int getRowId() {

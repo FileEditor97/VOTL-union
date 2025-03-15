@@ -1,5 +1,6 @@
 package union.commands.verification;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import union.base.command.SlashCommandEvent;
@@ -53,19 +54,29 @@ public class VerifyCmd extends CommandBase {
 		}
 
 		if (member.getRoles().contains(role)) {
-			bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
+			try {
+				bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "verify add forced");
+				return;
+			}
 			editError(event, "bot.verification.user_verified");
 		} else {
 			guild.addRoleToMember(member, role).reason(String.format("Manual verification by %s", event.getUser().getName())).queue(
 				success -> {
-					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
-					bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
+					try {
+						bot.getDBUtil().verifyCache.addForcedUser(member.getIdLong());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "verify add forced");
+						return;
+					}
 
+					bot.getLogger().verify.onVerified(member.getUser(), null, guild);
 					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS).setDescription(lu.getText(event, path+".done")).build());
 				},
 				failure -> {
 					editError(event, "bot.verification.failed_role");
-					bot.getAppLogger().info(String.format("Was unable to add verify role to user in %s (%s)", guild.getName(), guild.getId()), failure);
+					bot.getAppLogger().info("Was unable to add verify role to user in {} ({})", guild.getName(), guild.getId(), failure);
 				}
 			);
 		}

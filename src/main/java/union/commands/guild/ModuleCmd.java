@@ -1,5 +1,6 @@
 package union.commands.guild;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -118,8 +119,10 @@ public class ModuleCmd extends CommandBase {
 						}
 						// set new data
 						final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() + sModule.getValue();
-						if (!bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData)) {
-							editErrorUnknown(event, "Database error.");
+						try {
+							bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData);
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "module disable");
 							return;
 						}
 						// Send reply
@@ -190,8 +193,10 @@ public class ModuleCmd extends CommandBase {
 						}
 						// set new data
 						final int newData = bot.getDBUtil().getGuildSettings(guildId).getModulesOff() - sModule.getValue();
-						if (!bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData)) {
-							editErrorUnknown(event, "Database error.");
+						try {
+							bot.getDBUtil().guildSettings.setModulesDisabled(guildId, newData);
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "module enable");
 							return;
 						}
 						// Send reply

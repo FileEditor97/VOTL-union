@@ -1,5 +1,6 @@
 package union.commands.strikes;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -130,14 +131,19 @@ public class DeleteStikeCmd extends CommandBase {
 			
 			strikesInfo.remove(event.getValues().get(0));
 
-			bot.getDBUtil().cases.setInactive(caseData.getRowId());
-			if (strikesInfo.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
-			else
-				bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
-					Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
-					1, String.join(";", strikesInfo)
-				);
+			try {
+				bot.getDBUtil().cases.setInactive(caseData.getRowId());
+				if (strikesInfo.isEmpty())
+					bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
+				else
+					bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+						Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
+						1, String.join(";", strikesInfo)
+					);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to remove strikes.");
+				return;
+			}
 			
 			// Send dm
 			tu.openPrivateChannel().queue(pm -> {
@@ -195,24 +201,33 @@ public class DeleteStikeCmd extends CommandBase {
 		long guildId = event.getGuild().getIdLong();
 		int removeAmount = Integer.parseInt(value[1]);
 		if (removeAmount == activeAmount) {
-			
 			// Delete all strikes, set case inactive
 			cases.remove(event.getComponentId());
-			bot.getDBUtil().cases.setInactive(caseRowId);
-			if (cases.isEmpty())
-				bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
-			else
+			try {
+				bot.getDBUtil().cases.setInactive(caseRowId);
+				if (cases.isEmpty())
+					bot.getDBUtil().strike.removeGuildUser(guildId, tu.getIdLong());
+				else
+					bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
+						Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
+						removeAmount, String.join(";", cases)
+					);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to remove strikes.");
+				return;
+			}
+		} else {
+			// Delete selected amount of strikes (not all)
+			boolean ignore = Collections.replaceAll(cases, caseRowId+"-"+activeAmount, caseRowId+"-"+(activeAmount-removeAmount));
+			try {
 				bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
 					Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
 					removeAmount, String.join(";", cases)
 				);
-		} else {
-			// Delete selected amount of strikes (not all)
-			boolean ignore = Collections.replaceAll(cases, caseRowId+"-"+activeAmount, caseRowId+"-"+(activeAmount-removeAmount));
-			bot.getDBUtil().strike.removeStrike(guildId, tu.getIdLong(),
-				Instant.now().plus(bot.getDBUtil().getGuildSettings(guildId).getStrikeExpires(), ChronoUnit.DAYS),
-				removeAmount, String.join(";", cases)
-			);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to remove strikes.");
+				return;
+			}
 		}
 		// Send dm
 		tu.openPrivateChannel().queue(pm -> {

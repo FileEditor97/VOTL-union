@@ -1,10 +1,12 @@
 package union.listeners;
 
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -81,26 +83,26 @@ public class MemberListener extends ListenerAdapter {
 
 		// Checks cache on local DB, if user is verified, gives out the role
 		if (db.verifyCache.isVerified(userId)) {
-			// Check if user is blacklisted
-			List<Integer> groupIds = new ArrayList<>();
-			groupIds.addAll(db.group.getOwnedGroups(guildId));
-			groupIds.addAll(db.group.getGuildGroups(guildId));
 			Long cachedSteam64 = db.verifyCache.getSteam64(userId);
-			for (int groupId : groupIds) {
-				// if user is blacklisted in group either by discordID or Steam64
-				// and joined server is not appeal server - do not add verify role
-				if (db.blacklist.inGroupUser(groupId, userId) && db.group.getAppealGuildId(groupId)!=guildId) return;
-				if (cachedSteam64!=null && db.blacklist.inGroupSteam64(groupId, cachedSteam64) && db.group.getAppealGuildId(groupId)!=guildId) return;
+			// Check if user is blacklisted
+			if (!Objects.equals(bot.getSettings().getAppealGuildId(), guildId)) {
+				List<Integer> groupIds = new ArrayList<>();
+				groupIds.addAll(db.group.getOwnedGroups(guildId));
+				groupIds.addAll(db.group.getGuildGroups(guildId));
+
+				for (int groupId : groupIds) {
+					// if user is blacklisted in group either by discordID or Steam64
+					// and joined server is not appeal server - do not add verify role
+					if (db.blacklist.inGroupUser(groupId, userId) || (cachedSteam64!=null && db.blacklist.inGroupSteam64(groupId, cachedSteam64))) return;
+				}
 			}
 
-			Long roleId = db.getVerifySettings(guild).getRoleId();
-			if (roleId == null) return;
-			Role role = guild.getRoleById(roleId);
-			if (role == null) return;
-
-			guild.addRoleToMember(event.getUser(), role)
+			Optional.ofNullable(db.getVerifySettings(guild).getRoleId())
+				.map(guild::getRoleById)
+				.ifPresent(role -> guild.addRoleToMember(event.getUser(), role)
 					.reason(cachedSteam64 == null ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64)
-					.queue(success -> bot.getLogger().verify.onVerified(event.getUser(), cachedSteam64, guild));
+					.queue(success -> bot.getLogger().verify.onVerified(event.getUser(), cachedSteam64, guild))
+				);
 		}
 	}
 	
@@ -147,13 +149,16 @@ public class MemberListener extends ListenerAdapter {
 		}
 		// When user leaves guild, check if there are any records in DB that would be better to remove.
 		// This does not consider clearing User DB, when bot leaves guild.
-		if (db.access.getUserLevel(guildId, userId) != null) {
+		try {
 			db.access.removeUser(guildId, userId);
-		}
-		db.user.remove(event.getUser().getIdLong());
+			db.user.remove(event.getUser().getIdLong());
+		} catch (SQLException ignored) {}
+
 		if (db.getTicketSettings(event.getGuild()).autocloseLeftEnabled()) {
 			db.ticket.getOpenedChannel(userId, guildId).forEach(channelId -> {
-				db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
+				try {
+					db.ticket.closeTicket(Instant.now(), channelId, "Ticket's author left the server");
+				} catch (SQLException ignored) {}
 				GuildChannel channel = event.getGuild().getGuildChannelById(channelId);
 				if (channel != null) channel.delete().reason("Author left").queue();
 			});

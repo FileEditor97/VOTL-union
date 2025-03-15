@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +22,16 @@ public class VoiceChannelManager extends LiteDBBase {
 
 	public void add(long userId, long channelId) {
 		cache.put(userId, channelId);
-		execute("INSERT INTO %s(userId, channelId) VALUES (%d, %d) ON CONFLICT(channelId) DO UPDATE SET channelId=%<d".formatted(table, userId, channelId));
+		try {
+			execute("INSERT INTO %s(userId, channelId) VALUES (%d, %d) ON CONFLICT(channelId) DO UPDATE SET channelId=%<d".formatted(table, userId, channelId));
+		} catch (SQLException ignored) {}
 	}
 
 	public void remove(long channelId) {
 		Optional.ofNullable(getUser(channelId)).ifPresent(cache::remove);
-		execute("DELETE FROM %s WHERE (channelId=%d)".formatted(table, channelId));
+		try {
+			execute("DELETE FROM %s WHERE (channelId=%d)".formatted(table, channelId));
+		} catch (SQLException ignored) {}
 	}
 
 	public boolean existsUser(long userId) {
@@ -37,7 +42,7 @@ public class VoiceChannelManager extends LiteDBBase {
 		return cache.containsValue(channelId);
 	}
 
-	public void setUser(long userId, long channelId) {
+	public void setUser(long userId, long channelId) throws SQLException {
 		// Remove user with same channelId
 		cache.entrySet().stream()
 			.filter((e) -> e.getValue().equals(channelId))

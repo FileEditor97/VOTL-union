@@ -1,5 +1,6 @@
 package union.commands.owner;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import union.base.command.SlashCommandEvent;
@@ -43,22 +44,26 @@ public class ForceAccessCmd extends CommandBase {
 
 		CmdAccessLevel level = CmdAccessLevel.byLevel(event.optInteger("access_level"));
 		long targetId = event.optLong("target");
-		if (event.optInteger("type") == 1) {
-			// Target is role
-			if (level.equals(CmdAccessLevel.ALL)) {
-				bot.getDBUtil().access.removeRole(guild.getIdLong(), targetId);
+		try {
+			if (event.optInteger("type") == 1) {
+				// Target is role
+				if (level.equals(CmdAccessLevel.ALL)) {
+					bot.getDBUtil().access.removeRole(guild.getIdLong(), targetId);
+				} else {
+					bot.getDBUtil().access.addRole(guild.getIdLong(), targetId, level);
+				}
+				editMsg(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "Role `"+targetId+"`"));
 			} else {
-				bot.getDBUtil().access.addRole(guild.getIdLong(), targetId, level);
+				// Target is user
+				if (level.equals(CmdAccessLevel.ALL)) {
+					bot.getDBUtil().access.removeUser(guild.getIdLong(), targetId);
+				} else {
+					bot.getDBUtil().access.addOperator(guild.getIdLong(), targetId);
+				}
+				editMsg(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "User `"+targetId+"`"));
 			}
-			editMsg(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "Role `"+targetId+"`"));
-		} else {
-			// Target is user
-			if (level.equals(CmdAccessLevel.ALL)) {
-				bot.getDBUtil().access.removeUser(guild.getIdLong(), targetId);
-			} else {
-				bot.getDBUtil().access.addOperator(guild.getIdLong(), targetId);
-			}
-			editMsg(event, lu.getText(event, path+".done").replace("{level}", level.getName()).replace("{target}", "User `"+targetId+"`"));
+		} catch (SQLException e) {
+			editErrorDatabase(event, e, "forceaccess");
 		}
 	}
 }

@@ -5,6 +5,7 @@ import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,26 +24,26 @@ public class GuildVoiceManager extends LiteDBBase {
 		super(cu, "guildVoice");
 	}
 
-	public boolean setup(long guildId, long categoryId, long channelId) {
+	public void setup(long guildId, long categoryId, long channelId) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, categoryId, channelId) VALUES (%d, %d, %d) ON CONFLICT(guildId) DO UPDATE SET categoryId=%3$d, channelId=%4$d"
+		execute("INSERT INTO %s(guildId, categoryId, channelId) VALUES (%d, %d, %d) ON CONFLICT(guildId) DO UPDATE SET categoryId=%3$d, channelId=%4$d"
 			.formatted(table, guildId, categoryId, channelId));
 	}
 
-	public void remove(long guildId) {
+	public void remove(long guildId) throws SQLException {
 		invalidateCache(guildId);
 		execute("DELETE FROM %s WHERE (guildId=%d)".formatted(table, guildId));
 	}
 
-	public boolean setName(long guildId, String defaultName) {
+	public void setName(long guildId, String defaultName) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, defaultName) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET defaultName=%<s"
+		execute("INSERT INTO %s(guildId, defaultName) VALUES (%d, %s) ON CONFLICT(guildId) DO UPDATE SET defaultName=%<s"
 			.formatted(table, guildId, quote(defaultName)));
 	}
 
-	public boolean setLimit(long guildId, int defaultLimit) {
+	public void setLimit(long guildId, int defaultLimit) throws SQLException {
 		invalidateCache(guildId);
-		return execute("INSERT INTO %s(guildId, defaultLimit) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET defaultLimit=%<d"
+		execute("INSERT INTO %s(guildId, defaultLimit) VALUES (%d, %d) ON CONFLICT(guildId) DO UPDATE SET defaultLimit=%<d"
 			.formatted(table, guildId, defaultLimit));
 	}
 

@@ -1,5 +1,6 @@
 package union.commands.roles;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -34,7 +35,7 @@ import net.dv8tion.jda.api.utils.TimeFormat;
 public class TempRoleCmd extends CommandBase {
 
 	private final EventWaiter waiter;
-	private final int MAX_DAYS = 150;
+	private final int MAX_DAYS = 400;
 	
 	public TempRoleCmd(EventWaiter waiter) {
 		this.waiter = waiter;
@@ -134,8 +135,10 @@ public class TempRoleCmd extends CommandBase {
 							e -> (msg.getIdLong() == e.getMessageIdLong()) && e.getUser().equals(event.getUser()),
 							actionEvent -> {
 								guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
-									if (!bot.getDBUtil().tempRole.add(guild.getIdLong(), roleId, userId, true, until)) {
-										editErrorUnknown(event, "Database error.");
+									try {
+										bot.getDBUtil().tempRole.add(guild.getIdLong(), roleId, userId, true, until);
+									} catch (SQLException e) {
+										editErrorDatabase(event, e, "temprole add");
 										return;
 									}
 									// Log
@@ -155,8 +158,10 @@ public class TempRoleCmd extends CommandBase {
 					});
 			} else {
 				guild.addRoleToMember(member, role).reason("Assigned temporary role | by %s".formatted(event.getMember().getEffectiveName())).queue(done -> {
-					if (!bot.getDBUtil().tempRole.add(guild.getIdLong(), roleId, userId, false, until)) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().tempRole.add(guild.getIdLong(), roleId, userId, false, until);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "temprole add");
 						return;
 					}
 					// Log
@@ -206,8 +211,10 @@ public class TempRoleCmd extends CommandBase {
 
 			event.getGuild().removeRoleFromMember(member, role).reason("Canceled temporary role | by "+event.getMember().getEffectiveName()).queue();
 
-			if (!bot.getDBUtil().tempRole.remove(role.getIdLong(), member.getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().tempRole.remove(role.getIdLong(), member.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "temprole remove");
 				return;
 			}
 			// Log
@@ -267,8 +274,10 @@ public class TempRoleCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().tempRole.updateTime(role.getIdLong(), member.getIdLong(), until)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().tempRole.updateTime(role.getIdLong(), member.getIdLong(), until);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "temprole update");
 				return;
 			}
 			// Log

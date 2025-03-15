@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -68,12 +69,18 @@ public class DurationCmd extends CommandBase {
 				} else {
 					// time will be expired, remove time out
 					target.removeTimeout().reason("Expired").queue();
-					bot.getDBUtil().cases.setInactive(caseData.getRowId());
+					try {
+						bot.getDBUtil().cases.setInactive(caseData.getRowId());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "case set inactive");
+					}
 				}
 			});
 		}
-		if (!bot.getDBUtil().cases.updateDuration(caseData.getRowId(), newDuration)) {
-			editErrorUnknown(event, "Database error.");
+		try {
+			bot.getDBUtil().cases.updateDuration(caseData.getRowId(), newDuration);
+		} catch (SQLException e) {
+			editErrorDatabase(event, e, "case update duration");
 			return;
 		}
 		

@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import static union.utils.CastUtil.getOrDefault;
 import static union.utils.CastUtil.requireNonNull;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +22,7 @@ public class TicketPanelManager extends LiteDBBase {
 		super(cu, "ticketPanel");
 	}
 
-	public int createPanel(Long guildId, String title, String description, String image, String footer) {
+	public int createPanel(Long guildId, String title, String description, String image, String footer) throws SQLException {
 		List<String> keys = new ArrayList<>(5);
 		List<String> values = new ArrayList<>(5);
 		keys.add("guildId");
@@ -43,11 +44,11 @@ public class TicketPanelManager extends LiteDBBase {
 		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
-	public boolean delete(int panelId) {
-		return execute("DELETE FROM %s WHERE (panelId=%d)".formatted(table, panelId));
+	public void delete(int panelId) throws SQLException {
+		execute("DELETE FROM %s WHERE (panelId=%d)".formatted(table, panelId));
 	}
 
-	public void deleteAll(long guildId) {
+	public void deleteAll(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
@@ -55,7 +56,7 @@ public class TicketPanelManager extends LiteDBBase {
 		return selectOne("SELECT guildId FROM %s WHERE (panelId=%d)".formatted(table, panelId), "guildId", Long.class);
 	}
 
-	public boolean updatePanel(int panelId, String title, String description, String image, String footer) {
+	public void updatePanel(int panelId, String title, String description, String image, String footer) throws SQLException {
 		List<String> values = new ArrayList<>();
 		if (title != null)
 			values.add("title="+quote(title));
@@ -66,8 +67,8 @@ public class TicketPanelManager extends LiteDBBase {
 		if (footer != null)
 			values.add("footer="+replaceNewline(footer));
 
-		if (!values.isEmpty()) return execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
-		return false;
+		if (!values.isEmpty())
+			execute("UPDATE %s SET %s WHERE (panelId=%d)".formatted(table, String.join(", ", values), panelId));
 	}
 
 	public Panel getPanel(int panelId) {

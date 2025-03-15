@@ -1,6 +1,9 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,13 +24,17 @@ public class TicketManager extends LiteDBBase {
 
 	// add new ticket
 	public void addRoleTicket(int ticketId, long userId, long guildId, long channelId, String roleIds, int replyTime) {
-		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, roleIds, replyWait) VALUES (%d, %s, %s, %s, 0, %s, %d)"
-			.formatted(table, ticketId, userId, guildId, channelId, quote(roleIds), replyTime>0 ? Instant.now().plus(replyTime, ChronoUnit.HOURS).getEpochSecond() : 0));
+		try {
+			execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, roleIds, replyWait) VALUES (%d, %s, %s, %s, 0, %s, %d)"
+				.formatted(table, ticketId, userId, guildId, channelId, quote(roleIds), replyTime>0 ? Instant.now().plus(replyTime, ChronoUnit.HOURS).getEpochSecond() : 0));
+		} catch (SQLException ignored) {}
 	}
 
 	public void addTicket(int ticketId, long userId, long guildId, long channelId, int tagId, int replyTime) {
-		execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, replyWait) VALUES (%d, %s, %s, %s, %d, %d)"
-			.formatted(table, ticketId, userId, guildId, channelId, tagId, replyTime>0 ? Instant.now().plus(replyTime, ChronoUnit.HOURS).getEpochSecond() : 0));
+		try {
+			execute("INSERT INTO %s(ticketId, userId, guildId, channelId, tagId, replyWait) VALUES (%d, %s, %s, %s, %d, %d)"
+				.formatted(table, ticketId, userId, guildId, channelId, tagId, replyTime>0 ? Instant.now().plus(replyTime, ChronoUnit.HOURS).getEpochSecond() : 0));
+		} catch (SQLException ignored) {}
 	}
 
 	// get last ticket's ID
@@ -39,11 +46,15 @@ public class TicketManager extends LiteDBBase {
 
 	// update mod
 	public void setClaimed(long channelId, long modId) {
-		execute("UPDATE %s SET modId=%s WHERE (channelId=%s)".formatted(table, modId, channelId));
+		try {
+			execute("UPDATE %s SET modId=%s WHERE (channelId=%s)".formatted(table, modId, channelId));
+		} catch (SQLException ignored) {}
 	}
 
 	public void setUnclaimed(long channelId) {
-		execute("UPDATE %s SET modId=NULL WHERE (channelId=%s)".formatted(table, channelId));
+		try {
+			execute("UPDATE %s SET modId=NULL WHERE (channelId=%s)".formatted(table, channelId));
+		} catch (SQLException ignored) {}
 	}
 
 	public Long getClaimer(long channelId) {
@@ -51,12 +62,14 @@ public class TicketManager extends LiteDBBase {
 	}
 
 	// set status
-	public void closeTicket(Instant timeClosed, long channelId, String reason) {
+	public void closeTicket(Instant timeClosed, long channelId, String reason) throws SQLException {
 		execute("UPDATE %s SET closed=1, timeClosed=%d, reasonClosed=%s WHERE (channelId=%s)".formatted(table, timeClosed.getEpochSecond(), quote(reason), channelId));
 	}
 
 	public void forceCloseTicket(long channelId) {
-		execute("UPDATE %s SET closed=1 WHERE (channelId=%s)".formatted(table, channelId));
+		try {
+			execute("UPDATE %s SET closed=1 WHERE (channelId=%s)".formatted(table, channelId));
+		} catch (SQLException ignored) {}
 	}
 
 	// get status
@@ -112,10 +125,10 @@ public class TicketManager extends LiteDBBase {
 		return selectOne("SELECT tagId FROM %s WHERE (channelId=%s)".formatted(table, channelId), "tagId", Integer.class);
 	}
 
-	public int countTicketsByMod(long guildId, long modId, Instant afterTime, Instant beforeTime, boolean roleTag) {
+	public int countTicketsByMod(long guildId, long modId, LocalDateTime afterTime, LocalDateTime beforeTime, boolean roleTag) {
 		String tagType = roleTag ? "tagId=0" : "tagId>=1";
 		return count("SELECT COUNT(*) FROM %s WHERE (guildId=%s AND modId=%s AND timeClosed>=%d AND timeClosed<=%d AND %s)"
-			.formatted(table, guildId, modId, afterTime.getEpochSecond(), beforeTime.getEpochSecond(), tagType));
+			.formatted(table, guildId, modId, afterTime.toEpochSecond(ZoneOffset.UTC), beforeTime.toEpochSecond(ZoneOffset.UTC), tagType));
 	}
 
 	public int countTicketsByMod(long guildId, long modId, Instant afterTime, boolean roleTag) {
@@ -139,11 +152,15 @@ public class TicketManager extends LiteDBBase {
 	 * @param closeRequested Time in epoch seconds
 	 */
 	public void setRequestStatus(long channelId, long closeRequested) {
-		execute("UPDATE %s SET closeRequested=%d WHERE (channelId=%s)".formatted(table, closeRequested, channelId));
+		try {
+			execute("UPDATE %s SET closeRequested=%d WHERE (channelId=%s)".formatted(table, closeRequested, channelId));
+		} catch (SQLException ignored) {}
 	}
 
 	public void setRequestStatus(long channelId, long closeRequested, String reason) {
-		execute("UPDATE %s SET closeRequested=%d, reasonClosed=%s WHERE (channelId=%s)".formatted(table, closeRequested, quote(reason), channelId));
+		try {
+			execute("UPDATE %s SET closeRequested=%d, reasonClosed=%s WHERE (channelId=%s)".formatted(table, closeRequested, quote(reason), channelId));
+		} catch (SQLException ignored) {}
 	}
 
 	public long getTimeClosing(long channelId) {
@@ -152,6 +169,8 @@ public class TicketManager extends LiteDBBase {
 	}
 
 	public void setWaitTime(long channelId, long time) {
-		execute("UPDATE %s SET replyWait=%d WHERE (channelId=%s)".formatted(table, time, channelId));
+		try {
+			execute("UPDATE %s SET replyWait=%d WHERE (channelId=%s)".formatted(table, time, channelId));
+		} catch (SQLException ignored) {}
 	}
 }

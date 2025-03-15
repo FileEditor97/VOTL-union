@@ -153,7 +153,7 @@
 	},
 	"logger_embed": {
 		"verify": {
-			"blacklisted": "Blacklisted in group #%d",
+			"blacklisted": "Blacklisted in group #`%d`\nReason: %s\nBy: <@%s>",
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
@@ -551,6 +551,14 @@
 					"webhook": {
 						"name": "webhook",
 						"help": "Enter full webhook URL"
+					}
+				},
+				"appeal_guild": {
+					"help": "Appeal guild",
+					"usage": "appeal_guild <guild ID>",
+					"id": {
+						"name": "id",
+						"help": "Enter guild ID (or null)"
 					}
 				},
 				"view": {
@@ -1022,7 +1030,7 @@
 							"name": "channel",
 							"help": "Select channel where to log actions"
 						},
-						"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+						"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 						"as_log": "This channel is selected as a log channel for %s events.",
 						"done": "Successfully set %s for logging %s!"
 					},
@@ -1714,14 +1722,10 @@
 				"help": "Server Groups management",
 				"create": {
 					"help": "Create new server Group",
-					"usage": "create <name> [appeal server ID] [invite link]",
+					"usage": "create <name> [invite link]",
 					"name": {
 						"name": "name",
 						"help": "Enter name for new Group"
-					},
-					"appeal_server": {
-						"name": "appeal_server",
-						"help": "(Optional) Enter appeal server's ID. Selected server will be excluded from sync bans."
 					},
 					"invite": {
 						"name": "invite",
@@ -1779,7 +1783,7 @@
 				},
 				"modify": {
 					"help": "Modify Group settings",
-					"usage": "modify <Group> [name] [appeal server ID] [invite link] [verify]",
+					"usage": "modify <Group> [name] [invite link] [verify]",
 					"group_owned": {
 						"name": "group_owned",
 						"help": "Select Group"
@@ -1787,10 +1791,6 @@
 					"name": {
 						"name": "name",
 						"help": "Enter new name for this Group"
-					},
-					"appeal_server": {
-						"name": "appeal_server",
-						"help": "Enter appeal server's ID. Selected server will be excluded from sync bans."
 					},
 					"invite": {
 						"name": "invite",
@@ -1805,7 +1805,6 @@
 					"only_one_change": "Only one group parameter can be changed at this time.",
 					"invalid_invite": "Provided invite is invalid. Check that it's correct, is not temporal and for this server.",
 					"name_change": "Renamed to `%s`.",
-					"appeal_change": "Appeal server ID set to `%s`.",
 					"invite_change": "This server invite link set to `%s`.",
 					"verify_change": "Verification set to: %s",
 					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"
@@ -2026,7 +2025,7 @@
 					"cant_view": "Can't view selected group. (Not group's owner or manager)",
 					"no_options": "No options provided. Either select *user* or enter *SteamID*.",
 					"not_found": "**User not found.**\nInput: %s",
-					"value": "User: %s\nSteamID: `%s`\nServer: `%s`\nModerator: %s\nReason: `%s`\n*Group ID*: `%s`"
+					"value": "User: %s\nSteamID: `%s`\nServer: `%s`\nModerator: %s\nReason: `%s`"
 				},
 				"expired": "This user is not banned permanently or the ban has already expired.\nTry banning this user `/ban`",
 				"no_groups": "This server can't manage any group.",
@@ -2135,12 +2134,12 @@
 			"command_info": {
 				"docs": "Docs",
 				"no_command": "The provided command doesn't exist!\nMake sure you typed it correctly.",
-				"title": "Command help: {command}",
-				"value": "Category: **{category}**\nOwner command: {owner}\nCan be used in DMs: {guild}\nModule: **{module}**",
+				"title": "Command help: %s",
+				"value": "Category: **%s**\nRequired access: **%s**\nCan be used in DMs: %s\nModule: **%s**",
 				"help_title": "Description",
 				"usage_title": "Usage options",
-				"usage_value": "```/{usage}```",
-				"usage_child": "```/{base} {usage}```└ {help}",
+				"usage_value": "```/%s```",
+				"usage_child": "```/%s %s```└ %s",
 				"usage_subvalue": "[] ─ Optional\n<> ─ Required\nA | B ─ Selection"
 			},
 			"command_menu": {
@@ -2162,7 +2161,7 @@
 				"description": {
 					"command_value": "To get more info about a specific command run `/help command:[command]`.\nYou can also run `/help category:[category]` to show the commands of a specific category.",
 					"support_title": "*Additional help*",
-					"support_value": "If you need help with the bot, contact the owner `{owner_name}`."
+					"support_value": "If you need help with the bot, contact the owner `%s`."
 				}
 			}
 		},
@@ -2198,7 +2197,7 @@
 						"name": "channel",
 						"help": "Select channel in which to create the panel"
 					},
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"no_role": "Verification role is not set!\nUse `/verifyrole`",
 					"continue": "Continue",
 					"done": "Panel created in {channel}!"
@@ -2451,7 +2450,7 @@
 						"name": "channel",
 						"help": "Select channel in which to create the panel"
 					},
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
 					"done": "Panel created in {channel}!"
 				},
@@ -2462,7 +2461,7 @@
 						"name": "channel",
 						"help": "Select channel in which panel is located"
 					},
-					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select other channel.",
+					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"not_found": "Existing panel not found in selected channel",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
 					"done": "Panel updated in {channel}!"

@@ -1,46 +1,9 @@
 package union.listeners;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import net.dv8tion.jda.api.entities.*;
-
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.interactions.components.text.TextInput;
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
-import net.dv8tion.jda.api.interactions.modals.Modal;
-import net.dv8tion.jda.api.interactions.modals.ModalMapping;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import union.App;
-import union.base.command.CooldownScope;
-import union.base.waiter.EventWaiter;
-import union.helper.Helper;
-import union.metrics.Metrics;
-import union.objects.CaseType;
-import union.objects.CmdAccessLevel;
-import union.objects.Emotes;
-import union.objects.constants.Constants;
-import union.objects.constants.Links;
-import union.utils.CastUtil;
-import union.utils.SteamUtil;
-import union.utils.database.DBUtil;
-import union.utils.database.managers.CaseManager.CaseData;
-import union.utils.database.managers.RoleManager;
-import union.utils.database.managers.TicketTagManager.Tag;
-import union.utils.exception.FormatterException;
-import union.utils.file.lang.LocaleUtil;
-import union.utils.message.MessageUtil;
-
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.MessageEmbed.Field;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
@@ -61,9 +24,12 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
-import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu.SelectTarget;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.interactions.components.text.TextInput;
+import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
+import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
@@ -71,11 +37,42 @@ import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import union.App;
+import union.base.command.CooldownScope;
+import union.base.waiter.EventWaiter;
+import union.helper.Helper;
+import union.metrics.Metrics;
+import union.objects.CaseType;
+import union.objects.CmdAccessLevel;
+import union.objects.Emotes;
+import union.objects.constants.Constants;
+import union.objects.constants.Links;
+import union.utils.CastUtil;
+import union.utils.SteamUtil;
+import union.utils.database.DBUtil;
+import union.utils.database.managers.BlacklistManager;
+import union.utils.database.managers.CaseManager;
+import union.utils.database.managers.RoleManager;
+import union.utils.database.managers.TicketTagManager;
+import union.utils.exception.FormatterException;
+import union.utils.file.lang.LocaleUtil;
+import union.utils.message.MessageUtil;
 import union.utils.message.TimeUtil;
+
+import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static union.utils.CastUtil.castLong;
 
-@SuppressWarnings("DataFlowIssue")
 public class InteractionListener extends ListenerAdapter {
 
 	private final App bot;
@@ -105,6 +102,11 @@ public class InteractionListener extends ListenerAdapter {
 		event.replyEmbeds(bot.getEmbedUtil().getError(event, path)).setEphemeral(true).queue();
 	}
 
+	@SuppressWarnings("unused")
+	public void sendErrorLive(IReplyCallback event, String path, String info) {
+		event.replyEmbeds(bot.getEmbedUtil().getError(event, path, info)).setEphemeral(true).queue();
+	}
+
 	public void sendError(IReplyCallback event, String path) {
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, path)).setEphemeral(true).queue();
 	}
@@ -119,17 +121,35 @@ public class InteractionListener extends ListenerAdapter {
 
 	// Check for cooldown parameters, if exists - check if cooldown active, else apply it
 	private void runButtonInteraction(ButtonInteractionEvent event, @Nullable Cooldown cooldown, @NotNull Runnable function) {
-		// Acknowledge interaction
-		event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+		runButtonInteraction(event, cooldown, function, true);
+	}
 
-		if (cooldown != null) {
-			String key = getCooldownKey(cooldown, event);
-			int remaining = bot.getClient().getRemainingCooldown(key);
-			if (remaining > 0) {
-				event.getHook().sendMessage(getCooldownErrorString(cooldown, event, remaining)).setEphemeral(true).queue();
-				return;
-			} else {
-				bot.getClient().applyCooldown(key, cooldown.getTime());
+	@SuppressWarnings("SameParameterValue")
+	private void runButtonInteraction(ButtonInteractionEvent event, @Nullable Cooldown cooldown, @NotNull Runnable function, boolean acknowledge) {
+		if (acknowledge) {
+			// Acknowledge interaction
+			event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
+
+			if (cooldown != null) {
+				String key = getCooldownKey(cooldown, event);
+				int remaining = bot.getClient().getRemainingCooldown(key);
+				if (remaining > 0) {
+					event.getHook().sendMessage(getCooldownErrorString(cooldown, event, remaining)).setEphemeral(true).queue();
+					return;
+				} else {
+					bot.getClient().applyCooldown(key, cooldown.getTime());
+				}
+			}
+		} else {
+			if (cooldown != null) {
+				String key = getCooldownKey(cooldown, event);
+				int remaining = bot.getClient().getRemainingCooldown(key);
+				if (remaining > 0) {
+					event.reply(getCooldownErrorString(cooldown, event, remaining)).setEphemeral(true).queue();
+					return;
+				} else {
+					bot.getClient().applyCooldown(key, cooldown.getTime());
+				}
 			}
 		}
 		function.run();
@@ -274,7 +294,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		Role role = guild.getRoleById(db.getVerifySettings(guild).getRoleId());
 		if (role == null) return true;
-		
+
 		// check if still has account connected
 		Long steam64 = bot.getDBUtil().unionVerify.getSteam64(user.getId());
 		if (steam64 == null) {
@@ -293,7 +313,7 @@ public class InteractionListener extends ListenerAdapter {
 			return false;
 		} else {
 			// add user to local database
-			bot.getDBUtil().verifyCache.addUser(user.getIdLong(), steam64);
+			ignoreExc(() -> bot.getDBUtil().verifyCache.addUser(user.getIdLong(), steam64));
 			return true;
 		}
 	}
@@ -319,20 +339,26 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		// Check if user is blacklisted
+		boolean checkBlacklist = !Objects.equals(bot.getSettings().getAppealGuildId(), guild.getIdLong());
 		final List<Integer> groupIds = new ArrayList<>();
-		try {
-			groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
-			groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
-			for (int groupId : groupIds) {
-				if (db.blacklist.inGroupUser(groupId, member.getIdLong()) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
-					sendError(event, "bot.verification.blacklisted", "DiscordID: "+member.getId());
-					bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), null, guild,
-						lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
-					return;
+		if (checkBlacklist) {
+			try {
+				groupIds.addAll(db.group.getOwnedGroups(guild.getIdLong()));
+				groupIds.addAll(db.group.getGuildGroups(guild.getIdLong()));
+				for (int groupId : groupIds) {
+					BlacklistManager.BlacklistData data = db.blacklist.getByUserId(groupId, member.getIdLong());
+					if (data != null) {
+						sendError(event, "bot.verification.blacklisted", "Reason: "+data.getReason());
+						bot.getLogger().verify.onVerifyBlacklisted(
+							member.getUser(), guild,
+							groupId, data
+						);
+						return;
+					}
 				}
+			} catch (Exception ex) {
+				bot.getAppLogger().warn("Exception at verify blacklist check, skipped.", ex);
 			}
-		} catch (Exception ex) {
-			bot.getAppLogger().warn("Exception at verify blacklist check, skipped.", ex);
 		}
 
 		if (bot.getSettings().isDbVerifyDisabled()) {
@@ -378,12 +404,17 @@ public class InteractionListener extends ListenerAdapter {
 		final Long steam64 = bot.getDBUtil().unionVerify.getSteam64(member.getId());
 		if (steam64 != null) {
 			// Check if steam64 is not blacklisted
-			for (int groupId : groupIds) {
-				if (db.blacklist.inGroupSteam64(groupId, steam64) && db.group.getAppealGuildId(groupId)!=guild.getIdLong()) {
-					sendError(event, "bot.verification.blacklisted", "SteamID: "+SteamUtil.convertSteam64toSteamID(steam64));
-					bot.getLogger().verify.onVerifyBlacklisted(member.getUser(), steam64, guild,
-						lu.getText(event, "logger_embed.verify.blacklisted").formatted(groupId));
-					return;
+			if (checkBlacklist) {
+				for (int groupId : groupIds) {
+					BlacklistManager.BlacklistData data = db.blacklist.getByUserId(groupId, member.getIdLong());
+					if (data != null) {
+						sendError(event, "bot.verification.blacklisted", "Reason: "+data.getReason());
+						bot.getLogger().verify.onVerifyBlacklisted(
+							member.getUser(), guild,
+							groupId, data
+						);
+						return;
+					}
 				}
 			}
 			// Check if user has required playtime
@@ -426,8 +457,12 @@ public class InteractionListener extends ListenerAdapter {
 				guild.addRoleToMember(member, verifyRole).reason("Verification completed - "+steam64).queue(
 					success -> {
 						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
-						bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
-						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+						try {
+							bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
+							event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+						} catch (SQLException e) {
+							sendError(event, "errors.unknown", "Failed to save user to cache.");
+						}
 					},
 					failure -> {
 						sendError(event, "bot.verification.failed_role");
@@ -448,8 +483,12 @@ public class InteractionListener extends ListenerAdapter {
 				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - "+steam64).queue(
 					success -> {
 						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
-						bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
-						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+						try {
+							bot.getDBUtil().verifyCache.addUser(member.getIdLong(), steam64);
+							event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
+						} catch (SQLException e) {
+							sendError(event, "errors.unknown", "Failed to save user to cache.");
+						}
 					},
 					failure -> {
 						sendError(event, "bot.verification.failed_role");
@@ -496,7 +535,7 @@ public class InteractionListener extends ListenerAdapter {
 				).setEphemeral(true).queue();
 				return;
 			}
-			db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)");
+			ignoreExc(() -> db.ticket.closeTicket(Instant.now(), channelId, "BOT: Channel deleted (not found)"));
 		}
 
 		List<ActionRow> actionRows = new ArrayList<>();
@@ -541,13 +580,13 @@ public class InteractionListener extends ListenerAdapter {
 	}
 
 	private void buttonRoleSelectionOther(ButtonInteractionEvent event) {
-		List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
+		List<MessageEmbed.Field> fields = event.getMessage().getEmbeds().get(0).getFields();
 		List<Long> roleIds = MessageUtil.getRoleIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 		if (roleIds.contains(0L))
 			roleIds.remove(0L);
 		else
 			roleIds.add(0L);
-		
+
 		MessageEmbed embed = new EmbedBuilder(event.getMessage().getEmbeds().get(0))
 			.clearFields()
 			.addField(lu.getText(event, "bot.ticketing.listener.request_selected"), selectedRolesString(roleIds, event.getUserLocale()), false)
@@ -576,7 +615,7 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 
-		List<SelectOption> options = roles.stream().map(role -> SelectOption.of(role.getName(), role.getId())).toList();	
+		List<SelectOption> options = roles.stream().map(role -> SelectOption.of(role.getName(), role.getId())).toList();
 		StringSelectMenu menu = StringSelectMenu.create("menu:role_remove")
 			.setPlaceholder(lu.getLocalized(event.getUserLocale(), "bot.ticketing.listener.request_template"))
 			.setMaxValues(options.size())
@@ -637,14 +676,14 @@ public class InteractionListener extends ListenerAdapter {
 			});
 		}
 	}
-	
+
 	// Role ticket
 	private void buttonRoleTicketCreate(ButtonInteractionEvent event) {
 		Guild guild = event.getGuild();
 		long guildId = guild.getIdLong();
 
 		// Check if user has selected any role
-		List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
+		List<MessageEmbed.Field> fields = event.getMessage().getEmbeds().get(0).getFields();
 		List<Long> roleIds = MessageUtil.getRoleIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 		if (roleIds.isEmpty()) {
 			sendError(event, "bot.ticketing.listener.request_none");
@@ -678,7 +717,7 @@ public class InteractionListener extends ListenerAdapter {
 			channel -> {
 				int time = bot.getDBUtil().getTicketSettings(guild).getTimeToReply();
 				db.ticket.addRoleTicket(ticketId, event.getMember().getIdLong(), guildId, channel.getIdLong(), String.join(";", finalRoleIds), time);
-				
+
 				StringBuilder mentions = new StringBuilder(event.getMember().getAsMention());
 				// Get either support roles or use mod roles
 				List<Long> supportRoleIds = db.ticketSettings.getSettings(guild).getRoleSupportIds();
@@ -686,7 +725,7 @@ public class InteractionListener extends ListenerAdapter {
 				supportRoleIds.forEach(roleId -> mentions.append(" <@&").append(roleId).append(">"));
 				// Send message
 				channel.sendMessage(mentions.toString()).queue(msg -> msg.delete().queueAfter(5, TimeUnit.SECONDS, null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_CHANNEL)));
-				
+
 				Long steam64 = db.verifyCache.getSteam64(event.getMember().getIdLong());
 				String rolesString = String.join(" ", add.stream().map(Role::getAsMention).collect(Collectors.joining(" ")), (otherRole ? lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.other") : ""));
 				String proofString = add.stream().map(role -> db.role.getDescription(role.getIdLong())).filter(Objects::nonNull).distinct().collect(Collectors.joining("\n- ", "- ", ""));
@@ -759,14 +798,14 @@ public class InteractionListener extends ListenerAdapter {
 					rows.add(ActionRow.of(input));
 				}
 
-				Modal modal = Modal.create("ticket:role_temp:"+channelId, lu.getText(event, "bot.ticketing.listener.temp_time"))
+				Modal modal = Modal.create("role_temp:"+channelId, lu.getText(event, "bot.ticketing.listener.temp_time"))
 					.addComponents(rows)
 					.build();
 				Button continueButton = Button.success("ticket:role_temp_continue", "Continue");
 				event.getHook().sendMessageEmbeds(
-					bot.getEmbedUtil().getEmbed(event)
-						.setDescription(lu.getText(event, "bot.ticketing.listener.temp_continue").formatted(rows.size()))
-						.build()
+						bot.getEmbedUtil().getEmbed(event)
+							.setDescription(lu.getText(event, "bot.ticketing.listener.temp_continue").formatted(rows.size()))
+							.build()
 					).setActionRow(continueButton)
 					.setEphemeral(true)
 					.queue(msg -> {
@@ -782,8 +821,7 @@ public class InteractionListener extends ListenerAdapter {
 							TimeUnit.SECONDS,
 							() -> msg.delete().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
 						);
-					}
-				);
+					});
 				return;
 			}
 			if (roles.isEmpty()) {
@@ -799,25 +837,25 @@ public class InteractionListener extends ListenerAdapter {
 			guild.modifyMemberRoles(member, roles, null)
 				.reason("Request role-"+ticketId+" approved by "+event.getMember().getEffectiveName())
 				.queue(done -> {
-				bot.getLogger().role.onApproved(member, event.getMember(), guild, roles, ticketId);
-				db.ticket.setClaimed(channelId, event.getMember().getIdLong());
-				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))
-					.setColor(Constants.COLOR_SUCCESS)
-					.build()
-				).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_WEBHOOK));
-				member.getUser().openPrivateChannel().queue(dm -> {
-					Button showInvites = Button.secondary("invites:"+guild.getId(), lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.invites.button"));
-					dm.sendMessage(lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.role_dm")
-						.replace("{roles}", roles.stream().map(Role::getName).collect(Collectors.joining(" | ")))
-						.replace("{server}", guild.getName())
-						.replace("{id}", ticketId)
-						.replace("{mod}", event.getMember().getEffectiveName())
-					).addActionRow(showInvites).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					bot.getLogger().role.onApproved(member, event.getMember(), guild, roles, ticketId);
+					ignoreExc(() -> db.ticket.setClaimed(channelId, event.getMember().getIdLong()));
+					event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+						.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))
+						.setColor(Constants.COLOR_SUCCESS)
+						.build()
+					).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_WEBHOOK));
+					member.getUser().openPrivateChannel().queue(dm -> {
+						Button showInvites = Button.secondary("invites:"+guild.getId(), lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.invites.button"));
+						dm.sendMessage(lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.role_dm")
+							.replace("{roles}", roles.stream().map(Role::getName).collect(Collectors.joining(" | ")))
+							.replace("{server}", guild.getName())
+							.replace("{id}", ticketId)
+							.replace("{mod}", event.getMember().getEffectiveName())
+						).addActionRow(showInvites).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					});
+				}, failure -> {
+					sendError(event, "bot.ticketing.listener.role_failed", failure.getMessage());
 				});
-			}, failure -> {
-				sendError(event, "bot.ticketing.listener.role_failed", failure.getMessage());
-			});
 		}, failure -> {
 			sendError(event, "bot.ticketing.listener.no_member", failure.getMessage());
 		});
@@ -906,7 +944,7 @@ public class InteractionListener extends ListenerAdapter {
 			.build();
 		event.getHook().editOriginalEmbeds(embed).setComponents().queue();
 	}
-	
+
 	// Ticket management
 	private void buttonTicketClaim(ButtonInteractionEvent event) {
 		if (!bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.HELPER)) {
@@ -970,10 +1008,10 @@ public class InteractionListener extends ListenerAdapter {
 				).setEphemeral(true).queue();
 				return;
 			}
-			db.ticket.closeTicket(Instant.now(), openChannelId, "BOT: Channel deleted (not found)");
+			ignoreExc(() -> db.ticket.closeTicket(Instant.now(), openChannelId, "BOT: Channel deleted (not found)"));
 		}
 
-		Tag tag = db.tags.getTagInfo(tagId);
+		TicketTagManager.Tag tag = db.tags.getTagInfo(tagId);
 		if (tag == null) {
 			sendTicketError(event, "Unknown tag with ID: "+tagId);
 			return;
@@ -988,20 +1026,22 @@ public class InteractionListener extends ListenerAdapter {
 		String message = Optional.ofNullable(tag.getMessage())
 			.map(text -> text.replace("{username}", user.getName()).replace("{tag_username}", user.getAsMention()))
 			.orElse("Ticket's controls");
-		
+
 		int ticketId = 1 + db.ticket.lastIdByTag(guildId, tagId);
 		String ticketName = (tag.getTicketName()+ticketId).replace("{username}", user.getName());
 		if (tag.getTagType() == 1) {
 			// Thread ticket
-			event.getChannel().asTextChannel().createThreadChannel(ticketName, true).setInvitable(false).queue(channel -> {
-				int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
-				db.ticket.addTicket(ticketId, user.getIdLong(), guildId, channel.getIdLong(), tagId, time);
-				
-				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
-			},
-			failure -> {
-				sendTicketError(event, "Unable to create new thread in this channel");
-			});
+			event.getChannel().asTextChannel().createThreadChannel(ticketName, true)
+				.setInvitable(false)
+				.queue(channel -> {
+					int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
+					db.ticket.addTicket(ticketId, user.getIdLong(), guildId, channel.getIdLong(), tagId, time);
+
+					bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
+				},
+				failure -> {
+					sendTicketError(event, "Unable to create new thread in this channel");
+				});
 		} else {
 			// Channel ticket
 			Category category = Optional.ofNullable(tag.getLocation()).map(id -> event.getGuild().getCategoryById(id)).orElse(event.getChannel().asTextChannel().getParentCategory());
@@ -1015,14 +1055,14 @@ public class InteractionListener extends ListenerAdapter {
 			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
 				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
 				.queue(channel -> {
-				int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
-				db.ticket.addTicket(ticketId, user.getIdLong(), guildId, channel.getIdLong(), tagId, time);
+					int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
+					db.ticket.addTicket(ticketId, user.getIdLong(), guildId, channel.getIdLong(), tagId, time);
 
-				bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
-			},
-			failure -> {
-				sendTicketError(event, "Unable to create new channel in target category, with ID: "+tag.getLocation());
-			});
+					bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
+				},
+				failure -> {
+					sendTicketError(event, "Unable to create new channel in target category, with ID: "+tag.getLocation());
+				});
 		}
 	}
 
@@ -1036,7 +1076,7 @@ public class InteractionListener extends ListenerAdapter {
 
 		String channelId = event.getComponentId().split(":")[1];
 		String messageId = event.getComponentId().split(":")[2];
-		
+
 		TextChannel channel = event.getGuild().getTextChannelById(channelId);
 		if (channel == null) {
 			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "misc.unknown", "Unknown channel")).queue();
@@ -1047,7 +1087,8 @@ public class InteractionListener extends ListenerAdapter {
 				.setDescription(lu.getLocalized(event.getGuildLocale(), "menus.report.deleted").replace("{name}", event.getMember().getAsMention()))
 				.build()
 			).queue(),
-		failure -> event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "misc.unknown", failure.getMessage())).queue()
+		failure ->
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "misc.unknown", failure.getMessage())).queue()
 		);
 	}
 
@@ -1134,12 +1175,12 @@ public class InteractionListener extends ListenerAdapter {
 
 	private void buttonVoicePermit(ButtonInteractionEvent event) {
 		String text = lu.getText(event, "bot.voice.listener.panel.permit_label");
-		event.getHook().sendMessage(text).addActionRow(EntitySelectMenu.create("voice:permit", SelectTarget.USER, SelectTarget.ROLE).setMaxValues(10).build()).setEphemeral(true).queue();
+		event.getHook().sendMessage(text).addActionRow(EntitySelectMenu.create("voice:permit", EntitySelectMenu.SelectTarget.USER, EntitySelectMenu.SelectTarget.ROLE).setMaxValues(10).build()).setEphemeral(true).queue();
 	}
 
 	private void buttonVoiceReject(ButtonInteractionEvent event) {
 		String text = lu.getText(event, "bot.voice.listener.panel.reject_label");
-		event.getHook().sendMessage(text).addActionRow(EntitySelectMenu.create("voice:reject", SelectTarget.USER, SelectTarget.ROLE).setMaxValues(10).build()).setEphemeral(true).queue();
+		event.getHook().sendMessage(text).addActionRow(EntitySelectMenu.create("voice:reject", EntitySelectMenu.SelectTarget.USER, EntitySelectMenu.SelectTarget.ROLE).setMaxValues(10).build()).setEphemeral(true).queue();
 	}
 
 	private void buttonVoicePerms(ButtonInteractionEvent event, VoiceChannel vc) {
@@ -1147,13 +1188,13 @@ public class InteractionListener extends ListenerAdapter {
 		EmbedBuilder embedBuilder = bot.getEmbedUtil().getEmbed()
 			.setTitle(lu.getText(event, "bot.voice.listener.panel.perms.title").replace("{channel}", vc.getName()))
 			.setDescription(lu.getText(event, "bot.voice.listener.panel.perms.field")+"\n\n");
-		
+
 		//@Everyone
 		PermissionOverride publicOverride = vc.getPermissionOverride(guild.getPublicRole());
 
 		String view = contains(publicOverride, Permission.VIEW_CHANNEL);
 		String join = contains(publicOverride, Permission.VOICE_CONNECT);
-		
+
 		embedBuilder = embedBuilder.appendDescription("> %s | %s | `%s`\n\n%s\n".formatted(view, join, lu.getText(event, "bot.voice.listener.panel.perms.everyone"),
 			lu.getText(event, "bot.voice.listener.panel.perms.roles")));
 
@@ -1165,7 +1206,7 @@ public class InteractionListener extends ListenerAdapter {
 		} catch (NullPointerException ex) {
 			bot.getAppLogger().warn("PermsCmd null pointer at role override remove");
 		}
-		
+
 		if (overrides.isEmpty()) {
 			embedBuilder.appendDescription(lu.getText(event, "bot.voice.listener.panel.perms.none") + "\n");
 		} else {
@@ -1200,10 +1241,10 @@ public class InteractionListener extends ListenerAdapter {
 						String join2 = contains(ov, Permission.VOICE_CONNECT);
 
 						String name = members.stream()
-								.filter(m -> m.getId().equals(ov.getId()))
-								.findFirst()
-								.map(Member::getEffectiveName)
-								.orElse("Unknown");
+							.filter(m -> m.getId().equals(ov.getId()))
+							.findFirst()
+							.map(Member::getEffectiveName)
+							.orElse("Unknown");
 
 						embedBuilder2.appendDescription("> %s | %s | `%s`\n".formatted(view2, join2, name));
 					}
@@ -1271,7 +1312,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		String userId = event.getComponentId().split(":")[1];
-		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
+		CaseManager.CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
 		if (caseData == null || !caseData.getDuration().isZero()) {
 			sendError(event, "bot.moderation.blacklist.expired");
 			return;
@@ -1311,8 +1352,8 @@ public class InteractionListener extends ListenerAdapter {
 						selected.forEach(groupId -> {
 							if (!db.blacklist.inGroupUser(groupId, caseData.getTargetId()))
 								db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, caseData.getReason(), selectEvent.getUser().getIdLong());
-	
-							Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason());
+
+							Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason(), selectEvent.getUser());
 						});
 
 						// Log to master
@@ -1321,8 +1362,8 @@ public class InteractionListener extends ListenerAdapter {
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
 							.setDescription(lu.getText(event, "bot.moderation.blacklist.done"))
-							.build())
-						.setComponents().queue();
+							.build()
+						).setComponents().queue();
 					},
 					failure -> {
 						selectEvent.getHook().editOriginalEmbeds(
@@ -1349,7 +1390,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		String userId = event.getComponentId().split(":")[1];
-		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
+		CaseManager.CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
 		if (caseData == null || !caseData.getDuration().isZero()) {
 			sendError(event, "bot.moderation.sync.expired");
 			return;
@@ -1385,13 +1426,15 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
-						selected.forEach(groupId -> Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason()));
+						selected.forEach(groupId ->
+							Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason(), selectEvent.getUser())
+						);
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
 							.setDescription(lu.getText(event, "bot.moderation.sync.ban.done"))
-							.build())
-						.setComponents().queue();
+							.build()
+						).setComponents().queue();
 					},
 					failure -> {
 						selectEvent.getHook().editOriginalEmbeds(
@@ -1449,19 +1492,19 @@ public class InteractionListener extends ListenerAdapter {
 					event.getJDA().retrieveUserById(event.getComponentId().split(":")[1]).queue(user -> {
 						selected.forEach(groupId -> {
 							if (db.blacklist.inGroupUser(groupId, user.getIdLong())) {
-								db.blacklist.removeUser(groupId, user.getIdLong());
+								ignoreExc(() -> db.blacklist.removeUser(groupId, user.getIdLong()));
 								bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
 							}
-	
-							Helper.getInstance().runUnban(groupId, event.getGuild(), user, "Sync group unban, by "+event.getUser().getName());
+
+							Helper.getInstance().runUnban(groupId, event.getGuild(), user, "Group unban", event.getUser());
 						});
 
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
 							.setDescription(lu.getText(event, "bot.moderation.sync.unban.done"))
-							.build())
-						.setComponents().queue();
+							.build()
+						).setComponents().queue();
 					},
 					failure -> {
 						selectEvent.getHook().editOriginalEmbeds(
@@ -1488,7 +1531,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		String userId = event.getComponentId().split(":")[1];
-		CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
+		CaseManager.CaseData caseData = db.cases.getMemberActive(Long.parseLong(userId), event.getGuild().getIdLong(), CaseType.BAN);
 		if (caseData == null || !caseData.getDuration().isZero()) {
 			sendError(event, "bot.moderation.sync.expired");
 			return;
@@ -1524,13 +1567,15 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
-						selected.forEach(groupId -> Helper.getInstance().runKick(groupId, event.getGuild(), user, caseData.getReason()));
+						selected.forEach(groupId ->
+							Helper.getInstance().runKick(groupId, event.getGuild(), user, caseData.getReason(), selectEvent.getUser())
+						);
 						// Reply
 						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 							.setColor(Constants.COLOR_SUCCESS)
 							.setDescription(lu.getText(event, "bot.moderation.sync.kick.done"))
-							.build())
-						.setComponents().queue();
+							.build()
+						).setComponents().queue();
 					},
 					failure -> {
 						selectEvent.getHook().editOriginalEmbeds(
@@ -1558,7 +1603,7 @@ public class InteractionListener extends ListenerAdapter {
 			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed().setDescription(lu.getText(event, "bot.moderation.no_strikes").formatted(guild.getName())).build()).queue();
 			return;
 		}
-		
+
 		Instant time = Instant.ofEpochSecond(strikeData.getRight());
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed()
 			.setDescription(lu.getText(event, "bot.moderation.strikes_embed").formatted(strikeData.getLeft(), TimeFormat.RELATIVE.atInstant(time)))
@@ -1575,7 +1620,7 @@ public class InteractionListener extends ListenerAdapter {
 		// If expired don't allow to modify embed
 		if (db.modifyRole.isExpired(guildId, userId, targetId)) {
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.roles.role.modify.expired"))
-					.setComponents().queue();
+				.setComponents().queue();
 			return;
 		}
 
@@ -1608,22 +1653,22 @@ public class InteractionListener extends ListenerAdapter {
 				// text
 				StringBuilder builder = new StringBuilder();
 				if (!addIds.isEmpty()) builder.append("\n**Added**: ")
-						.append(addIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
+					.append(addIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
 				if (!removeIds.isEmpty()) builder.append("\n**Removed**: ")
-						.append(removeIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
+					.append(removeIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
 				String rolesString = builder.toString();
 				// Log
 				bot.getLogger().role.onRolesModified(guild, event.getUser(), target.getUser(), rolesString);
 				// Send reply
 				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getText(event, "bot.roles.role.modify.done").formatted(target.getAsMention(), rolesString))
-						.build()
-						).setComponents().queue();
+					.setDescription(lu.getText(event, "bot.roles.role.modify.done").formatted(target.getAsMention(), rolesString))
+					.build()
+				).setComponents().queue();
 			}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", "Unable to modify roles, User ID: "+targetId))
-					.setComponents().queue()
+				.setComponents().queue()
 			);
 		}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", "Member not found, ID: "+targetId))
-				.setComponents().queue()
+			.setComponents().queue()
 		);
 	}
 
@@ -1641,8 +1686,8 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, "threads.locked"))
-				.build()).queue(msg -> {
+			.setDescription(lu.getText(event, "threads.locked"))
+			.build()).queue(msg -> {
 			event.getChannel().delete().queueAfter(5, TimeUnit.SECONDS);
 		});
 	}
@@ -1660,11 +1705,11 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, "threads.locked"))
-				.build()
+			.setDescription(lu.getText(event, "threads.locked"))
+			.build()
 		).queue(msg -> {
 			event.getChannel().asThreadChannel().getManager().setLocked(true).setArchived(true)
-					.reason("By "+event.getUser().getEffectiveName()).queueAfter(5, TimeUnit.SECONDS);
+				.reason("By "+event.getUser().getEffectiveName()).queueAfter(5, TimeUnit.SECONDS);
 		});
 	}
 
@@ -1702,119 +1747,131 @@ public class InteractionListener extends ListenerAdapter {
 		).setEphemeral(true).queue();
 	}
 
-
 	// MODALS
 	@Override
 	public void onModalInteraction(@NotNull ModalInteractionEvent event) {
 		event.deferEdit().queue();
-		String modalId = event.getModalId();
+		String[] modalId = event.getModalId().split(":");
 
-		if (modalId.equals("vfpanel")) {
-			if (event.getValues().isEmpty()) {
-				sendError(event, "errors.interaction.no_values");
-				return;
-			}
-
-			String main = event.getValue("main").getAsString();
-			db.verifySettings.setMainText(event.getGuild().getIdLong(), main.isBlank() ? "NULL" : main);
-
-			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))
-				.build()
-			).setEphemeral(true).queue();
-		} else if (modalId.startsWith("ticket:role_temp")) {
-			// Check if ticket is open
-			long channelId = Long.parseLong(modalId.split(":")[2]);
-			if (db.ticket.isClosed(channelId)) {
-				// Ignore
-				return;
-			}
-			Guild guild = event.getGuild();
-			Long userId = db.ticket.getUserId(channelId);
-
-			// Get roles and tempRoles
-			List<Role> roles = new ArrayList<>();
-			db.ticket.getRoleIds(channelId).forEach(v -> {
-				long roleId = CastUtil.castLong(
-					v.charAt(0) == 't' ? v.substring(1) : v
-				);
-				Role role = guild.getRoleById(roleId);
-				if (role != null) roles.add(role);
-			});
-			if (roles.isEmpty()) {
-				event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
-					.setDescription(lu.getText(event, "bot.ticketing.listener.role_none"))
-					.setColor(Constants.COLOR_WARNING)
-					.build()
-				).setEphemeral(true).queue();
-				return;
-			}
-
-			// Get member add set roles
-			event.getGuild().retrieveMemberById(userId).queue(member -> {
-				// Add role durations to list
-				Map<Long, Duration> roleDurations = new HashMap<>();
-				for (ModalMapping map : event.getValues()) {
-					long roleId = Long.parseLong(map.getId());
-					String value = map.getAsString();
-					// Check duration
-					final Duration duration;
-					try {
-						duration = TimeUtil.stringToDuration(value, false);
-					} catch (FormatterException ex) {
-						sendError(event, ex.getPath());
-						return;
-					}
-					// Add to temp only if duration not zero and between 10 minutes and 150 days
-					if (!duration.isZero()) {
-						if (duration.toMinutes() < 10 || duration.toDays() > 150) {
-							sendError(event, "bot.ticketing.listener.time_limit", "Received: "+duration);
-							return;
-						}
-						roleDurations.put(roleId, duration);
-					}
-				}
-
-				String ticketId = db.ticket.getTicketId(channelId);
-				// Modify roles
-				event.getGuild().modifyMemberRoles(member, roles, null)
-					.reason("Request role-"+ticketId+" approved by "+event.getMember().getEffectiveName())
-					.queue(done -> {
-						// Set claimed
-						db.ticket.setClaimed(channelId, event.getMember().getIdLong());
-						// Add tempRoles to db and log them
-						roleDurations.forEach((id, duration) -> {
-							bot.getDBUtil().tempRole.add(guild.getIdLong(), id, userId, false, Instant.now().plus(duration));
-							// Log
-							bot.getLogger().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), id, duration, false);
-						});
-						// Log approval
-						bot.getLogger().role.onApproved(member, event.getMember(), guild, roles, ticketId);
-						// Reply and send DM to the target member
-						event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
-							.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))
-							.setColor(Constants.COLOR_SUCCESS)
-							.build()
-						).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_WEBHOOK));
-						member.getUser().openPrivateChannel().queue(dm -> {
-							Button showInvites = Button.secondary("invites:"+guild.getId(), lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.invites.button"));
-							dm.sendMessage(lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.role_dm")
-								.replace("{roles}", roles.stream().map(Role::getName).collect(Collectors.joining(" | ")))
-								.replace("{server}", guild.getName())
-								.replace("{id}", ticketId)
-								.replace("{mod}", event.getMember().getEffectiveName())
-							).addActionRow(showInvites).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-						});
-				}, failure -> {
-					sendError(event, "bot.ticketing.listener.role_failed", failure.getMessage());
-				});
-			}, failure -> {
-				sendError(event, "bot.ticketing.listener.no_member", failure.getMessage());
-			});
-
+		switch (modalId[0]) {
+			case "vfpanel" -> modalVfpanel(event);
+			case "role_temp" -> modalTempRole(event, castLong(modalId[1]));
 		}
 	}
 
+	private void modalVfpanel(ModalInteractionEvent event) {
+		if (event.getValues().isEmpty()) {
+			sendError(event, "errors.interaction.no_values");
+			return;
+		}
+
+		String main = event.getValue("main").getAsString();
+		try {
+			db.verifySettings.setMainText(event.getGuild().getIdLong(), main.isBlank() ? "NULL" : main);
+		} catch (SQLException e) {
+			sendError(event, "errors.unknown", "Failed to set main text.");
+			return;
+		}
+
+		event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+			.setDescription(lu.getText(event, "bot.verification.vfpanel.text.done"))
+			.build()
+		).setEphemeral(true).queue();
+	}
+
+	private void modalTempRole(ModalInteractionEvent event, long channelId) {
+		// Check if ticket is open
+		if (db.ticket.isClosed(channelId)) {
+			// Ignore
+			return;
+		}
+		Guild guild = event.getGuild();
+		Long userId = db.ticket.getUserId(channelId);
+
+		// Get roles and tempRoles
+		List<Role> roles = new ArrayList<>();
+		db.ticket.getRoleIds(channelId).forEach(v -> {
+			long roleId = CastUtil.castLong(
+				v.charAt(0) == 't' ? v.substring(1) : v
+			);
+			Role role = guild.getRoleById(roleId);
+			if (role != null) roles.add(role);
+		});
+		if (roles.isEmpty()) {
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+				.setDescription(lu.getText(event, "bot.ticketing.listener.role_none"))
+				.setColor(Constants.COLOR_WARNING)
+				.build()
+			).setEphemeral(true).queue();
+			return;
+		}
+
+		// Get member add set roles
+		event.getGuild().retrieveMemberById(userId).queue(member -> {
+			// Add role durations to list
+			Map<Long, Duration> roleDurations = new HashMap<>();
+			for (ModalMapping map : event.getValues()) {
+				long roleId = Long.parseLong(map.getId());
+				String value = map.getAsString();
+				// Check duration
+				final Duration duration;
+				try {
+					duration = TimeUtil.stringToDuration(value, false);
+				} catch (FormatterException ex) {
+					sendError(event, ex.getPath());
+					return;
+				}
+				// Add to temp only if duration not zero and between 10 minutes and 370 days
+				if (!duration.isZero()) {
+					if (duration.toMinutes() < 10 || duration.toDays() > 370) {
+						sendError(event, "bot.ticketing.listener.time_limit", "Received: "+duration);
+						return;
+					}
+					roleDurations.put(roleId, duration);
+				}
+			}
+
+			String ticketId = db.ticket.getTicketId(channelId);
+			// Modify roles
+			event.getGuild().modifyMemberRoles(member, roles, null)
+				.reason("Request role-"+ticketId+" approved by "+event.getMember().getEffectiveName())
+				.queue(done -> {
+					// Set claimed
+					db.ticket.setClaimed(channelId, event.getMember().getIdLong());
+					// Add tempRoles to db and log them
+					roleDurations.forEach((id, duration) -> {
+						ignoreExc(() -> bot.getDBUtil().tempRole.add(guild.getIdLong(), id, userId, false, Instant.now().plus(duration)));
+						// Log
+						bot.getLogger().role.onTempRoleAdded(guild, event.getUser(), member.getUser(), id, duration, false);
+					});
+					// Log approval
+					bot.getLogger().role.onApproved(member, event.getMember(), guild, roles, ticketId);
+					// Reply and send DM to the target member
+					event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getEmbed(event)
+						.setDescription(lu.getLocalized(event.getGuildLocale(), "bot.ticketing.listener.role_added"))
+						.setColor(Constants.COLOR_SUCCESS)
+						.build()
+					).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_WEBHOOK));
+					member.getUser().openPrivateChannel().queue(dm -> {
+						Button showInvites = Button.secondary("invites:"+guild.getId(), lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.invites.button"));
+						dm.sendMessage(lu.getLocalized(guild.getLocale(), "bot.ticketing.listener.role_dm")
+							.replace("{roles}", roles.stream().map(Role::getName).collect(Collectors.joining(" | ")))
+							.replace("{server}", guild.getName())
+							.replace("{id}", ticketId)
+							.replace("{mod}", event.getMember().getEffectiveName())
+						).addActionRow(showInvites).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					});
+				}, failure -> {
+					sendError(event, "bot.ticketing.listener.role_failed", failure.getMessage());
+				});
+		}, failure -> {
+			sendError(event, "bot.ticketing.listener.no_member", failure.getMessage());
+		});
+
+	}
+
+
+	// List select
 	@Override
 	public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
 		String menuId = event.getComponentId();
@@ -1822,7 +1879,7 @@ public class InteractionListener extends ListenerAdapter {
 		if (menuId.startsWith("menu:role_row")) {
 			event.deferEdit().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_INTERACTION));
 
-			List<Field> fields = event.getMessage().getEmbeds().get(0).getFields();
+			List<MessageEmbed.Field> fields = event.getMessage().getEmbeds().get(0).getFields();
 			List<Long> roleIds = MessageUtil.getRoleIdsFromString(fields.isEmpty() ? "" : fields.get(0).getValue());
 			event.getSelectedOptions().forEach(option -> {
 				Long value = CastUtil.castLong(option.getValue());
@@ -1852,7 +1909,7 @@ public class InteractionListener extends ListenerAdapter {
 			// If expired don't allow to modify
 			if (db.modifyRole.isExpired(guildId, userId, targetId)) {
 				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "bot.roles.role.modify.expired"))
-						.setComponents().queue();
+					.setComponents().queue();
 				return;
 			}
 
@@ -1886,6 +1943,7 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
+
 	@Override
 	public void onEntitySelectInteraction(@NotNull EntitySelectInteractionEvent event) {
 		String menuId = event.getComponentId();
@@ -1908,7 +1966,7 @@ public class InteractionListener extends ListenerAdapter {
 			String action = menuId.split(":")[1];
 			if (action.equals("permit") || action.equals("reject")) {
 				Mentions mentions = event.getMentions();
-				
+
 				List<Member> members = mentions.getMembers();
 				List<Role> roles = mentions.getRoles();
 				if (members.isEmpty() && roles.isEmpty()) {
@@ -1924,13 +1982,13 @@ public class InteractionListener extends ListenerAdapter {
 				String text;
 
 				VoiceChannelManager manager = vc.getManager();
-				
+
 				if (action.equals("permit")) {
 					for (Member member : members) {
 						manager = manager.putPermissionOverride(member, EnumSet.of(Permission.VOICE_CONNECT, Permission.VIEW_CHANNEL), null);
 						mentionStrings.add(member.getEffectiveName());
 					}
-		
+
 					for (Role role : roles) {
 						EnumSet<Permission> rolePerms = EnumSet.copyOf(role.getPermissions());
 						rolePerms.retainAll(adminPerms);
@@ -1939,7 +1997,7 @@ public class InteractionListener extends ListenerAdapter {
 							mentionStrings.add(role.getName());
 						}
 					}
-	
+
 					text = lu.getUserText(event, "bot.voice.listener.panel.permit_done", mentionStrings);
 				} else {
 					for (Member member : members) {
@@ -1949,7 +2007,7 @@ public class InteractionListener extends ListenerAdapter {
 						}
 						mentionStrings.add(member.getEffectiveName());
 					}
-		
+
 					for (Role role : roles) {
 						EnumSet<Permission> rolePerms = EnumSet.copyOf(role.getPermissions());
 						rolePerms.retainAll(adminPerms);
@@ -1974,7 +2032,6 @@ public class InteractionListener extends ListenerAdapter {
 		}
 	}
 
-
 	// Tools
 	private String selectedRolesString(List<Long> roleIds, DiscordLocale locale) {
 		if (roleIds.isEmpty()) return "None";
@@ -1982,7 +2039,7 @@ public class InteractionListener extends ListenerAdapter {
 			.map(id -> (id.equals(0L) ? "+"+lu.getLocalized(locale, "bot.ticketing.embeds.other") : "<@&%s>".formatted(id)))
 			.collect(Collectors.joining(", "));
 	}
-	
+
 	private String contains(PermissionOverride override, Permission perm) {
 		if (override != null) {
 			if (override.getAllowed().contains(perm))
@@ -1993,8 +2050,7 @@ public class InteractionListener extends ListenerAdapter {
 		return Emotes.NONE.getEmote();
 	}
 
-
-	private enum Cooldown {
+	public enum Cooldown {
 		BUTTON_VERIFY(15, CooldownScope.USER),
 		BUTTON_ROLE_SHOW(20, CooldownScope.USER),
 		BUTTON_ROLE_OTHER(2, CooldownScope.USER),
@@ -2054,7 +2110,7 @@ public class InteractionListener extends ListenerAdapter {
 	private MessageCreateData getCooldownErrorString(Cooldown cooldown, GenericInteractionCreateEvent event, int remaining) {
 		if (remaining <= 0)
 			return null;
-		
+
 		StringBuilder front = new StringBuilder(lu.getLocalized(event.getUserLocale(), "errors.cooldown.cooldown_button")
 			.replace("{time}", Integer.toString(remaining))
 		);
@@ -2069,4 +2125,11 @@ public class InteractionListener extends ListenerAdapter {
 		return MessageCreateData.fromContent(Objects.requireNonNull(front.append("!").toString()));
 	}
 
+	protected void ignoreExc(RunnableExc runnable) {
+		try {
+			runnable.run();
+		} catch (SQLException ignored) {}
+	}
+
+	@FunctionalInterface protected interface RunnableExc { void run() throws SQLException; }
 }

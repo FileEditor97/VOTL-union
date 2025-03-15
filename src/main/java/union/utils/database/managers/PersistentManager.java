@@ -6,6 +6,7 @@ import union.utils.FixedCache;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -29,14 +30,14 @@ public class PersistentManager extends LiteDBBase {
 		super(cu, null);
 	}
 
-	public boolean addRole(long guildId, long roleId) {
+	public void addRole(long guildId, long roleId) throws SQLException {
 		invalidateRoleCache(guildId);
-		return execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d)".formatted(table_role, guildId, roleId));
+		execute("INSERT INTO %s(guildId, roleId) VALUES (%d, %d)".formatted(table_role, guildId, roleId));
 	}
 
-	public boolean removeRole(long guildId, long roleId) {
+	public void removeRole(long guildId, long roleId) throws SQLException {
 		invalidateRoleCache(guildId);
-		return execute("DELETE FROM %s WHERE (roleId = %d)".formatted(table_role, roleId));
+		execute("DELETE FROM %s WHERE (roleId = %d)".formatted(table_role, roleId));
 	}
 
 	public List<Long> getRoles(long guildId) {
@@ -54,7 +55,7 @@ public class PersistentManager extends LiteDBBase {
 	}
 
 
-	public void addUser(long guildId, long userId, List<Long> roleIds) {
+	public void addUser(long guildId, long userId, List<Long> roleIds) throws SQLException {
 		// Add to cache
 		Map<Long, List<Long>> data = getUsers(guildId);
 		data.put(guildId, roleIds);
@@ -64,7 +65,7 @@ public class PersistentManager extends LiteDBBase {
 			.formatted(table_return, guildId, userId, quote(text), Instant.now().plus(Duration.ofDays(30)).getEpochSecond()));
 	}
 
-	public List<Long> getUserRoles(long guildId, long userId) {
+	public List<Long> getUserRoles(long guildId, long userId) throws SQLException {
 		// Get and remove from cache
 		Map<Long, List<Long>> data = getUsers(guildId);
 		if (data.isEmpty() || !data.containsKey(userId))
@@ -89,7 +90,9 @@ public class PersistentManager extends LiteDBBase {
 			Map<Long, List<Long>> guildCache = getUsers(guildId);
 			guildCache.remove(userId);
 			// Remove from bd
-			execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table_return, guildId, userId));
+			try {
+				execute("DELETE FROM %s WHERE (guildId=%d AND userId=%d)".formatted(table_return, guildId, userId));
+			} catch (SQLException ignored) {}
 		}
 	}
 
@@ -111,7 +114,7 @@ public class PersistentManager extends LiteDBBase {
 	}
 
 
-	public void removeGuild(long guildId) {
+	public void removeGuild(long guildId) throws SQLException {
 		invalidateRoleCache(guildId);
 		invalidateReturnCache(guildId);
 		execute("DELETE FROM %1$s WHERE (guildId = %3$d); DELETE FROM %2$s WHERE (guildId = %3$d);"

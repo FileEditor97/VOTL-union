@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import static union.utils.CastUtil.getOrDefault;
 import static union.utils.CastUtil.requireNonNull;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,7 @@ public class TicketTagManager extends LiteDBBase {
 		super(cu, "ticketTag");
 	}
 
-	public int createTag(Long guildId, Integer panelId, Integer tagType, String buttonText, String emoji, Long categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public int createTag(Long guildId, Integer panelId, Integer tagType, String buttonText, String emoji, Long categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) throws SQLException {
 		List<String> keys = new ArrayList<>(10);
 		List<String> values = new ArrayList<>(10);
 		keys.addAll(List.of("guildId", "panelId", "tagType", "buttonText", "ticketName", "buttonStyle"));
@@ -51,15 +52,15 @@ public class TicketTagManager extends LiteDBBase {
 		return executeWithRow("INSERT INTO %s(%s) VALUES (%s)".formatted(table, String.join(", ", keys), String.join(", ", values)));
 	}
 
-	public boolean deleteTag(int tagId) {
-		return execute("DELETE FROM %s WHERE (tagId=%d)".formatted(table, tagId));
+	public void deleteTag(int tagId) throws SQLException {
+		execute("DELETE FROM %s WHERE (tagId=%d)".formatted(table, tagId));
 	}
 
-	public void deleteAll(long guildId) {
+	public void deleteAll(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 
-	public boolean updateTag(int tagId, Integer tagType, String buttonText, String emoji, Long categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) {
+	public void updateTag(int tagId, Integer tagType, String buttonText, String emoji, Long categoryId, String message, String supportRoleIds, String ticketName, Integer buttonStyle) throws SQLException {
 		List<String> values = new ArrayList<>();
 		if (tagType != null) 
 			values.add("tagType="+tagType);
@@ -78,8 +79,8 @@ public class TicketTagManager extends LiteDBBase {
 		if (buttonStyle != -1) 
 			values.add("buttonStyle="+buttonStyle);
 		
-		if (!values.isEmpty()) return execute("UPDATE %s SET %s WHERE (tagId=%d)".formatted(table, String.join(", ", values), tagId));
-		return false;
+		if (!values.isEmpty())
+			execute("UPDATE %s SET %s WHERE (tagId=%d)".formatted(table, String.join(", ", values), tagId));
 	}
 
 	public Long getGuildId(int tagId) {

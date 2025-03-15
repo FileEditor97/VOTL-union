@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 
@@ -55,7 +56,9 @@ public class UnbanCmd extends CommandBase {
 		// Remove active ban log
 		CaseData banData = bot.getDBUtil().cases.getMemberActive(tu.getIdLong(), guild.getIdLong(), CaseType.BAN);
 		if (banData != null) {
-			bot.getDBUtil().cases.setInactive(banData.getRowId());
+			try {
+				bot.getDBUtil().cases.setInactive(banData.getRowId());
+			} catch (SQLException ignored) {}
 		}
 
 		guild.retrieveBan(tu).queue(ban -> {
@@ -65,8 +68,10 @@ public class UnbanCmd extends CommandBase {
 				if (bot.getDBUtil().blacklist.inGroupUser(groupId, tu.getIdLong())) {
 					if (bot.getCheckUtil().hasAccess(event.getMember(), CmdAccessLevel.OPERATOR)) {
 						// User is Operator+, remove blacklist
-						bot.getDBUtil().blacklist.removeUser(groupId, tu.getIdLong());
-						bot.getLogger().mod.onBlacklistRemoved(event.getUser(), tu, null, groupId);
+						try {
+							bot.getDBUtil().blacklist.removeUser(groupId, tu.getIdLong());
+							bot.getLogger().mod.onBlacklistRemoved(event.getUser(), tu, null, groupId);
+						} catch (SQLException ignored) {}
 					} else {
 						// User is not Operator+, reject unban
 						editError(event, path+".blacklisted", "Group ID : "+groupId);
@@ -77,8 +82,14 @@ public class UnbanCmd extends CommandBase {
 			Member mod = event.getMember();
 			final String reason = event.optString("reason", lu.getText(event, path+".no_reason"));
 			// add info to db
-			CaseData unbanData = bot.getDBUtil().cases.add(CaseType.UNBAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
-				guild.getIdLong(), reason, Instant.now(), null);
+			CaseData unbanData;
+			try {
+				unbanData = bot.getDBUtil().cases.add(CaseType.UNBAN, tu.getIdLong(), tu.getName(), mod.getIdLong(), mod.getUser().getName(),
+					guild.getIdLong(), reason, Instant.now(), null);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to create new case.");
+				return;
+			}
 			// perform unban
 			guild.unban(tu).reason(reason).queue();
 			// log unban

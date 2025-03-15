@@ -29,7 +29,7 @@ public class ModerationUtil {
 	}
 	
 	@Nullable
-	public MessageEmbed getDmEmbed(CaseType type, Guild guild, String reason, Duration duration, User mod, boolean canAppeal) {
+	public String getDmText(CaseType type, Guild guild, String reason, Duration duration, User mod, boolean canAppeal) {
 		DiscordLocale locale = guild.getLocale();
 		int level;
 		String text;
@@ -67,19 +67,20 @@ public class ModerationUtil {
 				return null;
 			}
 		}
-		
-		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_FAILURE)
-			.setDescription(formatText(text, guild, level >= 2 ? reason : null, level >= 2 ? duration : null, level >= 3 ? mod : null));
+
+		StringBuilder builder = new StringBuilder(
+			formatText(text, guild, level >= 2 ? reason : null, level >= 2 ? duration : null, level >= 3 ? mod : null)
+		);
 		if (type.equals(CaseType.BAN)) {
 			String link = dbUtil.getGuildSettings(guild).getAppealLink();
 			if (link != null && canAppeal)
-				builder.appendDescription(lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link));
+				builder.append(lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link));
 		}
 		String rulesLink = dbUtil.getGuildSettings(guild).getRulesLink();
 		if (rulesLink != null)
-			builder.appendDescription(lu.getLocalized(locale, "logger_embed.pm.rules").formatted(rulesLink));
+			builder.append(lu.getLocalized(locale, "logger_embed.pm.rules").formatted(rulesLink));
 
-		return builder.build();
+		return builder.toString();
 	}
 
 	@Nullable
@@ -110,7 +111,7 @@ public class ModerationUtil {
 		}
 	}
 
-	private String formatText(String text, Guild guild, String reason, Duration duration, User mod) {
+	private String formatText(final String text, Guild guild, String reason, Duration duration, User mod) {
 		String newText = (duration == null) ? text : text.replace("{time}", TimeUtil.durationToLocalizedString(lu, guild.getLocale(), duration));
 		StringBuilder builder = new StringBuilder(newText.replace("{guild}", guild.getName()));
 		if (reason != null) builder.append(" | ").append(reason);

@@ -10,6 +10,8 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.sql.SQLException;
+
 public class GuildListener extends ListenerAdapter {
 
 	private final App bot;
@@ -58,34 +60,42 @@ public class GuildListener extends ListenerAdapter {
 					);
 				} catch (Exception ignored) {}
 			}
-			db.group.clearGroup(groupId);
+			ignoreExc(() -> db.group.clearGroup(groupId));
 		}
-		db.group.removeGuildFromGroups(guildIdLong);
-		db.group.deleteGuildGroups(guildIdLong);
+		ignoreExc(() -> db.group.removeGuildFromGroups(guildIdLong));
+		ignoreExc(() -> db.group.deleteGuildGroups(guildIdLong));
 
-		db.access.removeAll(guildIdLong);
-		db.webhook.removeAll(guildIdLong);
-		db.verifySettings.remove(guildIdLong);
-		db.ticketSettings.remove(guildIdLong);
-		db.role.removeAll(guildIdLong);
-		db.guildVoice.remove(guildIdLong);
-		db.panels.deleteAll(guildIdLong);
-		db.tags.deleteAll(guildIdLong);
-		db.tempRole.removeAll(guildIdLong);
-		db.autopunish.removeGuild(guildIdLong);
-		db.strike.removeGuild(guildIdLong);
-		db.logs.removeGuild(guildIdLong);
-		db.logExemption.removeGuild(guildIdLong);
-		db.threadControl.removeAll(guildIdLong);
-		db.games.removeGuild(guildIdLong);
-		db.modReport.removeGuild(guildIdLong);
-		db.persistent.removeGuild(guildIdLong);
-		db.levels.remove(guildIdLong);
-		db.levelRoles.removeGuild(guildIdLong);
-		
-		db.guildSettings.remove(guildIdLong);
+		ignoreExc(() -> db.access.removeAll(guildIdLong));
+		ignoreExc(() -> db.webhook.removeAll(guildIdLong));
+		ignoreExc(() -> db.verifySettings.remove(guildIdLong));
+		ignoreExc(() -> db.ticketSettings.remove(guildIdLong));
+		ignoreExc(() -> db.role.removeAll(guildIdLong));
+		ignoreExc(() -> db.guildVoice.remove(guildIdLong));
+		ignoreExc(() -> db.panels.deleteAll(guildIdLong));
+		ignoreExc(() -> db.tags.deleteAll(guildIdLong));
+		ignoreExc(() -> db.tempRole.removeAll(guildIdLong));
+		ignoreExc(() -> db.autopunish.removeGuild(guildIdLong));
+		ignoreExc(() -> db.strike.removeGuild(guildIdLong));
+		ignoreExc(() -> db.logs.removeGuild(guildIdLong));
+		ignoreExc(() -> db.logExemption.removeGuild(guildIdLong));
+		ignoreExc(() -> db.threadControl.removeAll(guildIdLong));
+		ignoreExc(() -> db.games.removeGuild(guildIdLong));
+		ignoreExc(() -> db.modReport.removeGuild(guildIdLong));
+		ignoreExc(() -> db.persistent.removeGuild(guildIdLong));
+		ignoreExc(() -> db.levels.remove(guildIdLong));
+		ignoreExc(() -> db.levelRoles.removeGuild(guildIdLong));
+
+		ignoreExc(() -> db.guildSettings.remove(guildIdLong));
 
 		bot.getAppLogger().info("Automatically removed guild '{}'({}) from db.", event.getGuild().getName(), guildIdLong);
 	}
+
+	private void ignoreExc(RunnableExc runnable) {
+		try {
+			runnable.run();
+		} catch (SQLException ignored) {}
+	}
+
+	@FunctionalInterface public interface RunnableExc { void run() throws SQLException; }
 
 }

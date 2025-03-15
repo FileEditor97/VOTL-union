@@ -1,5 +1,6 @@
 package union.commands.ticketing;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -195,8 +196,10 @@ public class RolesPanelCmd extends CommandBase {
 			Integer row = event.optInteger("row");
 			String text = event.optString("text");
 
-			if (!bot.getDBUtil().ticketSettings.setRowText(event.getGuild().getIdLong(), row, text)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().ticketSettings.setRowText(event.getGuild().getIdLong(), row, text);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "rolespanel row text");
 				return;
 			}
 

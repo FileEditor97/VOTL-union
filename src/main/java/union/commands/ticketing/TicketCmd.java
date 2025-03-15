@@ -1,6 +1,7 @@
 package union.commands.ticketing;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
 import union.objects.CmdAccessLevel;
+import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.database.managers.TicketPanelManager.Panel;
@@ -44,6 +46,7 @@ public class TicketCmd extends CommandBase {
 			new Automation(), new Settings()};
 		this.category = CmdCategory.TICKETING;
 		this.accessLevel = CmdAccessLevel.ADMIN;
+		this.module = CmdModule.TICKETING;
 	}
 
 	@Override
@@ -88,9 +91,11 @@ public class TicketCmd extends CommandBase {
 				return;
 			}
 
-			int panelId = bot.getDBUtil().panels.createPanel(event.getGuild().getIdLong(), title, description, image, footer);
-			if (panelId == 0) {
-				editErrorOther(event, "Panel creation failed.");
+			int panelId;
+			try {
+				panelId = bot.getDBUtil().panels.createPanel(event.getGuild().getIdLong(), title, description, image, footer);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to create new panel.");
 				return;
 			}
 
@@ -148,8 +153,10 @@ public class TicketCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().panels.updatePanel(panelId, title, description, image, footer)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().panels.updatePanel(panelId, title, description, image, footer);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to update panel.");
 				return;
 			}
 			editEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
@@ -258,8 +265,10 @@ public class TicketCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().panels.delete(panelId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().panels.delete(panelId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to delete panel.");
 				return;
 			}
 
@@ -334,9 +343,11 @@ public class TicketCmd extends CommandBase {
 				supportRoleIds = supportRoles.stream().map(Role::getId).collect(Collectors.joining(";"));
 			}
 
-			int tagId = bot.getDBUtil().tags.createTag(guildId, panelId, type, buttonName, emoji, categoryId, message, supportRoleIds, ticketName, buttonStyle.getKey());
-			if (tagId == 0) {
-				editErrorOther(event, "Tag creation failed.");
+			int tagId;
+			try {
+				tagId = bot.getDBUtil().tags.createTag(guildId, panelId, type, buttonName, emoji, categoryId, message, supportRoleIds, ticketName, buttonStyle.getKey());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to create new tag.");
 				return;
 			}
 
@@ -416,10 +427,14 @@ public class TicketCmd extends CommandBase {
 			if (builder.getFields().isEmpty()) {
 				editError(event, path+".no_options");
 			} else {
-				if (!bot.getDBUtil().tags.updateTag(tagId, type, buttonText, emoji,
-						Optional.ofNullable(category).map(Category::getIdLong).orElse(null), message,
-						supportRoleIds, ticketName, buttonStyle.getKey())) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().tags.updateTag(
+						tagId, type, buttonText, emoji,
+						Optional.ofNullable(category).map(Category::getIdLong).orElse(null),
+						message, supportRoleIds, ticketName, buttonStyle.getKey()
+					);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "Failed to update tag.");
 					return;
 				}
 				editEmbed(event, builder.setColor(Constants.COLOR_SUCCESS)
@@ -496,8 +511,10 @@ public class TicketCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().tags.deleteTag(tagId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().tags.deleteTag(tagId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to delete tag.");
 				return;
 			}
 
@@ -532,24 +549,30 @@ public class TicketCmd extends CommandBase {
 			StringBuilder response = new StringBuilder();
 			if (event.hasOption("autoclose")) {
 				int time = event.optInteger("autoclose");
-				if (!bot.getDBUtil().ticketSettings.setAutocloseTime(guildId, time)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().ticketSettings.setAutocloseTime(guildId, time);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "ticket autoclose");
 					return;
 				}
 				response.append(lu.getText(event, path+".changed_autoclose").formatted(time));
 			}
 			if (event.hasOption("author_left")) {
 				boolean left = event.optBoolean("author_left");
-				if (!bot.getDBUtil().ticketSettings.setAutocloseLeft(guildId, left)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().ticketSettings.setAutocloseLeft(guildId, left);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "ticket author left");
 					return;
 				}
 				response.append(lu.getText(event, path+".changed_left").formatted(left ? Constants.SUCCESS : Constants.FAILURE));
 			}
 			if (event.hasOption("reply_time")) {
 				int time = event.optInteger("reply_time");
-				if (!bot.getDBUtil().ticketSettings.setTimeToReply(guildId, time)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().ticketSettings.setTimeToReply(guildId, time);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "ticket reply time");
 					return;
 				}
 				response.append(lu.getText(event, path+".changed_reply").formatted(time));
@@ -619,8 +642,10 @@ public class TicketCmd extends CommandBase {
 				if (event.hasOption("delete_pings")) {
 					final boolean deletePings = event.optBoolean("delete_pings");
 
-					if (bot.getDBUtil().ticketSettings.setDeletePings(event.getGuild().getIdLong(), deletePings)) {
-						editErrorDatabase(event, "ticket settings set delete pings");
+					try {
+						bot.getDBUtil().ticketSettings.setDeletePings(event.getGuild().getIdLong(), deletePings);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "ticket delete pings");
 						return;
 					}
 					response.append(lu.getText(event, path+".changed_delete").formatted(deletePings ? Constants.SUCCESS : Constants.FAILURE));
@@ -628,8 +653,10 @@ public class TicketCmd extends CommandBase {
 				if (event.hasOption("other_roles")) {
 					final boolean otherRoles = event.optBoolean("other_roles");
 
-					if (bot.getDBUtil().ticketSettings.setOtherRole(event.getGuild().getIdLong(), otherRoles)) {
-						editErrorDatabase(event, "ticket settings set other roles");
+					try {
+						bot.getDBUtil().ticketSettings.setOtherRole(event.getGuild().getIdLong(), otherRoles);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "ticket other roles");
 						return;
 					}
 					response.append(lu.getText(event, path+".changed_other").formatted(otherRoles ? Constants.SUCCESS : Constants.FAILURE));
@@ -637,11 +664,12 @@ public class TicketCmd extends CommandBase {
 				if (event.hasOption("role_tickets_support")) {
 					if (event.optString("role_tickets_support").equalsIgnoreCase("null")) {
 						// Clear roles
-						if (bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), List.of())) {
-							editErrorDatabase(event, "ticket settings clear support roles");
+						try {
+							bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), List.of());
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "ticket support roles");
 							return;
 						}
-
 						response.append(lu.getText(event, path+".cleared_support"));
 					} else {
 						// Set roles
@@ -650,19 +678,22 @@ public class TicketCmd extends CommandBase {
 							editError(event, path+".bad_roles");
 							return;
 						}
-						if (bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), roles.stream().map(Role::getIdLong).toList())) {
-							editErrorDatabase(event, "ticket settings set support roles");
+						try {
+							bot.getDBUtil().ticketSettings.setSupportRoles(event.getGuild().getIdLong(), roles.stream().map(Role::getIdLong).toList());
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "ticket support roles");
 							return;
 						}
-
 						response.append(lu.getText(event, path+".changed_support").formatted(roles.stream().map(Role::getAsMention).collect(Collectors.joining(", "))));
 					}
 				}
 				if (event.hasOption("allow_close")) {
 					TicketSettingsManager.AllowClose allowClose = TicketSettingsManager.AllowClose.valueOf(event.optInteger("allow_close"));
 					if (allowClose != null) {
-						if (bot.getDBUtil().ticketSettings.setAllowClose(event.getGuild().getIdLong(), allowClose)) {
-							editErrorDatabase(event, "ticket settings set allow close");
+						try {
+							bot.getDBUtil().ticketSettings.setAllowClose(event.getGuild().getIdLong(), allowClose);
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "ticket allow close");
 							return;
 						}
 						response.append(lu.getText(event, path+".changed_close").formatted(MessageUtil.capitalize(allowClose.name())));
@@ -671,8 +702,10 @@ public class TicketCmd extends CommandBase {
 				if (event.hasOption("transcripts_mode")) {
 					TicketSettingsManager.TranscriptsMode transcriptsMode = TicketSettingsManager.TranscriptsMode.valueOf(event.optInteger("transcripts_mode"));
 					if (transcriptsMode != null) {
-						if (bot.getDBUtil().ticketSettings.setTranscript(event.getGuild().getIdLong(), transcriptsMode)) {
-							editErrorDatabase(event, "ticket settings set allow close");
+						try {
+							bot.getDBUtil().ticketSettings.setTranscript(event.getGuild().getIdLong(), transcriptsMode);
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "ticket transcript mode");
 							return;
 						}
 						response.append(lu.getText(event, path+".changed_transcript").formatted(MessageUtil.capitalize(transcriptsMode.name()).replace("_", " ")));

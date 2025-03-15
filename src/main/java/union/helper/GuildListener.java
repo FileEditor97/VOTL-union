@@ -1,5 +1,6 @@
 package union.helper;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -141,7 +142,9 @@ public class GuildListener extends ListenerAdapter {
 			helper.getLogUtil().group.helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
 		);
 
-		helper.getDBUtil().tempBan.removeGuild(event.getGuild().getIdLong());
+		try {
+			helper.getDBUtil().tempBan.removeGuild(event.getGuild().getIdLong());
+		} catch (SQLException ignored) {}
 	}
 
 	@Override
@@ -205,10 +208,12 @@ public class GuildListener extends ListenerAdapter {
 				});
 			} else {
 				event.getMember().ban(0, TimeUnit.MINUTES).reason("NOT VERIFIED! Join main server to verify").queueAfter(3, TimeUnit.SECONDS, done -> {
-					// Add to DB
-					helper.getDBUtil().tempBan.add(event.getGuild().getIdLong(), event.getMember().getIdLong(), Instant.now().plus(verifyValue, ChronoUnit.MINUTES));
-					// Log to master
-					helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and ban for %s minutes".formatted(verifyValue));
+					try {
+						// Add to DB
+						helper.getDBUtil().tempBan.add(event.getGuild().getIdLong(), event.getMember().getIdLong(), Instant.now().plus(verifyValue, ChronoUnit.MINUTES));
+						// Log to master
+						helper.getLogUtil().group.helperInformVerify(groupId, event.getGuild(), event.getUser(), "Inform and ban for %s minutes".formatted(verifyValue));
+					} catch (SQLException ignored) {}
 				});
 			}
 		}

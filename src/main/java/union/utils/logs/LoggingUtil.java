@@ -28,6 +28,7 @@ import union.objects.logs.MessageData;
 import union.utils.CaseProofUtil;
 import union.utils.SteamUtil;
 import union.utils.database.DBUtil;
+import union.utils.database.managers.BlacklistManager;
 import union.utils.database.managers.CaseManager.CaseData;
 
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -92,11 +93,11 @@ public class LoggingUtil {
 	}
 
 	// Panic webhook
-	private void panic(MessageEmbed embed, Guild guild) {
+	private void panic(Supplier<MessageEmbed> embedSupplier, Guild guild) {
 		String webhookUrl = bot.getSettings().getPanicWebhook();
 		if (webhookUrl == null) return;
 		WebhookClient<Message> client = WebhookClient.createClient(bot.JDA, webhookUrl);
-		client.sendMessage(guild.getName()).setEmbeds(embed).queue(null, failure -> {
+		client.sendMessage(guild.getName()).setEmbeds(embedSupplier.get()).queue(null, failure -> {
 			bot.getAppLogger().error("Panic webhook failure.", failure);
 		});
 	}
@@ -329,7 +330,6 @@ public class LoggingUtil {
 			// For each group guild (except master) remove if from group DB and send log to log channel
 			List<Long> memberIds = db.group.getGroupMembers(groupId);
 			for (Long memberId : memberIds) {
-				db.group.remove(groupId, memberId);
 				Guild member = bot.JDA.getGuildById(memberId);
 
 				sendLog(member, type, () -> logUtil.groupMemberDeletedEmbed(member.getLocale(), ownerId, ownerIcon, groupId, name));
@@ -369,7 +369,6 @@ public class LoggingUtil {
 			// Send log to each group guild
 			List<Long> memberIds = db.group.getGroupMembers(groupId);
 			for (Long memberId : memberIds) {
-				db.group.remove(groupId, memberId);
 				Guild member = bot.JDA.getGuildById(memberId);
 
 				sendLog(member, type, () -> logUtil.groupMemberRenamedEmbed(member.getLocale(), ownerId, ownerIcon, groupId, oldName, newName));
@@ -388,7 +387,10 @@ public class LoggingUtil {
 
 		public void helperInformLeave(int groupId, @Nullable Guild guild, String guildId) {
 			// Try panic
-			panic(logUtil.botLeftEmbed(bot.getLocaleUtil().defaultLocale, groupId, guild, guildId), guild);
+			panic(
+				() -> logUtil.botLeftEmbed(bot.getLocaleUtil().defaultLocale, groupId, guild, guildId),
+				guild
+			);
 			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
@@ -403,7 +405,10 @@ public class LoggingUtil {
 
 		public void helperAlertTriggered(int groupId, Guild targetGuild, Member targetMember, String actionTaken, String reason) {
 			// Try panic
-			panic(logUtil.alertEmbed(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetMember, actionTaken, reason), targetGuild);
+			panic(
+				() -> logUtil.alertEmbed(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetMember, actionTaken, reason),
+				targetGuild
+			);
 			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
@@ -428,7 +433,10 @@ public class LoggingUtil {
 
 		public void helperInformBadUser(int groupId, Guild targetGuild, User targetUser) {
 			// Try panic
-			panic(logUtil.informBadUser(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetUser), targetGuild);
+			panic(
+				() -> logUtil.informBadUser(bot.getLocaleUtil().defaultLocale, groupId, targetGuild, targetUser),
+				targetGuild
+			);
 			// Log
 			Guild master = Optional.ofNullable(db.group.getOwner(groupId)).map(bot.JDA::getGuildById).orElse(null);
 			if (master == null) return;
@@ -459,13 +467,23 @@ public class LoggingUtil {
 			);
 		}
 
-		public void onVerifyBlacklisted(User user, Long steam64, Guild guild, String reason) {
+		public void onVerifyBlacklisted(User user, Guild guild, int groupId, BlacklistManager.BlacklistData data) {
 			// Try panic
-			panic(logUtil.verifyAttempt(bot.getLocaleUtil().defaultLocale, user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
-				steam64, reason), guild);
+			panic(
+				() -> logUtil.verifyAttempt(
+					bot.getLocaleUtil().defaultLocale, user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
+					data.getSteam64(), data.getReason()
+				),
+				guild
+			);
 			// Log
-			sendLog(guild, type, () -> logUtil.verifyAttempt(guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
-				steam64, reason)
+			sendLog(
+				guild, type,
+				() -> logUtil.verifyAttempt(
+					guild.getLocale(), user.getName(), user.getIdLong(), user.getEffectiveAvatarUrl(),
+					data.getSteam64(), bot.getLocaleUtil().getText("logger_embed.verify.blacklisted")
+						.formatted(groupId, data.getReason(), data.getModId())
+				)
 			);
 		}
 	}

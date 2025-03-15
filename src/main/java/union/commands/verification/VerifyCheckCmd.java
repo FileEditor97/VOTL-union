@@ -1,5 +1,6 @@
 package union.commands.verification;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import union.base.command.SlashCommand;
@@ -42,8 +43,10 @@ public class VerifyCheckCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), true)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), true);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "vfcheck enable");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -63,8 +66,10 @@ public class VerifyCheckCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
 
-			if (!bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), false)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().verifySettings.setCheckState(event.getGuild().getIdLong(), false);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "vfcheck disable");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -117,7 +122,12 @@ public class VerifyCheckCmd extends CommandBase {
 			}
 
 			int hours = event.optInteger("hours");
-			bot.getDBUtil().verifySettings.setRequiredPlaytime(event.getGuild().getIdLong(), hours);
+			try {
+				bot.getDBUtil().verifySettings.setRequiredPlaytime(event.getGuild().getIdLong(), hours);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "vfcheck playtime");
+				return;
+			}
 			if (hours == -1)
 				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 					.setDescription(lu.getText(event, path+".done_disabled"))

@@ -1,5 +1,6 @@
 package union.commands.strikes;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,7 +27,6 @@ import union.utils.message.TimeUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -105,16 +105,28 @@ public class StrikeCmd extends CommandBase {
 		Member mod = event.getMember();
 		tm.getUser().openPrivateChannel().queue(pm -> {
 			Button button = Button.secondary("strikes:"+guild.getId(), lu.getLocalized(guild.getLocale(), "logger_embed.pm.button_strikes"));
-			MessageEmbed embed = bot.getModerationUtil().getDmEmbed(type, guild, reason, null, mod.getUser(), false);
-			if (embed == null) return;
-			pm.sendMessageEmbeds(embed).addActionRow(button).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			final String text = bot.getModerationUtil().getDmText(type, guild, reason, null, mod.getUser(), false);
+			if (text == null) return;
+			pm.sendMessage(text).addActionRow(button).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 		});
 		
 		// add info to db
-		CaseData caseData = bot.getDBUtil().cases.add(type, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
-			guild.getIdLong(), reason, Instant.now(), null);
+		CaseData caseData;
+		try {
+			caseData = bot.getDBUtil().cases.add(type, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+				guild.getIdLong(), reason, Instant.now(), null);
+		} catch (SQLException e) {
+			editErrorDatabase(event, e, "Failed to create new case.");
+			return;
+		}
 		// add strikes
-		Field action = executeStrike(guild.getLocale(), guild, tm, strikeAmount, caseData.getRowId());
+		final Field action;
+		try {
+			action = executeStrike(guild.getLocale(), guild, tm, strikeAmount, caseData.getRowId());
+		} catch (Exception e) {
+			editErrorOther(event, e.getMessage());
+			return;
+		}
 		// log
 		bot.getLogger().mod.onNewCase(guild, tm.getUser(), caseData, proofData).thenAccept(logUrl -> {
 			// Add log url to db
@@ -128,11 +140,15 @@ public class StrikeCmd extends CommandBase {
 		});
 	}
 
-	private Field executeStrike(DiscordLocale locale, Guild guild, Member target, Integer addAmount, int caseRowId) {
+	private Field executeStrike(DiscordLocale locale, Guild guild, Member target, Integer addAmount, int caseRowId) throws Exception {
 		// Add strike(-s) to DB
-		bot.getDBUtil().strike.addStrikes(guild.getIdLong(), target.getIdLong(),
-			Instant.now().plus(bot.getDBUtil().getGuildSettings(guild).getStrikeExpires(), ChronoUnit.DAYS),
-			addAmount, caseRowId+"-"+addAmount);
+		try {
+			bot.getDBUtil().strike.addStrikes(guild.getIdLong(), target.getIdLong(),
+				Instant.now().plus(bot.getDBUtil().getGuildSettings(guild).getStrikeExpires(), ChronoUnit.DAYS),
+				addAmount, caseRowId+"-"+addAmount);
+		} catch (SQLException ex) {
+			throw new Exception("Case was created, but strike information was not added to the database (internal error)!");
+		}
 		// Get strike new strike amount
 		Integer strikes = bot.getDBUtil().strike.getStrikeCount(guild.getIdLong(), target.getIdLong());
 		// Get actions for strike amount
@@ -166,21 +182,24 @@ public class StrikeCmd extends CommandBase {
 				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 				// Send PM to user
 				target.getUser().openPrivateChannel().queue(pm -> {
-					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.KICK, guild, reason, null, null, false);
-					if (embed == null) return;
-					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					final String text = bot.getModerationUtil().getDmText(CaseType.KICK, guild, reason, null, null, false);
+					if (text == null) return;
+					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
 				guild.kick(target).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
-						// add case to DB
+					// add case to DB
+					try {
 						CaseData caseData = bot.getDBUtil().cases.add(CaseType.KICK, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 							guild.getIdLong(), reason, Instant.now(), null);
 						// log case
 						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
 							bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
 						});
-					},
-					failure -> bot.getAppLogger().error("Strike punishment execution, Kick member", failure));
+					} catch (SQLException ignored) {}
+				}, failure ->
+					bot.getAppLogger().error("Strike punishment execution, Kick member", failure)
+				);
 				builder.append(lu.getLocalized(locale, PunishActions.KICK.getPath()))
 					.append("\n");
 			}
@@ -199,21 +218,25 @@ public class StrikeCmd extends CommandBase {
 					Duration durationCopy = duration;
 					// Send PM to user
 					target.getUser().openPrivateChannel().queue(pm -> {
-						MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.BAN, guild, reason, durationCopy, null, true);
-						if (embed == null) return;
-						pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+						final String text = bot.getModerationUtil().getDmText(CaseType.BAN, guild, reason, durationCopy, null, true);
+						if (text == null) return;
+						pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
 
 					guild.ban(target, 0, TimeUnit.SECONDS).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
-							// add case to DB
+						// add case to DB
+						try {
 							CaseData caseData = bot.getDBUtil().cases.add(CaseType.BAN, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 								guild.getIdLong(), reason, Instant.now(), durationCopy);
 							// log case
 							bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
 								bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
 							});
-						},
-						failure -> bot.getAppLogger().error("Strike punishment execution, Ban member", failure));
+						} catch (SQLException ignored) {}
+					},
+					failure ->
+						bot.getAppLogger().error("Strike punishment execution, Ban member", failure)
+					);
 					builder.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
 						.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
 						.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
@@ -277,11 +300,13 @@ public class StrikeCmd extends CommandBase {
 					// Apply action, result will be in logs
 					guild.addRoleToMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queueAfter(5, TimeUnit.SECONDS, done -> {
 						// Add temp
-						bot.getDBUtil().tempRole.add(guild.getIdLong(), role.getIdLong(), target.getIdLong(), false, Instant.now().plus(durationCopy));
-						// log action
-						bot.getLogger().role.onTempRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role, durationCopy, false);
-						},
-						failure -> bot.getAppLogger().error("Strike punishment execution, Add temp role", failure)
+						try {
+							bot.getDBUtil().tempRole.add(guild.getIdLong(), role.getIdLong(), target.getIdLong(), false, Instant.now().plus(durationCopy));
+							// log action
+							bot.getLogger().role.onTempRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role, durationCopy, false);
+						} catch (SQLException ignored) {}
+					}, failure ->
+						bot.getAppLogger().error("Strike punishment execution, Add temp role", failure)
 					);
 					builder.append(lu.getLocalized(locale, PunishActions.TEMP_ROLE.getPath()))
 						.append(" ").append(role.getName())
@@ -299,13 +324,14 @@ public class StrikeCmd extends CommandBase {
 				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 				// Send PM to user
 				target.getUser().openPrivateChannel().queue(pm -> {
-					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.MUTE, guild, reason, null, null, false);
-					if (embed == null) return;
-					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, null, null, false);
+					if (text == null) return;
+					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
 				Duration durationCopy = duration;
 				guild.timeoutFor(target, duration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
+					try {
 						// add case to DB
 						CaseData caseData = bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
 							guild.getIdLong(), reason, Instant.now(), durationCopy);
@@ -313,8 +339,10 @@ public class StrikeCmd extends CommandBase {
 						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
 							bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
 						});
-					},
-					failure -> bot.getAppLogger().error("Strike punishment execution, Mute member", failure));
+					} catch (SQLException ignored) {}
+				}, failure ->
+					bot.getAppLogger().error("Strike punishment execution, Mute member", failure)
+				);
 				builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
 					.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
 					.append(TimeUtil.durationToLocalizedString(lu, locale, duration))

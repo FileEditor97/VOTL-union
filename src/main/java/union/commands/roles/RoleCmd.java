@@ -1,5 +1,6 @@
 package union.commands.roles;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -61,14 +62,10 @@ public class RoleCmd extends CommandBase {
 
 			// Get roles
 			List<Role> roles = new ArrayList<>(3);
-			Role role = event.optRole("role1");
-			if (role != null) roles.add(role);
 
-			role = event.optRole("role2");
-			if (role != null) roles.add(role);
-
-			role = event.optRole("role3");
-			if (role != null) roles.add(role);
+			Optional.ofNullable(event.optRole("role1")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role2")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role3")).ifPresent(roles::add);
 
 			if (roles.isEmpty()) {
 				editError(event, path+".invalid_args");
@@ -136,14 +133,10 @@ public class RoleCmd extends CommandBase {
 			
 			// Get roles
 			List<Role> roles = new ArrayList<>(3);
-			Role role = event.optRole("role1");
-			if (role != null) roles.add(role);
 
-			role = event.optRole("role2");
-			if (role != null) roles.add(role);
-
-			role = event.optRole("role3");
-			if (role != null) roles.add(role);
+			Optional.ofNullable(event.optRole("role1")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role2")).ifPresent(roles::add);
+			Optional.ofNullable(event.optRole("role3")).ifPresent(roles::add);
 
 			if (roles.isEmpty()) {
 				editError(event, path+".invalid_args");
@@ -287,7 +280,7 @@ public class RoleCmd extends CommandBase {
 				return;
 			}
 			List<Role> userRoles = target.getRoles();
-			List<Role> allRoles = event.getGuild().getRoleCache().asList();
+			List<Role> allRoles = event.getGuild().getRoles();
 
 			List<ActionRow> actionRows = new ArrayList<>();
 			StringSelectMenu.Builder menuBuilder = StringSelectMenu.create("role:manage-select:1:"+target.getId()).setRequiredRange(0, 25);
@@ -331,8 +324,13 @@ public class RoleCmd extends CommandBase {
 			}
 			actionRows.add(ActionRow.of(Button.primary("role:manage-confirm:"+target.getId(), lu.getText(event, path+".button"))));
 
-			bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getMember().getIdLong(),
-					target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
+			try {
+				bot.getDBUtil().modifyRole.create(event.getGuild().getIdLong(), event.getMember().getIdLong(),
+						target.getIdLong(), Instant.now().plus(2, ChronoUnit.MINUTES));
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "role modify failed");
+				return;
+			}
 
 			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
 					.setDescription(lu.getText(event, path+".title").formatted(target.getAsMention()))

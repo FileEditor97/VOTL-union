@@ -1,5 +1,6 @@
 package union.commands.ticketing;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -114,16 +115,20 @@ public class RolesSetupCmd extends CommandBase {
 									editError(event, path+".invalid_invite", "Not server type invite");
 									return;
 								}
-								if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), rowTemp, type, invite.getUrl())) {
-									editErrorUnknown(event, "Database error.");
+								try {
+									bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), rowTemp, type, invite.getUrl());
+								} catch (SQLException e) {
+									editErrorDatabase(event, e, "rolesetup add role");
 									return;
 								}
 								sendSuccess(event, type, role);
 							},
 							failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
 					} else {
-						if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), row, type, "NULL")) {
-							editErrorUnknown(event, "Database error.");
+						try {
+							bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), row, type, "NULL");
+						} catch (SQLException e) {
+							editErrorDatabase(event, e, "rolesetup add role");
 							return;
 						}
 						sendSuccess(event, type, role);
@@ -135,8 +140,10 @@ public class RolesSetupCmd extends CommandBase {
 						return;
 					}
 					String description = event.optString("description", role.getName());
-					if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), description, null, RoleType.TOGGLE, "NULL")) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().role.add(guildId, role.getIdLong(), description, null, RoleType.TOGGLE, "NULL");
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "rolesetup add role");
 						return;
 					}
 					sendSuccess(event, type, role);
@@ -146,8 +153,10 @@ public class RolesSetupCmd extends CommandBase {
 						editError(event, path+".custom_max");
 						return;
 					}
-					if (!bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), null, RoleType.CUSTOM, "NULL")) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().role.add(guildId, role.getIdLong(), event.optString("description", "NULL"), null, RoleType.CUSTOM, "NULL");
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "rolesetup add role");
 						return;
 					}
 					sendSuccess(event, type, role);
@@ -217,16 +226,20 @@ public class RolesSetupCmd extends CommandBase {
 						response.append(lu.getText(event, path+".changed_description").replace("{text}", description));
 					}
 				}
-				if (!bot.getDBUtil().role.setDescription(role.getIdLong(), description)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().role.setDescription(role.getIdLong(), description);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "rolesetup set description");
 					return;
 				}
 			}
 
 			if (event.hasOption("row")) {
 				Integer row = event.optInteger("row");
-				if (!bot.getDBUtil().role.setRow(role.getIdLong(), row)) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().role.setRow(role.getIdLong(), row);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "rolesetup set row");
 					return;
 				}
 				response.append(lu.getText(event, path+".changed_row").replace("{row}", row.toString()));
@@ -235,8 +248,10 @@ public class RolesSetupCmd extends CommandBase {
 			if (event.hasOption("invite")) {
 				String link = event.optString("invite").replaceFirst("(https://)?(discord)?(\\.?gg/)?", "").trim();
 				if (link.equalsIgnoreCase("null")) {
-					if (!bot.getDBUtil().role.setInvite(role.getIdLong(), "NULL")) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().role.setInvite(role.getIdLong(), "NULL");
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "rolesetup clear invite");
 						return;
 					}
 					response.append(lu.getText(event, path+".default_invite"));
@@ -246,8 +261,10 @@ public class RolesSetupCmd extends CommandBase {
 						if (invite.isFromGuild() && invite.isTemporal()) {
 							response.append(lu.getText(event, path+".invalid_invite"));
 						} else {
-							if (!bot.getDBUtil().role.setInvite(role.getIdLong(), invite.getUrl())) {
-								editErrorUnknown(event, "Database error.");
+							try {
+								bot.getDBUtil().role.setInvite(role.getIdLong(), invite.getUrl());
+							} catch (SQLException e) {
+								editErrorDatabase(event, e, "rolesetup set invite");
 								return;
 							}
 							response.append(lu.getText(event, path+".changed_invite").replace("{link}", invite.getUrl()));
@@ -299,8 +316,10 @@ public class RolesSetupCmd extends CommandBase {
 				editError(event, path+".no_role");
 				return;
 			}
-			if (!bot.getDBUtil().role.remove(roleId)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().role.remove(roleId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "rolesetup remove role");
 				return;
 			}
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
@@ -359,7 +378,9 @@ public class RolesSetupCmd extends CommandBase {
 			roles.forEach(data -> {
 				Role role = guild.getRoleById(data.getIdLong());
 				if (role == null) {
-					bot.getDBUtil().role.remove(data.getIdLong());
+					try {
+						bot.getDBUtil().role.remove(data.getIdLong());
+					} catch (SQLException ignored) {}
 					return;
 				}
 				String withLink = Optional.ofNullable(data.getDiscordInvite()).map(l -> "[`%s`](%s)".formatted(data.getId(), l)).orElse("`%s`".formatted(data.getId()));

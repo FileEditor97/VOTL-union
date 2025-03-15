@@ -2,11 +2,14 @@ package union.commands.moderation;
 
 import static union.utils.CastUtil.castLong;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -15,6 +18,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.SteamUtil;
+import union.utils.database.managers.BlacklistManager;
 import union.utils.message.MessageUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -108,8 +112,10 @@ public class BlacklistCmd extends CommandBase {
 			if (event.hasOption("user")) {
 				User user = event.optUser("user");
 				if (bot.getDBUtil().blacklist.inGroupUser(groupId, user.getIdLong())) {
-					if (!bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong())) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().blacklist.removeUser(groupId, user.getIdLong());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "blacklist remove user");
 						return;
 					}
 					// Log into master
@@ -139,8 +145,10 @@ public class BlacklistCmd extends CommandBase {
 				}
 
 				if (bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
-					if (!bot.getDBUtil().blacklist.removeSteam64(groupId, steam64)) {
-						editErrorUnknown(event, "Database error.");
+					try {
+						bot.getDBUtil().blacklist.removeSteam64(groupId, steam64);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "blacklist remove steam");
 						return;
 					}
 					// Log into master
@@ -198,8 +206,10 @@ public class BlacklistCmd extends CommandBase {
 			}
 
 			if (!bot.getDBUtil().blacklist.inGroupSteam64(groupId, steam64)) {
-				if (!bot.getDBUtil().blacklist.addSteam(guildId, groupId, steam64, event.getUser().getIdLong())) {
-					editErrorUnknown(event, "Database error.");
+				try {
+					bot.getDBUtil().blacklist.addSteam(guildId, groupId, steam64, event.getUser().getIdLong());
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "blacklist add steam");
 					return;
 				}
 				// Log into master
@@ -220,7 +230,6 @@ public class BlacklistCmd extends CommandBase {
 			this.name = "search";
 			this.path = "bot.moderation.blacklist.search";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "group", lu.getText(path+".group.help"), true, true).setMinValue(1),
 				new OptionData(OptionType.USER, "user", lu.getText(path+".user.help")),
 				new OptionData(OptionType.STRING, "steamid", lu.getText(path+".steamid.help")).setMaxLength(30)
 			);
@@ -230,33 +239,45 @@ public class BlacklistCmd extends CommandBase {
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply(true).queue();
 
-			Integer groupId = event.optInteger("group");
 			long guildId = event.getGuild().getIdLong();
-			if ( !(bot.getDBUtil().group.isOwner(groupId, guildId) || bot.getDBUtil().group.canManage(groupId, guildId)) ) {
-				// Is not group's owner or manager
+			final List<Integer> groupIds = new ArrayList<>();
+			groupIds.addAll(bot.getDBUtil().group.getOwnedGroups(guildId));
+			groupIds.addAll(bot.getDBUtil().group.getGuildGroups(guildId));
+			if (groupIds.isEmpty()) {
 				editError(event, path+".cant_view");
 				return;
 			}
 
 			if (event.hasOption("user")) {
 				User user = event.optUser("user");
-				Map<String, Object> data = bot.getDBUtil().blacklist.getByUserId(groupId, user.getIdLong());
-				if (data == null) {
+
+				List<MessageEmbed> embeds = new ArrayList<>();
+				for (int groupId : groupIds) {
+					BlacklistManager.BlacklistData data = bot.getDBUtil().blacklist.getByUserId(groupId, user.getIdLong());
+
+					if (data != null) {
+						embeds.add(bot.getEmbedUtil().getEmbed()
+							.setTitle("Group #`%s`".formatted(groupId))
+							.setDescription(lu.getText(event, path+".value")
+								.formatted(
+									"%s `%s`".formatted(user.getAsMention(), user.getId()),
+									Optional.ofNullable(data.getSteam64()).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
+									Optional.ofNullable(event.getJDA().getGuildById(data.getGuildId())).map(Guild::getName).orElse("-"),
+									"<@%s>".formatted(data.getModId()),
+									Optional.ofNullable(data.getReason()).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
+								)
+							).build()
+						);
+					}
+				}
+
+				if (embeds.isEmpty()) {
 					editEmbed(event, bot.getEmbedUtil().getEmbed()
 						.setDescription(lu.getText(event, path+".not_found").formatted(user.getAsMention()))
 						.build());
-					return;
+				} else {
+					event.getHook().editOriginalEmbeds(embeds).queue();
 				}
-
-				editEmbed(event, bot.getEmbedUtil().getEmbed()
-					.setDescription(lu.getText(event, path+".value").formatted(
-						"%s `%s`".formatted(user.getAsMention(), user.getId()),
-						Optional.ofNullable(castLong(data.get("steam64"))).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
-						Optional.ofNullable(castLong(data.get("guildId"))).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
-						Optional.ofNullable(castLong(data.get("modId"))).map("<@%s>"::formatted).orElse("-"),
-						Optional.ofNullable(String.valueOf(data.get("reason"))).map(v -> MessageUtil.limitString(v, 100)).orElse("-"),
-						groupId))
-					.build());
 			} else if (event.hasOption("steamid")) {
 				String input = event.optString("steamid");
 
@@ -272,23 +293,33 @@ public class BlacklistCmd extends CommandBase {
 					}
 				}
 
-				Map<String, Object> data = bot.getDBUtil().blacklist.getBySteam64(groupId, steam64);
-				if (data == null) {
+				List<MessageEmbed> embeds = new ArrayList<>();
+				for (int groupId : groupIds) {
+					BlacklistManager.BlacklistData data = bot.getDBUtil().blacklist.getBySteam64(groupId, steam64);
+
+					if (data != null) {
+						embeds.add(bot.getEmbedUtil().getEmbed()
+							.setTitle("Group #`%s`".formatted(groupId))
+							.setDescription(lu.getText(event, path+".value")
+								.formatted(
+									Optional.ofNullable(data.getUserId()).map("<@%s> `%<s`"::formatted).orElse("-"),
+									SteamUtil.convertSteam64toSteamID(steam64),
+									Optional.ofNullable(event.getJDA().getGuildById(data.getGuildId())).map(Guild::getName).orElse("-"),
+									"<@%s>".formatted(data.getModId()),
+									Optional.ofNullable(data.getReason()).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
+								)
+							).build()
+						);
+					}
+				}
+
+				if (embeds.isEmpty()) {
 					editEmbed(event, bot.getEmbedUtil().getEmbed()
 						.setDescription(lu.getText(event, path+".not_found").formatted(steam64))
 						.build());
-					return;
+				} else {
+					event.getHook().editOriginalEmbeds(embeds).queue();
 				}
-
-				editEmbed(event, bot.getEmbedUtil().getEmbed()
-					.setDescription(lu.getText(event, path+".value").formatted(
-						Optional.ofNullable(castLong(data.get("userId"))).map("<@%s> `%<s`"::formatted).orElse("-"),
-						SteamUtil.convertSteam64toSteamID(steam64),
-						Optional.ofNullable(castLong(data.get("guildId"))).map(event.getJDA()::getGuildById).map(Guild::getName).orElse("-"),
-						Optional.ofNullable(castLong(data.get("modId"))).map("<@%s>"::formatted).orElse("-"),
-						Optional.ofNullable(String.valueOf(data.get("reason"))).map(v -> MessageUtil.limitString(v, 100)).orElse("-"),
-						groupId))
-					.build());
 			} else {
 				// No options
 				editError(event, path+".no_options");

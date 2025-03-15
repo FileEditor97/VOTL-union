@@ -10,6 +10,7 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
 import union.utils.file.SettingsManager;
 
+@SuppressWarnings("unused")
 public class UnionVerifyManager extends SqlDBBase {
 	private final String TABLE_VERIFY = "union.users";
 	private final String TABLE_FORUM = "union.xf_registered_users";

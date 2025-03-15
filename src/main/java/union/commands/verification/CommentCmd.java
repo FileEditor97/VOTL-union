@@ -12,6 +12,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.SteamUtil;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -72,8 +73,10 @@ public class CommentCmd extends CommandBase {
 			final long authorId = event.getUser().getIdLong();
 
 			// Add to db
-			if (!bot.getDBUtil().comments.add(steam64, authorId, timestamp, text)) {
-				editErrorOther(event, "Failed to save comment.");
+			try {
+				bot.getDBUtil().comments.add(steam64, authorId, timestamp, text);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to save comment.");
 				return;
 			}
 			// Reply
@@ -119,8 +122,10 @@ public class CommentCmd extends CommandBase {
 			final long authorId = event.getUser().getIdLong();
 
 			// Remove from DB
-			if (!bot.getDBUtil().comments.removeComment(steam64, authorId)) {
-				editErrorOther(event, "Failed to delete comment.");
+			try {
+				bot.getDBUtil().comments.removeComment(steam64, authorId);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to delete comment.");
 				return;
 			}
 			// Reply
@@ -165,8 +170,10 @@ public class CommentCmd extends CommandBase {
 			}
 
 			// Remove from DB
-			if (!bot.getDBUtil().comments.removePlayer(steam64)) {
-				editErrorOther(event, "Failed to clear comments.");
+			try {
+				bot.getDBUtil().comments.removePlayer(steam64);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "Failed to clear comments.");
 				return;
 			}
 			// Reply

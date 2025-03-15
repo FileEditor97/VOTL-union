@@ -1,5 +1,6 @@
 package union.commands.moderation;
 
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -22,7 +23,6 @@ import union.utils.message.TimeUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -115,16 +115,29 @@ public class MuteCmd extends CommandBase {
 			
 			tm.timeoutFor(duration).reason(reason).queue(done -> {
 				tm.getUser().openPrivateChannel().queue(pm -> {
-					MessageEmbed embed = bot.getModerationUtil().getDmEmbed(CaseType.MUTE, guild, reason, duration, mod.getUser(), false);
-					if (embed == null) return;
-					pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, duration, mod.getUser(), false);
+					if (text == null) return;
+					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
 				// Set previous mute case inactive, as member is not timed-out
-				if (oldMuteData != null) bot.getDBUtil().cases.setInactive(oldMuteData.getRowId());
+				if (oldMuteData != null) {
+					try {
+						bot.getDBUtil().cases.setInactive(oldMuteData.getRowId());
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "Failed to set privious case inactive.");
+						return;
+					}
+				}
 				// add info to db
-				CaseData newMuteData = bot.getDBUtil().cases.add(CaseType.MUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
-					guild.getIdLong(), reason, Instant.now(), duration);
+				CaseData newMuteData;
+				try {
+					newMuteData = bot.getDBUtil().cases.add(CaseType.MUTE, tm.getIdLong(), tm.getUser().getName(), mod.getIdLong(), mod.getUser().getName(),
+						guild.getIdLong(), reason, Instant.now(), duration);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "Failed to create new case.");
+					return;
+				}
 				// log mute
 				bot.getLogger().mod.onNewCase(guild, tm.getUser(), newMuteData, proofData).thenAccept(logUrl -> {
 					// Add log url to db

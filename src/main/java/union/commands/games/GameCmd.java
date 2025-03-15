@@ -14,6 +14,7 @@ import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class GameCmd extends CommandBase {
@@ -53,8 +54,10 @@ public class GameCmd extends CommandBase {
 			}
 			int maxStrikes = event.optInteger("max_strikes", 3);
 
-			if (!bot.getDBUtil().games.addChannel(event.getGuild().getIdLong(), channel.getIdLong(), maxStrikes)) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().games.addChannel(event.getGuild().getIdLong(), channel.getIdLong(), maxStrikes);
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "game add channel");
 				return;
 			}
 
@@ -84,8 +87,10 @@ public class GameCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().games.removeChannel(channel.getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().games.removeChannel(channel.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "game remove channel");
 				return;
 			}
 
@@ -153,8 +158,10 @@ public class GameCmd extends CommandBase {
 				return;
 			}
 
-			if (!bot.getDBUtil().games.clearStrikes(channel.getIdLong(), user.getIdLong())) {
-				editErrorUnknown(event, "Database error.");
+			try {
+				bot.getDBUtil().games.clearStrikes(channel.getIdLong(), user.getIdLong());
+			} catch (SQLException e) {
+				editErrorDatabase(event, e, "game clear strikes");
 				return;
 			}
 

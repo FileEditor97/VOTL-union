@@ -1,5 +1,6 @@
 package union.utils.database.managers;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import union.utils.database.LiteDBBase;
@@ -10,15 +11,15 @@ public class WebhookManager extends LiteDBBase {
 		super(cu, "webhook");
 	}
 
-	public void add(long webhookId, long guildId, String token) {
+	public void add(long webhookId, long guildId, String token) throws SQLException {
 		execute("INSERT INTO %s(webhookId, guildId, token) VALUES (%s, %s, %s) ON CONFLICT(webhookId) DO NOTHING".formatted(table, webhookId, guildId, quote(token)));
 	}
 
-	public void remove(long webhookId) {
+	public void remove(long webhookId) throws SQLException {
 		execute("DELETE FROM %s WHERE (webhookId=%s)".formatted(table, webhookId));
 	}
 
-	public void removeAll(long guildId) {
+	public void removeAll(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 

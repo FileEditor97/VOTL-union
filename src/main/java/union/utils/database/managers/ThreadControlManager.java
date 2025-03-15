@@ -3,6 +3,7 @@ package union.utils.database.managers;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class ThreadControlManager extends LiteDBBase {
@@ -10,15 +11,15 @@ public class ThreadControlManager extends LiteDBBase {
 		super(cu, "threadControl");
 	}
 
-	public boolean add(long guildId, long channelId) {
-		return execute("INSERT INTO %s(guildId, channelId) VALUES (%s, %s)".formatted(table, guildId, channelId));
+	public void add(long guildId, long channelId) throws SQLException {
+		execute("INSERT INTO %s(guildId, channelId) VALUES (%s, %s)".formatted(table, guildId, channelId));
 	}
 
-	public boolean remove(long channelId) {
-		return execute("DELETE FROM %s WHERE (channelId=%s)".formatted(table, channelId));
+	public void remove(long channelId) throws SQLException {
+		execute("DELETE FROM %s WHERE (channelId=%s)".formatted(table, channelId));
 	}
 
-	public void removeAll(long guildId) {
+	public void removeAll(long guildId) throws SQLException {
 		execute("DELETE FROM %s WHERE (guildId=%s)".formatted(table, guildId));
 	}
 

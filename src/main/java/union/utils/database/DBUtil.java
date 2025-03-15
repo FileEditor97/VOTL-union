@@ -75,7 +75,13 @@ public class DBUtil {
 	public DBUtil(FileManager fileManager, SettingsManager settings) {
 		this.fileManager = fileManager;
 
-		// Check if MariaDB driver is initiated
+		// Check if drivers are initiated
+		try {
+			Class.forName("org.sqlite.JDBC").getDeclaredConstructor().newInstance();
+		} catch (Exception ex) {
+			log.error("SQLite: Exiting!\nSQLite java client driver not found.\nPossibly, this OS/architecture is not supported or Driver has problems.", ex);
+			System.exit(666);
+		}
 		try {
 			Class.forName("org.mariadb.jdbc.Driver").getDeclaredConstructor().newInstance();
 		} catch (Exception ex) {

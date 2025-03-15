@@ -802,20 +802,19 @@ public class InteractionListener extends ListenerAdapter {
 					).setActionRow(continueButton)
 					.setEphemeral(true)
 					.queue(msg -> {
-							waiter.waitForEvent(
-								ButtonInteractionEvent.class,
-								e -> msg.getIdLong() == e.getMessageIdLong(),
-								buttonEvent -> {
-									buttonEvent.replyModal(modal).queue();
-									msg.delete().queue();
-									// Maybe reply, that other mod started to fill modal
-								},
-								10,
-								TimeUnit.SECONDS,
-								() -> msg.delete().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
-							);
-						}
-					);
+						waiter.waitForEvent(
+							ButtonInteractionEvent.class,
+							e -> msg.getIdLong() == e.getMessageIdLong(),
+							buttonEvent -> {
+								buttonEvent.replyModal(modal).queue();
+								msg.delete().queue();
+								// Maybe reply, that other mod started to fill modal
+							},
+							10,
+							TimeUnit.SECONDS,
+							() -> msg.delete().queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_MESSAGE))
+						);
+					});
 				return;
 			}
 			if (roles.isEmpty()) {
@@ -1049,14 +1048,14 @@ public class InteractionListener extends ListenerAdapter {
 			action.addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
 				.addMemberPermissionOverride(user.getIdLong(), EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
 				.queue(channel -> {
-						int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
-						db.ticket.addTicket(ticketId, user.getIdLong(), guildId, channel.getIdLong(), tagId, time);
+					int time = bot.getDBUtil().getTicketSettings(event.getGuild()).getTimeToReply();
+					db.ticket.addTicket(ticketId, user.getIdLong(), guildId, channel.getIdLong(), tagId, time);
 
-						bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
-					},
-					failure -> {
-						sendTicketError(event, "Unable to create new channel in target category, with ID: "+tag.getLocation());
-					});
+					bot.getTicketUtil().createTicket(event, channel, mentions.toString(), message);
+				},
+				failure -> {
+					sendTicketError(event, "Unable to create new channel in target category, with ID: "+tag.getLocation());
+				});
 		}
 	}
 
@@ -1077,11 +1076,12 @@ public class InteractionListener extends ListenerAdapter {
 			return;
 		}
 		channel.deleteMessageById(messageId).reason("Deleted by %s".formatted(event.getMember().getEffectiveName())).queue(success ->
-				event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getLocalized(event.getGuildLocale(), "menus.report.deleted").replace("{name}", event.getMember().getAsMention()))
-					.build()
-				).queue(),
-			failure -> event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "misc.unknown", failure.getMessage())).queue()
+			event.getHook().sendMessageEmbeds(new EmbedBuilder().setColor(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getLocalized(event.getGuildLocale(), "menus.report.deleted").replace("{name}", event.getMember().getAsMention()))
+				.build()
+			).queue(),
+		failure ->
+			event.getHook().sendMessageEmbeds(bot.getEmbedUtil().getError(event, "misc.unknown", failure.getMessage())).queue()
 		);
 	}
 
@@ -1341,28 +1341,28 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
-							Long steam64 = db.verifyCache.getSteam64(user.getIdLong());
-							selected.forEach(groupId -> {
-								if (!db.blacklist.inGroupUser(groupId, caseData.getTargetId()))
-									db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, caseData.getReason(), selectEvent.getUser().getIdLong());
+						Long steam64 = db.verifyCache.getSteam64(user.getIdLong());
+						selected.forEach(groupId -> {
+							if (!db.blacklist.inGroupUser(groupId, caseData.getTargetId()))
+								db.blacklist.add(selectEvent.getGuild().getIdLong(), groupId, user.getIdLong(), steam64, caseData.getReason(), selectEvent.getUser().getIdLong());
 
-								Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason());
-							});
-
-							// Log to master
-							bot.getLogger().mod.onBlacklistAdded(event.getUser(), user, steam64, selected);
-							// Reply
-							selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
-									.setColor(Constants.COLOR_SUCCESS)
-									.setDescription(lu.getText(event, "bot.moderation.blacklist.done"))
-									.build())
-								.setComponents().queue();
-						},
-						failure -> {
-							selectEvent.getHook().editOriginalEmbeds(
-								bot.getEmbedUtil().getError(selectEvent, "bot.moderation.blacklist.no_user", failure.getMessage())
-							).setComponents().queue();
+							Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason(), selectEvent.getUser());
 						});
+
+						// Log to master
+						bot.getLogger().mod.onBlacklistAdded(event.getUser(), user, steam64, selected);
+						// Reply
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.blacklist.done"))
+							.build()
+						).setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.blacklist.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
 				},
 				30,
 				TimeUnit.SECONDS,
@@ -1419,19 +1419,21 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
-							selected.forEach(groupId -> Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason()));
-							// Reply
-							selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
-									.setColor(Constants.COLOR_SUCCESS)
-									.setDescription(lu.getText(event, "bot.moderation.sync.ban.done"))
-									.build())
-								.setComponents().queue();
-						},
-						failure -> {
-							selectEvent.getHook().editOriginalEmbeds(
-								bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
-							).setComponents().queue();
-						});
+						selected.forEach(groupId ->
+							Helper.getInstance().runBan(groupId, event.getGuild(), user, caseData.getReason(), selectEvent.getUser())
+						);
+						// Reply
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.sync.ban.done"))
+							.build()
+						).setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
 				},
 				30,
 				TimeUnit.SECONDS,
@@ -1481,27 +1483,27 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(event.getComponentId().split(":")[1]).queue(user -> {
-							selected.forEach(groupId -> {
-								if (db.blacklist.inGroupUser(groupId, user.getIdLong())) {
-									ignoreExc(() -> db.blacklist.removeUser(groupId, user.getIdLong()));
-									bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
-								}
+						selected.forEach(groupId -> {
+							if (db.blacklist.inGroupUser(groupId, user.getIdLong())) {
+								ignoreExc(() -> db.blacklist.removeUser(groupId, user.getIdLong()));
+								bot.getLogger().mod.onBlacklistRemoved(event.getUser(), user, null, groupId);
+							}
 
-								Helper.getInstance().runUnban(groupId, event.getGuild(), user, "Sync group unban, by "+event.getUser().getName());
-							});
-
-							// Reply
-							selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
-									.setColor(Constants.COLOR_SUCCESS)
-									.setDescription(lu.getText(event, "bot.moderation.sync.unban.done"))
-									.build())
-								.setComponents().queue();
-						},
-						failure -> {
-							selectEvent.getHook().editOriginalEmbeds(
-								bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
-							).setComponents().queue();
+							Helper.getInstance().runUnban(groupId, event.getGuild(), user, "Group unban", event.getUser());
 						});
+
+						// Reply
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.sync.unban.done"))
+							.build()
+						).setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
 				},
 				30,
 				TimeUnit.SECONDS,
@@ -1558,19 +1560,21 @@ public class InteractionListener extends ListenerAdapter {
 					List<Integer> selected = selectEvent.getValues().stream().map(Integer::parseInt).toList();
 
 					event.getJDA().retrieveUserById(userId).queue(user -> {
-							selected.forEach(groupId -> Helper.getInstance().runKick(groupId, event.getGuild(), user, caseData.getReason()));
-							// Reply
-							selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
-									.setColor(Constants.COLOR_SUCCESS)
-									.setDescription(lu.getText(event, "bot.moderation.sync.kick.done"))
-									.build())
-								.setComponents().queue();
-						},
-						failure -> {
-							selectEvent.getHook().editOriginalEmbeds(
-								bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
-							).setComponents().queue();
-						});
+						selected.forEach(groupId ->
+							Helper.getInstance().runKick(groupId, event.getGuild(), user, caseData.getReason(), selectEvent.getUser())
+						);
+						// Reply
+						selectEvent.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed()
+							.setColor(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, "bot.moderation.sync.kick.done"))
+							.build()
+						).setComponents().queue();
+					},
+					failure -> {
+						selectEvent.getHook().editOriginalEmbeds(
+							bot.getEmbedUtil().getError(selectEvent, "bot.moderation.sync.no_user", failure.getMessage())
+						).setComponents().queue();
+					});
 				},
 				30,
 				TimeUnit.SECONDS,
@@ -1614,50 +1618,50 @@ public class InteractionListener extends ListenerAdapter {
 		}
 
 		event.getGuild().retrieveMemberById(targetId).queue(target -> {
-				List<Long> addIds = new ArrayList<>();
-				List<Long> removeIds = new ArrayList<>();
-				// Retrieve selected roles
-				for (String line : db.modifyRole.getRoles(guildId, userId, targetId).split(":")) {
-					if (line.isBlank()) continue;
-					String[] roleIds = line.split(";");
-					for (String roleId : roleIds) {
-						// Check if first char is '+' add or '-' remove
-						if (roleId.charAt(0) == '+') addIds.add(Long.parseLong(roleId.substring(1)));
-						else removeIds.add(Long.parseLong(roleId.substring(1)));
-					}
+			List<Long> addIds = new ArrayList<>();
+			List<Long> removeIds = new ArrayList<>();
+			// Retrieve selected roles
+			for (String line : db.modifyRole.getRoles(guildId, userId, targetId).split(":")) {
+				if (line.isBlank()) continue;
+				String[] roleIds = line.split(";");
+				for (String roleId : roleIds) {
+					// Check if first char is '+' add or '-' remove
+					if (roleId.charAt(0) == '+') addIds.add(Long.parseLong(roleId.substring(1)));
+					else removeIds.add(Long.parseLong(roleId.substring(1)));
 				}
-				if (addIds.isEmpty() && removeIds.isEmpty()) {
-					sendError(event, "bot.roles.role.modify.no_change");
-					return;
-				}
+			}
+			if (addIds.isEmpty() && removeIds.isEmpty()) {
+				sendError(event, "bot.roles.role.modify.no_change");
+				return;
+			}
 
-				Guild guild = target.getGuild();
-				List<Role> finalRoles = new ArrayList<>(target.getRoles());
-				finalRoles.addAll(addIds.stream().map(guild::getRoleById).toList());
-				finalRoles.removeAll(removeIds.stream().map(guild::getRoleById).toList());
+			Guild guild = target.getGuild();
+			List<Role> finalRoles = new ArrayList<>(target.getRoles());
+			finalRoles.addAll(addIds.stream().map(guild::getRoleById).toList());
+			finalRoles.removeAll(removeIds.stream().map(guild::getRoleById).toList());
 
-				guild.modifyMemberRoles(target, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
-					// Remove from DB
-					db.modifyRole.remove(guildId, userId, targetId);
-					// text
-					StringBuilder builder = new StringBuilder();
-					if (!addIds.isEmpty()) builder.append("\n**Added**: ")
-						.append(addIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
-					if (!removeIds.isEmpty()) builder.append("\n**Removed**: ")
-						.append(removeIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
-					String rolesString = builder.toString();
-					// Log
-					bot.getLogger().role.onRolesModified(guild, event.getUser(), target.getUser(), rolesString);
-					// Send reply
-					event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getText(event, "bot.roles.role.modify.done").formatted(target.getAsMention(), rolesString))
-						.build()
-					).setComponents().queue();
-				}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", "Unable to modify roles, User ID: "+targetId))
-					.setComponents().queue()
-				);
-			}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", "Member not found, ID: "+targetId))
+			guild.modifyMemberRoles(target, finalRoles).reason("by "+event.getMember().getEffectiveName()).queue(done -> {
+				// Remove from DB
+				db.modifyRole.remove(guildId, userId, targetId);
+				// text
+				StringBuilder builder = new StringBuilder();
+				if (!addIds.isEmpty()) builder.append("\n**Added**: ")
+					.append(addIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
+				if (!removeIds.isEmpty()) builder.append("\n**Removed**: ")
+					.append(removeIds.stream().map(String::valueOf).collect(Collectors.joining(">, <@&", "<@&", ">")));
+				String rolesString = builder.toString();
+				// Log
+				bot.getLogger().role.onRolesModified(guild, event.getUser(), target.getUser(), rolesString);
+				// Send reply
+				event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, "bot.roles.role.modify.done").formatted(target.getAsMention(), rolesString))
+					.build()
+				).setComponents().queue();
+			}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", "Unable to modify roles, User ID: "+targetId))
 				.setComponents().queue()
+			);
+		}, failure -> event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(event, "errors.error", "Member not found, ID: "+targetId))
+			.setComponents().queue()
 		);
 	}
 

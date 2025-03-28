@@ -381,13 +381,14 @@ public class InteractionListener extends ListenerAdapter {
 				// add verify role
 				finalRoles.add(verifyRole);
 				// add each additional role
-				for (Long roleId : additionalRoles) {
-					Role role = guild.getRoleById(roleId);
-					if (role != null)
-						finalRoles.add(role);
-				}
+				additionalRoles.stream()
+					.map(guild::getRoleById)
+					.filter(Objects::nonNull)
+					.forEach(finalRoles::add);
 				// modify
-				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - NO STEAM, database disabled").queue(
+				guild.modifyMemberRoles(member, finalRoles)
+					.reason("Verification completed - NO STEAM, database disabled")
+					.queue(
 					success -> {
 						bot.getLogger().verify.onVerified(member.getUser(), null, guild);
 						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
@@ -474,13 +475,14 @@ public class InteractionListener extends ListenerAdapter {
 				// add verify role
 				finalRoles.add(verifyRole);
 				// add each additional role
-				for (Long roleId : additionalRoles) {
-					Role role = guild.getRoleById(roleId);
-					if (role != null)
-						finalRoles.add(role);
-				}
+				additionalRoles.stream()
+					.map(guild::getRoleById)
+					.filter(Objects::nonNull)
+					.forEach(finalRoles::add);
 				// modify
-				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - "+steam64).queue(
+				guild.modifyMemberRoles(member, finalRoles)
+					.reason("Verification completed - "+steam64)
+					.queue(
 					success -> {
 						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
 						try {

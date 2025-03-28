@@ -3,10 +3,7 @@ package union.listeners;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -97,13 +94,33 @@ public class MemberListener extends ListenerAdapter {
 				}
 			}
 
-			Optional.ofNullable(db.getVerifySettings(guild).getRoleId())
+			// Set roles
+			Role verifyRole = Optional.ofNullable(db.getVerifySettings(guild).getRoleId())
 				.map(guild::getRoleById)
-				.ifPresent(role -> guild.addRoleToMember(event.getUser(), role)
+				.orElse(null);
+			if (verifyRole == null) return;
+
+			Set<Long> additionalRoles = db.getVerifySettings(guild).getAdditionalRoles();
+			if (additionalRoles.isEmpty()) {
+				guild.addRoleToMember(event.getUser(), verifyRole)
 					.reason(cachedSteam64 == null ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64)
-					.queue(success -> bot.getLogger().verify.onVerified(event.getUser(), cachedSteam64, guild))
-				);
+					.queue(success -> bot.getLogger().verify.onVerified(event.getUser(), cachedSteam64, guild));
+			} else {
+				List<Role> finalRoles = new ArrayList<>(event.getMember().getRoles());
+				// add verify role
+				finalRoles.add(verifyRole);
+				// add each additional role
+				additionalRoles.stream()
+					.map(guild::getRoleById)
+					.filter(Objects::nonNull)
+					.forEach(finalRoles::add);
+				// modify
+				guild.modifyMemberRoles(event.getMember(), finalRoles)
+					.reason(cachedSteam64 == null ? "Autocheck: Forced" : "Autocheck: Account linked - "+cachedSteam64)
+					.queue(success -> bot.getLogger().verify.onVerified(event.getUser(), cachedSteam64, guild));
+			}
 		}
+
 	}
 	
 	@Override

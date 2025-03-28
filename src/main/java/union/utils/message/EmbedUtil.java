@@ -29,7 +29,7 @@ public class EmbedUtil {
 
 	@NotNull
 	public EmbedBuilder getEmbed(int color) {
-		return new EmbedBuilder().setColor(color).setTimestamp(ZonedDateTime.now());
+		return new EmbedBuilder().setColor(color);
 	}
 
 	@NotNull

@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import union.utils.exception.CheckException;
 
 public class VerifyPanelCmd extends CommandBase {
 	
@@ -30,7 +31,7 @@ public class VerifyPanelCmd extends CommandBase {
 		this.name = "vfpanel";
 		this.path = "bot.verification.vfpanel";
 		this.children = new SlashCommand[]{new Create(), new Preview(), new SetText()};
-		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
+		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND};
 		this.module = CmdModule.VERIFICATION;
 		this.category = CmdCategory.VERIFICATION;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -59,6 +60,17 @@ public class VerifyPanelCmd extends CommandBase {
 				editError(event, path+".no_channel", "Received: No channel");
 				return;
 			}
+			try {
+				bot.getCheckUtil().hasPermissions(
+					event,
+					new Permission[]{Permission.VIEW_CHANNEL, Permission.MANAGE_WEBHOOKS},
+					channel
+				);
+			} catch (CheckException ex) {
+				editMsg(event, ex.getEditData());
+				return;
+			}
+
 			TextChannel tc = (TextChannel) channel;
 
 			if (bot.getDBUtil().getVerifySettings(guild).getRoleId() == null) {

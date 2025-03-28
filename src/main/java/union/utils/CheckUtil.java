@@ -93,18 +93,31 @@ public class CheckUtil {
 		return this;
 	}
 
-	public CheckUtil hasPermissions(IReplyCallback replyCallback, Guild guild, Member member, Permission[] permissions) throws CheckException {
-		return hasPermissions(replyCallback, guild, member, false, null, permissions);
+	public CheckUtil hasPermissions(IReplyCallback replyCallback, Permission[] permissions) throws CheckException {
+		return hasPermissions(replyCallback, permissions, null, null, true);
 	}
 
-	public CheckUtil hasPermissions(IReplyCallback replyCallback, Guild guild, Member member, boolean isSelf, Permission[] permissions) throws CheckException {
-		return hasPermissions(replyCallback, guild, member, isSelf, null, permissions);
+	public CheckUtil hasPermissions(IReplyCallback replyCallback, Permission[] permissions, @NotNull Member member) throws CheckException {
+		return hasPermissions(replyCallback, permissions, null, member, false);
 	}
 
-	public CheckUtil hasPermissions(IReplyCallback replyCallback, Guild guild, Member member, boolean isSelf, GuildChannel channel, Permission[] permissions) throws CheckException {
+	public CheckUtil hasPermissions(IReplyCallback replyCallback, Permission[] permissions, GuildChannel channel) throws CheckException {
+		return hasPermissions(replyCallback, permissions, channel, null, true);
+	}
+
+	@SuppressWarnings("unused")
+	public CheckUtil hasPermissions(IReplyCallback replyCallback, Permission[] permissions, GuildChannel channel, Member member) throws CheckException {
+		return hasPermissions(replyCallback, permissions, channel, member, false);
+	}
+
+	public CheckUtil hasPermissions(@NotNull IReplyCallback replyCallback, @Nullable Permission[] permissions, @Nullable GuildChannel channel, @Nullable Member member, boolean isSelf) throws CheckException {
 		if (permissions == null || permissions.length == 0)
 			return this;
-		if (guild == null || (!isSelf && member == null))
+		if (!isSelf && member == null)
+			throw new IllegalArgumentException("You must specify a member if not self.");
+
+		final Guild guild = replyCallback.getGuild();
+		if (guild == null)
 			return this;
 
 		MessageCreateData msg = null;

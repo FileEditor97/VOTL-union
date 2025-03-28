@@ -3,8 +3,7 @@ package union.listeners;
 import java.time.OffsetDateTime;
 import java.util.EnumSet;
 import java.util.Optional;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -37,7 +36,7 @@ public class VoiceListener extends ListenerAdapter {
 	private final Cache<PlayerObject, Long> cache = Caffeine.newBuilder()
 		.expireAfterAccess(10, TimeUnit.MINUTES)
 		.build();
-	
+
 	private final DBUtil db;
 	private final App bot;
 
@@ -111,12 +110,15 @@ public class VoiceListener extends ListenerAdapter {
 	}
 
 	private void handleVoiceCreate(Guild guild, Member member) {
-		long userId = member.getIdLong();
-		DiscordLocale guildLocale = guild.getLocale();
+		if (!member.getVoiceState().inAudioChannel()) return;
+		final long userId = member.getIdLong();
+		final DiscordLocale guildLocale = guild.getLocale();
 
 		if (db.voice.existsUser(userId)) {
 			member.getUser().openPrivateChannel()
-				.queue(channel -> channel.sendMessage(bot.getLocaleUtil().getLocalized(guildLocale, "bot.voice.listener.cooldown")).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
+				.queue(channel -> channel.sendMessage(
+					bot.getLocaleUtil().getLocalized(guildLocale, "bot.voice.listener.cooldown")
+				).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
 			return;
 		}
 		GuildVoiceManager.VoiceSettings voiceSettings = db.getVoiceSettings(guild);

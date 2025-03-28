@@ -1,5 +1,8 @@
 package union.listeners;
 
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.audit.AuditLogEntry;
+import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.logs.LogType;
@@ -11,6 +14,8 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.sql.SQLException;
+
+import static net.dv8tion.jda.api.audit.ActionType.BOT_ADD;
 
 public class GuildListener extends ListenerAdapter {
 
@@ -24,8 +29,41 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildJoin(@NotNull GuildJoinEvent event) {
-		String guildId = event.getGuild().getId();
-        bot.getAppLogger().info("Joined guild '{}'({})", event.getGuild().getName(), guildId);
+		Guild guild = event.getGuild();
+		// Check for audit perms
+		if (!guild.getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS)) {
+			guild.leave().queue();
+			bot.getAppLogger().info("Auto-left guild '{}'({}) due to bad permissions", guild.getName(), guild.getId());
+			return;
+		}
+
+		// Check who added the bot
+		// Allow only by developer or bot owner
+		guild.retrieveAuditLogs()
+			.type(BOT_ADD)
+			.limit(1)
+			.queue(logs -> {
+				if (!logs.isEmpty()) {
+					AuditLogEntry entry = logs.get(0);
+					if (entry.getTargetIdLong() == event.getJDA().getSelfUser().getApplicationIdLong()) {
+						final User user = entry.getUser();
+						if (bot.getCheckUtil().isBotOwner(user) || bot.getCheckUtil().isDeveloper(user)) {
+							bot.getAppLogger().info("Joined guild '{}'({})", event.getGuild().getName(), guild.getId());
+						} else {
+							bot.getAppLogger().info("Auto-left guild '{}'({}), unathorized user '{}'({})",
+								guild.getName(), guild.getId(), user.getName(), user.getId()
+							);
+							guild.leave().queue();
+						}
+						return;
+					}
+				}
+				bot.getAppLogger().info("Auto-left guild '{}'({}) due to missing audit log", guild.getName(), guild.getId());
+				guild.leave().queue();
+			},
+			failure -> {
+				bot.getAppLogger().info("Auto-left guild '{}'({}) due to failed audit log retrieve", guild.getName(), guild.getId());
+			});
 	}
 
 	@Override

@@ -630,8 +630,13 @@
 					"usage": "button-stats"
 				},
 				"ping": {
-					"help": "View ping chart for last 24 hours",
+					"help": "View ping chart for the last 24 hours",
 					"usage": "ping",
+					"failed": "Failed to generate or upload chart."
+				},
+				"database": {
+					"help": "View database stats for the last 24 hours",
+					"usage": "database",
 					"failed": "Failed to generate or upload chart."
 				}
 			},

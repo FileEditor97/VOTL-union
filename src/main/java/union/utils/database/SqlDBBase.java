@@ -125,6 +125,8 @@ public class SqlDBBase {
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
+		} catch (SQLTimeoutException ex) {
+			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
@@ -230,6 +232,8 @@ public class SqlDBBase {
 					rs.getLong("play_time")
 				));
 			}
+		} catch (SQLTimeoutException ex) {
+			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
 			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 			return Map.of();

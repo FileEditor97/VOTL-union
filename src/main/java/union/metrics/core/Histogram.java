@@ -87,7 +87,7 @@ public class Histogram extends StatefulMetric<DistributionDataPoint, Histogram.D
 		public double getAverage() {
 			synchronized (values) {
 				if (values.isEmpty())
-					return 0.0;
+					return 0;
 				return sum.doubleValue() / values.size();
 			}
 		}

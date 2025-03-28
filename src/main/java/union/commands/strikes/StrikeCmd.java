@@ -329,12 +329,13 @@ public class StrikeCmd extends CommandBase {
 					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
-				Duration durationCopy = duration;
-				guild.timeoutFor(target, duration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
+				final Duration finalDuration = duration.toDaysPart() > 28 ? Duration.ofDays(28) : duration;
+
+				guild.timeoutFor(target, finalDuration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
 					try {
 						// add case to DB
 						CaseData caseData = bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
-							guild.getIdLong(), reason, Instant.now(), durationCopy);
+							guild.getIdLong(), reason, Instant.now(), finalDuration);
 						// log case
 						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
 							bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
@@ -345,7 +346,7 @@ public class StrikeCmd extends CommandBase {
 				);
 				builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
 					.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
-					.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
+					.append(TimeUtil.durationToLocalizedString(lu, locale, finalDuration))
 					.append("\n");
 			}
 		}

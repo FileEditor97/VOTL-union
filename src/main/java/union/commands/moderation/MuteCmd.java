@@ -69,7 +69,11 @@ public class MuteCmd extends CommandBase {
 			return;
 		}
 		if (duration.isZero()) {
-			editError(event, path+".abort", "Duration must larger than 1 minute");
+			editError(event, path+".abort", "Duration must larger than 1 minute.");
+			return;
+		}
+		if (duration.toDaysPart() > 28) {
+			editError(event, path+".abort", "Duration maximum: 28 days.");
 			return;
 		}
 

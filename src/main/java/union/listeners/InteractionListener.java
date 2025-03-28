@@ -407,7 +407,7 @@ public class InteractionListener extends ListenerAdapter {
 			// Check if steam64 is not blacklisted
 			if (checkBlacklist) {
 				for (int groupId : groupIds) {
-					BlacklistManager.BlacklistData data = db.blacklist.getByUserId(groupId, member.getIdLong());
+					BlacklistManager.BlacklistData data = db.blacklist.getBySteam64(groupId, steam64);
 					if (data != null) {
 						sendError(event, "bot.verification.blacklisted", "Reason: "+data.getReason());
 						bot.getLogger().verify.onVerifyBlacklisted(

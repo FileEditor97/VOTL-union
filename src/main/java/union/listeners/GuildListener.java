@@ -48,11 +48,11 @@ public class GuildListener extends ListenerAdapter {
 					if (entry.getTargetIdLong() == event.getJDA().getSelfUser().getApplicationIdLong()) {
 						final User user = entry.getUser();
 						if (bot.getCheckUtil().isBotOwner(user) || bot.getCheckUtil().isDeveloper(user)) {
-							bot.getAppLogger().info("Joined guild '{}'({})", event.getGuild().getName(), guild.getId());
+							bot.getAppLogger().info("Joined guild '{}'({})\n\nBy '{}'({})",
+								event.getGuild().getName(), guild.getId(), user.getName(), user.getId());
 						} else {
-							bot.getAppLogger().info("Auto-left guild '{}'({}), unathorized user '{}'({})",
-								guild.getName(), guild.getId(), user.getName(), user.getId()
-							);
+							bot.getAppLogger().info("Auto-left guild '{}'({}), unathorized join\nBy '{}'({})",
+								guild.getName(), guild.getId(), user.getName(), user.getId());
 							guild.leave().queue();
 						}
 						return;

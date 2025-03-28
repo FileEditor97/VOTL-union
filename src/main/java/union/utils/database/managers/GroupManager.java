@@ -107,7 +107,7 @@ public class GroupManager extends LiteDBBase {
 
 	public List<Long> getGroupManagers(int groupId) {
 		return select("SELECT guildId FROM %s WHERE (groupId=%d AND canManage=1)".formatted(members, groupId), "guildId", Long.class);
-	} 
+	}
 
 	public boolean canManage(int groupId, long guildId) {
 		Integer data = selectOne("SELECT canManage FROM %s WHERE (groupId=%d AND guildId=%d)".formatted(members, groupId, guildId), "canManage", Integer.class);

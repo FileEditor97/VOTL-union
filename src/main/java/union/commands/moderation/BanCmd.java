@@ -194,7 +194,8 @@ public class BanCmd extends CommandBase {
 			tu.openPrivateChannel().queue(pm -> {
 				final String text = bot.getModerationUtil().getDmText(CaseType.BAN, guild, reason, duration, mod.getUser(), event.optBoolean("can_appeal", true));
 				if (text == null) return;
-				pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+				pm.sendMessage(text).setSuppressEmbeds(true)
+					.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 			});
 
 			guild.ban(tu, (event.optBoolean("delete", true) ? 10 : 0), TimeUnit.HOURS).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {

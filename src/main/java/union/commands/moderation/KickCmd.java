@@ -89,7 +89,8 @@ public class KickCmd extends CommandBase {
 			tm.getUser().openPrivateChannel().queue(pm -> {
 				final String text = bot.getModerationUtil().getDmText(CaseType.KICK, guild, reason, null, mod.getUser(), false);
 				if (text == null) return;
-				pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+				pm.sendMessage(text).setSuppressEmbeds(true)
+					.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 			});
 		}
 

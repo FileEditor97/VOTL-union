@@ -71,9 +71,9 @@ public class ModerationUtil {
 		StringBuilder builder = new StringBuilder(
 			formatText(text, guild, level >= 2 ? reason : null, level >= 2 ? duration : null, level >= 3 ? mod : null)
 		);
-		if (type.equals(CaseType.BAN)) {
+		if (type.equals(CaseType.BAN) && canAppeal) {
 			String link = dbUtil.getGuildSettings(guild).getAppealLink();
-			if (link != null && canAppeal)
+			if (link != null)
 				builder.append(lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link));
 		}
 		String rulesLink = dbUtil.getGuildSettings(guild).getRulesLink();
@@ -114,7 +114,7 @@ public class ModerationUtil {
 	private String formatText(final String text, Guild guild, String reason, Duration duration, User mod) {
 		String newText = (duration == null) ? text : text.replace("{time}", TimeUtil.durationToLocalizedString(lu, guild.getLocale(), duration));
 		StringBuilder builder = new StringBuilder(newText.replace("{guild}", guild.getName()));
-		if (reason != null) builder.append(" | ").append(reason);
+		if (reason != null) builder.append("\n> ").append(reason);
 		if (mod != null) builder.append("\n\\- ").append(mod.getGlobalName());
 		return builder.toString();
 	}

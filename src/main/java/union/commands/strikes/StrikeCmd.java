@@ -107,7 +107,9 @@ public class StrikeCmd extends CommandBase {
 			Button button = Button.secondary("strikes:"+guild.getId(), lu.getLocalized(guild.getLocale(), "logger_embed.pm.button_strikes"));
 			final String text = bot.getModerationUtil().getDmText(type, guild, reason, null, mod.getUser(), false);
 			if (text == null) return;
-			pm.sendMessage(text).addActionRow(button).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			pm.sendMessage(text).setSuppressEmbeds(true)
+				.addActionRow(button)
+				.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 		});
 		
 		// add info to db
@@ -184,7 +186,8 @@ public class StrikeCmd extends CommandBase {
 				target.getUser().openPrivateChannel().queue(pm -> {
 					final String text = bot.getModerationUtil().getDmText(CaseType.KICK, guild, reason, null, null, false);
 					if (text == null) return;
-					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					pm.sendMessage(text).setSuppressEmbeds(true)
+						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
 				guild.kick(target).reason(reason).queueAfter(3, TimeUnit.SECONDS, done -> {
@@ -220,7 +223,8 @@ public class StrikeCmd extends CommandBase {
 					target.getUser().openPrivateChannel().queue(pm -> {
 						final String text = bot.getModerationUtil().getDmText(CaseType.BAN, guild, reason, durationCopy, null, true);
 						if (text == null) return;
-						pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+						pm.sendMessage(text).setSuppressEmbeds(true)
+							.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 					});
 
 					guild.ban(target, 0, TimeUnit.SECONDS).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
@@ -326,7 +330,8 @@ public class StrikeCmd extends CommandBase {
 				target.getUser().openPrivateChannel().queue(pm -> {
 					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, null, null, false);
 					if (text == null) return;
-					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					pm.sendMessage(text)
+						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
 				final Duration finalDuration = duration.toDaysPart() > 28 ? Duration.ofDays(28) : duration;

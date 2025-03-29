@@ -121,7 +121,8 @@ public class MuteCmd extends CommandBase {
 				tm.getUser().openPrivateChannel().queue(pm -> {
 					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, duration, mod.getUser(), false);
 					if (text == null) return;
-					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					pm.sendMessage(text).setSuppressEmbeds(true)
+						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
 				// Set previous mute case inactive, as member is not timed-out

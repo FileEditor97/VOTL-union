@@ -69,7 +69,11 @@ public class MuteCmd extends CommandBase {
 			return;
 		}
 		if (duration.isZero()) {
-			editError(event, path+".abort", "Duration must larger than 1 minute");
+			editError(event, path+".abort", "Duration must larger than 1 minute.");
+			return;
+		}
+		if (duration.toDaysPart() > 28) {
+			editError(event, path+".abort", "Duration maximum: 28 days.");
 			return;
 		}
 
@@ -117,7 +121,8 @@ public class MuteCmd extends CommandBase {
 				tm.getUser().openPrivateChannel().queue(pm -> {
 					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, duration, mod.getUser(), false);
 					if (text == null) return;
-					pm.sendMessage(text).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					pm.sendMessage(text).setSuppressEmbeds(true)
+						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 
 				// Set previous mute case inactive, as member is not timed-out

@@ -13,11 +13,11 @@ import union.utils.file.SettingsManager;
 @SuppressWarnings({"LoggingSimilarMessage", "SqlSourceToSinkFlow", "SameParameterValue"})
 public class SqlDBBase {
 
-	private final ConnectionUtil cu;
+	private final ConnectionUtil util;
 	private final String url;
 
 	public SqlDBBase(ConnectionUtil connectionUtil, String url) {
-		this.cu = connectionUtil;
+		this.util = connectionUtil;
 		this.url = url+"&connectTimeout=5000&socketTimeout=3000&sessionVariables=max_statement_time=2";
 	}
 
@@ -41,7 +41,7 @@ public class SqlDBBase {
 		}
 
 		List<String> results = new ArrayList<>();
-		cu.logger.debug(sql.toString());
+		util.logger.debug(sql.toString());
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
@@ -49,9 +49,9 @@ public class SqlDBBase {
 				results.add(rs.getString(selectKey));
 			}
 		} catch (SQLTimeoutException ex) {
-			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
+			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql.toString(), ex);
+			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql.toString(), ex);
 		}
 		return results;
 	}
@@ -84,7 +84,7 @@ public class SqlDBBase {
 
 		List<Map<String, String>> results = new ArrayList<>();
 
-		cu.logger.debug(sql.toString());
+		util.logger.debug(sql.toString());
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql.toString())) {
 			ResultSet rs = st.executeQuery();
@@ -106,9 +106,9 @@ public class SqlDBBase {
 				results.add(data);
 			}
 		} catch (SQLTimeoutException ex) {
-			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
+			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql.toString(), ex);
+			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql.toString(), ex);
 		}
 		return results;
 	}
@@ -120,13 +120,15 @@ public class SqlDBBase {
 		String sql = "SELECT %s FROM %s WHERE %s=%s".formatted(selectKey, table, condKey, quote(condValue));
 
 		String result = null;
-		cu.logger.debug(sql);
+		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
+		} catch (SQLTimeoutException ex) {
+			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
+			util.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
 	}
@@ -139,7 +141,7 @@ public class SqlDBBase {
 
 		Map<String, String> result = new HashMap<>();
 
-		cu.logger.debug(sql);
+		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
@@ -149,9 +151,9 @@ public class SqlDBBase {
 					result.put(key, rs.getString(key));
 				}
 		} catch (SQLTimeoutException ex) {
-			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
+			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
+			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql, ex);
 		}
 		return result.isEmpty() ? null : result;
 	}
@@ -164,15 +166,15 @@ public class SqlDBBase {
 		String sql = "SELECT %s FROM %s.%s WHERE %s=%s".formatted(selectKey, database, table, condKey, quote(condValue));
 
 		String result = null;
-		cu.logger.debug(sql);
+		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLTimeoutException ex) {
-			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
+			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
+			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql, ex);
 		}
 		return result;
 	}
@@ -184,14 +186,14 @@ public class SqlDBBase {
 
 		String sql = "UPDATE "+table+" SET "+updateKey+"="+quote(updateValueObj)+" WHERE "+condKey+"="+quote(condValueObj);
 
-		cu.logger.debug(sql);
+		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLTimeoutException ex) {
-			cu.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
+			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at UPDATE\nrequest: {}", sql, ex);
+			util.logger.warn("DB MariaDB: Error at UPDATE\nRequest: {}", sql, ex);
 		}
 	}
 
@@ -218,7 +220,7 @@ public class SqlDBBase {
 		final String sql = String.join("\nUNION ALL\n", requests) + ";";
 
 		Map<String, PlayerInfo> result = new HashMap<>();
-		cu.logger.debug(sql);
+		util.logger.debug(sql);
 		try (Connection conn = DriverManager.getConnection(url);
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			ResultSet rs = st.executeQuery();
@@ -230,8 +232,10 @@ public class SqlDBBase {
 					rs.getLong("play_time")
 				));
 			}
+		} catch (SQLTimeoutException ex) {
+			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
-			cu.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
+			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql, ex);
 			return Map.of();
 		}
 		return result;

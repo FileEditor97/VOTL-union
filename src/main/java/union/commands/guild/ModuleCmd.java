@@ -26,7 +26,7 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
 public class ModuleCmd extends CommandBase {
 	
-	private static EventWaiter waiter;
+	private final EventWaiter waiter;
 	
 	public ModuleCmd(EventWaiter waiter) {
 		this.name = "module";
@@ -34,7 +34,7 @@ public class ModuleCmd extends CommandBase {
 		this.children = new SlashCommand[]{new Show(), new Disable(), new Enable()};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.OWNER;
-		ModuleCmd.waiter = waiter;
+		this.waiter = waiter;
 	}
 
 	@Override

@@ -29,7 +29,7 @@ import union.utils.invite.InviteImpl;
 
 public class GroupCmd extends CommandBase {
 	
-	private static EventWaiter waiter;
+	private final EventWaiter waiter;
 
 	public GroupCmd(EventWaiter waiter) {
 		this.name = "group";
@@ -38,7 +38,7 @@ public class GroupCmd extends CommandBase {
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.OPERATOR;
-		GroupCmd.waiter = waiter;
+		this.waiter = waiter;
 	}
 
 	@Override

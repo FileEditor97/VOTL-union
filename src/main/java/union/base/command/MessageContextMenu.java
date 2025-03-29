@@ -71,9 +71,9 @@ public abstract class MessageContextMenu extends ContextMenu
 				// check access
 					.hasAccess(event, author, getAccessLevel())
 				// check user perms
-					.hasPermissions(event, guild, author, getUserPermissions())
+					.hasPermissions(event, getUserPermissions(), author)
 				// check bots perms
-					.hasPermissions(event, guild, author, true, getBotPermissions());
+					.hasPermissions(event, getBotPermissions());
 			} catch (CheckException ex) {
 				terminate(event, ex.getCreateData(), client);
 				return;

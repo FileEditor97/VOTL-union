@@ -15,7 +15,8 @@ import union.metrics.Metrics;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.services.ScheduledMetrics;
-import union.services.ping.PingRecord;
+import union.services.records.DatabaseData;
+import union.services.records.PingData;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +26,10 @@ public class ViewMetricsCmd extends CommandBase {
 	public ViewMetricsCmd() {
 		this.name = "metrics";
 		this.path = "bot.owner.metrics";
-		this.children = new SlashCommand[]{new CommandInfo(), new CommandStats(), new ButtonStats(), new Ping()};
+		this.children = new SlashCommand[]{
+			new CommandInfo(), new CommandStats(), new ButtonStats(),
+			new Ping(), new Database()
+		};
 		this.category = CmdCategory.OWNER;
 		this.ownerCommand = true;
 		this.guildOnly = false;
@@ -142,18 +146,18 @@ public class ViewMetricsCmd extends CommandBase {
 			}
 		}
 
-		private File generateGraph(Deque<PingRecord> pingRecords) {
+		private File generateGraph(Deque<PingData.PingRecord> pingRecords) {
 			if (pingRecords.isEmpty()) return null;
 			List<Date> timestamps = pingRecords.stream()
-				.map(record -> Date.from(record.timestamp()))
+				.map(record -> Date.from(record.timestamp))
 				.toList();
 
 			List<Long> webSocketPings = pingRecords.stream()
-				.map(PingRecord::webSocketPing)
+				.map(record -> record.webSocketPing)
 				.toList();
 
 			List<Long> restPings = pingRecords.stream()
-				.map(PingRecord::restPing)
+				.map(record -> record.restPing)
 				.toList();
 
 			// Create the chart
@@ -176,12 +180,76 @@ public class ViewMetricsCmd extends CommandBase {
 			chart.addSeries("REST Ping", timestamps, restPings);
 
 			// Save chart as PNG
-			File chartFile = new File("ping_chart.png");
 			try {
+				File chartFile = File.createTempFile("ping_chart", ".png");
 				BitmapEncoder.saveBitmap(chart, chartFile.getAbsolutePath(), BitmapEncoder.BitmapFormat.PNG);
 				return chartFile;
 			} catch (IOException e) {
 				bot.getAppLogger().error("Error generating ping chart", e);
+			}
+			return null;
+		}
+	}
+
+	public class Database extends SlashCommand {
+		public Database() {
+			this.name = "database";
+			this.path = "bot.owner.metrics.database";
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply().queue();
+
+			File chartFile = generateGraph(ScheduledMetrics.databaseData.getRecords());
+
+			if (chartFile != null) {
+				event.getHook().editOriginalAttachments(FileUpload.fromData(chartFile)).queue();
+			} else {
+				editError(event, path+".failed");
+			}
+		}
+
+		private File generateGraph(Deque<DatabaseData.DatabaseRecord> databaseRecords) {
+			if (databaseRecords.isEmpty()) return null;
+			List<Date> timestamps = databaseRecords.stream()
+				.map(record -> Date.from(record.timestamp))
+				.toList();
+
+			List<Integer> requests = databaseRecords.stream()
+				.map(record -> record.requests)
+				.toList();
+
+			List<Integer> errors = databaseRecords.stream()
+				.map(record -> record.errors)
+				.toList();
+
+			// Create the chart
+			XYChart chart = new XYChartBuilder()
+				.width(800)
+				.height(600)
+				.title("Database stats")
+				.xAxisTitle("Timestamp")
+				.yAxisTitle("Count")
+				.build();
+
+			// Format x-axis as time
+			chart.getStyler().setDatePattern("HH:mm")
+				.setXAxisMaxLabelCount(8)
+				.setLegendPosition(XYStyler.LegendPosition.InsideNE)
+				.setMarkerSize(0);
+
+			// Add series to the chart
+			chart.addSeries("MySQL requests", timestamps, requests);
+			chart.addSeries("MySQL errors", timestamps, errors);
+
+			// Save chart as PNG
+			try {
+				File chartFile = File.createTempFile("database_chart", ".png");
+				BitmapEncoder.saveBitmap(chart, chartFile.getAbsolutePath(), BitmapEncoder.BitmapFormat.PNG);
+				return chartFile;
+			} catch (IOException e) {
+				bot.getAppLogger().error("Error generating database chart", e);
 			}
 			return null;
 		}

@@ -11,6 +11,7 @@ import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
 
 import static union.utils.CastUtil.castLong;
+import static union.utils.CastUtil.getOrDefault;
 
 public class BlacklistManager extends LiteDBBase {
 	
@@ -60,6 +61,20 @@ public class BlacklistManager extends LiteDBBase {
 		return (data==null || data.isEmpty()) ? null : new BlacklistData(data);
 	}
 
+	public List<BlacklistData> searchUserId(long userId) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (userId=%d) ".formatted(table, userId), Set.of("guildId", "groupId", "userId", "steam64", "reason", "modId"));
+		return (data.isEmpty()) ? List.of() : data.stream()
+			.map(BlacklistData::new)
+			.toList();
+	}
+
+	public List<BlacklistData> searchSteam64(long steam64) {
+		List<Map<String, Object>> data = select("SELECT * FROM %s WHERE (steam64=%d) ".formatted(table, steam64), Set.of("guildId", "groupId", "userId", "steam64", "reason", "modId"));
+		return (data.isEmpty()) ? List.of() : data.stream()
+			.map(BlacklistData::new)
+			.toList();
+	}
+
 	public Integer countEntries(int groupId) {
 		return count("SELECT COUNT(*) FROM %s WHERE (groupId=%d)".formatted(table, groupId));
 	}
@@ -67,10 +82,12 @@ public class BlacklistManager extends LiteDBBase {
 	public class BlacklistData {
 		private final long guildId, modId;
 		private final Long userId, steam64;
+		private final Integer groupId;
 		private final String reason;
 
 		BlacklistData(Map<String, Object> data) {
 			this.guildId = castLong(data.get("guildId"));
+			this.groupId = getOrDefault(data.get("groupId"), null);
 			this.userId = castLong(data.get("userId"));
 			this.modId = castLong(data.get("modId"));
 			this.steam64 = castLong(data.get("steam64"));
@@ -79,6 +96,10 @@ public class BlacklistManager extends LiteDBBase {
 
 		public long getGuildId() {
 			return guildId;
+		}
+
+		public Integer getGroupId() {
+			return groupId;
 		}
 
 		public Long getUserId() {

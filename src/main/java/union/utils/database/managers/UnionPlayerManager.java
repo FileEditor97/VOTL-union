@@ -1,13 +1,29 @@
 package union.utils.database.managers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import union.App;
+import union.objects.constants.Constants;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.SqlDBBase;
+import union.utils.encoding.EncodingUtil;
 import union.utils.file.SettingsManager;
 
 import static union.utils.CastUtil.castLong;
@@ -115,5 +131,121 @@ public class UnionPlayerManager extends SqlDBBase {
 	@NotNull
 	private Map<String, SettingsManager.GameServerInfo> getServers(long guildId) {
 		return settings.getGameServers(guildId);
+	}
+
+	public void startPlayerBulkFetcher(InteractionHook hook, DiscordLocale locale, long guildId, EmbedBuilder builder, Set<String> steamIds) {
+		new PlayerBulkFetcher(hook, locale, guildId, builder, steamIds).startFetching();
+	}
+
+	private class PlayerBulkFetcher {
+		private final static Logger logger = LoggerFactory.getLogger(PlayerBulkFetcher.class);
+		private final static int MAX_REQUESTS = 5;
+		private final static int DELAY = 4;
+
+		private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+		private final Set<String> steamIds;
+		private final long guildId;
+		private final DiscordLocale locale;
+		private final EmbedBuilder embedBuilder;
+		private final InteractionHook hook;
+		private final StringBuilder results = new StringBuilder();
+
+		public PlayerBulkFetcher(InteractionHook hook, DiscordLocale locale, long guildId, EmbedBuilder builder, Set<String> steamIds) {
+			this.hook = hook;
+			this.locale = locale;
+			this.guildId = guildId;
+			this.embedBuilder = builder;
+			this.steamIds = steamIds;
+		}
+
+		public void startFetching() {
+			final AtomicInteger counter = new AtomicInteger(0);
+			final AtomicInteger lastUpdated = new AtomicInteger(0);
+			final long startTime = System.currentTimeMillis();
+
+			Runnable task = new Runnable() {
+				private final Iterator<String> iterator = steamIds.iterator();
+
+				@Override
+				public void run() {
+					if (!iterator.hasNext()) {
+						scheduler.shutdown();
+						File resultFile = createResultsFile();
+						long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+						if (resultFile != null) {
+							hook.editOriginalEmbeds(
+								embedBuilder.setColor(Constants.COLOR_SUCCESS)
+									.setDescription(
+										App.getInstance().getLocaleUtil()
+											.getLocalized(locale, "bot.verification.bulk-account.done")
+											.formatted(elapsed)
+									).build()
+								).setFiles(FileUpload.fromData(
+									resultFile, EncodingUtil.encodeBulkAccount(Instant.now().getEpochSecond())
+								)).queue();
+						} else {
+							hook.editOriginalEmbeds(
+								embedBuilder.setColor(Constants.COLOR_FAILURE)
+									.setDescription(
+										App.getInstance().getLocaleUtil()
+											.getLocalized(locale, "bot.verification.bulk-account.failed")
+									).build()
+								).queue();
+						}
+						return;
+					}
+					List<CompletableFuture<Void>> futures = new ArrayList<>();
+					for (int i = 0; i<MAX_REQUESTS && iterator.hasNext(); i++) {
+						String steamId = iterator.next();
+						futures.add(CompletableFuture.runAsync(() -> fetchPlayerInfo(steamId)));
+					}
+					counter.addAndGet(futures.size());
+					CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((done, throwable) -> {
+						int elapsed = (int) (System.currentTimeMillis() - startTime) / 1000;
+						if (elapsed >= lastUpdated.get() + 10) {
+							embedBuilder.appendDescription("\n> `%2d/%2d` %6s seconds".formatted(counter.get(), steamIds.size(), elapsed));
+							hook.editOriginalEmbeds(embedBuilder.build()).queue();
+							lastUpdated.set(elapsed);
+						}
+						scheduler.schedule(this, DELAY, TimeUnit.SECONDS);
+					});
+				}
+			};
+
+			scheduler.submit(task);
+		}
+
+		private void fetchPlayerInfo(String steamId) {
+			try {
+				List<PlayerInfo> data = getPlayerInfo(guildId, steamId);
+
+				StringBuilder temp = new StringBuilder("### ")
+					.append(steamId);
+				data.stream()
+					.filter(PlayerInfo::exists)
+					.forEach(playerInfo -> temp.append("\n> ")
+						.append(playerInfo.serverInfo.getTitle())
+						.append(": ")
+						.append(playerInfo.getRank())
+					);
+				temp.append("\n\n");
+				results.append(temp);
+			} catch (Exception e) {
+				logger.warn("Error fetching bulk player info for '{}'.", steamId, e);
+			}
+		}
+
+		private File createResultsFile() {
+			try {
+				File file = File.createTempFile("bulk_account_results", ".txt");
+				try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+					writer.append(results);
+				}
+				return file;
+			} catch (IOException e) {
+				logger.warn("Error creating bulk account results file.", e);
+				return null;
+			}
+		}
 	}
 }

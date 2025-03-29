@@ -32,7 +32,9 @@ public class BlacklistCmd extends CommandBase {
 	public BlacklistCmd() {
 		this.name = "blacklist";
 		this.path = "bot.moderation.blacklist";
-		this.children = new SlashCommand[]{new View(), new Remove(), new AddSteam(), new Search()};
+		this.children = new SlashCommand[]{
+			new View(), new Remove(), new AddSteam(), new Search()
+		};
 		this.category = CmdCategory.MODERATION;
 		this.module = CmdModule.MODERATION;
 		this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -252,23 +254,19 @@ public class BlacklistCmd extends CommandBase {
 				User user = event.optUser("user");
 
 				List<MessageEmbed> embeds = new ArrayList<>();
-				for (int groupId : groupIds) {
-					BlacklistManager.BlacklistData data = bot.getDBUtil().blacklist.getByUserId(groupId, user.getIdLong());
-
-					if (data != null) {
-						embeds.add(bot.getEmbedUtil().getEmbed()
-							.setTitle("Group #`%s`".formatted(groupId))
-							.setDescription(lu.getText(event, path+".value")
-								.formatted(
-									"%s `%s`".formatted(user.getAsMention(), user.getId()),
-									Optional.ofNullable(data.getSteam64()).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
-									Optional.ofNullable(event.getJDA().getGuildById(data.getGuildId())).map(Guild::getName).orElse("-"),
-									"<@%s>".formatted(data.getModId()),
-									Optional.ofNullable(data.getReason()).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
-								)
-							).build()
-						);
-					}
+				for (BlacklistManager.BlacklistData data : bot.getDBUtil().blacklist.searchUserId(user.getIdLong())) {
+					embeds.add(bot.getEmbedUtil().getEmbed()
+						.setTitle("Group #`%s`".formatted(data.getGroupId()))
+						.setDescription(lu.getText(event, path+".value")
+							.formatted(
+								"%s `%s`".formatted(user.getAsMention(), user.getId()),
+								Optional.ofNullable(data.getSteam64()).map(SteamUtil::convertSteam64toSteamID).orElse("-"),
+								Optional.ofNullable(event.getJDA().getGuildById(data.getGuildId())).map(Guild::getName).orElse("-"),
+								"<@%s>".formatted(data.getModId()),
+								Optional.ofNullable(data.getReason()).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
+							)
+						).build()
+					);
 				}
 
 				if (embeds.isEmpty()) {
@@ -294,23 +292,19 @@ public class BlacklistCmd extends CommandBase {
 				}
 
 				List<MessageEmbed> embeds = new ArrayList<>();
-				for (int groupId : groupIds) {
-					BlacklistManager.BlacklistData data = bot.getDBUtil().blacklist.getBySteam64(groupId, steam64);
-
-					if (data != null) {
-						embeds.add(bot.getEmbedUtil().getEmbed()
-							.setTitle("Group #`%s`".formatted(groupId))
-							.setDescription(lu.getText(event, path+".value")
-								.formatted(
-									Optional.ofNullable(data.getUserId()).map("<@%s> `%<s`"::formatted).orElse("-"),
-									SteamUtil.convertSteam64toSteamID(steam64),
-									Optional.ofNullable(event.getJDA().getGuildById(data.getGuildId())).map(Guild::getName).orElse("-"),
-									"<@%s>".formatted(data.getModId()),
-									Optional.ofNullable(data.getReason()).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
-								)
-							).build()
-						);
-					}
+				for (BlacklistManager.BlacklistData data : bot.getDBUtil().blacklist.searchSteam64(steam64)) {
+					embeds.add(bot.getEmbedUtil().getEmbed()
+						.setTitle("Group #`%s`".formatted(data.getGroupId()))
+						.setDescription(lu.getText(event, path+".value")
+							.formatted(
+								Optional.ofNullable(data.getUserId()).map("<@%s> `%<s`"::formatted).orElse("-"),
+								SteamUtil.convertSteam64toSteamID(steam64),
+								Optional.ofNullable(event.getJDA().getGuildById(data.getGuildId())).map(Guild::getName).orElse("-"),
+								"<@%s>".formatted(data.getModId()),
+								Optional.ofNullable(data.getReason()).map(v -> MessageUtil.limitString(v, 100)).orElse("-")
+							)
+						).build()
+					);
 				}
 
 				if (embeds.isEmpty()) {

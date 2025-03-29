@@ -57,14 +57,18 @@ public class Metrics {
 
 	public static final Counter databaseLiteQueries = Counter.builder()
 		.name("votl_database_lite_queries")
-		.help("Total prepared statements created for the given type")
+		.help("Total prepared SQLite statements created for the given type")
 		.build();
 
 	public static final Counter databaseSqlQueries = Counter.builder()
 		.name("votl_database_sql_queries")
-		.help("Total prepared statements created for the given type")
+		.help("Total prepared MySQL statements created for the given type")
 		.build();
 
+	public static final Counter databaseSqlErrors = Counter.builder()
+		.name("votl_database_sql_errors")
+		.help("Total errors when executing MySQL statements")
+		.build();
 
 	// SETUP
 

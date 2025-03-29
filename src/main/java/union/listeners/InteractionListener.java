@@ -381,13 +381,14 @@ public class InteractionListener extends ListenerAdapter {
 				// add verify role
 				finalRoles.add(verifyRole);
 				// add each additional role
-				for (Long roleId : additionalRoles) {
-					Role role = guild.getRoleById(roleId);
-					if (role != null)
-						finalRoles.add(role);
-				}
+				additionalRoles.stream()
+					.map(guild::getRoleById)
+					.filter(Objects::nonNull)
+					.forEach(finalRoles::add);
 				// modify
-				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - NO STEAM, database disabled").queue(
+				guild.modifyMemberRoles(member, finalRoles)
+					.reason("Verification completed - NO STEAM, database disabled")
+					.queue(
 					success -> {
 						bot.getLogger().verify.onVerified(member.getUser(), null, guild);
 						event.getHook().sendMessage(Constants.SUCCESS).setEphemeral(true).queue();
@@ -406,7 +407,7 @@ public class InteractionListener extends ListenerAdapter {
 			// Check if steam64 is not blacklisted
 			if (checkBlacklist) {
 				for (int groupId : groupIds) {
-					BlacklistManager.BlacklistData data = db.blacklist.getByUserId(groupId, member.getIdLong());
+					BlacklistManager.BlacklistData data = db.blacklist.getBySteam64(groupId, steam64);
 					if (data != null) {
 						sendError(event, "bot.verification.blacklisted", "Reason: "+data.getReason());
 						bot.getLogger().verify.onVerifyBlacklisted(
@@ -474,13 +475,14 @@ public class InteractionListener extends ListenerAdapter {
 				// add verify role
 				finalRoles.add(verifyRole);
 				// add each additional role
-				for (Long roleId : additionalRoles) {
-					Role role = guild.getRoleById(roleId);
-					if (role != null)
-						finalRoles.add(role);
-				}
+				additionalRoles.stream()
+					.map(guild::getRoleById)
+					.filter(Objects::nonNull)
+					.forEach(finalRoles::add);
 				// modify
-				guild.modifyMemberRoles(member, finalRoles).reason("Verification completed - "+steam64).queue(
+				guild.modifyMemberRoles(member, finalRoles)
+					.reason("Verification completed - "+steam64)
+					.queue(
 					success -> {
 						bot.getLogger().verify.onVerified(member.getUser(), steam64, guild);
 						try {

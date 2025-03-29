@@ -48,6 +48,14 @@ public class EncodingUtil {
 	}
 
 	/**
+	 * @param epochSeconds Epoch seconds (now)
+	 * @return Filename 'bulk-account-timestamp.txt'
+	 */
+	public static String encodeBulkAccount(final long epochSeconds) {
+		return "bulk-account-%s.txt".formatted(encode(epochSeconds));
+	}
+
+	/**
 	 * Encodes a sequence of values in Base62 encoding.
 	 *
 	 * @param values a Long sequence.

@@ -204,6 +204,7 @@ public class App {
 				new AccountCmd(),
 				new VerifyCheckCmd(),
 				new CommentCmd(),
+				new BulkAccountCmd(WAITER),
 				// ticketing
 				new RolesPanelCmd(),
 				new TicketCountCmd(),

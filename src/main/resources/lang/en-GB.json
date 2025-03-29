@@ -2325,6 +2325,18 @@
 				"comments_view": "View [%s] comment/-s",
 				"no_comments": "No comments found for this SteamID."
 			},
+			"bulk-account": {
+				"help": "Perform bulk requests for multiple accounts.",
+				"usage": "bulk-account",
+				"input_awaiting": "Provide either file (.txt) **OR** send message below containing **SteamID**s.\nMaximum of 60 SteamIDs will be processed. Results will be formatted in file.\nExample content:",
+				"file_type": "Only plain txt files are accepted!",
+				"content_empty": "Message is blank and no file found.",
+				"empty": "No SteamIDs found. Please, make sure you provided them in right format.",
+				"input_expired": "Timed out, try again.",
+				"start": "**Started data fetching.**\nSteamIDs found: `%s` and will take approximately `%d` seconds to complete.",
+				"failed": "Failed to create results file.",
+				"done": "Completed in `%s` seconds.\nSee attached file."
+			},
 			"vfcheck": {
 				"help": "Manage user verification auto-check",
 				"usage": "vfcheck",

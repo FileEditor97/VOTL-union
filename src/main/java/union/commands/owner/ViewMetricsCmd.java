@@ -180,8 +180,8 @@ public class ViewMetricsCmd extends CommandBase {
 			chart.addSeries("REST Ping", timestamps, restPings);
 
 			// Save chart as PNG
-			File chartFile = new File("ping_chart.png");
 			try {
+				File chartFile = File.createTempFile("ping_chart", ".png");
 				BitmapEncoder.saveBitmap(chart, chartFile.getAbsolutePath(), BitmapEncoder.BitmapFormat.PNG);
 				return chartFile;
 			} catch (IOException e) {
@@ -230,7 +230,7 @@ public class ViewMetricsCmd extends CommandBase {
 				.height(600)
 				.title("Database stats")
 				.xAxisTitle("Timestamp")
-				.yAxisTitle("Count per 5 minutes")
+				.yAxisTitle("Count")
 				.build();
 
 			// Format x-axis as time
@@ -244,12 +244,12 @@ public class ViewMetricsCmd extends CommandBase {
 			chart.addSeries("MySQL errors", timestamps, errors);
 
 			// Save chart as PNG
-			File chartFile = new File("database_chart.png");
 			try {
+				File chartFile = File.createTempFile("database_chart", ".png");
 				BitmapEncoder.saveBitmap(chart, chartFile.getAbsolutePath(), BitmapEncoder.BitmapFormat.PNG);
 				return chartFile;
 			} catch (IOException e) {
-				bot.getAppLogger().error("Error generating ping chart", e);
+				bot.getAppLogger().error("Error generating database chart", e);
 			}
 			return null;
 		}

@@ -2073,7 +2073,7 @@
 				},
 				"embed": {
 					"about_title": "О {name}!",
-					"about_value": "Discord бот проекта UnionTeam для модерации и управления серверов. Написано на Java с использованием библиотеки JDA.\nРазработчик - **{developer_name}** ({developer_id}).",
+					"about_value": "Discord бот проекта UnionTeam's для модерации и управления серверов. Написано на Java с использованием библиотеки JDA.\nРазработчик - **{developer_name}** ({developer_id}).",
 					"bot_info": {
 						"title": "Информация о боте",
 						"bot_version": "Версия: `VOTL-{bot_version}`",
@@ -2326,16 +2326,16 @@
 				"no_comments": "Не найдено комментариев для этого SteamID."
 			},
 			"bulk-account": {
-				"help": "Perform bulk requests for multiple accounts.",
+				"help": "Выполнить групповой запрос нескольких аккаунтов.",
 				"usage": "bulk-account",
-				"input_awaiting": "Provide either file (.txt) **OR** send message below containing **SteamID**s.\nMaximum of 60 SteamIDs will be processed. Results will be formatted in file.\nExample content:",
-				"file_type": "Only plain txt files are accepted!",
-				"content_empty": "Message is blank and no file found.",
-				"empty": "No SteamIDs found. Please, make sure you provided them in right format.",
-				"input_expired": "Timed out, try again.",
-				"start": "Starting data fetching.\nSteamIDs found: `%s` and will take approximately `%d` seconds to complete.",
-				"failed": "Failed to create results file.",
-				"done": "Completed in `%s` seconds.\nSee attached file."
+				"input_awaiting": "Предоставьте либо файл (.txt) **ИЛИ** отправьте ниже сообщение, содержащее **SteamID**.\nБудет обработано максимум 60 SteamID. Результаты будут отформатированы в файле.\nПример содержимого:",
+				"file_type": "Принимаются только обычные txt файлы!",
+				"content_empty": "Сообщение пустое и файл не найден.",
+				"empty": "SteamID не найдены. Пожалуйста, убедитесь, что вы указали их в правильном формате.",
+				"input_expired": "Время истекло, попробуйте еще раз.",
+				"start": "**Запросы запущены.**\nНайдены SteamID: `%s` и займет примерно `%d` секунд.",
+				"failed": "Ошибка при создании файла результатов.",
+				"done": "Завершено за `%s` секунд.\nСмотрите прикрепленный файл."
 			},
 			"vfcheck": {
 				"help": "Управление автопроверкой верификации",

@@ -226,7 +226,7 @@ public class UnionPlayerManager extends SqlDBBase {
 					.forEach(playerInfo -> temp.append("\n> ")
 						.append(playerInfo.serverInfo.getTitle())
 						.append(": ")
-						.append(playerInfo.rank)
+						.append(playerInfo.getRank())
 					);
 				temp.append("\n\n");
 				results.append(temp);

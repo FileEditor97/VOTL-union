@@ -50,7 +50,7 @@ public class UnionPlayerManager extends SqlDBBase {
 			String rank = selectOne(db, SAM_PLAYERS, "rank", "steamid", steamId);
 			if (rank != null) data.add(rank);
 		}
-		return data;
+		return Collections.unmodifiableList(data);
 	}
 
 	public Long getPlayTime(long guildId, @NotNull String steamId) throws Exception {
@@ -67,6 +67,7 @@ public class UnionPlayerManager extends SqlDBBase {
 		return playtime;
 	}
 
+	@NotNull
 	public List<PlayerInfo> getPlayerInfo(long guildId, @NotNull String steamId) {
 		if (settings.isDbPlayerDisabled()) return List.of();
 		// Find corresponding database
@@ -79,7 +80,22 @@ public class UnionPlayerManager extends SqlDBBase {
 			if (data.containsKey(db)) newData.add(data.get(db));
 			else newData.add(new PlayerInfo(info));
 		});
-		return newData;
+		return Collections.unmodifiableList(newData);
+	}
+
+	@NotNull
+	public List<PlayerInfo> getPlayerInfoFiltered(long guildId, @NotNull String steamId) {
+		if (settings.isDbPlayerDisabled()) return List.of();
+		// Find corresponding database
+		Map<String, SettingsManager.GameServerInfo> servers = getServers(guildId);
+		if (servers.isEmpty()) return List.of();
+		// Get data from database table
+		Map<String, PlayerInfo> data = selectPlayerInfoList(servers, SAM_PLAYERS, steamId);
+		List<PlayerInfo> newData = new ArrayList<>(servers.size());
+		servers.forEach((db,info) -> {
+			if (data.containsKey(db)) newData.add(data.get(db));
+		});
+		return Collections.unmodifiableList(newData);
 	}
 
 	public boolean existsAxePlayer(long guildId, @NotNull String steamId) throws Exception {
@@ -140,7 +156,7 @@ public class UnionPlayerManager extends SqlDBBase {
 	private class PlayerBulkFetcher {
 		private final static Logger logger = LoggerFactory.getLogger(PlayerBulkFetcher.class);
 		private final static int MAX_REQUESTS = 5;
-		private final static int DELAY = 4;
+		private final static int DELAY = 3;
 
 		private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 		private final Set<String> steamIds;
@@ -217,17 +233,19 @@ public class UnionPlayerManager extends SqlDBBase {
 
 		private void fetchPlayerInfo(String steamId) {
 			try {
-				List<PlayerInfo> data = getPlayerInfo(guildId, steamId);
+				List<PlayerInfo> data = getPlayerInfoFiltered(guildId, steamId);
 
 				StringBuilder temp = new StringBuilder("### ")
 					.append(steamId);
-				data.stream()
-					.filter(PlayerInfo::exists)
-					.forEach(playerInfo -> temp.append("\n> ")
+				if (data.isEmpty()) {
+					temp.append("\n> -Not found-");
+				} else {
+					data.forEach(playerInfo -> temp.append("\n> ")
 						.append(playerInfo.serverInfo.getTitle())
 						.append(": ")
 						.append(playerInfo.getRank())
 					);
+				}
 				temp.append("\n\n");
 				results.append(temp);
 			} catch (Exception e) {

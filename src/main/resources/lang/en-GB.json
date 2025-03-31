@@ -2333,7 +2333,7 @@
 				"content_empty": "Message is blank and no file found.",
 				"empty": "No SteamIDs found. Please, make sure you provided them in right format.",
 				"input_expired": "Timed out, try again.",
-				"start": "**Started data fetching.**\nSteamIDs found: `%s` and will take approximately `%d` seconds to complete.",
+				"start": "### Started data fetching.\nSteamIDs found: `%s` and will take approximately `%f` seconds to complete.\n",
 				"failed": "Failed to create results file.",
 				"done": "Completed in `%s` seconds.\nSee attached file."
 			},

@@ -105,7 +105,7 @@ public class BulkAccountCmd extends CommandBase {
 
 				EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
 					.setDescription(lu.getText(event, path+".start")
-						.formatted(ids.size(), ids.size()) // size and estimated time in seconds
+						.formatted(ids.size(), ids.size()*1.5) // size and estimated time in seconds
 					);
 				event.getHook().editOriginalEmbeds(builder.build()).queue();
 

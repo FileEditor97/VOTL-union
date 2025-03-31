@@ -28,6 +28,7 @@ public class SqlDBBase {
 
 	protected List<String> select(final String table, final String selectKey, final List<String> condKeys, final List<String> condValuesInp) {
 		// Metrics
+		Metrics.databaseSqlQueries.inc();
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
 		List<String> condValues = condValuesInp.stream().map(this::quote).toList();
@@ -49,8 +50,10 @@ public class SqlDBBase {
 				results.add(rs.getString(selectKey));
 			}
 		} catch (SQLTimeoutException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql.toString(), ex);
 		}
 		return results;
@@ -62,6 +65,7 @@ public class SqlDBBase {
 
 	protected List<Map<String, String>> select(final String table, final List<String> selectKeys, final List<String> condKeys, final List<String> condValuesInp) {
 		// Metrics
+		Metrics.databaseSqlQueries.inc();
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
 		List<String> condValues = condValuesInp.stream().map(this::quote).toList();
@@ -106,8 +110,10 @@ public class SqlDBBase {
 				results.add(data);
 			}
 		} catch (SQLTimeoutException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql.toString(), ex);
 		}
 		return results;
@@ -115,6 +121,7 @@ public class SqlDBBase {
 
 	protected String selectOne(final String table, final String selectKey, final String condKey, final Object condValue) {
 		// Metrics
+		Metrics.databaseSqlQueries.inc();
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
 		String sql = "SELECT %s FROM %s WHERE %s=%s".formatted(selectKey, table, condKey, quote(condValue));
@@ -126,8 +133,10 @@ public class SqlDBBase {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLTimeoutException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Error at SELECT\nrequest: {}", sql, ex);
 		}
 		return result;
@@ -135,6 +144,7 @@ public class SqlDBBase {
 
 	protected Map<String, String> selectOne(final String table, final List<String> selectKeys, final String condKey, final Object condValue) {
 		// Metrics
+		Metrics.databaseSqlQueries.inc();
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
 		String sql = "SELECT %s FROM %s WHERE %s=%s".formatted(String.join(", ", selectKeys), table, condKey, quote(condValue));
@@ -151,8 +161,10 @@ public class SqlDBBase {
 					result.put(key, rs.getString(key));
 				}
 		} catch (SQLTimeoutException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql, ex);
 		}
 		return result.isEmpty() ? null : result;
@@ -161,6 +173,7 @@ public class SqlDBBase {
 	// SELECT with database selection
 	protected String selectOne(final String database, final String table, final String selectKey, final String condKey, final Object condValue) {
 		// Metrics
+		Metrics.databaseSqlQueries.inc();
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
 		String sql = "SELECT %s FROM %s.%s WHERE %s=%s".formatted(selectKey, database, table, condKey, quote(condValue));
@@ -172,8 +185,10 @@ public class SqlDBBase {
 			ResultSet rs = st.executeQuery();
 			if (rs.next()) result = rs.getString(selectKey);
 		} catch (SQLTimeoutException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql, ex);
 		}
 		return result;
@@ -182,6 +197,7 @@ public class SqlDBBase {
 	// UPDATE sql
 	protected void update(final String table, final String updateKey, final Object updateValueObj, final String condKey, final Object condValueObj) {
 		// Metrics
+		Metrics.databaseSqlQueries.inc();
 		Metrics.databaseSqlQueries.labelValue("UPDATE").inc();
 
 		String sql = "UPDATE "+table+" SET "+updateKey+"="+quote(updateValueObj)+" WHERE "+condKey+"="+quote(condValueObj);
@@ -191,8 +207,10 @@ public class SqlDBBase {
 			 PreparedStatement st = conn.prepareStatement(sql)) {
 			st.executeUpdate();
 		} catch (SQLTimeoutException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Error at UPDATE\nRequest: {}", sql, ex);
 		}
 	}
@@ -210,6 +228,7 @@ public class SqlDBBase {
 	// Specific SELECT
 	protected Map<String, PlayerInfo> selectPlayerInfoList(final Map<String, SettingsManager.GameServerInfo> servers, final String table, final String steamId) {
 		// Metrics
+		Metrics.databaseSqlQueries.inc();
 		Metrics.databaseSqlQueries.labelValue("SELECT").inc();
 
 		List<String> requests = new ArrayList<>();
@@ -233,8 +252,10 @@ public class SqlDBBase {
 				));
 			}
 		} catch (SQLTimeoutException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Timeout at request\n{}", ex.getMessage());
 		} catch (SQLException ex) {
+			Metrics.databaseSqlErrors.inc();
 			util.logger.warn("DB MariaDB: Error at SELECT\nRequest: {}", sql, ex);
 			return Map.of();
 		}

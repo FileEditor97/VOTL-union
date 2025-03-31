@@ -18,7 +18,6 @@ public class ScheduledMetrics {
 
 	public static final PingData pingDataStore = new PingData();
 
-	private long lastDatabaseRequestsCount = 0;
 	public static final DatabaseData databaseData = new DatabaseData();
 
 	public ScheduledMetrics(App bot) {
@@ -41,8 +40,8 @@ public class ScheduledMetrics {
 				})
 			);
 
-			final int newRequests = Long.valueOf(Metrics.databaseSqlQueries.get() - lastDatabaseRequestsCount).intValue();
-			lastDatabaseRequestsCount = Metrics.databaseSqlQueries.get();
+			final int newRequests = Long.valueOf(Metrics.databaseSqlQueries.get()).intValue();
+			Metrics.databaseSqlQueries.reset();
 
 			final int errors = Long.valueOf(Metrics.databaseSqlErrors.get()).intValue();
 			Metrics.databaseSqlErrors.reset();

@@ -30,6 +30,7 @@ public class UnionVerifyManager extends SqlDBBase {
 	}
 
 	// name, avatar
+	@Nullable
 	public Pair<String, String> getSteamInfo(long steam64) {
 		if (settings.isDbVerifyDisabled()) return null;
 		Map<String, String> data = selectOne(TABLE_VERIFY, List.of("avatar", "name"), "steam_id", steam64);

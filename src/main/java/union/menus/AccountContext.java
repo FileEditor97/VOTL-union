@@ -36,16 +36,29 @@ public class AccountContext extends UserContextMenu {
 			return;
 		}
 
-		String steamId = SteamUtil.convertSteam64toSteamID(steam64);
+		String steamId;
+		try {
+			steamId = SteamUtil.convertSteam64toSteamID(steam64);
+		} catch (NumberFormatException ex) {
+			event.getHook().editOriginalEmbeds(bot.getEmbedUtil().getError(
+				event, "errors.error", "Incorrect SteamID provided\nInput: `%s`".formatted(steam64)
+			)).queue();
+			return;
+		}
+
 		String profileUrl = "https://steamcommunity.com/profiles/" + steam64;
 		Pair<String, String> profileInfo = bot.getDBUtil().unionVerify.getSteamInfo(steam64);
+		String profileName = Optional.ofNullable(profileInfo)
+			.map(Pair::getLeft)
+			.orElse("*Not found*");
 		String avatarUrl = Optional.ofNullable(profileInfo)
 			.map(Pair::getRight)
 			.map("https://avatars.cloudflare.steamstatic.com/%s_full.jpg"::formatted)
 			.orElse(null);
+
 		EmbedBuilder builder = new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
 			.setFooter("ID: "+user.getId(), user.getEffectiveAvatarUrl())
-			.setTitle(profileInfo.getLeft(), profileUrl)
+			.setTitle(profileName, profileUrl)
 			.setThumbnail(avatarUrl)
 			.addField("Steam", steamId, true)
 			.addField("Links", "> [UnionTeam](https://unionteams.ru/player/%s)\n> [SteamRep](https://steamrep.com/profiles/%<s)".formatted(steam64), true)

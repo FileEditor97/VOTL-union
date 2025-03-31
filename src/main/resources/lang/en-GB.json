@@ -709,7 +709,8 @@
 						"help": "Select channel to which to send complaints"
 					},
 					"cant_send": "I cant send messages in selected channel! Check my permissions or select other channel.",
-					"done": "Selected {channel} to receive user reports."
+					"done": "Selected $s to receive user reports.",
+					"done_cleared": "Cleared report setup."
 				},
 				"anticrash": {
 					"help": "Manage server's anti-crash protection",

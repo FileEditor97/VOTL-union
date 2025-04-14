@@ -246,10 +246,13 @@ public class ModerationUtil {
 			newReason = newReason.replaceAll("<#"+channel.getIdLong()+">", "#"+channel.getName());
 		}
 		for (var role : mentions.getRoles()) {
-			newReason = newReason.replaceAll("<#"+role.getIdLong()+">", "@"+role.getName());
+			newReason = newReason.replaceAll("<@&"+role.getIdLong()+">", "@"+role.getName());
+		}
+		for (var member : mentions.getMembers()) {
+			newReason = newReason.replaceAll("<@"+member.getIdLong()+">", "@"+member.getUser().getName());
 		}
 		for (var user : mentions.getUsers()) {
-			newReason = newReason.replaceAll("<#"+user.getIdLong()+">", "@"+user.getName());
+			newReason = newReason.replaceAll("<@"+user.getIdLong()+">", "@"+user.getName());
 		}
 
 		return newReason;

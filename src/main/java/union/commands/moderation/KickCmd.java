@@ -4,8 +4,11 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import union.base.command.CooldownScope;
@@ -25,6 +28,7 @@ import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import union.utils.database.managers.GuildSettingsManager;
 import union.utils.exception.AttachmentParseException;
 
 public class KickCmd extends CommandBase {
@@ -84,16 +88,43 @@ public class KickCmd extends CommandBase {
 			return;
 		}
 
-		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
+		String reason = bot.getModerationUtil().parseReasonMentions(event, this);
+		// inform user
+		final GuildSettingsManager.DramaLevel dramaLevel = bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaLevel();
 		if (event.optBoolean("dm", true)) {
 			tm.getUser().openPrivateChannel().queue(pm -> {
 				final String text = bot.getModerationUtil().getDmText(CaseType.KICK, guild, reason, null, mod.getUser(), false);
 				if (text == null) return;
 				pm.sendMessage(text).setSuppressEmbeds(true)
-					.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					.queue(null, new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, (failure) -> {
+						if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ONLY_BAD_DM)) {
+							TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+								.map(event.getJDA()::getTextChannelById)
+								.orElse(null);
+							if (dramaChannel != null) {
+								final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(CaseType.KICK, event.getGuild(), tm, reason, null);
+								if (dramaEmbed == null) return;
+								dramaChannel.sendMessage("||%s||".formatted(tm.getAsMention()))
+									.addEmbeds(dramaEmbed)
+									.queue();
+							}
+						}
+					}));
 			});
 		}
+		if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ALL)) {
+			TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+				.map(event.getJDA()::getTextChannelById)
+				.orElse(null);
+			if (dramaChannel != null) {
+				final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(CaseType.KICK, event.getGuild(), tm, reason, null);
+				if (dramaEmbed != null) {
+					dramaChannel.sendMessageEmbeds(dramaEmbed).queue();
+				}
+			}
+		}
 
+		// Perform action
 		tm.kick().reason(reason).queueAfter(2, TimeUnit.SECONDS, done -> {
 			// add info to db
 			CaseData kickData;

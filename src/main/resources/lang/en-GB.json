@@ -161,18 +161,24 @@
 			"banned_perm": "You were permanently banned from {guild} server.",
 			"banned": "You were banned from {guild} server.",
 			"kicked": "You were kicked from {guild} server.",
-			"muted": "You were timed out in {guild} server.",
+			"muted": "You were timed out in {guild} server for {time}.",
 			"strike": "You received %s in {guild} server.",
 			"strike1": "one warning",
 			"strike2": "two warnings",
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
 			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
-			"appeal": "\nAppeal this action by following this link:\n> %s",
-			"rules": "\n-# [View server Rules (press)](%s)",
+			"appeal": "\nYou can appeal this action by following this link:\n> %s",
+			"rules": "\n-# [View server Rules](%s)",
 			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
 			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s.",
 			"gamestrike": "You received Game strike in [__#%s__](%s) in {guild} server."
+		},
+		"drama": {
+			"kicked": "Was kicked from this server.",
+			"muted": "Was timed out for {time}.",
+			"strike": "Received %s.",
+			"gamestrike": "Received Game strike in [__#%s__](%s)."
 		},
 		"inform": {
 			"0": "Do not dm offender",
@@ -213,7 +219,7 @@
 			},
 			"mute": {
 				"short_title": "Mute info",
-				"short_info": "*Username:* `{username}`\n*Is timed out until:* `{until}`"
+				"short_info": "*Username:* {username}\n*Is timed out until:* {until}"
 			},
 			"unmute": {
 				"mute_reason": "Muted for"
@@ -709,7 +715,7 @@
 						"help": "Select channel to which to send complaints"
 					},
 					"cant_send": "I cant send messages in selected channel! Check my permissions or select other channel.",
-					"done": "Selected $s to receive user reports.",
+					"done": "Selected %s to receive user reports.",
 					"done_cleared": "Cleared report setup."
 				},
 				"anticrash": {
@@ -914,6 +920,22 @@
 						"empty": "No exemptions set.",
 						"title": "Exempt channels"
 					}
+				},
+				"drama": {
+					"help": "Manage drama channel",
+					"usage": "drama [level] [#Channel]",
+					"level": {
+						"name": "level",
+						"help": "Set drama settings"
+					},
+					"channel": {
+						"name": "channel",
+						"help": "Set drama channel"
+					},
+					"set_level": "Drama setting: %s",
+					"bad_channel": "Bot can't access selected channel.",
+					"set_channel": "Drama channel: %s",
+					"view": "Drama settings"
 				}
 			},
 			"module": {
@@ -1599,6 +1621,7 @@
 					"name": "proof",
 					"help": "Select/Paste image with proofs. Only .png and .jpg/.jpeg are accepted."
 				},
+				"no_reason": "*Not provided*",
 				"not_found": "Member not found or input error",
 				"not_self": "You can't select yourself or the bot.",
 				"cooldown": "**Strike cooldown!**\nPlease, wait before giving new strike.\n\nRetry %s.",
@@ -2334,7 +2357,7 @@
 				"content_empty": "Message is blank and no file found.",
 				"empty": "No SteamIDs found. Please, make sure you provided them in right format.",
 				"input_expired": "Timed out, try again.",
-				"start": "### Started data fetching.\nSteamIDs found: `%s` and will take approximately `%f` seconds to complete.\n",
+				"start": "### Started data fetching.\nSteamIDs found: `%s` and will take approximately `%.0f` seconds to complete.\n",
 				"failed": "Failed to create results file.",
 				"done": "Completed in `%s` seconds.\nSee attached file."
 			},

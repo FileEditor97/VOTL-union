@@ -63,7 +63,7 @@ public class GuildListener extends ListenerAdapter {
 				// this guild's cache is empty, try caching
 				action = helper.getDBUtil().getGuildSettings(guildId).getAnticrashAction();
 				// if disabled - check group
-				if (!action.isEnabled())
+				if (action.isDisabled())
 					action = helper.getDBUtil().group.getGuildGroups(guildId)
 						.stream()
 						.map(group -> helper.getDBUtil().group.getOwner(group))
@@ -74,7 +74,7 @@ public class GuildListener extends ListenerAdapter {
 
 				helper.getDBUtil().guildSettings.addAnticrashCache(guildId, action);
 			}
-			if (!action.isEnabled()) return;
+			if (action.isDisabled()) return;
 
 			// add 1 point for action
 			int points = App.getInstance().getAlertUtil().add(guildId, admin.getIdLong());

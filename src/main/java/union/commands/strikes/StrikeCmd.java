@@ -6,8 +6,11 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
 import union.base.command.CooldownScope;
@@ -21,6 +24,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.CaseProofUtil;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.database.managers.GuildSettingsManager;
 import union.utils.exception.AttachmentParseException;
 import union.utils.message.TimeUtil;
 
@@ -98,19 +102,45 @@ public class StrikeCmd extends CommandBase {
 			return;
 		}
 
-		String reason = event.optString("reason");
+		String reason = bot.getModerationUtil().parseReasonMentions(event, this);
 		Integer strikeAmount = event.optInteger("severity", 1);
 		CaseType type = CaseType.byType(20 + strikeAmount);
 
 		Member mod = event.getMember();
+		// inform
+		final GuildSettingsManager.DramaLevel dramaLevel = bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaLevel();
 		tm.getUser().openPrivateChannel().queue(pm -> {
 			Button button = Button.secondary("strikes:"+guild.getId(), lu.getLocalized(guild.getLocale(), "logger_embed.pm.button_strikes"));
 			final String text = bot.getModerationUtil().getDmText(type, guild, reason, null, mod.getUser(), false);
 			if (text == null) return;
 			pm.sendMessage(text).setSuppressEmbeds(true)
 				.addActionRow(button)
-				.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+				.queue(null, new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, (failure) -> {
+					if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ONLY_BAD_DM)) {
+						TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+							.map(event.getJDA()::getTextChannelById)
+							.orElse(null);
+						if (dramaChannel != null) {
+							final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(CaseType.KICK, event.getGuild(), tm, reason, null);
+							if (dramaEmbed == null) return;
+							dramaChannel.sendMessage("||%s||".formatted(tm.getAsMention()))
+								.addEmbeds(dramaEmbed)
+								.queue();
+						}
+					}
+				}));
 		});
+		if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ALL)) {
+			TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+				.map(event.getJDA()::getTextChannelById)
+				.orElse(null);
+			if (dramaChannel != null) {
+				final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(type, event.getGuild(), tm, reason, null);
+				if (dramaEmbed != null) {
+					dramaChannel.sendMessageEmbeds(dramaEmbed).queue();
+				}
+			}
+		}
 		
 		// add info to db
 		CaseData caseData;
@@ -330,7 +360,7 @@ public class StrikeCmd extends CommandBase {
 				target.getUser().openPrivateChannel().queue(pm -> {
 					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, null, null, false);
 					if (text == null) return;
-					pm.sendMessage(text)
+					pm.sendMessage(text).setSuppressEmbeds(true)
 						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				});
 

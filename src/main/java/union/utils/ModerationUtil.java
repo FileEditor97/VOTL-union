@@ -3,9 +3,13 @@ package union.utils;
 import java.time.Duration;
 import java.time.Instant;
 
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import union.base.command.SlashCommand;
+import union.base.command.SlashCommandEvent;
 import union.objects.CaseType;
 import union.objects.constants.Constants;
 import union.utils.database.DBUtil;
@@ -13,9 +17,6 @@ import union.utils.file.lang.LocaleUtil;
 import union.utils.message.TimeUtil;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 public class ModerationUtil {
@@ -27,9 +28,14 @@ public class ModerationUtil {
 		this.dbUtil = dbUtil;
 		this.lu = lu;
 	}
-	
+
 	@Nullable
 	public String getDmText(CaseType type, Guild guild, String reason, Duration duration, User mod, boolean canAppeal) {
+		return getDmText(type, guild, reason, duration, mod, canAppeal, null);
+	}
+
+	@Nullable
+	public String getDmText(CaseType type, Guild guild, String reason, Duration duration, User mod, boolean canAppeal, GuildChannel targetChannel) {
 		DiscordLocale locale = guild.getLocale();
 		int level;
 		String text;
@@ -54,6 +60,11 @@ public class ModerationUtil {
 				level = dbUtil.getGuildSettings(guild).getInformMute().getLevel();
 				if (level == 0) return null;
 				text = lu.getLocalized(locale, "logger_embed.pm.muted");
+			}
+			case GAME_STRIKE -> {
+				level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
+				text = lu.getLocalized(locale, "logger_embed.pm.gamestrike")
+					.formatted(targetChannel.getName(), targetChannel.getJumpUrl());
 			}
 			case STRIKE_1, STRIKE_2, STRIKE_3 -> {
 				level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
@@ -84,6 +95,47 @@ public class ModerationUtil {
 	}
 
 	@Nullable
+	public MessageEmbed getDramaEmbed(CaseType type, Guild guild, Member target, String reason, Duration duration) {
+		return getDramaEmbed(type, guild, target, reason, duration, null);
+	}
+
+	@Nullable
+	public MessageEmbed getDramaEmbed(CaseType type, Guild guild, Member target, String reason, Duration duration, GuildChannel targetChannel) {
+		DiscordLocale locale = guild.getLocale();
+		int level;
+		String text;
+		switch (type) {
+			case KICK -> {
+				level = dbUtil.getGuildSettings(guild).getInformKick().getLevel();
+				text = lu.getLocalized(locale, "logger_embed.drama.kicked");
+			}
+			case MUTE -> {
+				level = dbUtil.getGuildSettings(guild).getInformMute().getLevel();
+				text = lu.getLocalized(locale, "logger_embed.drama.muted");
+			}
+			case GAME_STRIKE -> {
+				level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
+				text = lu.getLocalized(locale, "logger_embed.drama.gamestrike")
+					.formatted(targetChannel.getName(), targetChannel.getJumpUrl());
+			}
+			case STRIKE_1, STRIKE_2, STRIKE_3 -> {
+				level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
+				text = lu.getLocalized(locale, "logger_embed.drama.strike")
+					.formatted(lu.getLocalized(locale, "logger_embed.pm.strike"+(type.getType()-20)));
+			}
+			default -> {
+				return null;
+			}
+		}
+
+		return new EmbedBuilder().setColor(Constants.COLOR_DEFAULT)
+			.setAuthor(target.getEffectiveName(), target.getEffectiveAvatarUrl())
+			.setDescription(formatText(text, guild, level >= 2 ? reason : null, level >= 2 ? duration : null, null))
+			.setTimestamp(Instant.now())
+			.build();
+	}
+
+	@Nullable
 	public MessageEmbed getDelstrikeEmbed(int amount, Guild guild, User mod) {
 		int level = dbUtil.getGuildSettings(guild).getInformDelstrike().getLevel();
 		if (level == 0) return null;
@@ -111,6 +163,7 @@ public class ModerationUtil {
 		}
 	}
 
+	@NotNull
 	private String formatText(final String text, Guild guild, String reason, Duration duration, User mod) {
 		String newText = (duration == null) ? text : text.replace("{time}", TimeUtil.durationToLocalizedString(lu, guild.getLocale(), duration));
 		StringBuilder builder = new StringBuilder(newText.replace("{guild}", guild.getName()));
@@ -140,16 +193,6 @@ public class ModerationUtil {
 				.formatted(lu.getLocalized(locale, typePath)))
 			.addLink(logUrl)
 			.getBuilder();
-	}
-
-	@Nullable
-	public MessageEmbed getGameStrikeEmbed(GuildChannel channel, User mod, String reason) {
-		int level = dbUtil.getGuildSettings(channel.getGuild()).getInformStrike().getLevel();
-		if (level == 0) return null;
-		String text = lu.getLocalized(channel.getGuild().getLocale(), "logger_embed.pm.gamestrike").formatted(channel.getName(), channel.getJumpUrl());
-		return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
-			.setDescription(formatText(text, channel.getGuild(), reason, null, level >= 3 ? mod : null))
-			.build();
 	}
 
 	public class ActionEmbedBuilder {
@@ -187,4 +230,29 @@ public class ModerationUtil {
 			return embedBuilder.build();
 		}
 	}
+
+	@NotNull
+	public <T extends SlashCommand> String parseReasonMentions(SlashCommandEvent event, T command) {
+		OptionMapping option = event.getOption("reason");
+		if (option == null) {
+			return lu.getLocalized(event.getGuildLocale(), command.getPath()+".no_reason");
+		}
+
+		String reason = option.getAsString();
+		Mentions mentions = option.getMentions();
+
+		String newReason = reason;
+		for (var channel : mentions.getChannels()) {
+			newReason = newReason.replaceAll("<#"+channel.getIdLong()+">", "#"+channel.getName());
+		}
+		for (var role : mentions.getRoles()) {
+			newReason = newReason.replaceAll("<#"+role.getIdLong()+">", "@"+role.getName());
+		}
+		for (var user : mentions.getUsers()) {
+			newReason = newReason.replaceAll("<#"+user.getIdLong()+">", "@"+user.getName());
+		}
+
+		return newReason;
+	}
+
 }

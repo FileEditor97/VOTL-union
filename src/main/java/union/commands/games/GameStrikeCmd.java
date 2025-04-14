@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
@@ -22,12 +23,14 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.CaseProofUtil;
 import union.utils.database.managers.CaseManager;
+import union.utils.database.managers.GuildSettingsManager;
 import union.utils.exception.AttachmentParseException;
 
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 public class GameStrikeCmd extends CommandBase {
 
@@ -92,7 +95,7 @@ public class GameStrikeCmd extends CommandBase {
 			return;
 		}
 
-		String reason = event.optString("reason");
+		String reason = bot.getModerationUtil().parseReasonMentions(event, this);
 		// Add to DB
 		long guildId = event.getGuild().getIdLong();
 
@@ -107,11 +110,37 @@ public class GameStrikeCmd extends CommandBase {
 		}
 
 		// Inform user
+		final GuildSettingsManager.DramaLevel dramaLevel = bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaLevel();
 		tm.getUser().openPrivateChannel().queue(pm -> {
-			MessageEmbed embed = bot.getModerationUtil().getGameStrikeEmbed(channel, event.getUser(), reason);
-			if (embed == null) return;
-			pm.sendMessageEmbeds(embed).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+			final String text = bot.getModerationUtil().getDmText(CaseType.GAME_STRIKE, event.getGuild(), reason, null, event.getUser(), false, channel);
+			if (text == null) return;
+			pm.sendMessage(text).setSuppressEmbeds(true)
+				.queue(null, new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, (failure) -> {
+					if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ONLY_BAD_DM)) {
+						TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+							.map(event.getJDA()::getTextChannelById)
+							.orElse(null);
+						if (dramaChannel != null) {
+							final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(CaseType.GAME_STRIKE, event.getGuild(), tm, reason, null, channel);
+							if (dramaEmbed == null) return;
+							dramaChannel.sendMessage("||%s||".formatted(tm.getAsMention()))
+								.addEmbeds(dramaEmbed)
+								.queue();
+						}
+					}
+				}));
 		});
+		if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ALL)) {
+			TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+				.map(event.getJDA()::getTextChannelById)
+				.orElse(null);
+			if (dramaChannel != null) {
+				final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(CaseType.GAME_STRIKE, event.getGuild(), tm, reason, null, channel);
+				if (dramaEmbed != null) {
+					dramaChannel.sendMessageEmbeds(dramaEmbed).queue();
+				}
+			}
+		}
 		// Log
 		final int strikeCount = bot.getDBUtil().games.countStrikes(channelId, tm.getIdLong());
 		final int maxStrikes = bot.getDBUtil().games.getMaxStrikes(channelId);

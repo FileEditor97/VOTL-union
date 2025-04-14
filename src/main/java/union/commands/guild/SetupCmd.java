@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import net.dv8tion.jda.api.entities.Mentions;
 
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import union.base.command.SlashCommand;
@@ -19,6 +20,7 @@ import union.objects.CmdModule;
 import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildSettingsManager.AnticrashAction;
 import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
 import union.utils.database.managers.LevelManager;
@@ -50,7 +52,8 @@ public class SetupCmd extends CommandBase {
 			new VoiceCreate(), new VoiceSelect(), new VoicePanel(), new VoiceName(), new VoiceLimit(),
 			new Strikes(), new InformLevel(), new RoleWhitelist(), new Levels(),
 			new SetLevelRoles(), new RemoveLevelRoles(), new ViewLevelRoles(),
-			new AddLevelExempt(), new RemoveLevelExempt(), new ViewLevelExempt(), new ClearLevelExempt()
+			new AddLevelExempt(), new RemoveLevelExempt(), new ViewLevelExempt(), new ClearLevelExempt(),
+			new Drama()
 		};
 		this.category = CmdCategory.GUILD;
 		this.accessLevel = CmdAccessLevel.ADMIN;
@@ -938,6 +941,78 @@ public class SetupCmd extends CommandBase {
 				channelIds.forEach(id -> builder.appendDescription("<#%s> (%<s)\n".formatted(id)));
 			}
 			editEmbed(event, builder.build());
+		}
+	}
+
+	private class Drama extends SlashCommand {
+		public Drama() {
+			this.name = "drama";
+			this.path = "bot.guild.setup.drama";
+			this.options = List.of(
+				new OptionData(OptionType.INTEGER, "level", lu.getText(path+".level.help"))
+					.addChoice("Off", 0)
+					.addChoice("Only failed DMs", 1)
+					.addChoice("On", 2),
+				new OptionData(OptionType.CHANNEL, "channel", lu.getText(path+".channel.help"))
+					.setChannelTypes(ChannelType.TEXT)
+			);
+		}
+
+		@Override
+		protected void execute(SlashCommandEvent event) {
+			event.deferReply(true).queue();
+
+			StringBuilder builder = new StringBuilder();
+			if (event.hasOption("level")) {
+				GuildSettingsManager.DramaLevel level = GuildSettingsManager.DramaLevel.byLevel(event.optInteger("level"));
+
+				try {
+					bot.getDBUtil().guildSettings.setDramaLevel(event.getGuild().getIdLong(), level);
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "setup drama level");
+					return;
+				}
+
+				builder.append("\n> ")
+					.append(lu.getText(event, path+".set_level").formatted(level.name()));
+			}
+			if (event.hasOption("channel")) {
+				TextChannel channel = (TextChannel) event.optGuildChannel("channel");
+
+				if (!channel.canTalk()) {
+					editError(event, path+".bad_channel");
+					return;
+				}
+
+				try {
+					bot.getDBUtil().guildSettings.setDramaChannelId(event.getGuild().getIdLong(), channel.getIdLong());
+				} catch (SQLException e) {
+					editErrorDatabase(event, e, "setup drama level");
+					return;
+				}
+
+				builder.append("\n> ")
+					.append(lu.getText(event, path+".set_channel").formatted(channel.getAsMention()));
+			}
+
+			if (builder.isEmpty()) {
+				GuildSettingsManager.GuildSettings settings = bot.getDBUtil().getGuildSettings(event.getGuild());
+				builder.append(lu.getText(event, path+".view"))
+					.append("\n> Enabled: ")
+					.append(settings.getDramaLevel())
+					.append("\n> Channel: ")
+					.append(Optional.ofNullable(settings.getDramaChannelId()).map("<#%s>"::formatted).orElse("*-none-*"));
+
+				editEmbed(event, bot.getEmbedUtil().getEmbed()
+					.setDescription(builder.toString())
+					.build()
+				);
+			} else {
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(builder.toString())
+					.build()
+				);
+			}
 		}
 	}
 

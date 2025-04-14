@@ -5,7 +5,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
@@ -16,6 +19,7 @@ import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
 import union.utils.CaseProofUtil;
 import union.utils.database.managers.CaseManager.CaseData;
+import union.utils.database.managers.GuildSettingsManager;
 import union.utils.exception.AttachmentParseException;
 import union.utils.exception.FormatterException;
 import union.utils.message.TimeUtil;
@@ -87,7 +91,7 @@ public class MuteCmd extends CommandBase {
 		}
 
 		Guild guild = Objects.requireNonNull(event.getGuild());
-		String reason = event.optString("reason", lu.getLocalized(event.getGuildLocale(), path+".no_reason"));
+		String reason = bot.getModerationUtil().parseReasonMentions(event, this);
 		CaseData oldMuteData = bot.getDBUtil().cases.getMemberActive(tm.getIdLong(), guild.getIdLong(), CaseType.MUTE);
 
 		if (tm.isTimedOut() && oldMuteData != null) {
@@ -118,12 +122,38 @@ public class MuteCmd extends CommandBase {
 			}
 			
 			tm.timeoutFor(duration).reason(reason).queue(done -> {
+				// inform
+				final GuildSettingsManager.DramaLevel dramaLevel = bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaLevel();
 				tm.getUser().openPrivateChannel().queue(pm -> {
 					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, duration, mod.getUser(), false);
 					if (text == null) return;
 					pm.sendMessage(text).setSuppressEmbeds(true)
-						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+						.queue(null, new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, (failure) -> {
+							if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ONLY_BAD_DM)) {
+								TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+									.map(event.getJDA()::getTextChannelById)
+									.orElse(null);
+								if (dramaChannel != null) {
+									final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(CaseType.MUTE, event.getGuild(), tm, reason, duration);
+									if (dramaEmbed == null) return;
+									dramaChannel.sendMessage("||%s||".formatted(tm.getAsMention()))
+										.addEmbeds(dramaEmbed)
+										.queue();
+								}
+							}
+						}));
 				});
+				if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ALL)) {
+					TextChannel dramaChannel = Optional.ofNullable(bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaChannelId())
+						.map(event.getJDA()::getTextChannelById)
+						.orElse(null);
+					if (dramaChannel != null) {
+						final MessageEmbed dramaEmbed = bot.getModerationUtil().getDramaEmbed(CaseType.MUTE, event.getGuild(), tm, reason, duration);
+						if (dramaEmbed != null) {
+							dramaChannel.sendMessageEmbeds(dramaEmbed).queue();
+						}
+					}
+				}
 
 				// Set previous mute case inactive, as member is not timed-out
 				if (oldMuteData != null) {

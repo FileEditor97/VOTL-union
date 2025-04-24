@@ -3,7 +3,10 @@ package union.utils.database.managers;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import union.objects.AnticrashAction;
+import union.utils.AlertUtil;
 import union.utils.database.LiteDBBase;
 import union.utils.database.ConnectionUtil;
 
@@ -66,6 +69,27 @@ public class GroupManager extends LiteDBBase {
 
 	public void setVerify(int groupId, int value) throws SQLException {
 		execute("UPDATE %s SET memberVerify=%d WHERE (groupId=%d)".formatted(groups, value, groupId));
+	}
+
+	@NotNull
+	public AnticrashAction getAnticrashAction(int groupId) {
+		Integer data = selectOne("SELECT anticrash FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "anticrash", Integer.class);
+		if (data==null || data==0) return AnticrashAction.DISABLED;
+		return AnticrashAction.byValue(data);
+	}
+
+	public void setAnticrashAction(int groupId, AnticrashAction action) throws SQLException {
+		execute("UPDATE %s SET anticrash=%d WHERE (groupId=%d)".formatted(groups, action.value, groupId));
+	}
+
+	public int getAnticrashTrigger(int groupId) {
+		Integer data = selectOne("SELECT anticrashTrigger FROM %s WHERE (groupId=%d)".formatted(groups, groupId), "anticrashTrigger", Integer.class);
+		if (data==null || data==0) return AlertUtil.DEFAULT_TRIGGER_AMOUNT;
+		return data;
+	}
+
+	public void setAnticrashTrigger(int groupId, Integer amount) throws SQLException {
+		execute("UPDATE %s SET anticrashTrigger=%s WHERE (groupId=%d)".formatted(groups, amount==null?"NULL":amount, groupId));
 	}
 
 	// groupMembers table

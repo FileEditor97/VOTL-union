@@ -721,16 +721,20 @@
 				"anticrash": {
 					"help": "Manage server's anti-crash protection",
 					"usage": "anticrash <enabled?> [ping]",
-					"action": {
-						"name": "action",
-						"help": "Enable anticrash and what to do with offender?"
+					"action_guild": {
+						"name": "action_guild",
+						"help": "Enable anticrash and what to do with offender"
+					},
+					"triger_value": {
+						"name": "triger_value",
+						"help": "Anti-crash trigger by amount of actions performed"
 					},
 					"ping": {
 						"name": "ping",
 						"help": "Mentions roles and/or users to be mentioned on action"
 					},
-					"done": "Anti-crash protection - %s.",
-					"done_full": "Anti-crash protection - %s.\nBot will ping [ %s ]"
+					"done": "Server anti-crash protection - **%s**.\n> Tigger amount: %s",
+					"done_ping": "> Bot will ping [ %s ]"
 				},
 				"voice": {
 					"help": "Manage custom voice channel settings",
@@ -1829,14 +1833,24 @@
 						"name": "enable_verification",
 						"help": "Enable verification in member servers? (-1 disable, 0 kick, >1 ban time in minutes)"
 					},
+					"anticrash_action": {
+						"name": "anticrash_action",
+						"help": "Anti-crash protection for group members"
+					},
+					"anticrash_trigger": {
+						"name": "anticrash_trigger",
+						"help": "Anti-crash trigger by amount of actions performed"
+					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
-					"only_one_change": "Only one group parameter can be changed at this time.",
+					"no_options": "No changes were made.",
 					"invalid_invite": "Provided invite is invalid. Check that it's correct, is not temporal and for this server.",
-					"name_change": "Renamed to `%s`.",
-					"invite_change": "This server invite link set to `%s`.",
-					"verify_change": "Verification set to: %s",
-					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"
+					"name_change": "> Renamed to `%s`.",
+					"invite_change": "> This server invite link set to `%s`.",
+					"verify_change": "> Verification set to: %s",
+					"anticrash_change": "> Group anti-crash protection - %s.",
+					"trigger_change": "> Anti-crash trigger amount: %s",
+					"done_title": "Group `%s` modified."
 				},
 				"manage": {
 					"help": "Manage group member's settings",
@@ -1852,7 +1866,6 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"no_guilds": "There are no other servers in the selected Group.",
-					"no_options": "No options to be updated.",
 					"is_shared": "Selected Group is set as `Shared`. Unable to add manage permission to any server in this Group.",
 					"embed_title": "Server",
 					"embed_value": "Select server from the list below.",
@@ -1873,7 +1886,7 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"embed_title": "Group '%s' (#%s)",
-					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification setup: %s",
+					"embed_full": "Owner: %s (`%s`)\nGroup size: **%d** server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification setup: %s\nAnti-crash: **%s**\nAnti-crash trigger: `%s`",
 					"embed_short": "Owner: %s (`%s`)\nGroup size: %d server/-s",
 					"embed_guilds": "Server name | size | ID",
 					"embed_groups": "Group name | #ID",

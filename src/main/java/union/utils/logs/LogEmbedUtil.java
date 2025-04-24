@@ -777,6 +777,16 @@ public class LogEmbedUtil {
 	}
 
 	@NotNull
+	public MessageEmbed alertEmbed(DiscordLocale locale, Guild guild, Member member, String actionTaken, String reason) {
+		return new LogEmbedBuilder(locale, AMBER_LIGHT)
+			.setHeaderIcon("helper.alert", guild.getIconUrl(), guild.getName())
+			.addField("target", "%s (%d)".formatted(member.getAsMention(), member.getIdLong()))
+			.setReason(reason)
+			.addField("helper.action", actionTaken, false)
+			.build();
+	}
+
+	@NotNull
 	public MessageEmbed botLeftEmbed(DiscordLocale locale, int groupId, @Nullable Guild guild, String guildId) {
 		return new LogEmbedBuilder(locale, AMBER_LIGHT)
 			.setHeader("helper.leave_guild", Optional.ofNullable(guild).map(Guild::getName).orElse("unknown"))

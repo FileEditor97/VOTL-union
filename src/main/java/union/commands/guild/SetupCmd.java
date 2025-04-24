@@ -15,13 +15,14 @@ import net.dv8tion.jda.api.interactions.commands.Command;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.commands.CommandBase;
+import union.objects.AnticrashAction;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
+import union.utils.AlertUtil;
 import union.utils.database.managers.GuildSettingsManager;
-import union.utils.database.managers.GuildSettingsManager.AnticrashAction;
 import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
 import union.utils.database.managers.LevelManager;
 import union.utils.database.managers.LevelRolesManager;
@@ -207,13 +208,15 @@ public class SetupCmd extends CommandBase {
 			this.name = "anticrash";
 			this.path = "bot.guild.setup.anticrash";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "action", lu.getText(path+".action.help"), true)
+				new OptionData(OptionType.INTEGER, "action_guild", lu.getText(path+".action_guild.help"), true)
 					.addChoices(
 						new Command.Choice("Disabled", 0),
 						new Command.Choice("Remove all roles", 1),
 						new Command.Choice("Kick", 2),
 						new Command.Choice("Ban", 3)
 					),
+				new OptionData(OptionType.INTEGER, "triger_value", lu.getText(path+".triger_value.help"))
+					.setRequiredRange(1, 20),
 				new OptionData(OptionType.STRING, "ping", lu.getText(path+".ping.help"))
 			);
 			this.accessLevel = CmdAccessLevel.OPERATOR;
@@ -222,17 +225,23 @@ public class SetupCmd extends CommandBase {
 		@Override
 		protected void execute(SlashCommandEvent event) {
 			event.deferReply().queue();
-			AnticrashAction action = AnticrashAction.byValue(event.optInteger("action", 0));
+
+			AnticrashAction actionGuild = AnticrashAction.byValue(event.optInteger("action_guild", 0));
+			int triggerAmount = event.optInteger("triger_value", AlertUtil.DEFAULT_TRIGGER_AMOUNT);
 
 			long guildId = event.getGuild().getIdLong();
 			try {
-				bot.getDBUtil().guildSettings.setAnticrash(guildId, action);
+				bot.getDBUtil().guildSettings.setAnticrash(guildId, actionGuild, triggerAmount);
 			} catch (SQLException e) {
-				editErrorDatabase(event, e, "setup anticrash");
+				editErrorDatabase(event, e, "setup guild anticrash");
 				return;
 			}
 			// Clear anticrash cache (easier to purge all cache, than for of each member)
 			bot.getDBUtil().guildSettings.purgeAnticrashCache();
+
+			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+				.setDescription(lu.getText(event, path+".done")
+					.formatted(actionGuild.name().toLowerCase(), triggerAmount));
 
 			if (event.hasOption("ping")) {
 				Mentions mentions = event.optMentions("ping");
@@ -251,16 +260,12 @@ public class SetupCmd extends CommandBase {
 					return;
 				}
 
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done_full").formatted(
-						action.name().toLowerCase(),
-						ping==null ? "developer" : ping
-					))
+				editEmbed(event, builder.appendDescription("\n")
+					.appendDescription(lu.getText(event, path+".done_ping")
+						.formatted(ping==null ? "developer" : ping))
 					.build());
 			} else {
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").formatted(action.name().toLowerCase()))
-					.build());
+				editEmbed(event, builder.build());
 			}
 		}
 	}

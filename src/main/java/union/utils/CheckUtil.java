@@ -32,7 +32,7 @@ public class CheckUtil {
 		this.ownerId = ownerId;
 	}
 
-	public boolean isDeveloper(UserSnowflake user) {
+	public static boolean isDeveloper(UserSnowflake user) {
 		return user.getId().equals(Constants.DEVELOPER_ID);
 	}
 

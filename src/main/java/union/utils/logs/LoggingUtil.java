@@ -837,6 +837,19 @@ public class LoggingUtil {
 			sendLog(guild, type, () -> logUtil.moduleDisabled(guild.getLocale(), mod, module));
 		}
 
-
+		public void alertTriggered(Guild guild, Member targetMember, String actionTaken, String reason) {
+			// Try panic
+			panic(
+				() -> logUtil.alertEmbed(bot.getLocaleUtil().defaultLocale, guild, targetMember, actionTaken, reason),
+				guild
+			);
+			// Log
+			IncomingWebhookClientImpl client = getWebhookClient(type, guild);
+			if (client == null) return;
+			try {
+				String ping = Optional.ofNullable(db.getGuildSettings(guild).getAnticrashPing()).orElse("|| <@"+Constants.DEVELOPER_ID+"> ||");
+				client.sendMessage(ping).addEmbeds(logUtil.alertEmbed(guild.getLocale(), guild, targetMember, actionTaken, reason)).queue();
+			} catch (Exception ignored) {}
+		}
 	}
 }

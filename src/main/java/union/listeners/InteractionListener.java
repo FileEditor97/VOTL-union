@@ -573,6 +573,7 @@ public class InteractionListener extends ListenerAdapter {
 			String description = data.getDescription("-");
 			options.add(SelectOption.of(role.getName(), data.getId()).withDescription(description));
 		}
+		if (options.isEmpty()) return null;
 		StringSelectMenu menu = StringSelectMenu.create("menu:role_row:"+row)
 			.setPlaceholder(db.getTicketSettings(guild).getRowText(row))
 			.setMaxValues(25)

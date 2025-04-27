@@ -2506,7 +2506,7 @@
 					},
 					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
-					"done": "Panel created in {channel}!"
+					"done": "Panel created in %s!"
 				},
 				"update": {
 					"help": "Update existing role requests panel",
@@ -2518,7 +2518,7 @@
 					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"not_found": "Existing panel not found in selected channel",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
-					"done": "Panel updated in {channel}!"
+					"done": "Panel [message](%s) updated!"
 				},
 				"row": {
 					"help": "Update assignable roles row's text placeholder",
@@ -2531,7 +2531,7 @@
 						"name": "text",
 						"help": "Enter text which will be shown in role selection placeholder"
 					},
-					"done": "Placeholder text for row `{row}` set to `{text}`."
+					"done": "Placeholder text for row `%s` set to `%s`."
 				}
 			},
 			"tcount": {

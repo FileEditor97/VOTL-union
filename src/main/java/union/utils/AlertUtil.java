@@ -65,7 +65,7 @@ public class AlertUtil {
 			if (newValue <= 0)
 				it.remove();
 			else
-				entry.setValue(newValue); // TODO: test!!!
+				entry.setValue(newValue);
 		}
 	}
 

@@ -53,7 +53,7 @@ public class GuildListener extends ListenerAdapter {
 			);
 		}
 
-		// Alerts
+		// Server protection
 		if (WATCHED_ACTIONS.contains(entry.getType())) {
 			UserSnowflake admin = UserSnowflake.fromId(entry.getUserIdLong()); // Do not change! .getUser() returns null
 			// Ignore actions made by both bots
@@ -86,6 +86,7 @@ public class GuildListener extends ListenerAdapter {
 			}
 			if (action.isDisabled()) return;
 
+			// Check for timed restrictions
 			AlertUtil.Data data = App.getInstance().getAlertUtil().addToWatched(guildId, admin.getIdLong());
 			if (data != null) {
 				int triggerAmount = helper.getDBUtil().getGuildSettings(event.getGuild()).getAnticrashTrigger();
@@ -97,7 +98,7 @@ public class GuildListener extends ListenerAdapter {
 				}
 			}
 
-			// add 1 point for action
+			// Add 1 point for action
 			int points = App.getInstance().getAlertUtil().addPoint(guildId, admin.getIdLong());
 			int triggerAmount = helper.getDBUtil().group.getGuildGroups(guildId)
 				.stream()

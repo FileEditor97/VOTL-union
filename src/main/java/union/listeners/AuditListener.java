@@ -24,9 +24,7 @@ import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LoggingUtil;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class AuditListener extends ListenerAdapter {
 
@@ -104,6 +102,35 @@ public class AuditListener extends ListenerAdapter {
 				logger.server.onRoleDelete(entry);
 			}
 			case ROLE_UPDATE -> {
+				// check if added bad perm
+				AuditLogChange change = entry.getChangeByKey(AuditLogKey.ROLE_PERMISSIONS);
+				if (change != null) {
+					long guildId = event.getGuild().getIdLong();
+					// anti-crash
+					// Check if added role is watched - then add to cache or update time
+					AnticrashAction action = db.guildSettings.getCachedAnticrashAction(guildId);
+					if (action == null) {
+						action = db.getGuildSettings(event.getGuild()).getAnticrashAction();
+						db.guildSettings.addAnticrashCache(guildId, action);
+					}
+					if (action.isEnabled() && !entry.getUserId().equals(Constants.DEVELOPER_ID)) {
+						try {
+							var oldPerms = Optional.ofNullable((String) change.getOldValue())
+								.map(v -> Permission.getPermissions(Long.parseLong(v)))
+								.orElse(EnumSet.noneOf(Permission.class));
+							var newPerms = Optional.ofNullable((String) change.getNewValue())
+								.map(v -> Permission.getPermissions(Long.parseLong(v)))
+								.orElse(EnumSet.noneOf(Permission.class));
+
+							newPerms.removeAll(oldPerms);
+
+							if (newPerms.stream().anyMatch(dangerPermissions::contains)) {
+								App.getInstance().getAlertUtil().watch(guildId, entry.getUserIdLong());
+							}
+						} catch (Exception ignored) {}
+					}
+				}
+
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
@@ -202,7 +229,7 @@ public class AuditListener extends ListenerAdapter {
 				}
 			}
 			default -> {
-				// other
+				// ignored
 			}	
 		}
 	}

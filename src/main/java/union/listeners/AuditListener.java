@@ -16,9 +16,9 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import union.App;
 import union.objects.AnticrashAction;
-import union.objects.constants.Constants;
 import union.objects.logs.LogType;
 import union.utils.CastUtil;
+import union.utils.CheckUtil;
 import union.utils.database.DBUtil;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LoggingUtil;
@@ -31,6 +31,7 @@ public class AuditListener extends ListenerAdapter {
 	private final LocaleUtil lu;
 	private final DBUtil db;
 	private final LoggingUtil logger;
+	private final CheckUtil checkUtil;
 
 	private final Set<Permission> dangerPermissions = Set.of(
 		Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_ROLES, Permission.MANAGE_CHANNEL,
@@ -42,6 +43,7 @@ public class AuditListener extends ListenerAdapter {
 		this.lu = bot.getLocaleUtil();
 		this.db = bot.getDBUtil();
 		this.logger = bot.getLogger();
+		this.checkUtil = bot.getCheckUtil();
 	}
 
 	@Override
@@ -113,7 +115,7 @@ public class AuditListener extends ListenerAdapter {
 						action = db.getGuildSettings(event.getGuild()).getAnticrashAction();
 						db.guildSettings.addAnticrashCache(guildId, action);
 					}
-					if (action.isEnabled() && !entry.getUserId().equals(Constants.DEVELOPER_ID)) {
+					if (action.isEnabled() && !checkUtil.isOperatorPlus(event.getGuild(), UserSnowflake.fromId(entry.getUserIdLong()))) {
 						try {
 							var oldPerms = Optional.ofNullable((String) change.getOldValue())
 								.map(v -> Permission.getPermissions(Long.parseLong(v)))
@@ -187,7 +189,7 @@ public class AuditListener extends ListenerAdapter {
 					action = db.getGuildSettings(event.getGuild()).getAnticrashAction();
 					db.guildSettings.addAnticrashCache(guildId, action);
 				}
-				if (action.isEnabled() && !entry.getUserId().equals(Constants.DEVELOPER_ID)) {
+				if (action.isEnabled() && !checkUtil.isOperatorPlus(event.getGuild(), UserSnowflake.fromId(entry.getUserIdLong()))) {
 					AuditLogChange change = entry.getChangeByKey(AuditLogKey.MEMBER_ROLES_ADD);
 					if (change != null) {
 						if (change.getNewValue() instanceof List<?> values) {

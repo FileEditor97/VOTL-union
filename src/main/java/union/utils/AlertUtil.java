@@ -78,7 +78,6 @@ public class AlertUtil {
 	private record WatchedUser(long guildId, long userId) {
 		@Override
 		public boolean equals(Object o) {
-
 			if (!(o instanceof WatchedUser cacheUser)) return false;
 			return userId == cacheUser.userId && guildId == cacheUser.guildId;
 		}

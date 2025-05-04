@@ -56,10 +56,10 @@ public class GuildListener extends ListenerAdapter {
 		// Server protection
 		if (WATCHED_ACTIONS.contains(entry.getType())) {
 			UserSnowflake admin = UserSnowflake.fromId(entry.getUserIdLong()); // Do not change! .getUser() returns null
-			// Ignore actions made by both bots
+			// Ignore actions made by both bots or operator
 			if (entry.getUserIdLong()==helper.getJDA().getSelfUser().getIdLong()
 				|| entry.getUserIdLong()==helper.getMainJDA().getSelfUser().getIdLong()
-				|| entry.getUserId().equals(Constants.DEVELOPER_ID)
+				|| App.getInstance().getCheckUtil().isOperatorPlus(event.getGuild(), admin)
 			) return;
 
 			// Check if anticrash enabled in this guild or group's master guild

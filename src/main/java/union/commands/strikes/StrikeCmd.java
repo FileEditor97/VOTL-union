@@ -204,14 +204,18 @@ public class StrikeCmd extends CommandBase {
 			false
 		);
 
+		final String reason = strikes>1 ? strikes>=5 ?
+			lu.getLocalized(locale, path+".autopunish_reason_5").formatted(strikes) :
+			lu.getLocalized(locale, path+".autopunish_reason_2").formatted(strikes) :
+			lu.getLocalized(locale, path+".autopunish_reason_1");
+
 		// Execute
 		StringBuilder builder = new StringBuilder();
 		if (actions.contains(PunishActions.KICK)) {
 			if (targetLevel.satisfies(CmdAccessLevel.EXEMPT)) {
-				builder.append(":warning: Not banned, use is exempt from bans.")
+				builder.append(":warning: Not kicked, use is exempt from kick.")
 					.append("\n");
 			} else {
-				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
 				// Send PM to user
 				target.getUser().openPrivateChannel().queue(pm -> {
 					final String text = bot.getModerationUtil().getDmText(CaseType.KICK, guild, reason, null, null, false);
@@ -242,16 +246,12 @@ public class StrikeCmd extends CommandBase {
 				builder.append(":warning: Not banned, use is exempt from bans.")
 					.append("\n");
 			} else {
-				Duration duration = null;
 				try {
-					duration = Duration.ofSeconds(Long.parseLong(PunishActions.BAN.getMatchedValue(data)));
-				} catch (NumberFormatException ignored) {}
-				if (duration != null && !duration.isZero()) {
-					String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
-					Duration durationCopy = duration;
+					Duration duration = Duration.ofSeconds(Long.parseLong(PunishActions.BAN.getMatchedValue(data)));
+
 					// Send PM to user
 					target.getUser().openPrivateChannel().queue(pm -> {
-						final String text = bot.getModerationUtil().getDmText(CaseType.BAN, guild, reason, durationCopy, null, true);
+						final String text = bot.getModerationUtil().getDmText(CaseType.BAN, guild, reason, duration, null, true);
 						if (text == null) return;
 						pm.sendMessage(text).setSuppressEmbeds(true)
 							.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
@@ -261,21 +261,20 @@ public class StrikeCmd extends CommandBase {
 						// add case to DB
 						try {
 							CaseData caseData = bot.getDBUtil().cases.add(CaseType.BAN, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
-								guild.getIdLong(), reason, Instant.now(), durationCopy);
+								guild.getIdLong(), reason, Instant.now(), duration);
 							// log case
 							bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
 								bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
 							});
 						} catch (SQLException ignored) {}
-					},
-					failure ->
+					}, failure ->
 						bot.getAppLogger().error("Strike punishment execution, Ban member", failure)
 					);
 					builder.append(lu.getLocalized(locale, PunishActions.BAN.getPath()))
 						.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
 						.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
 						.append("\n");
-				}
+				} catch (NumberFormatException ignored) {}
 			}
 		}
 		if (actions.contains(PunishActions.REMOVE_ROLE)) {
@@ -287,7 +286,7 @@ public class StrikeCmd extends CommandBase {
 				Role role = guild.getRoleById(roleId);
 				if (role != null && guild.getSelfMember().canInteract(role)) {
 					// Apply action, result will be in logs
-					guild.removeRoleFromMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queueAfter(5, TimeUnit.SECONDS, done -> {
+					guild.removeRoleFromMember(target, role).reason(reason).queueAfter(5, TimeUnit.SECONDS, done -> {
 						// log action
 						bot.getLogger().role.onRoleRemoved(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
@@ -307,7 +306,7 @@ public class StrikeCmd extends CommandBase {
 				Role role = guild.getRoleById(roleId);
 				if (role != null && guild.getSelfMember().canInteract(role)) {
 					// Apply action, result will be in logs
-					guild.addRoleToMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queueAfter(5, TimeUnit.SECONDS, done -> {
+					guild.addRoleToMember(target, role).reason(reason).queueAfter(5, TimeUnit.SECONDS, done -> {
 						// log action
 						bot.getLogger().role.onRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role);
 					},
@@ -319,71 +318,63 @@ public class StrikeCmd extends CommandBase {
 			}
 		}
 		if (actions.contains(PunishActions.TEMP_ROLE)) {
-			Long roleId = null;
 			try {
-				roleId = Long.valueOf(PunishActions.TEMP_ROLE.getMatchedValue(data, 1));
-			} catch (NumberFormatException ignored) {}
-			Duration duration = null;
-			try {
-				duration = Duration.ofSeconds(Long.parseLong(PunishActions.TEMP_ROLE.getMatchedValue(data, 2)));
-			} catch (NumberFormatException ignored) {}
-			if (roleId != null && duration != null) {
-				final Duration durationCopy = duration;
+				final long roleId = Long.parseLong(PunishActions.TEMP_ROLE.getMatchedValue(data, 1));
+				final Duration duration = Duration.ofSeconds(Long.parseLong(PunishActions.TEMP_ROLE.getMatchedValue(data, 2)));
+
 				Role role = guild.getRoleById(roleId);
 				if (role != null && guild.getSelfMember().canInteract(role)) {
 					// Apply action, result will be in logs
-					guild.addRoleToMember(target, role).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queueAfter(5, TimeUnit.SECONDS, done -> {
+					guild.addRoleToMember(target, role).reason(reason).queueAfter(5, TimeUnit.SECONDS, done -> {
 						// Add temp
 						try {
-							bot.getDBUtil().tempRole.add(guild.getIdLong(), role.getIdLong(), target.getIdLong(), false, Instant.now().plus(durationCopy));
+							bot.getDBUtil().tempRole.add(guild.getIdLong(), role.getIdLong(), target.getIdLong(), false, Instant.now().plus(duration));
 							// log action
-							bot.getLogger().role.onTempRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role, durationCopy, false);
+							bot.getLogger().role.onTempRoleAdded(guild, bot.JDA.getSelfUser(), target.getUser(), role, duration, false);
 						} catch (SQLException ignored) {}
 					}, failure ->
 						bot.getAppLogger().error("Strike punishment execution, Add temp role", failure)
 					);
 					builder.append(lu.getLocalized(locale, PunishActions.TEMP_ROLE.getPath()))
 						.append(" ").append(role.getName())
-						.append(" (").append(TimeUtil.durationToLocalizedString(lu, locale, durationCopy))
+						.append(" (").append(TimeUtil.durationToLocalizedString(lu, locale, duration))
 						.append(")\n");
 				}
-			}
+			} catch (NumberFormatException ignored) {}
 		}
 		if (actions.contains(PunishActions.MUTE)) {
-			Duration duration = null;
 			try {
-				duration = Duration.ofSeconds(Long.parseLong(PunishActions.MUTE.getMatchedValue(data)));
+				final Duration duration = Optional.of(Duration.ofSeconds(Long.parseLong(PunishActions.MUTE.getMatchedValue(data))))
+					.filter(d -> d.toDaysPart() <= 28)
+					.orElse(Duration.ofDays(28));
+				if (!duration.isZero()) {
+					// Send PM to user
+					target.getUser().openPrivateChannel().queue(pm -> {
+						final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, duration, null, false);
+						if (text == null) return;
+						pm.sendMessage(text).setSuppressEmbeds(true)
+							.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
+					});
+
+					guild.timeoutFor(target, duration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
+						try {
+							// add case to DB
+							CaseData caseData = bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
+								guild.getIdLong(), reason, Instant.now(), duration);
+							// log case
+							bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
+								bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
+							});
+						} catch (SQLException ignored) {}
+					}, failure ->
+						bot.getAppLogger().error("Strike punishment execution, Mute member", failure)
+					);
+					builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
+						.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
+						.append(TimeUtil.durationToLocalizedString(lu, locale, duration))
+						.append("\n");
+				}
 			} catch (NumberFormatException ignored) {}
-			if (duration != null && !duration.isZero()) {
-				String reason = lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes);
-				// Send PM to user
-				target.getUser().openPrivateChannel().queue(pm -> {
-					final String text = bot.getModerationUtil().getDmText(CaseType.MUTE, guild, reason, null, null, false);
-					if (text == null) return;
-					pm.sendMessage(text).setSuppressEmbeds(true)
-						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
-				});
-
-				final Duration finalDuration = duration.toDaysPart() > 28 ? Duration.ofDays(28) : duration;
-
-				guild.timeoutFor(target, finalDuration).reason(lu.getLocalized(locale, path+".autopunish_reason").formatted(strikes)).queue(done -> {
-					try {
-						// add case to DB
-						CaseData caseData = bot.getDBUtil().cases.add(CaseType.MUTE, target.getIdLong(), target.getUser().getName(), 0, "Autopunish",
-							guild.getIdLong(), reason, Instant.now(), finalDuration);
-						// log case
-						bot.getLogger().mod.onNewCase(guild, target.getUser(), caseData).thenAccept(logUrl -> {
-							bot.getDBUtil().cases.setLogUrl(caseData.getRowId(), logUrl);
-						});
-					} catch (SQLException ignored) {}
-				}, failure ->
-					bot.getAppLogger().error("Strike punishment execution, Mute member", failure)
-				);
-				builder.append(lu.getLocalized(locale, PunishActions.MUTE.getPath()))
-					.append(" ").append(lu.getLocalized(locale, path + ".for")).append(" ")
-					.append(TimeUtil.durationToLocalizedString(lu, locale, finalDuration))
-					.append("\n");
-			}
 		}
 
 		if (builder.isEmpty()) return null;

@@ -157,22 +157,22 @@
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
-			"banned_temp": "You were banned from {guild} server for {time}.",
-			"banned_perm": "You were permanently banned from {guild} server.",
-			"banned": "You were banned from {guild} server.",
-			"kicked": "You were kicked from {guild} server.",
-			"muted": "You were timed out in {guild} server for {time}.",
-			"strike": "You received %s in {guild} server.",
+			"banned_temp": "You were banned from **{guild}** server for {time}.",
+			"banned_perm": "You were permanently banned from **{guild}** server.",
+			"banned": "You were banned from **{guild}** server.",
+			"kicked": "You were kicked from **{guild}** server.",
+			"muted": "You were timed out in **{guild}** server for {time}.",
+			"strike": "You received %s in **{guild}** server.",
 			"strike1": "one warning",
 			"strike2": "two warnings",
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
-			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
+			"delstrike": "%s warning removed from you in by server's **{guild}** moderation.",
 			"appeal": "\nYou can appeal this action by following this link:\n> %s",
-			"rules": "\n-# [View server Rules](%s)",
-			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
-			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s.",
-			"gamestrike": "You received Game strike in [__#%s__](%s) in {guild} server."
+			"rules": "\n-# [View server rules](%s)",
+			"reason_mute": "Reason changed for *a mute* issued by **{guild}** server's moderation at {time}.",
+			"reason_strike": "Reason changed for *a warning* issued by **{guild}** server's moderation at {time}.",
+			"gamestrike": "You received Game strike in [__#%s__](%s) in **{guild}** server."
 		},
 		"drama": {
 			"kicked": "Was kicked from this server.",
@@ -1634,7 +1634,9 @@
 				"autopunish_error": "Unable to apply auto punishment.",
 				"autopunish_higher": "User is higher than bot.",
 				"autopunish_exception": "User is an exception.",
-				"autopunish_reason": "Autopunish: user has %d active strikes",
+				"autopunish_reason_1": "Autopunish: user has 1 active strike",
+				"autopunish_reason_2": "Autopunish: user has %d active strikes",
+				"autopunish_reason_5": "Autopunish: user has %d active strikes",
 				"for": "for"
 			},
 			"delstrike": {

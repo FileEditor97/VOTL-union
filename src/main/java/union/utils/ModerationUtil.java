@@ -151,14 +151,18 @@ public class ModerationUtil {
 		if (caseType.equals(CaseType.MUTE)) {
 			// if is mute
 			return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
-				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_mute").formatted(guild.getName(), TimeUtil.formatTime(timestamp, false)))
-				.appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
+				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_mute")
+					.replace("{guild}", guild.getName())
+					.replace("{time}", TimeUtil.formatTime(timestamp, false))
+				).appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
 				.build();
 		} else {
 			// else is strike
 			return new EmbedBuilder().setColor(Constants.COLOR_WARNING)
-				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_strike").formatted(guild.getName(), TimeUtil.formatTime(timestamp, false)))
-				.appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
+				.setDescription(lu.getLocalized(locale, "logger_embed.pm.reason_strike")
+					.replace("{guild}", guild.getName())
+					.replace("{time}", TimeUtil.formatTime(timestamp, false))
+				).appendDescription("\n\n**Old**: ||`"+oldReason+"`||\n**New**: `"+newReason+"`")
 				.build();
 		}
 	}

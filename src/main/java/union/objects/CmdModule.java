@@ -1,7 +1,6 @@
 package union.objects;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.EnumSet;
 
 public enum CmdModule {
 	WEBHOOK("modules.webhook", 1),
@@ -31,20 +30,20 @@ public enum CmdModule {
 		return value;
 	}
 
-	public static Set<CmdModule> decodeModules(int data) {
-		Set<CmdModule> modules = new HashSet<>(values().length);
+	public static EnumSet<CmdModule> decodeModules(int data) {
+		EnumSet<CmdModule> modules = EnumSet.noneOf(CmdModule.class);
 		for (CmdModule v : values()) {
 			if ((data & v.value) == v.value) modules.add(v);
 		}
 		return modules;
 	}
 
-	public static int encodeModules(Set<CmdModule> actions) {
+	@SuppressWarnings("unused")
+	public static int encodeModules(EnumSet<CmdModule> actions) {
 		int data = 0;
 		for (CmdModule v : actions) {
 			data += v.value;
 		}
 		return data;
 	}
-
 }

@@ -11,10 +11,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import union.objects.CmdModule;
@@ -241,18 +238,22 @@ public class GuildSettingsManager extends LiteDBBase {
 			return color;
 		}
 
+		@Nullable
 		public Long getLastWebhookId() {
 			return lastWebhookId;
 		}
 
+		@Nullable
 		public String getAppealLink() {
 			return appealLink;
 		}
 
+		@Nullable
 		public String getRulesLink() {
 			return rulesLink;
 		}
 
+		@Nullable
 		public Long getReportChannelId() {
 			return reportChannelId;
 		}
@@ -269,7 +270,8 @@ public class GuildSettingsManager extends LiteDBBase {
 			return modulesOff;
 		}
 
-		public Set<CmdModule> getDisabledModules() {
+		@NotNull
+		public EnumSet<CmdModule> getDisabledModules() {
 			return CmdModule.decodeModules(modulesOff);
 		}
 
@@ -282,6 +284,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			return anticrash;
 		}
 
+		@Nullable
 		public String getAnticrashPing() {
 			return anticrashPing;
 		}
@@ -290,22 +293,27 @@ public class GuildSettingsManager extends LiteDBBase {
 			return anticrashTrigger;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformBan() {
 			return informBan;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformKick() {
 			return informKick;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformMute() {
 			return informMute;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformStrike() {
 			return informStrike;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformDelstrike() {
 			return informDelstrike;
 		}
@@ -314,10 +322,12 @@ public class GuildSettingsManager extends LiteDBBase {
 			return roleWhitelist;
 		}
 
+		@Nullable
 		public Long getDramaChannelId() {
 			return dramaChannelId;
 		}
 
+		@NotNull
 		public DramaLevel getDramaLevel() {
 			return dramaLevel;
 		}

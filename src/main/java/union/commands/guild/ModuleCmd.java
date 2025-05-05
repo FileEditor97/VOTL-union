@@ -1,9 +1,7 @@
 package union.commands.guild;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +50,7 @@ public class ModuleCmd extends CommandBase {
 			long guildId = event.getGuild().getIdLong();
 
 			StringBuilder builder = new StringBuilder();
-			Set<CmdModule> disabled = getModules(guildId, false);
+			EnumSet<CmdModule> disabled = getModules(guildId, false);
 			for (CmdModule sModule : CmdModule.values()) {
 				builder.append(format(lu.getText(event, sModule.getPath()), disabled.contains(sModule)))
 					.append("\n");
@@ -87,7 +85,7 @@ public class ModuleCmd extends CommandBase {
 			EmbedBuilder embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"));
 
-			Set<CmdModule> enabled = getModules(guildId, true);
+			EnumSet<CmdModule> enabled = getModules(guildId, true);
 			if (enabled.isEmpty()) {
 				embed.setDescription(lu.getText(event, path+".none"))
 					.setColor(Constants.COLOR_FAILURE);
@@ -161,7 +159,7 @@ public class ModuleCmd extends CommandBase {
 			EmbedBuilder embed = bot.getEmbedUtil().getEmbed()
 				.setTitle(lu.getText(event, path+".embed_title"));
 
-			Set<CmdModule> enabled = getModules(guildId, false);
+			EnumSet<CmdModule> enabled = getModules(guildId, false);
 			if (enabled.isEmpty()) {
 				embed.setDescription(lu.getText(event, path+".none"))
 					.setColor(Constants.COLOR_FAILURE);
@@ -219,10 +217,10 @@ public class ModuleCmd extends CommandBase {
 		}
 	}
 
-	private Set<CmdModule> getModules(long guildId, boolean on) {
-		Set<CmdModule> disabled = bot.getDBUtil().getGuildSettings(guildId).getDisabledModules();
+	private EnumSet<CmdModule> getModules(long guildId, boolean on) {
+		EnumSet<CmdModule> disabled = bot.getDBUtil().getGuildSettings(guildId).getDisabledModules();
 		if (on) {
-			Set<CmdModule> modules = new HashSet<>(Arrays.asList(CmdModule.values()));
+			EnumSet<CmdModule> modules = EnumSet.allOf(CmdModule.class);
 			modules.removeAll(disabled);
 			return modules;
 		} else

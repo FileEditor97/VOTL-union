@@ -87,14 +87,16 @@ public class GuildListener extends ListenerAdapter {
 			if (action.isDisabled()) return;
 
 			// Check for timed restrictions
-			AlertUtil.Data data = App.getInstance().getAlertUtil().addToWatched(guildId, admin.getIdLong());
+			AlertUtil.Data data = App.getInstance().getAlertUtil().markWatched(guildId, admin.getIdLong());
 			if (data != null) {
-				int triggerAmount = helper.getDBUtil().getGuildSettings(event.getGuild()).getAnticrashTrigger();
 				if (Instant.now().toEpochMilli() - data.startTime() < AlertUtil.FIRST_STAGE_DURATION) {
 					// Instant action
 					executeAction(event, admin, action, "Possible misconduct [1st stage]", false);
-				} else if (data.amount() >= triggerAmount && data.amount() < triggerAmount+2) {
-					executeAction(event, admin, action, "Possible misconduct [2nd stage]", false);
+				} else {
+					final int triggerAmount = helper.getDBUtil().getGuildSettings(event.getGuild()).getAnticrashTrigger();
+					if (data.amount() >= triggerAmount && data.amount() < triggerAmount+2) {
+						executeAction(event, admin, action, "Possible misconduct [2nd stage]", false);
+					}
 				}
 			}
 
@@ -107,7 +109,7 @@ public class GuildListener extends ListenerAdapter {
 				.orElse(DEFAULT_TRIGGER_AMOUNT);
 			if (points >= triggerAmount && points < triggerAmount+2) {
 				// Threshold amount reached - possible harmful behaviour
-				executeAction(event, admin, action, "Possible misconduct, staff notified!", true);
+				executeAction(event, admin, action, "Possible misconduct [trigger by points]", true);
 			}
 		}
 	}

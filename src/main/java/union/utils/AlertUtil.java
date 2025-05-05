@@ -33,7 +33,7 @@ public class AlertUtil {
 
 	// add to watched and return new data
 	@Nullable
-	public Data addToWatched(long guildId, long userId) {
+	public Data markWatched(long guildId, long userId) {
 		final WatchedUser key = new WatchedUser(guildId, userId);
 
 		Data data = watchedUsers.get(key);

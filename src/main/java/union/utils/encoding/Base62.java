@@ -3,6 +3,7 @@ package union.utils.encoding;
 import org.jetbrains.annotations.NotNull;
 
 public class Base62 {
+
 	public static String encode(long value) {
 		if (value < 0) throw new IllegalArgumentException("Negative value provided.");
 		if (value == 0) return "0";
@@ -10,9 +11,9 @@ public class Base62 {
 		final StringBuilder result = new StringBuilder();
 
 		do {
-			int remainder = (int) (value % 62);
+			int remainder = (int) (value % len);
 			result.append(BASE62.charAt(remainder));
-			value /= 62;
+			value /= len;
 		} while (value > 0);
 
 		return result.reverse().toString();
@@ -28,7 +29,7 @@ public class Base62 {
 
 		for (char c : encoded.toCharArray()) {
 			int value = BASE62.indexOf(c);
-			result = result * 62 + value;
+			result = result * len + value;
 		}
 
 		return result;
@@ -54,4 +55,6 @@ public class Base62 {
 	}
 
 	private static final String BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	private static final int len = BASE62.length();
+
 }

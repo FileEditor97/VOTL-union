@@ -324,7 +324,7 @@ public class ScheduledCheck {
 	public void regularChecks() {
 		CompletableFuture.runAsync(this::checkExpiredCases)
 			.thenRunAsync(this::checkAccountUpdates)
-			.thenRunAsync(this::removeAlertPoints)
+			.thenRunAsync(this::updateAlertData)
 			.thenRunAsync(this::updateDbQueue);
 	}
 
@@ -416,9 +416,10 @@ public class ScheduledCheck {
 		}
 	}
 
-	private void removeAlertPoints() {
+	private void updateAlertData() {
 		try {
 			bot.getAlertUtil().decrease();
+			bot.getAlertUtil().checkWatched();
 		} catch (Throwable t) {
 			log.error("Exception caught during points removal.", t);
 		}

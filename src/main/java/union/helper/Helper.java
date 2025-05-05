@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import net.dv8tion.jda.api.entities.UserSnowflake;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -18,9 +18,6 @@ import union.utils.logs.LoggingUtil;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.User;
 
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +95,7 @@ public class Helper {
 		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
 		final String newReason = "Sync #%s: %s, by %s".formatted(groupId, reason, mod.getName());
 		for (long guildId : guildIds) {
-			Guild guild = getJDA().getGuildById(guildId);
+			Guild guild = JDA.getGuildById(guildId);
 			if (guild == null) continue;
 			// fail-safe check if user has temporal ban (to prevent auto unban)
 			if (getMainJDA().getGuildById(guildId) != null)
@@ -132,7 +129,7 @@ public class Helper {
 		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
 		final String newReason = "Sync #%s: %s, by %s".formatted(groupId, reason, mod.getName());
 		for (long guildId : guildIds) {
-			Guild guild = getJDA().getGuildById(guildId);
+			Guild guild = JDA.getGuildById(guildId);
 			if (guild == null) continue;
 			// Remove temporal ban case
 			if (getMainJDA().getGuildById(guildId) != null)
@@ -165,7 +162,7 @@ public class Helper {
 		List<CompletableFuture<Void>> completableFutures = new ArrayList<>();
 		final String newReason = "Sync #%s: %s, by %s".formatted(groupId, reason, mod.getName());
 		for (long guildId : guildIds) {
-			Guild guild = getJDA().getGuildById(guildId);
+			Guild guild = JDA.getGuildById(guildId);
 			if (guild == null) continue;
 
 			completableFutures.add(guild.kick(user).reason(newReason).submit());
@@ -194,12 +191,27 @@ public class Helper {
 	}
 
 	public void unban(long guildId, long userId, String reason) {
-		Guild guild = getJDA().getGuildById(guildId);
+		Guild guild = JDA.getGuildById(guildId);
 		if (guild == null) {
 			logger.warn("Guild not found by ID '{}'", guildId);
 			return;
 		}
 		guild.unban(UserSnowflake.fromId(userId)).reason(reason).queue(null, new ErrorHandler().ignore(ErrorResponse.UNKNOWN_BAN));
+	}
+
+	public void removeRoles(long targetId, List<Long> roleIds, Guild guild) {
+		UserSnowflake target = UserSnowflake.fromId(targetId);
+		String reason = "from %s".formatted(guild.getName());
+
+		roleIds.forEach(mainRoleId -> {
+			db.connectedRoles.getConnectedRoles(mainRoleId).forEach(groupRoleId -> {
+				Role role = JDA.getRoleById(groupRoleId);
+				if (role == null) return;
+				try {
+					role.getGuild().removeRoleFromMember(target, role).reason(reason).queue(null, (ignored) -> {});
+				} catch (Exception ignored) {}
+			});
+		});
 	}
 
 }

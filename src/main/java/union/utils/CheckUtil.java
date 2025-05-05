@@ -32,7 +32,7 @@ public class CheckUtil {
 		this.ownerId = ownerId;
 	}
 
-	public boolean isDeveloper(UserSnowflake user) {
+	public static boolean isDeveloper(UserSnowflake user) {
 		return user.getId().equals(Constants.DEVELOPER_ID);
 	}
 
@@ -68,6 +68,19 @@ public class CheckUtil {
 			.max(CmdAccessLevel::compareTo)
 			.orElse(CmdAccessLevel.ALL);
 	}
+
+	public boolean isOperatorPlus(Guild guild, UserSnowflake user) {
+		// Is bot developer
+		if (isDeveloper(user) || isBotOwner(user))
+			return true;
+
+		// Is guild's owner
+		if (guild.getOwnerIdLong() == user.getIdLong())
+			return true;
+
+		// Check if is operator
+        return bot.getDBUtil().access.isOperator(guild.getIdLong(), user.getIdLong());
+    }
 
 	public boolean hasHigherAccess(Member who, Member than) {
 		return getAccessLevel(who).isHigherThan(getAccessLevel(than));

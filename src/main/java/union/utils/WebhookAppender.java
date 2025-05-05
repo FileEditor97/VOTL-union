@@ -3,6 +3,10 @@ package union.utils;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import net.dv8tion.jda.api.exceptions.ContextException;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.requests.ErrorResponse;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +37,18 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
 	@Override
 	protected void append(ILoggingEvent event) {
+		if (url == null) return;
+
 		// Not Error level
 		if (!event.getLevel().isGreaterOrEqual(Level.ERROR)) return;
 
-		if (url == null) return;
+		// Ignore unknown interraction and ContextException, as those have little meaning and importance.
+		var throwable = event.getThrowableProxy();
+		if ((throwable instanceof ErrorResponseException ex && ex.getErrorResponse() == ErrorResponse.UNKNOWN_INTERACTION) ||
+			(throwable instanceof ContextException)) return;
 
 		// Limit send rate
-		if (event.getTimeStamp() < lastSend + 10L) return;
+		if (event.getTimeStamp() < lastSend + 50L) return; // 50ms
 
 		// Encode message
 		String message = new String(encoder.encode(event));
@@ -68,7 +77,7 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 		// Execute HTTP POST request
 		client.newCall(request).enqueue(new Callback() {
 			@Override
-			public void onFailure(Call call, IOException ex) {
+			public void onFailure(@NotNull Call call, @NotNull IOException ex) {
 				if (ex instanceof UnknownHostException) {
 					logger.warn("Webhook call failed. Can't resolve URL.");
 				} else {
@@ -77,14 +86,10 @@ public class WebhookAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 			}
 
 			@Override
-			public void onResponse(Call call, Response response) {
-				// Do nothing
+			public void onResponse(@NotNull Call call, @NotNull Response response) {
+				// Ignore
 			}
 		});
-	}
-
-	public Encoder<ILoggingEvent> getEncoder() {
-		return encoder;
 	}
 
 	public void setEncoder(Encoder<ILoggingEvent> encoder) {

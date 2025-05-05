@@ -213,8 +213,8 @@ public class SettingsCmd extends CommandBase {
 
 	private class AppealGuild extends SlashCommand {
 		public AppealGuild() {
-			this.name = "appeal_guild";
-			this.path = "bot.owner.settings.appeal_guild";
+			this.name = "appeal_server";
+			this.path = "bot.owner.settings.appeal_server";
 			this.options = List.of(
 				new OptionData(OptionType.STRING, "id", lu.getText(path+".id.help"))
 			);
@@ -234,7 +234,7 @@ public class SettingsCmd extends CommandBase {
 
 			bot.getSettings().setAppealGuildId(appealGuildId);
 
-			editMsg(event, "Appeal Guild set: %s".formatted(appealGuildId==null?"*none*":appealGuildId.toString()));
+			editMsg(event, "Appeal server set: %s".formatted(appealGuildId==null?"*none*":appealGuildId.toString()));
 		}
 	}
 

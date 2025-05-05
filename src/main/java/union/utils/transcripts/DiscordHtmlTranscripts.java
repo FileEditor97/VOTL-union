@@ -63,7 +63,7 @@ public class DiscordHtmlTranscripts {
                     if (ids.size() <= 1) action.accept(null);
                 }
                 try {
-                    final String fileName = EncodingUtil.encodeTranscript(channel.getGuild().getIdLong(), channel.getIdLong());
+                    final String fileName = EncodingUtil.encodeTranscript(channel.getIdLong());
                     action.accept(FileUpload.fromData(generateFromMessages(list), fileName));
                 } catch(Exception ex) {
                     failure.accept(ex);

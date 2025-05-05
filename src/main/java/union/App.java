@@ -156,6 +156,7 @@ public class App {
 				new AutopunishCmd(),
 				new ThreadsCmd(),
 				new PersistentRoleCmd(),
+				new ConnectedRoleCmd(),
 				// owner
 				new ShutdownCmd(),
 				new EvalCmd(),

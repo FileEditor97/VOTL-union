@@ -1,8 +1,8 @@
 package union.listeners;
 
 import java.time.OffsetDateTime;
-import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.*;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -30,6 +30,11 @@ import union.utils.database.managers.GuildVoiceManager;
 import union.utils.level.PlayerObject;
 
 public class VoiceListener extends ListenerAdapter {
+
+	private final Set<Permission> ownerPerms = Set.of(
+		Permission.MANAGE_CHANNEL, Permission.VOICE_SET_STATUS, Permission.VOICE_MOVE_OTHERS,
+		Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT, Permission.MESSAGE_SEND
+	);
 
 	// cache users in voice for exp
 	// userId and start time
@@ -139,11 +144,13 @@ public class VoiceListener extends ListenerAdapter {
 			.reason(member.getUser().getEffectiveName()+" private channel")
 			.setUserlimit(channelLimit)
 			.syncPermissionOverrides()
-			.addPermissionOverride(member, EnumSet.of(Permission.MANAGE_CHANNEL, Permission.VOICE_SET_STATUS, Permission.VOICE_MOVE_OTHERS), null)
+			.addPermissionOverride(member, ownerPerms, null)
 			.queue(
 				channel -> {
 					db.voice.add(userId, channel.getIdLong());
-					guild.moveVoiceMember(member, channel).queueAfter(500, TimeUnit.MICROSECONDS, null, new ErrorHandler().ignore(ErrorResponse.USER_NOT_CONNECTED));
+					try {
+						guild.moveVoiceMember(member, channel).queueAfter(500, TimeUnit.MICROSECONDS, null, new ErrorHandler().ignore(ErrorResponse.USER_NOT_CONNECTED));
+					} catch (IllegalStateException ignored) {}
 				},
 				failure -> {
 					member.getUser().openPrivateChannel()
@@ -204,4 +211,5 @@ public class VoiceListener extends ListenerAdapter {
 		}
 		cache.invalidate(player);
 	}
+
 }

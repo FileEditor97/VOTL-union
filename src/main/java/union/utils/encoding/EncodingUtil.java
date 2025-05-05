@@ -1,29 +1,29 @@
 package union.utils.encoding;
 
-public class EncodingUtil {
+public final class EncodingUtil {
+	private EncodingUtil() {}
 	/**
-	 * @param guildId Guild ID
 	 * @param channelId Channel ID
-	 * @return Filename 'transcript-[encoded guildId:channelId].html'
+	 * @return Filename 'transcript-[encoded channelId].html'
 	 */
-	public static String encodeTranscript(final long guildId, final long channelId) {
-		return "transcript-%s.html".formatted(encode(guildId, channelId));
+	public static String encodeTranscript(final long channelId) {
+		return "transcript-%s.html".formatted(encode(channelId));
 	}
 
 	/**
 	 * @param guildId Guild ID
 	 * @param userId User ID
-	 * @return Filename 'user_bg-[encoded guildId:userId].png'
+	 * @return Filename 'profile-[encoded guildId:userId].png'
 	 */
 	public static String encodeUserBg(final long guildId, final long userId) {
-		return "user_bg-%s.png".formatted(encode(guildId, userId));
+		return "profile-%s.png".formatted(encode(guildId, userId));
 	}
 
 	/**
 	 * @param guildId Guild ID
 	 * @param userId User ID
 	 * @param epochSeconds Epoch seconds (now)
-	 * @return Filename 'modstats-[encoded guildId:userId]-timestamp.png'
+	 * @return Filename 'modstats-[encoded guildId:userId:timestamp].png'
 	 */
 	public static String encodeModstats(final long guildId, final long userId, final long epochSeconds) {
 		return "modstats-%s.png".formatted(encode(guildId, userId, epochSeconds));
@@ -32,7 +32,7 @@ public class EncodingUtil {
 	/**
 	 * @param guildId Guild ID
 	 * @param epochSeconds Epoch seconds (now)
-	 * @return Filename 'modreport-[encoded guildId]-timestamp.png'
+	 * @return Filename 'modreport-[encoded guildId:timestamp].png'
 	 */
 	public static String encodeModreport(final long guildId, final long epochSeconds) {
 		return "modreport-%s.png".formatted(encode(guildId, epochSeconds));
@@ -41,7 +41,7 @@ public class EncodingUtil {
 	/**
 	 * @param id Message or Channel ID
 	 * @param epochSeconds Epoch seconds (now)
-	 * @return Filename 'msg-[encoded ID]-timestamp.txt'
+	 * @return Filename 'msg-[encoded ID:timestamp].txt'
 	 */
 	public static String encodeMessage(final long id, final long epochSeconds) {
 		return "msg-%s.txt".formatted(encode(id, epochSeconds));
@@ -49,7 +49,7 @@ public class EncodingUtil {
 
 	/**
 	 * @param epochSeconds Epoch seconds (now)
-	 * @return Filename 'bulk-account-timestamp.txt'
+	 * @return Filename 'bulk-account-[encoded timestamp].txt'
 	 */
 	public static String encodeBulkAccount(final long epochSeconds) {
 		return "bulk-account-%s.txt".formatted(encode(epochSeconds));

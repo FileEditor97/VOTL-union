@@ -1,6 +1,9 @@
 package union.utils.database.managers;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import union.objects.AnticrashAction;
+import union.utils.AlertUtil;
 import union.utils.database.LiteDBBase;
 import union.utils.file.lang.LocaleUtil;
 
@@ -8,10 +11,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import union.objects.CmdModule;
@@ -57,11 +57,12 @@ public class GuildSettingsManager extends LiteDBBase {
 		return selectOne("SELECT * FROM %s WHERE (guildId=%d)".formatted(table, guildId), columns);
 	}
 
+	@Nullable
 	public AnticrashAction getCachedAnticrashAction(long guildId) {
 		return anticrashCache.get(guildId);
 	}
 
-	public void addAnticrashCache(long guildId, AnticrashAction action) {
+	public void addAnticrashCache(long guildId, @NotNull AnticrashAction action) {
 		anticrashCache.put(guildId, action);
 	}
 
@@ -110,10 +111,18 @@ public class GuildSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, modulesOff) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET modulesOff=%<d".formatted(table, guildId, modulesOff));
 	}
 
-	public void setAnticrash(long guildId, AnticrashAction action) throws SQLException {
+	public void setAnticrashAction(long guildId, AnticrashAction action) throws SQLException {
 		invalidateCache(guildId);
 		invalidateAnticrashCache(guildId);
-		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d".formatted(table, guildId, action.value));
+		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d"
+			.formatted(table, guildId, action.value));
+	}
+
+	public void setAnticrashTrigger(long guildId, int triggerAmount) throws SQLException {
+		invalidateCache(guildId);
+		invalidateAnticrashCache(guildId);
+		execute("INSERT INTO %s(guildId, anticrashTrigger) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrashTrigger=%<d"
+			.formatted(table, guildId, triggerAmount));
 	}
 
 	public void setAnticrashPing(long guildId, String ping) throws SQLException {
@@ -175,14 +184,15 @@ public class GuildSettingsManager extends LiteDBBase {
 
 	public static class GuildSettings {
 		private final Long lastWebhookId, reportChannelId, dramaChannelId;
-		private final int color, strikeExpires, strikeCooldown, modulesOff;
+		private final int color, strikeExpires, strikeCooldown, modulesOff, anticrashTrigger;
 		private final String appealLink, anticrashPing, rulesLink;
 		private final AnticrashAction anticrash;
 		private final ModerationInformLevel informBan, informKick, informMute, informStrike, informDelstrike;
-		private final boolean roleWhitelist;
+		private final boolean blank, roleWhitelist;
 		private final DramaLevel dramaLevel;
 
 		public GuildSettings() {
+			this.blank = true;
 			this.color = Constants.COLOR_DEFAULT;
 			this.lastWebhookId = null;
 			this.appealLink = null;
@@ -193,6 +203,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.modulesOff = 0;
 			this.anticrash = AnticrashAction.DISABLED;
 			this.anticrashPing = null;
+			this.anticrashTrigger = AlertUtil.DEFAULT_TRIGGER_AMOUNT;
 			this.informBan = ModerationInformLevel.DEFAULT;
 			this.informKick = ModerationInformLevel.DEFAULT;
 			this.informMute = ModerationInformLevel.DEFAULT;
@@ -204,6 +215,7 @@ public class GuildSettingsManager extends LiteDBBase {
 		}
 
 		public GuildSettings(Map<String, Object> data) {
+			this.blank = false;
 			this.color = resolveOrDefault(data.get("color"), obj -> Integer.decode(obj.toString()), Constants.COLOR_DEFAULT);
 			this.lastWebhookId = getOrDefault(data.get("lastWebhookId"), null);
 			this.appealLink = getOrDefault(data.get("appealLink"), null);
@@ -214,6 +226,7 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.modulesOff = getOrDefault(data.get("modulesOff"), 0);
 			this.anticrash = AnticrashAction.byValue(getOrDefault(data.get("anticrash"), 0));
 			this.anticrashPing = getOrDefault(data.get("anticrashPing"), null);
+			this.anticrashTrigger = getOrDefault(data.get("anticrashTrigger"), AlertUtil.DEFAULT_TRIGGER_AMOUNT);
 			this.informBan = ModerationInformLevel.byLevel(getOrDefault(data.get("informBan"), 1));
 			this.informKick = ModerationInformLevel.byLevel(getOrDefault(data.get("informKick"), 1));
 			this.informMute = ModerationInformLevel.byLevel(getOrDefault(data.get("informMute"), 1));
@@ -224,22 +237,30 @@ public class GuildSettingsManager extends LiteDBBase {
 			this.dramaChannelId = getOrDefault(data.get("dramaChannel"), null);
 		}
 
+		public boolean isBlank() {
+			return blank;
+		}
+
 		public int getColor() {
 			return color;
 		}
 
+		@Nullable
 		public Long getLastWebhookId() {
 			return lastWebhookId;
 		}
 
+		@Nullable
 		public String getAppealLink() {
 			return appealLink;
 		}
 
+		@Nullable
 		public String getRulesLink() {
 			return rulesLink;
 		}
 
+		@Nullable
 		public Long getReportChannelId() {
 			return reportChannelId;
 		}
@@ -256,7 +277,8 @@ public class GuildSettingsManager extends LiteDBBase {
 			return modulesOff;
 		}
 
-		public Set<CmdModule> getDisabledModules() {
+		@NotNull
+		public EnumSet<CmdModule> getDisabledModules() {
 			return CmdModule.decodeModules(modulesOff);
 		}
 
@@ -264,30 +286,41 @@ public class GuildSettingsManager extends LiteDBBase {
 			return (modulesOff & module.getValue()) == module.getValue();
 		}
 
+		@NotNull
 		public AnticrashAction getAnticrashAction() {
 			return anticrash;
 		}
 
+		@Nullable
 		public String getAnticrashPing() {
 			return anticrashPing;
 		}
 
+		public int getAnticrashTrigger() {
+			return anticrashTrigger;
+		}
+
+		@NotNull
 		public ModerationInformLevel getInformBan() {
 			return informBan;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformKick() {
 			return informKick;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformMute() {
 			return informMute;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformStrike() {
 			return informStrike;
 		}
 
+		@NotNull
 		public ModerationInformLevel getInformDelstrike() {
 			return informDelstrike;
 		}
@@ -296,45 +329,14 @@ public class GuildSettingsManager extends LiteDBBase {
 			return roleWhitelist;
 		}
 
+		@Nullable
 		public Long getDramaChannelId() {
 			return dramaChannelId;
 		}
 
+		@NotNull
 		public DramaLevel getDramaLevel() {
 			return dramaLevel;
-		}
-	}
-
-	public enum AnticrashAction {
-		DISABLED(0),
-		ROLES(1),
-		KICK(2),
-		BAN(3);
-
-		private final int value;
-
-		private static final Map<Integer, AnticrashAction> BY_VALUE = new HashMap<>();
-
-		static {
-			for (AnticrashAction action : AnticrashAction.values()) {
-				BY_VALUE.put(action.value, action);
-			}
-		}
-
-		AnticrashAction(int value) {
-			this.value = value;
-		}
-
-		public boolean isDisabled() {
-			return this == DISABLED;
-		}
-
-		public boolean isEnabled() {
-			return this != DISABLED;
-		}
-
-		public static AnticrashAction byValue(int value) {
-			return BY_VALUE.get(value);
 		}
 	}
 

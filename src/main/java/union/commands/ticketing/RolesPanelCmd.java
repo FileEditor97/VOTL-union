@@ -31,7 +31,9 @@ public class RolesPanelCmd extends CommandBase {
 	public RolesPanelCmd() {
 		this.name = "rolespanel";
 		this.path = "bot.ticketing.rolespanel";
-		this.children = new SlashCommand[]{new Create(), new Update(), new RowText()};
+		this.children = new SlashCommand[]{
+			new Create(), new Update(), new RowText()
+		};
 		this.botPermissions = new Permission[]{Permission.MESSAGE_SEND, Permission.MESSAGE_EMBED_LINKS};
 		this.module = CmdModule.TICKETING;
 		this.category = CmdCategory.TICKETING;
@@ -98,12 +100,12 @@ public class RolesPanelCmd extends CommandBase {
 				.setFooter(guild.getName(), guild.getIconUrl())
 				.build();
 
-			channel.sendMessageEmbeds(embed).addComponents(actionRows).queue();
-
-			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").replace("{channel}", channel.getAsMention()))
-				.build()
-			);
+			channel.sendMessageEmbeds(embed).addComponents(actionRows).queue(done -> {
+				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setDescription(lu.getText(event, path+".done").formatted(channel.getAsMention()))
+					.build()
+				);
+			});
 		}
 	}
 
@@ -130,50 +132,57 @@ public class RolesPanelCmd extends CommandBase {
 			}
 			TextChannel tc = (TextChannel) channel;
 
-			String latestId = tc.getLatestMessageId();
-			tc.retrieveMessageById(latestId).queue(msg -> {
-				if (!msg.getAuthor().equals(event.getJDA().getSelfUser())) {
-					editError(event, path+".not_found", "Not bot's message");
-					return;
-				}
+			tc.getIterableHistory()
+				.takeAsync(5)
+				.thenAccept(messages -> {
+					Message message = messages.stream()
+						.filter(msg -> msg.getAuthor().getIdLong() == event.getJDA().getSelfUser().getIdLong())
+						.findFirst()
+						.orElse(null);
 
-				int assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN)
-					+ bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN_TEMP);
-				List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
-				if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
-					editError(event, path+".empty_roles");
-					return;
-				}
-				List<ActionRow> actionRows = new ArrayList<>();
+					if (message == null) {
+						editError(event, path+".not_found", "No bot's message found");
+						return;
+					}
 
-				if (assignRolesSize > 0) {
-					actionRows.add(ActionRow.of(Button.success("role:start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
-				}
-				actionRows.add(ActionRow.of(Button.danger("role:remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
-				if (!toggleRoles.isEmpty()) {
-					List<Button> buttons = new ArrayList<>();
-					toggleRoles.forEach(data -> {
-						if (buttons.size() >= 5) return;
-						String roleId = data.get("roleId").toString();
-						Role role = guild.getRoleById(roleId);
-						if (role == null) return;
-						String description = data.get("description").toString();
-						buttons.add(Button.primary("role:toggle:"+roleId, MessageUtil.limitString(description, 80)));
+					int assignRolesSize = bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN)
+						+ bot.getDBUtil().role.countRoles(guildId, RoleType.ASSIGN_TEMP);
+					List<Map<String, Object>> toggleRoles = bot.getDBUtil().role.getToggleable(guildId);
+					if (assignRolesSize == 0 && toggleRoles.isEmpty()) {
+						editError(event, path+".empty_roles");
+						return;
+					}
+					List<ActionRow> actionRows = new ArrayList<>();
+
+					if (assignRolesSize > 0) {
+						actionRows.add(ActionRow.of(Button.success("role:start_request", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_request"))));
+					}
+					actionRows.add(ActionRow.of(Button.danger("role:remove", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_remove"))));
+					if (!toggleRoles.isEmpty()) {
+						List<Button> buttons = new ArrayList<>();
+						toggleRoles.forEach(data -> {
+							if (buttons.size() >= 5) return;
+							String roleId = data.get("roleId").toString();
+							Role role = guild.getRoleById(roleId);
+							if (role == null) return;
+							String description = data.get("description").toString();
+							buttons.add(Button.primary("role:toggle:"+roleId, MessageUtil.limitString(description, 80)));
+						});
+						actionRows.add(ActionRow.of(buttons));
+					}
+					if (!bot.getDBUtil().role.getRolesWithInvites(guildId).isEmpty()) {
+						actionRows.add(ActionRow.of(Button.secondary("invites", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_invites"))));
+					}
+
+					message.editMessageComponents(actionRows).queue(done -> {
+						editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+							.setDescription(lu.getText(event, path+".done").formatted(done.getJumpUrl()))
+							.build()
+						);
+					}, failure -> {
+						editErrorOther(event, "Failed to update message.\n"+failure.getMessage());
 					});
-					actionRows.add(ActionRow.of(buttons));
-				}
-				if (!bot.getDBUtil().role.getRolesWithInvites(guildId).isEmpty()) {
-					actionRows.add(ActionRow.of(Button.secondary("invites", lu.getLocalized(event.getGuildLocale(), "bot.ticketing.embeds.button_invites"))));
-				}
-				
-				msg.editMessageComponents(actionRows).queue();
-
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").replace("{channel}", tc.getAsMention()))
-					.build()
-				);
-			},
-			failure -> editError(event, path+".not_found", failure.getMessage()));
+				});
 		}
 	}
 
@@ -204,7 +213,7 @@ public class RolesPanelCmd extends CommandBase {
 			}
 
 			editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done").replace("{row}", row.toString()).replace("{text}", text))
+				.setDescription(lu.getText(event, path+".done").formatted(row.toString(), text))
 				.build());
 		}
 	}

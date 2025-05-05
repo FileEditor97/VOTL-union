@@ -109,11 +109,24 @@ public class GameStrikeCmd extends CommandBase {
 			return;
 		}
 
-		// Inform user
+		// Log
+		final int strikeCount = bot.getDBUtil().games.countStrikes(channelId, tm.getIdLong());
+		final int maxStrikes = bot.getDBUtil().games.getMaxStrikes(channelId);
+		bot.getLogger().mod.onNewCase(event.getGuild(), tm.getUser(), strikeData, proofData, strikeCount+"/"+maxStrikes);
+
+		// Check if reached limit
+		if (strikeCount >= maxStrikes) {
+			try {
+				channel.getPermissionContainer().upsertPermissionOverride(tm).setDenied(denyPerms).reason("Game ban").queue();
+			} catch (InsufficientPermissionException ignored) {}
+		}
+
+		// Inform user and send to drama
 		final GuildSettingsManager.DramaLevel dramaLevel = bot.getDBUtil().getGuildSettings(event.getGuild()).getDramaLevel();
 		tm.getUser().openPrivateChannel().queue(pm -> {
-			final String text = bot.getModerationUtil().getDmText(CaseType.GAME_STRIKE, event.getGuild(), reason, null, event.getUser(), false, channel);
+			final String text = bot.getModerationUtil().getGamestrikeDmText(CaseType.GAME_STRIKE, event.getGuild(), reason, event.getUser(), channel, strikeCount, maxStrikes);
 			if (text == null) return;
+
 			pm.sendMessage(text).setSuppressEmbeds(true)
 				.queue(null, new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, (failure) -> {
 					if (dramaLevel.equals(GuildSettingsManager.DramaLevel.ONLY_BAD_DM)) {
@@ -141,20 +154,11 @@ public class GameStrikeCmd extends CommandBase {
 				}
 			}
 		}
-		// Log
-		final int strikeCount = bot.getDBUtil().games.countStrikes(channelId, tm.getIdLong());
-		final int maxStrikes = bot.getDBUtil().games.getMaxStrikes(channelId);
-		bot.getLogger().mod.onNewCase(event.getGuild(), tm.getUser(), strikeData, proofData, strikeCount+"/"+maxStrikes);
+
 		// Reply
 		editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
 			.setDescription(lu.getText(event, path+".done").formatted(tm.getAsMention(), channel.getAsMention()))
 			.setFooter("#"+strikeData.getLocalId())
 			.build());
-		// Check if reached limit
-		if (strikeCount >= maxStrikes) {
-			try {
-				channel.getPermissionContainer().upsertPermissionOverride(tm).setDenied(denyPerms).reason("Game ban").queue();
-			} catch (InsufficientPermissionException ignored) {}
-		}
 	}
 }

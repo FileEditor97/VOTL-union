@@ -157,22 +157,23 @@
 			"playtime": "Playtime is %s of required %s"
 		},
 		"pm": {
-			"banned_temp": "You were banned from {guild} server for {time}.",
-			"banned_perm": "You were permanently banned from {guild} server.",
-			"banned": "You were banned from {guild} server.",
-			"kicked": "You were kicked from {guild} server.",
-			"muted": "You were timed out in {guild} server for {time}.",
-			"strike": "You received %s in {guild} server.",
+			"banned_temp": "You were banned from **{guild}** server for {time}.",
+			"banned_perm": "You were permanently banned from **{guild}** server.",
+			"banned": "You were banned from **{guild}** server.",
+			"kicked": "You were kicked from **{guild}** server.",
+			"muted": "You were timed out in **{guild}** server for {time}.",
+			"strike": "You received %s in **{guild}** server.",
 			"strike1": "one warning",
 			"strike2": "two warnings",
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
-			"delstrike": "%s warning removed from you in by server's {guild} moderation.",
-			"appeal": "\nYou can appeal this action by following this link:\n> %s",
-			"rules": "\n-# [View server Rules](%s)",
-			"reason_mute": "Reason changed for a mute issued by %s server's moderation at %s.",
-			"reason_strike": "Reason changed for a warning issued by %s server's moderation at %s.",
-			"gamestrike": "You received Game strike in [__#%s__](%s) in {guild} server."
+			"delstrike": "%s warning removed from you in by server's **{guild}** moderation.",
+			"appeal": "You can appeal this action by following this link:\n> %s",
+			"rules": "-# [View server rules](%s)",
+			"reason_mute": "Reason changed for *a mute* issued by **{guild}** server's moderation at {time}.",
+			"reason_strike": "Reason changed for *a warning* issued by **{guild}** server's moderation at {time}.",
+			"gamestrike": "You received Game strike in [__#%s__](%s) in **{guild}** server.\n> Count: `%d`/`%d`",
+			"gamestrike_limit": "> Access limited to this channel - strike limit reached."
 		},
 		"drama": {
 			"kicked": "Was kicked from this server.",
@@ -304,7 +305,7 @@
 		},
 		"server": {
 			"name": "Server logs",
-			"update": "Guild settings updated",
+			"update": "Server settings updated",
 			"emoji_create": "Emoji created",
 			"emoji_update": "Emoji updated",
 			"emoji_delete": "Emoji deleted",
@@ -559,12 +560,12 @@
 						"help": "Enter full webhook URL"
 					}
 				},
-				"appeal_guild": {
-					"help": "Appeal guild",
-					"usage": "appeal_guild <guild ID>",
+				"appeal_server": {
+					"help": "Appeal server",
+					"usage": "appeal_server <server ID>",
 					"id": {
 						"name": "id",
-						"help": "Enter guild ID (or null)"
+						"help": "Enter server ID (or null)"
 					}
 				},
 				"view": {
@@ -721,16 +722,23 @@
 				"anticrash": {
 					"help": "Manage server's anti-crash protection",
 					"usage": "anticrash <enabled?> [ping]",
-					"action": {
-						"name": "action",
-						"help": "Enable anticrash and what to do with offender?"
+					"action_server": {
+						"name": "action_server",
+						"help": "Enable anticrash and what to do with offender"
+					},
+					"trigger_value": {
+						"name": "trigger_value",
+						"help": "Anti-crash trigger by amount of actions performed"
 					},
 					"ping": {
 						"name": "ping",
 						"help": "Mentions roles and/or users to be mentioned on action"
 					},
-					"done": "Anti-crash protection - %s.",
-					"done_full": "Anti-crash protection - %s.\nBot will ping [ %s ]"
+					"show": "Anticrash server settings:",
+					"updated": "Anticrash server settings updated",
+					"show_action": "> Server anti-crash protection - **%s**.",
+					"show_trigger": "> Trigger amount: `%s`.",
+					"show_ping": "> Bot will ping [ %s ]"
 				},
 				"voice": {
 					"help": "Manage custom voice channel settings",
@@ -1246,6 +1254,47 @@
 					"empty": "No roles.",
 					"title": "Persistent roles"
 				}
+			},
+			"connected": {
+				"help": "Setup connected roles",
+				"usage": "connected",
+				"helper_off": "Helper is disabled.",
+				"add": {
+					"help": "Add connected roles",
+					"usage": "add <@Role> <Role ID>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"group_role": {
+						"name": "group_role",
+						"help": "Enter role ID from group to be connected"
+					},
+					"role_not_found": "Role by provided ID not found by Helper bot.",
+					"already": "Those roles are already connected.",
+					"done": "Role %s was connected with *%s*(`%s`) in **%s** server."
+				},
+				"remove": {
+					"help": "Remove connected roles",
+					"usage": "remove <@Role | Role ID>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"group_role": {
+						"name": "group_role",
+						"help": "Enter role ID to be removed"
+					},
+					"no_option": "No options provided.",
+					"done_main": "Role %s was disconnected from other roles.",
+					"done_group": "Role %s was disconnected."
+				},
+				"view": {
+					"help": "View connected roles",
+					"usage": "view",
+					"empty": "No roles.",
+					"title": "Connected roles"
+				}
 			}
 		},
 		"voice": {
@@ -1630,7 +1679,9 @@
 				"autopunish_error": "Unable to apply auto punishment.",
 				"autopunish_higher": "User is higher than bot.",
 				"autopunish_exception": "User is an exception.",
-				"autopunish_reason": "Autopunish: user has %d active strikes",
+				"autopunish_reason_1": "Autopunish: user has 1 active strike",
+				"autopunish_reason_2": "Autopunish: user has %d active strikes",
+				"autopunish_reason_5": "Autopunish: user has %d active strikes",
 				"for": "for"
 			},
 			"delstrike": {
@@ -1829,14 +1880,24 @@
 						"name": "enable_verification",
 						"help": "Enable verification in member servers? (-1 disable, 0 kick, >1 ban time in minutes)"
 					},
+					"anticrash_action": {
+						"name": "anticrash_action",
+						"help": "Anti-crash protection for group members"
+					},
+					"anticrash_trigger": {
+						"name": "anticrash_trigger",
+						"help": "Anti-crash trigger by amount of actions performed"
+					},
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
-					"only_one_change": "Only one group parameter can be changed at this time.",
+					"no_options": "No changes were made.",
 					"invalid_invite": "Provided invite is invalid. Check that it's correct, is not temporal and for this server.",
-					"name_change": "Renamed to `%s`.",
-					"invite_change": "This server invite link set to `%s`.",
-					"verify_change": "Verification set to: %s",
-					"done": "Group `%s` modified.\n%s\n\n*Group ID: `%s`*"
+					"name_change": "> Renamed to `%s`.",
+					"invite_change": "> This server invite link set to `%s`.",
+					"verify_change": "> Verification set to: %s",
+					"anticrash_change": "> Group anti-crash protection - %s.",
+					"trigger_change": "> Anti-crash trigger amount: %s",
+					"done_title": "Group `%s` modified."
 				},
 				"manage": {
 					"help": "Manage group member's settings",
@@ -1852,7 +1913,6 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"no_guilds": "There are no other servers in the selected Group.",
-					"no_options": "No options to be updated.",
 					"is_shared": "Selected Group is set as `Shared`. Unable to add manage permission to any server in this Group.",
 					"embed_title": "Server",
 					"embed_value": "Select server from the list below.",
@@ -1873,7 +1933,7 @@
 					"no_group": "Couldn't find requested server Group.",
 					"not_owned": "This server is not Group's owner (creator).",
 					"embed_title": "Group '%s' (#%s)",
-					"embed_full": "Owner: %s (`%s`)\nGroup size: %d server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification setup: %s",
+					"embed_full": "Owner: %s (`%s`)\nGroup size: **%d** server/-s\nOwner invite: %s\nAppeal server ID: `%s`\nVerification setup: %s\nAnti-crash: **%s**\nAnti-crash trigger: `%s`",
 					"embed_short": "Owner: %s (`%s`)\nGroup size: %d server/-s",
 					"embed_guilds": "Server name | size | ID",
 					"embed_groups": "Group name | #ID",
@@ -2493,7 +2553,7 @@
 					},
 					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
-					"done": "Panel created in {channel}!"
+					"done": "Panel created in %s!"
 				},
 				"update": {
 					"help": "Update existing role requests panel",
@@ -2505,7 +2565,7 @@
 					"no_channel": "Provided channel not found or is not of Text type.\nEither lack permission to view it or select another channel.",
 					"not_found": "Existing panel not found in selected channel",
 					"empty_roles": "No roles assigned as usable for requesting via tickets.",
-					"done": "Panel updated in {channel}!"
+					"done": "Panel [message](%s) updated!"
 				},
 				"row": {
 					"help": "Update assignable roles row's text placeholder",
@@ -2518,7 +2578,7 @@
 						"name": "text",
 						"help": "Enter text which will be shown in role selection placeholder"
 					},
-					"done": "Placeholder text for row `{row}` set to `{text}`."
+					"done": "Placeholder text for row `%s` set to `%s`."
 				}
 			},
 			"tcount": {

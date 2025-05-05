@@ -5,12 +5,14 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import net.dv8tion.jda.api.interactions.commands.Command;
 import union.base.command.CooldownScope;
 import union.base.command.SlashCommand;
 import union.base.command.SlashCommandEvent;
 import union.base.waiter.EventWaiter;
 import union.commands.CommandBase;
 import union.helper.Helper;
+import union.objects.AnticrashAction;
 import union.objects.CmdAccessLevel;
 import union.objects.CmdModule;
 import union.objects.constants.CmdCategory;
@@ -352,7 +354,16 @@ public class GroupCmd extends CommandBase {
 					.setMaxLength(120),
 				new OptionData(OptionType.STRING, "invite", lu.getText(path+".invite.help")),
 				new OptionData(OptionType.INTEGER, "enable_verification", lu.getText(path+".enable_verification.help"))
-					.setRequiredRange(-1, 10)
+					.setRequiredRange(-1, 10),
+				new OptionData(OptionType.INTEGER, "anticrash_action", lu.getText(path+".anticrash_action.help"))
+					.addChoices(
+						new Command.Choice("Disabled", 0),
+						new Command.Choice("Remove all roles", 1),
+						new Command.Choice("Kick", 2),
+						new Command.Choice("Ban", 3)
+					),
+				new OptionData(OptionType.INTEGER, "anticrash_trigger", lu.getText(path+".anticrash_trigger.help"))
+					.setRequiredRange(1, 20)
 			);
 		}
 
@@ -370,33 +381,9 @@ public class GroupCmd extends CommandBase {
 				return;
 			}
 
-			if (event.getOptions().size() != 2) {
-				editError(event, path+".only_one_change");
-				return;
-			}
-
-			if (event.hasOption("name")) {
-				String oldName = bot.getDBUtil().group.getName(groupId);
-				String newName = event.optString("name");
-
-				try {
-					bot.getDBUtil().group.rename(groupId, newName);
-				} catch (SQLException e) {
-					editErrorDatabase(event, e, "group rename");
-					return;
-				}
-				bot.getLogger().group.onRenamed(event, oldName, groupId, newName);
-
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").formatted(
-						oldName, lu.getText(event, path+".name_change").formatted(newName), groupId
-					)).build()
-				);
-			}
-			else if (event.hasOption("invite")) {
+			String currentGroupName = bot.getDBUtil().group.getName(groupId);
+			if (event.hasOption("invite")) {
 				String link = event.optString("invite");
-				String groupName = bot.getDBUtil().group.getName(groupId);
-
 
 				if (link.equalsIgnoreCase("null")) {
 					try {
@@ -407,9 +394,10 @@ public class GroupCmd extends CommandBase {
 					}
 
 					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getText(event, path+".done").formatted(
-							groupName, lu.getText(event, path+".invite_change").formatted("- none -"), groupId
-						)).build()
+						.setTitle(lu.getText(event, path+".done_title").formatted(currentGroupName))
+						.setDescription(lu.getText(event, path+".invite_change").formatted("-none-"))
+						.setFooter("Group ID: `%s`".formatted(groupId))
+						.build()
 					);
 					return;
 				}
@@ -433,29 +421,85 @@ public class GroupCmd extends CommandBase {
 					}
 
 					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-						.setDescription(lu.getText(event, path+".done").formatted(
-							groupName, lu.getText(event, path+".invite_change").formatted(invite.getUrl()), groupId
-						)).build()
+						.setTitle(lu.getText(event, path+".done_title").formatted(currentGroupName))
+						.setDescription(lu.getText(event, path+".invite_change").formatted(invite.getUrl()))
+						.setFooter("Group ID: `%s`".formatted(groupId))
+						.build()
 					);
-				}, failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString())));
-			}
-			else if (event.hasOption("enable_verification")) {
-				int verifyValue = event.optInteger("enable_verification");
-				try {
-					bot.getDBUtil().group.setVerify(groupId, verifyValue);
-				} catch (SQLException e) {
-					editErrorDatabase(event, e, "group verification");
-					return;
+				},
+					failure -> editError(event, path+".invalid_invite", "Link `%s`\n%s".formatted(link, failure.toString()))
+				);
+			} else {
+				StringBuilder builder = new StringBuilder();
+
+				if (event.hasOption("name")) {
+					String newName = event.optString("name");
+
+					try {
+						bot.getDBUtil().group.rename(groupId, newName);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "group rename");
+						return;
+					}
+					bot.getLogger().group.onRenamed(event, currentGroupName, groupId, newName);
+
+					builder.append(lu.getText(event, path+".name_change").formatted(newName))
+						.append("\n");
+				}
+				if (event.hasOption("enable_verification")) {
+					int verifyValue = event.optInteger("enable_verification");
+					try {
+						bot.getDBUtil().group.setVerify(groupId, verifyValue);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "group verification");
+						return;
+					}
+
+					builder.append(lu.getText(event, path+".verify_change").formatted(
+						verifyValue==-1 ? Constants.FAILURE : (verifyValue==0 ? "Kick" : "Ban for "+verifyValue)
+					)).append("\n");
+				}
+				if (event.hasOption("anticrash_action")) {
+					AnticrashAction actionGroup = AnticrashAction.byValue(event.optInteger("anticrash_action"));
+					try {
+						bot.getDBUtil().group.setAnticrashAction(groupId, actionGroup);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "setup group anticrash");
+						return;
+					}
+					// Clear anticrash cache (easier to purge all cache, than for of each member)
+					bot.getDBUtil().guildSettings.purgeAnticrashCache();
+
+					builder.append(lu.getText(event, path+".anticrash_change").formatted(actionGroup.name().toLowerCase()))
+						.append("\n");
+				}
+				if (event.hasOption("anticrash_trigger")) {
+					int triggerAmount = event.optInteger("anticrash_trigger");
+					try {
+						bot.getDBUtil().group.setAnticrashTrigger(groupId, triggerAmount);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "group anticrash trigger");
+						return;
+					}
+
+					builder.append(lu.getText(event, path+".trigger_change").formatted(triggerAmount))
+						.append("\n");
 				}
 
-				String groupName = bot.getDBUtil().group.getName(groupId);
-				String text = verifyValue==-1 ? Constants.FAILURE : (verifyValue==0 ? "Kick" : "Ban for "+verifyValue);
-				editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-					.setDescription(lu.getText(event, path+".done").formatted(
-						groupName, lu.getText(event, path+".verify_change").formatted(text), groupId
-					))
-					.build()
-				);
+				if (builder.isEmpty()) {
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_WARNING)
+						.setDescription(lu.getText(event, path+".no_options"))
+						.setFooter("Group ID: `%s`".formatted(groupId))
+						.build()
+					);
+				} else {
+					editEmbed(event, bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+						.setTitle(lu.getText(event, path+".done_title").formatted(currentGroupName))
+						.setDescription(builder.toString())
+						.setFooter("Group ID: #%s".formatted(groupId))
+						.build()
+					);
+				}
 			}
 		}
 
@@ -468,7 +512,6 @@ public class GroupCmd extends CommandBase {
 				return false;
 			}
 		}
-
 	}
 
 	private class Manage extends SlashCommand {
@@ -477,7 +520,7 @@ public class GroupCmd extends CommandBase {
 			this.path = "bot.moderation.group.manage";
 			this.options = List.of(
 				new OptionData(OptionType.INTEGER, "group_owned", lu.getText(path+".group_owned.help"), true, true).setMinValue(0),
-				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help"))
+				new OptionData(OptionType.BOOLEAN, "manage", lu.getText(path+".manage.help"), true)
 			);
 		}
 
@@ -495,14 +538,7 @@ public class GroupCmd extends CommandBase {
 				return;
 			}
 
-			final Boolean canManage;
-			if (event.hasOption("manage")) canManage = event.optBoolean("manage");
-			else canManage = null;
-
-			if (canManage==null) {
-				editError(event, path+".no_options");
-				return;
-			}
+			final boolean canManage = event.optBoolean("manage");
 
 			List<Guild> guilds = bot.getDBUtil().group.getGroupMembers(groupId).stream().map(id -> {
 				Guild guild = event.getJDA().getGuildById(id);
@@ -628,7 +664,9 @@ public class GroupCmd extends CommandBase {
 						event.getGuild().getName(), event.getGuild().getId(), groupSize,
 						Optional.ofNullable(bot.getDBUtil().group.getSelfInvite(groupId)).orElse("-"),
 						Optional.ofNullable(bot.getSettings().getAppealGuildId()).map(String::valueOf).orElse("-"),
-						verifyValue==-1 ? Constants.FAILURE : (verifyValue==0 ? "Kick" : "Ban for "+verifyValue)
+						verifyValue==-1 ? Constants.FAILURE : (verifyValue==0 ? "Kick" : "Ban for "+verifyValue),
+						bot.getDBUtil().group.getAnticrashAction(groupId).name().toLowerCase(),
+						bot.getDBUtil().group.getAnticrashTrigger(groupId)
 					));
 				
 				if (groupSize > 0) {

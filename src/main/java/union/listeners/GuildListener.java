@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.logs.LogType;
+import union.utils.CheckUtil;
 import union.utils.database.DBUtil;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -47,7 +48,7 @@ public class GuildListener extends ListenerAdapter {
 					AuditLogEntry entry = logs.get(0);
 					if (entry.getTargetIdLong() == event.getJDA().getSelfUser().getApplicationIdLong()) {
 						final User user = entry.getUser();
-						if (bot.getCheckUtil().isBotOwner(user) || bot.getCheckUtil().isDeveloper(user)) {
+						if (bot.getCheckUtil().isBotOwner(user) || CheckUtil.isDeveloper(user)) {
 							bot.getAppLogger().info("Joined guild '{}'({})\n\nBy '{}'({})",
 								event.getGuild().getName(), guild.getId(), user.getName(), user.getId());
 						} else {
@@ -122,6 +123,7 @@ public class GuildListener extends ListenerAdapter {
 		ignoreExc(() -> db.persistent.removeGuild(guildIdLong));
 		ignoreExc(() -> db.levels.remove(guildIdLong));
 		ignoreExc(() -> db.levelRoles.removeGuild(guildIdLong));
+		ignoreExc(() -> db.connectedRoles.removeGuild(guildIdLong));
 
 		ignoreExc(() -> db.guildSettings.remove(guildIdLong));
 

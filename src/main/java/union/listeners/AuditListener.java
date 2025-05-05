@@ -1,40 +1,56 @@
 package union.listeners;
 
+import com.jayway.jsonpath.JsonPath;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.audit.AuditLogChange;
+import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.audit.AuditLogKey;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.events.guild.GuildAuditLogEntryCreateEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import union.App;
+import union.helper.Helper;
+import union.objects.AnticrashAction;
 import union.objects.logs.LogType;
+import union.utils.CastUtil;
+import union.utils.CheckUtil;
 import union.utils.database.DBUtil;
 import union.utils.file.lang.LocaleUtil;
 import union.utils.logs.LoggingUtil;
 
-import net.dv8tion.jda.api.audit.AuditLogEntry;
-import net.dv8tion.jda.api.events.guild.GuildAuditLogEntryCreateEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
 import java.sql.SQLException;
+import java.util.*;
 
 public class AuditListener extends ListenerAdapter {
 
 	private final LocaleUtil lu;
 	private final DBUtil db;
 	private final LoggingUtil logger;
+	private final CheckUtil checkUtil;
+
+	private final Set<Permission> dangerPermissions = Set.of(
+		Permission.ADMINISTRATOR, Permission.MANAGE_SERVER, Permission.MANAGE_ROLES, Permission.MANAGE_CHANNEL,
+		Permission.KICK_MEMBERS, Permission.BAN_MEMBERS, Permission.MODERATE_MEMBERS,
+		Permission.MESSAGE_MANAGE, Permission.MANAGE_THREADS, Permission.MANAGE_WEBHOOKS
+	);
  
 	public AuditListener(App bot) {
 		this.lu = bot.getLocaleUtil();
 		this.db = bot.getDBUtil();
 		this.logger = bot.getLogger();
+		this.checkUtil = bot.getCheckUtil();
 	}
 
 	@Override
 	public void onGuildAuditLogEntryCreate(GuildAuditLogEntryCreateEvent event) {
 		AuditLogEntry entry = event.getEntry();
+
 		switch (entry.getType()) {
 			case CHANNEL_CREATE -> {
 				// check if enabled log
@@ -89,6 +105,35 @@ public class AuditListener extends ListenerAdapter {
 				logger.server.onRoleDelete(entry);
 			}
 			case ROLE_UPDATE -> {
+				// check if added bad perm
+				AuditLogChange change = entry.getChangeByKey(AuditLogKey.ROLE_PERMISSIONS);
+				if (change != null) {
+					long guildId = event.getGuild().getIdLong();
+					// anti-crash
+					// Check if added role is watched - then add to cache or update time
+					AnticrashAction action = db.guildSettings.getCachedAnticrashAction(guildId);
+					if (action == null) {
+						action = db.getGuildSettings(event.getGuild()).getAnticrashAction();
+						db.guildSettings.addAnticrashCache(guildId, action);
+					}
+					if (action.isEnabled() && !checkUtil.isOperatorPlus(event.getGuild(), UserSnowflake.fromId(entry.getUserIdLong()))) {
+						try {
+							var oldPerms = Optional.ofNullable((String) change.getOldValue())
+								.map(v -> Permission.getPermissions(Long.parseLong(v)))
+								.orElse(EnumSet.noneOf(Permission.class));
+							var newPerms = Optional.ofNullable((String) change.getNewValue())
+								.map(v -> Permission.getPermissions(Long.parseLong(v)))
+								.orElse(EnumSet.noneOf(Permission.class));
+
+							newPerms.removeAll(oldPerms);
+
+							if (newPerms.stream().anyMatch(dangerPermissions::contains)) {
+								App.getInstance().getAlertUtil().watch(guildId, entry.getUserIdLong());
+							}
+						} catch (Exception ignored) {}
+					}
+				}
+
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.ROLE)) return;
 				
@@ -137,6 +182,57 @@ public class AuditListener extends ListenerAdapter {
 				logger.server.onStickerDelete(entry);
 			}
 			case MEMBER_ROLE_UPDATE -> {
+				long guildId = event.getGuild().getIdLong();
+				// anti-crash
+				// Check if added role is watched - then add to cache or update time
+				AnticrashAction action = db.guildSettings.getCachedAnticrashAction(guildId);
+				if (action == null) {
+					action = db.getGuildSettings(event.getGuild()).getAnticrashAction();
+					db.guildSettings.addAnticrashCache(guildId, action);
+				}
+				if (action.isEnabled() && !checkUtil.isOperatorPlus(event.getGuild(), UserSnowflake.fromId(entry.getUserIdLong()))) {
+					AuditLogChange change = entry.getChangeByKey(AuditLogKey.MEMBER_ROLES_ADD);
+					if (change != null && change.getNewValue() instanceof List<?> values) {
+						boolean isWatched = values.stream()
+							.map(v -> {
+								try {
+									return CastUtil.castLong(JsonPath.read(v, "$.id"));
+								} catch (Exception ignored) {
+									return null;
+								}
+							})
+							.filter(Objects::nonNull)
+							.map(roleId -> event.getGuild().getRoleById(roleId))
+							.filter(Objects::nonNull)
+							.anyMatch(role -> role.getPermissions().stream().anyMatch(dangerPermissions::contains));
+						if (isWatched) {
+							App.getInstance().getAlertUtil().watch(guildId, entry.getTargetIdLong());
+						}
+					}
+				}
+
+				// check connected roles
+				if (Helper.getInstance() != null) {
+					AuditLogChange change = entry.getChangeByKey(AuditLogKey.MEMBER_ROLES_REMOVE);
+					if (change != null && change.getNewValue() instanceof List<?> values) {
+						List<Long> watchedRoles = db.connectedRoles.getWatchedRoles(guildId);
+						List<Long> removedRoles = values.stream()
+							.map(v -> {
+								try {
+									return CastUtil.castLong(JsonPath.read(v, "$.id"));
+								} catch (Exception ignored) {
+									return null;
+								}
+							})
+							.filter(watchedRoles::contains)
+							.toList();
+
+						if (!removedRoles.isEmpty()) {
+							Helper.getInstance().removeRoles(entry.getTargetIdLong(), removedRoles, entry.getGuild());
+						}
+					}
+				}
+
 				// check if enabled log
 				if (!db.getLogSettings(event.getGuild()).enabled(LogType.MEMBER)) return;
 				// Ignore role changes by bot, as bot already logs with role connected changes (except verify and strike)
@@ -156,7 +252,7 @@ public class AuditListener extends ListenerAdapter {
 				}
 			}
 			default -> {
-				// other
+				// ignored
 			}	
 		}
 	}
@@ -173,5 +269,4 @@ public class AuditListener extends ListenerAdapter {
 
 		channel.sendMessageEmbeds(embed).setComponents(actionRow).queue();
 	}
-
 }

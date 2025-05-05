@@ -207,7 +207,7 @@ public class SetupCmd extends CommandBase {
 			this.name = "anticrash";
 			this.path = "bot.guild.setup.anticrash";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "action_guild", lu.getText(path+".action_guild.help"))
+				new OptionData(OptionType.INTEGER, "action_server", lu.getText(path+".action_server.help"))
 					.addChoices(
 						new Command.Choice("Disabled", 0),
 						new Command.Choice("Remove all roles", 1),
@@ -232,8 +232,10 @@ public class SetupCmd extends CommandBase {
 					.setTitle(lu.getText(event, path+".show"))
 					.appendDescription(lu.getText(event, path+".show_action")
 						.formatted(MessageUtil.capitalize(settings.getAnticrashAction().name()).replace("_", " ")))
+					.appendDescription("\n")
 					.appendDescription(lu.getText(event, path+".show_trigger")
 						.formatted(settings.getAnticrashTrigger()))
+					.appendDescription("\n")
 					.appendDescription(lu.getText(event, path+".show_ping")
 						.formatted(Optional.ofNullable(settings.getAnticrashPing()).orElse("-None-")));
 
@@ -245,8 +247,8 @@ public class SetupCmd extends CommandBase {
 					.setTitle(lu.getText(event, path+".updated"));
 
 				long guildId = event.getGuild().getIdLong();
-				if (event.hasOption("action_guild")) {
-					AnticrashAction actionGuild = AnticrashAction.byValue(event.optInteger("action_guild"));
+				if (event.hasOption("action_server")) {
+					AnticrashAction actionGuild = AnticrashAction.byValue(event.optInteger("action_server"));
 
 					try {
 						bot.getDBUtil().guildSettings.setAnticrashAction(guildId, actionGuild);

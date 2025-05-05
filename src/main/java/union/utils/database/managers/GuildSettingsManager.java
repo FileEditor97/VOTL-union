@@ -114,7 +114,7 @@ public class GuildSettingsManager extends LiteDBBase {
 	public void setAnticrashAction(long guildId, AnticrashAction action) throws SQLException {
 		invalidateCache(guildId);
 		invalidateAnticrashCache(guildId);
-		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d,"
+		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d"
 			.formatted(table, guildId, action.value));
 	}
 

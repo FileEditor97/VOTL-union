@@ -165,6 +165,7 @@ public class TicketSettingsManager extends LiteDBBase {
 			return otherRole;
 		}
 
+		@NotNull
 		public String getRowText(int n) {
 			if (n < 1 || n > 3)
 				throw new IndexOutOfBoundsException(n);
@@ -175,6 +176,7 @@ public class TicketSettingsManager extends LiteDBBase {
 			return timeToReply;
 		}
 
+		@NotNull
 		public List<Long> getRoleSupportIds() {
 			return roleSupportIds;
 		}

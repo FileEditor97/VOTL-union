@@ -41,9 +41,11 @@ public class TicketCmd extends CommandBase {
 	public TicketCmd() {
 		this.name = "ticket";
 		this.path = "bot.ticketing.ticket";
-		this.children = new SlashCommand[]{new NewPanel(), new ModifyPanel(), new ViewPanel(), new SendPanel(), new DeletePanel(),
+		this.children = new SlashCommand[]{
+			new NewPanel(), new ModifyPanel(), new ViewPanel(), new SendPanel(), new DeletePanel(),
 			new CreateTag(), new ModifyTag(), new ViewTag(), new DeleteTag(),
-			new Automation(), new Settings()};
+			new Automation(), new Settings()
+		};
 		this.category = CmdCategory.TICKETING;
 		this.accessLevel = CmdAccessLevel.ADMIN;
 		this.module = CmdModule.TICKETING;

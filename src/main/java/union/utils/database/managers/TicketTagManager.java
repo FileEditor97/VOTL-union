@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import union.objects.constants.Constants;
 import union.utils.database.ConnectionUtil;
 import union.utils.database.LiteDBBase;
@@ -125,9 +127,10 @@ public class TicketTagManager extends LiteDBBase {
 		return new Tag(data, false);
 	}
 
+	@NotNull
 	public String getSupportRolesString(int tagId) {
 		String data = selectOne("SELECT supportRoles FROM %s WHERE (tagId=%s)".formatted(table, tagId), "supportRoles", String.class);
-		return data==null ? "0" : data;
+		return data==null ? "" : data;
 	}
 
 	private String replaceNewline(final String text) {
@@ -185,6 +188,7 @@ public class TicketTagManager extends LiteDBBase {
 			return new ButtonImpl("tag:"+tagId, buttonText, style, false, emoji);
 		}
 
+		@NotNull
 		public String getTicketName() {
 			return ticketName;
 		}
@@ -193,14 +197,17 @@ public class TicketTagManager extends LiteDBBase {
 			return tagType;
 		}
 
+		@Nullable
 		public Long getLocation() {
 			return location;
 		}
 
+		@Nullable
 		public String getMessage() {
 			return message;
 		}
 
+		@Nullable
 		public String getSupportRoles() {
 			return supportRoles;
 		}

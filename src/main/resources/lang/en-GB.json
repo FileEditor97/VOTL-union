@@ -1254,6 +1254,47 @@
 					"empty": "No roles.",
 					"title": "Persistent roles"
 				}
+			},
+			"connected": {
+				"help": "Setup connected roles",
+				"usage": "connected",
+				"helper_off": "Helper is disabled.",
+				"add": {
+					"help": "Add connected roles",
+					"usage": "add <@Role> <Role ID>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"group_role": {
+						"name": "group_role",
+						"help": "Enter role ID from group to be connected"
+					},
+					"role_not_found": "Role by provided ID not found by Helper bot.",
+					"already": "Those roles are already connected.",
+					"done": "Role %s was connected with *%s*(`%s`) in **%s** server."
+				},
+				"remove": {
+					"help": "Remove connected roles",
+					"usage": "remove <@Role | Role ID>",
+					"role": {
+						"name": "role",
+						"help": "Select role"
+					},
+					"group_role": {
+						"name": "group_role",
+						"help": "Enter role ID to be removed"
+					},
+					"no_option": "No options provided.",
+					"done_main": "Role %s was disconnected from other roles.",
+					"done_group": "Role %s was disconnected."
+				},
+				"view": {
+					"help": "View connected roles",
+					"usage": "view",
+					"empty": "No roles.",
+					"title": "Connected roles"
+				}
 			}
 		},
 		"voice": {

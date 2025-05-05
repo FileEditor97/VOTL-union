@@ -49,3 +49,4 @@ CREATE TABLE "autopunish_new" ("guildId" INTEGER NOT NULL, "strike" INTEGER NOT 
 ALTER TABLE "groups" DROP "appealGuildId"
 ALTER TABLE "guild" ADD "drama" INTEGER DEFAULT 0; ALTER TABLE "guild" ADD "dramaChannel" INTEGER;
 ALTER TABLE "groups" ADD "anticrash" INTEGER DEFAULT 0; ALTER TABLE "groups" ADD "anticrashTrigger" INTEGER; ALTER TABLE "guild" ADD "anticrashTrigger" INTEGER;
+CREATE TABLE "connectedRoles" ("roleId" INTEGER NOT NULL UNIQUE, "mainRoleId" INTEGER NOT NULL, "guildId" INTEGER NOT NULL, "mainGuildId" INTEGER NOT NULL)

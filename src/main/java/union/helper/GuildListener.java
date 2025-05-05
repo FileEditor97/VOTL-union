@@ -183,20 +183,32 @@ public class GuildListener extends ListenerAdapter {
 
 	@Override
 	public void onGuildLeave(GuildLeaveEvent event) {
-		helper.getDBUtil().group.getGuildGroups(event.getGuild().getIdLong()).forEach(groupId -> 
+		long guildId = event.getGuild().getIdLong();
+
+		helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
 			helper.getLogUtil().group.helperInformLeave(groupId, event.getGuild(), event.getGuild().getId())
 		);
 
 		try {
-			helper.getDBUtil().tempBan.removeGuild(event.getGuild().getIdLong());
+			helper.getDBUtil().group.removeGuildFromGroups(guildId);
+			helper.getDBUtil().tempBan.removeGuild(guildId);
+			helper.getDBUtil().connectedRoles.removeGuild(guildId);
 		} catch (SQLException ignored) {}
 	}
 
 	@Override
 	public void onUnavailableGuildLeave(UnavailableGuildLeaveEvent event) {
-		helper.getDBUtil().group.getGuildGroups(event.getGuildIdLong()).forEach(groupId -> 
+		long guildId = event.getGuildIdLong();
+
+		helper.getDBUtil().group.getGuildGroups(guildId).forEach(groupId ->
 			helper.getLogUtil().group.helperInformLeave(groupId, null, event.getGuildId())
 		);
+
+		try {
+			helper.getDBUtil().group.removeGuildFromGroups(guildId);
+			helper.getDBUtil().tempBan.removeGuild(guildId);
+			helper.getDBUtil().connectedRoles.removeGuild(guildId);
+		} catch (SQLException ignored) {}
 	}
 
 	@Override

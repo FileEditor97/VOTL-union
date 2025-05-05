@@ -156,6 +156,7 @@ public class App {
 				new AutopunishCmd(),
 				new ThreadsCmd(),
 				new PersistentRoleCmd(),
+				new ConnectedRoleCmd(),
 				// owner
 				new ShutdownCmd(),
 				new EvalCmd(),
@@ -271,6 +272,7 @@ public class App {
 			.enableCache(enabledCacheFlags)
 			.disableCache(disabledCacheFlags)
 			.setBulkDeleteSplittingEnabled(false)
+			.setRawEventsEnabled(true)
 			.addEventListeners(
 				commandClient, WAITER, acListener, auditListener, interactionListener,
 				guildListener, memberListener, messageListener, moderationListener, voiceListener,

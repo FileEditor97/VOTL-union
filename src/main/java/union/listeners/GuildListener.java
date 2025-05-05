@@ -123,6 +123,7 @@ public class GuildListener extends ListenerAdapter {
 		ignoreExc(() -> db.persistent.removeGuild(guildIdLong));
 		ignoreExc(() -> db.levels.remove(guildIdLong));
 		ignoreExc(() -> db.levelRoles.removeGuild(guildIdLong));
+		ignoreExc(() -> db.connectedRoles.removeGuild(guildIdLong));
 
 		ignoreExc(() -> db.guildSettings.remove(guildIdLong));
 

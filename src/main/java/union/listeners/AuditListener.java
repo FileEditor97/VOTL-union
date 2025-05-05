@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import union.App;
+import union.helper.Helper;
 import union.objects.AnticrashAction;
 import union.objects.logs.LogType;
 import union.utils.CastUtil;
@@ -191,23 +192,43 @@ public class AuditListener extends ListenerAdapter {
 				}
 				if (action.isEnabled() && !checkUtil.isOperatorPlus(event.getGuild(), UserSnowflake.fromId(entry.getUserIdLong()))) {
 					AuditLogChange change = entry.getChangeByKey(AuditLogKey.MEMBER_ROLES_ADD);
-					if (change != null) {
-						if (change.getNewValue() instanceof List<?> values) {
-							boolean isWatched = values.stream()
-								.map(v -> {
-									try {
-										return CastUtil.castLong(JsonPath.read(v, "$.id"));
-									} catch (Exception ignored) {
-										return null;
-									}
-								})
-								.filter(Objects::nonNull)
-								.map(roleId -> event.getGuild().getRoleById(roleId))
-								.filter(Objects::nonNull)
-								.anyMatch(role -> role.getPermissions().stream().anyMatch(dangerPermissions::contains));
-							if (isWatched) {
-								App.getInstance().getAlertUtil().watch(guildId, entry.getTargetIdLong());
-							}
+					if (change != null && change.getNewValue() instanceof List<?> values) {
+						boolean isWatched = values.stream()
+							.map(v -> {
+								try {
+									return CastUtil.castLong(JsonPath.read(v, "$.id"));
+								} catch (Exception ignored) {
+									return null;
+								}
+							})
+							.filter(Objects::nonNull)
+							.map(roleId -> event.getGuild().getRoleById(roleId))
+							.filter(Objects::nonNull)
+							.anyMatch(role -> role.getPermissions().stream().anyMatch(dangerPermissions::contains));
+						if (isWatched) {
+							App.getInstance().getAlertUtil().watch(guildId, entry.getTargetIdLong());
+						}
+					}
+				}
+
+				// check connected roles
+				if (Helper.getInstance() != null) {
+					AuditLogChange change = entry.getChangeByKey(AuditLogKey.MEMBER_ROLES_REMOVE);
+					if (change != null && change.getNewValue() instanceof List<?> values) {
+						List<Long> watchedRoles = db.connectedRoles.getWatchedRoles(guildId);
+						List<Long> removedRoles = values.stream()
+							.map(v -> {
+								try {
+									return CastUtil.castLong(JsonPath.read(v, "$.id"));
+								} catch (Exception ignored) {
+									return null;
+								}
+							})
+							.filter(watchedRoles::contains)
+							.toList();
+
+						if (!removedRoles.isEmpty()) {
+							Helper.getInstance().removeRoles(entry.getTargetIdLong(), removedRoles, entry.getGuild());
 						}
 					}
 				}

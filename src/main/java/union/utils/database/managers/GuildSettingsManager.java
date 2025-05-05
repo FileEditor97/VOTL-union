@@ -111,11 +111,18 @@ public class GuildSettingsManager extends LiteDBBase {
 		execute("INSERT INTO %s(guildId, modulesOff) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET modulesOff=%<d".formatted(table, guildId, modulesOff));
 	}
 
-	public void setAnticrash(long guildId, AnticrashAction action, int triggerAmount) throws SQLException {
+	public void setAnticrashAction(long guildId, AnticrashAction action) throws SQLException {
 		invalidateCache(guildId);
 		invalidateAnticrashCache(guildId);
-		execute("INSERT INTO %s(guildId, anticrash, anticrashTrigger) VALUES (%s, %d, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%3$d, anticrashTrigger=%4$d"
-			.formatted(table, guildId, action.value, triggerAmount));
+		execute("INSERT INTO %s(guildId, anticrash) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrash=%<d,"
+			.formatted(table, guildId, action.value));
+	}
+
+	public void setAnticrashTrigger(long guildId, int triggerAmount) throws SQLException {
+		invalidateCache(guildId);
+		invalidateAnticrashCache(guildId);
+		execute("INSERT INTO %s(guildId, anticrashTrigger) VALUES (%s, %d) ON CONFLICT(guildId) DO UPDATE SET anticrashTrigger=%<d"
+			.formatted(table, guildId, triggerAmount));
 	}
 
 	public void setAnticrashPing(long guildId, String ping) throws SQLException {

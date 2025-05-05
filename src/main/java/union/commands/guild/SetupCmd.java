@@ -21,7 +21,6 @@ import union.objects.CmdModule;
 import union.objects.ExpType;
 import union.objects.constants.CmdCategory;
 import union.objects.constants.Constants;
-import union.utils.AlertUtil;
 import union.utils.database.managers.GuildSettingsManager;
 import union.utils.database.managers.GuildSettingsManager.ModerationInformLevel;
 import union.utils.database.managers.LevelManager;
@@ -208,14 +207,14 @@ public class SetupCmd extends CommandBase {
 			this.name = "anticrash";
 			this.path = "bot.guild.setup.anticrash";
 			this.options = List.of(
-				new OptionData(OptionType.INTEGER, "action_guild", lu.getText(path+".action_guild.help"), true)
+				new OptionData(OptionType.INTEGER, "action_guild", lu.getText(path+".action_guild.help"))
 					.addChoices(
 						new Command.Choice("Disabled", 0),
 						new Command.Choice("Remove all roles", 1),
 						new Command.Choice("Kick", 2),
 						new Command.Choice("Ban", 3)
 					),
-				new OptionData(OptionType.INTEGER, "triger_value", lu.getText(path+".triger_value.help"))
+				new OptionData(OptionType.INTEGER, "trigger_value", lu.getText(path+".trigger_value.help"))
 					.setRequiredRange(1, 20),
 				new OptionData(OptionType.STRING, "ping", lu.getText(path+".ping.help"))
 			);
@@ -224,47 +223,77 @@ public class SetupCmd extends CommandBase {
 
 		@Override
 		protected void execute(SlashCommandEvent event) {
-			event.deferReply().queue();
+			if (event.getOptions().isEmpty()) {
+				// show settings
+				event.deferReply(true).queue();
 
-			AnticrashAction actionGuild = AnticrashAction.byValue(event.optInteger("action_guild", 0));
-			int triggerAmount = event.optInteger("triger_value", AlertUtil.DEFAULT_TRIGGER_AMOUNT);
+				var settings = bot.getDBUtil().getGuildSettings(event.getGuild());
+				EmbedBuilder builder = bot.getEmbedUtil().getEmbed()
+					.setTitle(lu.getText(event, path+".show"))
+					.appendDescription(lu.getText(event, path+".show_action")
+						.formatted(MessageUtil.capitalize(settings.getAnticrashAction().name()).replace("_", " ")))
+					.appendDescription(lu.getText(event, path+".show_trigger")
+						.formatted(settings.getAnticrashTrigger()))
+					.appendDescription(lu.getText(event, path+".show_ping")
+						.formatted(Optional.ofNullable(settings.getAnticrashPing()).orElse("-None-")));
 
-			long guildId = event.getGuild().getIdLong();
-			try {
-				bot.getDBUtil().guildSettings.setAnticrash(guildId, actionGuild, triggerAmount);
-			} catch (SQLException e) {
-				editErrorDatabase(event, e, "setup guild anticrash");
-				return;
-			}
-			// Clear anticrash cache (easier to purge all cache, than for of each member)
-			bot.getDBUtil().guildSettings.purgeAnticrashCache();
-
-			EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
-				.setDescription(lu.getText(event, path+".done")
-					.formatted(actionGuild.name().toLowerCase(), triggerAmount));
-
-			if (event.hasOption("ping")) {
-				Mentions mentions = event.optMentions("ping");
-				String ping = null;
-				if (!mentions.getRoles().isEmpty() || !mentions.getMembers().isEmpty()) {
-					Set<String> pingSet = new HashSet<>();
-					pingSet.addAll(mentions.getRoles().stream().limit(4).map(r -> "<@&"+r.getIdLong()+">").toList());
-					pingSet.addAll(mentions.getMembers().stream().limit(4).map(r -> "<@"+r.getIdLong()+">").toList());
-
-					ping = String.join(" ", pingSet);
-				}
-				try {
-					bot.getDBUtil().guildSettings.setAnticrashPing(guildId, ping);
-				} catch (SQLException e) {
-					editErrorDatabase(event, e, "setup anticrash ping");
-					return;
-				}
-
-				editEmbed(event, builder.appendDescription("\n")
-					.appendDescription(lu.getText(event, path+".done_ping")
-						.formatted(ping==null ? "developer" : ping))
-					.build());
+				editEmbed(event, builder.build());
 			} else {
+				event.deferReply().queue();
+
+				EmbedBuilder builder = bot.getEmbedUtil().getEmbed(Constants.COLOR_SUCCESS)
+					.setTitle(lu.getText(event, path+".updated"));
+
+				long guildId = event.getGuild().getIdLong();
+				if (event.hasOption("action_guild")) {
+					AnticrashAction actionGuild = AnticrashAction.byValue(event.optInteger("action_guild"));
+
+					try {
+						bot.getDBUtil().guildSettings.setAnticrashAction(guildId, actionGuild);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "setup guild anticrash action");
+						return;
+					}
+					// Clear anticrash cache (easier to purge all cache, than for of each member)
+					bot.getDBUtil().guildSettings.purgeAnticrashCache();
+
+					builder.appendDescription(lu.getText(event, path+".show_action")
+						.formatted(MessageUtil.capitalize(actionGuild.name()).replace("_", " ")));
+				}
+				if (event.hasOption("trigger_value")) {
+					int triggerAmount = event.optInteger("trigger_value");
+
+					try {
+						bot.getDBUtil().guildSettings.setAnticrashTrigger(guildId, triggerAmount);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "setup guild anticrash trigger");
+						return;
+					}
+
+					builder.appendDescription(lu.getText(event, path + ".show_trigger")
+						.formatted(triggerAmount));
+				}
+				if (event.hasOption("ping")) {
+					Mentions mentions = event.optMentions("ping");
+					String ping = null;
+					if (!mentions.getRoles().isEmpty() || !mentions.getMembers().isEmpty()) {
+						Set<String> pingSet = new HashSet<>();
+						pingSet.addAll(mentions.getRoles().stream().limit(4).map(r -> "<@&"+r.getIdLong()+">").toList());
+						pingSet.addAll(mentions.getMembers().stream().limit(4).map(r -> "<@"+r.getIdLong()+">").toList());
+
+						ping = String.join(" ", pingSet);
+					}
+					try {
+						bot.getDBUtil().guildSettings.setAnticrashPing(guildId, ping);
+					} catch (SQLException e) {
+						editErrorDatabase(event, e, "setup anticrash ping");
+						return;
+					}
+
+					builder.appendDescription(lu.getText(event, path+".show_ping")
+						.formatted(ping==null ? "developer" : ping));
+				}
+
 				editEmbed(event, builder.build());
 			}
 		}

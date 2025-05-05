@@ -305,7 +305,7 @@
 		},
 		"server": {
 			"name": "Server logs",
-			"update": "Guild settings updated",
+			"update": "Server settings updated",
 			"emoji_create": "Emoji created",
 			"emoji_update": "Emoji updated",
 			"emoji_delete": "Emoji deleted",
@@ -560,12 +560,12 @@
 						"help": "Enter full webhook URL"
 					}
 				},
-				"appeal_guild": {
-					"help": "Appeal guild",
-					"usage": "appeal_guild <guild ID>",
+				"appeal_server": {
+					"help": "Appeal server",
+					"usage": "appeal_server <server ID>",
 					"id": {
 						"name": "id",
-						"help": "Enter guild ID (or null)"
+						"help": "Enter server ID (or null)"
 					}
 				},
 				"view": {
@@ -722,20 +722,23 @@
 				"anticrash": {
 					"help": "Manage server's anti-crash protection",
 					"usage": "anticrash <enabled?> [ping]",
-					"action_guild": {
-						"name": "action_guild",
+					"action_server": {
+						"name": "action_server",
 						"help": "Enable anticrash and what to do with offender"
 					},
-					"triger_value": {
-						"name": "triger_value",
+					"trigger_value": {
+						"name": "trigger_value",
 						"help": "Anti-crash trigger by amount of actions performed"
 					},
 					"ping": {
 						"name": "ping",
 						"help": "Mentions roles and/or users to be mentioned on action"
 					},
-					"done": "Server anti-crash protection - **%s**.\n> Tigger amount: %s",
-					"done_ping": "> Bot will ping [ %s ]"
+					"show": "Anticrash server settings:",
+					"updated": "Anticrash server settings updated",
+					"show_action": "> Server anti-crash protection - **%s**.",
+					"show_trigger": "> Trigger amount: `%s`.",
+					"show_ping": "> Bot will ping [ %s ]"
 				},
 				"voice": {
 					"help": "Manage custom voice channel settings",

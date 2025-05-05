@@ -30,12 +30,7 @@ public class ModerationUtil {
 	}
 
 	@Nullable
-	public String getDmText(CaseType type, Guild guild, String reason, Duration duration, User mod, boolean canAppeal) {
-		return getDmText(type, guild, reason, duration, mod, canAppeal, null);
-	}
-
-	@Nullable
-	public String getDmText(CaseType type, Guild guild, String reason, Duration duration, User mod, boolean canAppeal, GuildChannel targetChannel) {
+	public String getDmText(@NotNull CaseType type, Guild guild, String reason, Duration duration, User mod, boolean canAppeal) {
 		DiscordLocale locale = guild.getLocale();
 		int level;
 		String text;
@@ -61,11 +56,6 @@ public class ModerationUtil {
 				if (level == 0) return null;
 				text = lu.getLocalized(locale, "logger_embed.pm.muted");
 			}
-			case GAME_STRIKE -> {
-				level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
-				text = lu.getLocalized(locale, "logger_embed.pm.gamestrike")
-					.formatted(targetChannel.getName(), targetChannel.getJumpUrl());
-			}
 			case STRIKE_1, STRIKE_2, STRIKE_3 -> {
 				level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
 				if (level == 0) return null;
@@ -84,23 +74,55 @@ public class ModerationUtil {
 		);
 		if (type.equals(CaseType.BAN) && canAppeal) {
 			String link = dbUtil.getGuildSettings(guild).getAppealLink();
-			if (link != null)
-				builder.append(lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link));
+			if (link != null) {
+				builder.append("\n")
+					.append(lu.getLocalized(locale, "logger_embed.pm.appeal").formatted(link));
+			}
 		}
 		String rulesLink = dbUtil.getGuildSettings(guild).getRulesLink();
-		if (rulesLink != null)
-			builder.append(lu.getLocalized(locale, "logger_embed.pm.rules").formatted(rulesLink));
+		if (rulesLink != null) {
+			builder.append("\n")
+				.append(lu.getLocalized(locale, "logger_embed.pm.rules").formatted(rulesLink));
+		}
 
 		return builder.toString();
 	}
 
 	@Nullable
-	public MessageEmbed getDramaEmbed(CaseType type, Guild guild, Member target, String reason, Duration duration) {
+	public String getGamestrikeDmText(@NotNull CaseType type, Guild guild, String reason, User mod, GuildChannel targetChannel, int count, int limit) {
+		if (type != CaseType.GAME_STRIKE) return null;
+
+		DiscordLocale locale = guild.getLocale();
+		int level = dbUtil.getGuildSettings(guild).getInformStrike().getLevel();
+
+		String text = lu.getLocalized(locale, "logger_embed.pm.gamestrike")
+			.formatted(targetChannel.getName(), targetChannel.getJumpUrl(), count, limit);
+
+		StringBuilder builder = new StringBuilder(
+			formatText(text, guild, level >= 2 ? reason : null, null, level >= 3 ? mod : null)
+		);
+
+		if (count >= limit) {
+			builder.append("\n")
+				.append(lu.getLocalized(locale, "logger_embed.pm.gamestrike_limit"));
+		}
+
+		String rulesLink = dbUtil.getGuildSettings(guild).getRulesLink();
+		if (rulesLink != null) {
+			builder.append("\n")
+				.append(lu.getLocalized(locale, "logger_embed.pm.rules").formatted(rulesLink));
+		}
+
+		return builder.toString();
+	}
+
+	@Nullable
+	public MessageEmbed getDramaEmbed(@NotNull CaseType type, Guild guild, Member target, String reason, Duration duration) {
 		return getDramaEmbed(type, guild, target, reason, duration, null);
 	}
 
 	@Nullable
-	public MessageEmbed getDramaEmbed(CaseType type, Guild guild, Member target, String reason, Duration duration, GuildChannel targetChannel) {
+	public MessageEmbed getDramaEmbed(@NotNull CaseType type, Guild guild, Member target, String reason, Duration duration, GuildChannel targetChannel) {
 		DiscordLocale locale = guild.getLocale();
 		int level;
 		String text;

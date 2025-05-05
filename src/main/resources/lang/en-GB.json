@@ -168,11 +168,12 @@
 			"strike3": "three warnings",
 			"button_strikes": "View active strikes",
 			"delstrike": "%s warning removed from you in by server's **{guild}** moderation.",
-			"appeal": "\nYou can appeal this action by following this link:\n> %s",
-			"rules": "\n-# [View server rules](%s)",
+			"appeal": "You can appeal this action by following this link:\n> %s",
+			"rules": "-# [View server rules](%s)",
 			"reason_mute": "Reason changed for *a mute* issued by **{guild}** server's moderation at {time}.",
 			"reason_strike": "Reason changed for *a warning* issued by **{guild}** server's moderation at {time}.",
-			"gamestrike": "You received Game strike in [__#%s__](%s) in **{guild}** server."
+			"gamestrike": "You received Game strike in [__#%s__](%s) in **{guild}** server.\n> Count: `%d`/`%d`",
+			"gamestrike_limit": "> Access limited to this channel - strike limit reached."
 		},
 		"drama": {
 			"kicked": "Was kicked from this server.",

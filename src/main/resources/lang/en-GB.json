@@ -172,14 +172,14 @@
 			"rules": "-# [View server rules](%s)",
 			"reason_mute": "Reason changed for *a mute* issued by **{guild}** server's moderation at {time}.",
 			"reason_strike": "Reason changed for *a warning* issued by **{guild}** server's moderation at {time}.",
-			"gamestrike": "You received Game strike in [__#%s__](%s) in **{guild}** server.\n> Count: `%d`/`%d`",
+			"gamestrike": "You received Game strike in __[#%s](%s)__ in **{guild}** server.\n> Count: `%d`/`%d`",
 			"gamestrike_limit": "> Access limited to this channel - strike limit reached."
 		},
 		"drama": {
 			"kicked": "Was kicked from this server.",
 			"muted": "Was timed out for {time}.",
 			"strike": "Received %s.",
-			"gamestrike": "Received Game strike in [__#%s__](%s)."
+			"gamestrike": "Received Game strike in __[#%s](%s)__."
 		},
 		"inform": {
 			"0": "Do not dm offender",
@@ -2161,7 +2161,7 @@
 					"bot_info": {
 						"title": "Bot info",
 						"bot_version": "Bot version: `VOTL-{bot_version}`",
-						"library": "Library: [`JDA {jda_version}`]({jda_github}) and [`JDA-Chewtils`]({chewtils_github})"
+						"library": "Library: `[JDA {jda_version}]({jda_github})` and `[JDA-Chewtils]({chewtils_github})`"
 					},
 					"commands_title": "Commands",
 					"commands_value": "Use `/help` in any chat to get list of commands.",

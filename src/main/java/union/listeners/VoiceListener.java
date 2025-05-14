@@ -42,12 +42,12 @@ public class VoiceListener extends ListenerAdapter {
 		.expireAfterAccess(10, TimeUnit.MINUTES)
 		.build();
 
-	private final DBUtil db;
 	private final App bot;
+	private final DBUtil db;
 
 	public VoiceListener(App bot, ScheduledExecutorService executor) {
-		this.db = bot.getDBUtil();
 		this.bot = bot;
+		this.db = bot.getDBUtil();
 		startRewardTask(executor);
 	}
 

@@ -65,7 +65,7 @@ import static java.lang.Long.parseLong;
 public class App {
 	protected static App instance;
 	
-	private final Logger logger = (Logger) LoggerFactory.getLogger(App.class);
+	private final Logger LOG = (Logger) LoggerFactory.getLogger(App.class);
 
 	public final String VERSION = Optional.ofNullable(App.class.getPackage().getImplementationVersion()).map(ver -> "v"+ver).orElse("DEVELOPMENT");
 
@@ -132,7 +132,7 @@ public class App {
         MemberListener memberListener			= new MemberListener(this);
         ModerationListener moderationListener	= new ModerationListener(this);
         AuditListener auditListener				= new AuditListener(this);
-		EventListener eventListener				= new EventListener();
+		EventListener eventListener				= new EventListener(dbUtil);
 
 		ScheduledCheck scheduledCheck = new ScheduledCheck(this);
 		scheduledExecutor.scheduleAtFixedRate(scheduledCheck::timedChecks, 3, 10, TimeUnit.MINUTES);
@@ -288,20 +288,20 @@ public class App {
 				tempJda = mainBuilder.build();
 				break;
 			} catch (InvalidTokenException ex) {
-				logger.error("Login failed due to Token", ex);
+				LOG.error("Login failed due to Token", ex);
 				System.exit(0);
 			} catch (ErrorResponseException ex) { // Tries to reconnect to discord x times with some delay, else exits
 				if (retries > 0) {
 					retries--;
-                    logger.info("Retrying connecting in {} seconds... {} more attempts", cooldown, retries);
+                    LOG.info("Retrying connecting in {} seconds... {} more attempts", cooldown, retries);
 					try {
 						Thread.sleep(cooldown*1000L);
 					} catch (InterruptedException e) {
-						logger.error("Thread sleep interrupted", e);
+						LOG.error("Thread sleep interrupted", e);
 					}
 					cooldown*=2;
 				} else {
-					logger.error("No network connection or couldn't connect to DNS", ex);
+					LOG.error("No network connection or couldn't connect to DNS", ex);
 					System.exit(0);
 				}
 			}
@@ -311,24 +311,24 @@ public class App {
 
 		createWebhookAppender();
 
-		logger.info("Preparing and setting up metrics.");
+		LOG.info("Preparing and setting up metrics.");
 		Metrics.setup();
 
-		logger.info("Creating user backgrounds...");
+		LOG.info("Creating user backgrounds...");
 		try {
 			UserBackgroundHandler.getInstance().start();
 		} catch (Throwable ex) {
-			logger.error("Error starting background handler", ex);
+			LOG.error("Error starting background handler", ex);
 		}
 
+		LOG.info("Starting helper...");
 		try {
-			logger.info("Starting helper...");
 			Helper.start();
 		} catch (Throwable ex) {
-			instance.logger.info("Unable to start helper: {}", ex.getMessage());
+			LOG.info("Unable to start helper: {}", ex.getMessage());
 		}
 
-		logger.info("Success start");
+		LOG.info("Success start");
 	}
 
 	public static App getInstance() {
@@ -340,7 +340,7 @@ public class App {
 	}
 
 	public Logger getAppLogger() {
-		return logger;
+		return LOG;
 	}
 
 	public FileManager getFileManager() {

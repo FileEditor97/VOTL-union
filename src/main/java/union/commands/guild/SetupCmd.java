@@ -377,8 +377,8 @@ public class SetupCmd extends CommandBase {
 			}
 
 			try {
-				category.upsertPermissionOverride(guild.getBotRole()).setAllowed(getBotPermissions()).queue(doneCategory -> {
-					channel.upsertPermissionOverride(guild.getPublicRole()).setDenied(Permission.VOICE_SPEAK).queue(doneChannel -> {
+				category.upsertPermissionOverride(guild.getBotRole()).grant(getBotPermissions()).queue(doneCategory -> {
+					channel.upsertPermissionOverride(guild.getPublicRole()).deny(Permission.VOICE_SPEAK).queue(doneChannel -> {
 						try {
 							bot.getDBUtil().guildVoice.setup(guildId, category.getIdLong(), channel.getIdLong());
 						} catch (SQLException e) {

@@ -54,7 +54,7 @@ public class VoiceChannelManager extends LiteDBBase {
 	}
 
 	public boolean existsChannel(long channelId) {
-		return cache.getIfPresent(channelId) != null;
+		return cache.asMap().containsValue(channelId);
 	}
 
 	public void setUser(long userId, long channelId) throws SQLException {

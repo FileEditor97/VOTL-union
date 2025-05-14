@@ -31,7 +31,7 @@ import union.utils.level.PlayerObject;
 
 public class VoiceListener extends ListenerAdapter {
 
-	private final Set<Permission> ownerPerms = Set.of(
+	public static final Set<Permission> ownerPerms = Set.of(
 		Permission.MANAGE_CHANNEL, Permission.VOICE_SET_STATUS, Permission.VOICE_MOVE_OTHERS,
 		Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT, Permission.MESSAGE_SEND
 	);

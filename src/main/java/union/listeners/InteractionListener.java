@@ -1130,7 +1130,7 @@ public class InteractionListener extends ListenerAdapter {
 			if (verifyRoleId != null) {
 				Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
 				if (verifyRole != null) {
-					vc.upsertPermissionOverride(verifyRole).setAllowed(Permission.VOICE_CONNECT).queue();
+					vc.upsertPermissionOverride(verifyRole).grant(Permission.VOICE_CONNECT).queue();
 				}
 			} else {
 				vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VOICE_CONNECT).queue();
@@ -1170,7 +1170,7 @@ public class InteractionListener extends ListenerAdapter {
 			if (verifyRoleId != null) {
 				Role verifyRole = event.getGuild().getRoleById(verifyRoleId);
 				if (verifyRole != null) {
-					vc.upsertPermissionOverride(verifyRole).setAllowed(Permission.VIEW_CHANNEL).queue();
+					vc.upsertPermissionOverride(verifyRole).grant(Permission.VIEW_CHANNEL).queue();
 				}
 			} else {
 				vc.upsertPermissionOverride(event.getGuild().getPublicRole()).clear(Permission.VIEW_CHANNEL).queue();

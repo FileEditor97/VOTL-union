@@ -1300,7 +1300,7 @@
 		"voice": {
 			"listener": {
 				"default_name": "{user}'s channel",
-				"cooldown": "Creating voice channels to quickly, wait a bit! Or you already own maximum VoiceChannels.",
+				"cooldown": "Creating voice channels to quickly, wait a bit! Or you already own a voice channel.",
 				"failed": "Failed to create the voice channel.\n> %s",
 				"not_in_voice": "You are not connected to any voice channel.",
 				"panel": {

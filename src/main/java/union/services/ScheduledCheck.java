@@ -66,7 +66,8 @@ public class ScheduledCheck {
 			.thenRunAsync(this::checkExpiredTempRoles)
 			.thenRunAsync(this::checkExpiredStrikes)
 			.thenRunAsync(this::generateReport)
-			.thenRunAsync(this::checkExpiredPersistentRoles);
+			.thenRunAsync(this::checkExpiredPersistentRoles)
+			.thenRunAsync(this::checkVoiceChannels);
 	}
 
 	private void checkTicketStatus() {
@@ -319,6 +320,15 @@ public class ScheduledCheck {
 			log.error("Exception caught during expired persistent roles check.", t);
 		}
 	}
+
+	private void checkVoiceChannels() {
+		try {
+			db.voice.checkCache(bot.JDA);
+		} catch (Throwable t) {
+			log.error("Exception caught during cached voice channels check.", t);
+		}
+	}
+
 
 	// Each 2-5 minutes
 	public void regularChecks() {

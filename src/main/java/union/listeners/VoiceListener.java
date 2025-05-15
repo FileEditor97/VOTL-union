@@ -8,6 +8,7 @@ import java.util.concurrent.*;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.utils.TimeFormat;
 import org.jetbrains.annotations.NotNull;
 import union.App;
 import union.objects.logs.LogType;
@@ -38,8 +39,12 @@ public class VoiceListener extends ListenerAdapter {
 
 	// cache users in voice for exp
 	// userId and start time
-	private final Cache<PlayerObject, Long> cache = Caffeine.newBuilder()
+	private final Cache<PlayerObject, Long> expCache = Caffeine.newBuilder()
 		.expireAfterAccess(10, TimeUnit.MINUTES)
+		.build();
+	private final int CHANNEL_LIMIT_SECONDS = 60;
+	private final Cache<Long, Long> channelRatelimit = Caffeine.newBuilder()
+		.expireAfterWrite(CHANNEL_LIMIT_SECONDS, TimeUnit.SECONDS)
 		.build();
 
 	private final App bot;
@@ -106,7 +111,7 @@ public class VoiceListener extends ListenerAdapter {
 		if (db.levels.getSettings(event.getGuild()).isVoiceEnabled()) {
 			if (channelJoined != null && channelLeft == null) {
 				// Joined vc first time
-				cache.put(new PlayerObject(event.getGuild().getIdLong(), event.getMember().getIdLong()), System.currentTimeMillis());
+				expCache.put(new PlayerObject(event.getGuild().getIdLong(), event.getMember().getIdLong()), System.currentTimeMillis());
 			} else if (channelJoined == null && channelLeft != null) {
 				// left voice
 				handleUserLeave(event.getMember());
@@ -119,6 +124,7 @@ public class VoiceListener extends ListenerAdapter {
 		final long userId = member.getIdLong();
 		final DiscordLocale guildLocale = guild.getLocale();
 
+		// Check for existing channel
 		if (db.voice.existsUser(userId)) {
 			member.getUser().openPrivateChannel()
 				.queue(channel -> channel.sendMessage(
@@ -126,6 +132,20 @@ public class VoiceListener extends ListenerAdapter {
 				).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
 			return;
 		}
+		// Rate limit
+		Long lastChannelCreationTime = channelRatelimit.getIfPresent(userId);
+		if (lastChannelCreationTime == null) {
+			channelRatelimit.put(userId, System.currentTimeMillis());
+		} else {
+			long allowAfter = (CHANNEL_LIMIT_SECONDS*1000) - (System.currentTimeMillis() - lastChannelCreationTime);
+			member.getUser().openPrivateChannel()
+				.queue(channel -> channel.sendMessage(
+					bot.getLocaleUtil().getLocalized(guildLocale, "bot.voice.listener.cooldown")
+					+ "\n> Try again " + TimeFormat.RELATIVE.after(allowAfter)
+				).queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
+			return;
+		}
+
 		GuildVoiceManager.VoiceSettings voiceSettings = db.getVoiceSettings(guild);
 		Long categoryId = voiceSettings.getCategoryId();
 		if (categoryId == null) return;
@@ -154,9 +174,10 @@ public class VoiceListener extends ListenerAdapter {
 				},
 				failure -> {
 					member.getUser().openPrivateChannel()
-						.queue(channel ->
+						.flatMap(channel ->
 							channel.sendMessage(bot.getLocaleUtil().getLocalized(guildLocale, "bot.voice.listener.failed").formatted(failure.getMessage()))
-								.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER)));
+						)
+						.queue(null, new ErrorHandler().ignore(ErrorResponse.CANNOT_SEND_TO_USER));
 				}
 			);
 	}
@@ -172,7 +193,7 @@ public class VoiceListener extends ListenerAdapter {
 
 	private void startRewardTask(ScheduledExecutorService executor) {
 		executor.scheduleAtFixedRate(() -> {
-			cache.asMap().forEach((player, joinTime) -> {
+			expCache.asMap().forEach((player, joinTime) -> {
 				Member member = Optional.ofNullable(bot.JDA.getGuildById(player.guildId))
 					.map(g -> g.getMemberById(player.userId))
 					.orElse(null);
@@ -201,7 +222,7 @@ public class VoiceListener extends ListenerAdapter {
 	}
 
 	private void handleUserLeave(PlayerObject player) {
-		Long timeJoined = cache.getIfPresent(player);
+		Long timeJoined = expCache.getIfPresent(player);
 
 		if (timeJoined != null) {
 			long duration = Math.round((System.currentTimeMillis()-timeJoined)/1000f); // to seconds
@@ -209,7 +230,7 @@ public class VoiceListener extends ListenerAdapter {
 				bot.getDBUtil().levels.addVoiceTime(player, duration);
 			}
 		}
-		cache.invalidate(player);
+		expCache.invalidate(player);
 	}
 
 }
